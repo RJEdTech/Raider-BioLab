@@ -154,7 +154,7 @@ function drawAnimal(ctx,sim,D,t,hon){const G=geom('animal'),mv=RM?0:1;
   if(hon){ctx.strokeStyle=PAL['cv-soft'];ctx.globalAlpha=0.22;ctx.lineWidth=1.3;ctx.beginPath();for(let i=0;i<14;i++){const a=i/14*6.283,e=memPt(a,0.97);ctx.moveTo(400,262);ctx.quadraticCurveTo((400+e[0])/2+Math.sin(i)*20,(262+e[1])/2+Math.cos(i)*20,e[0],e[1]);}ctx.stroke();ctx.globalAlpha=1;}
   // rough ER arcs
   ctx.strokeStyle=COL.rer;ctx.lineWidth=7;ctx.lineCap='round';[97,110,123].forEach(R=>{ctx.beginPath();ctx.arc(230,210,R,-1.1,1.1);ctx.stroke();});ctx.lineCap='butt';
-  ctx.fillStyle=COL.rib;G.erRib.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2.2,0,6.29);ctx.fill();});
+  ctx.fillStyle=PAL['cv-inn'];G.erRib.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2.2,0,6.29);ctx.fill();});
   drawNucleus(ctx,230,210,80,70,t,212,198,22);
   ctx.strokeStyle=COL.ser;ctx.lineWidth=8;ctx.lineCap='round';ctx.lineJoin='round';geom('animal').sh.smoothER.forEach(s=>{ctx.beginPath();s.pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();});ctx.lineCap='butt';
   drawGolgi(ctx,392,148,5,80,8);
@@ -162,13 +162,13 @@ function drawAnimal(ctx,sim,D,t,hon){const G=geom('animal'),mv=RM?0:1;
   G.sh.lysosome.forEach(l=>{ctx.fillStyle=COL.lys;ctx.strokeStyle=COL.lysE;ctx.lineWidth=2;ctx.beginPath();ctx.arc(l.x,l.y,l.r,0,6.29);ctx.fill();ctx.stroke();ctx.fillStyle=COL.lysE;for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(l.x+Math.cos(i*1.6)*l.r*0.45,l.y+Math.sin(i*1.6)*l.r*0.45,1.6,0,6.29);ctx.fill();}});
   ctx.save();ctx.translate(400,262);ctx.fillStyle=COL.cen;ctx.rotate(0.3);rr(ctx,-11,-4,16,8,3);ctx.fill();ctx.rotate(Math.PI/2);rr(ctx,-2,-4,16,8,3);ctx.fill();ctx.restore();
   D.ves.forEach(v=>{if(v[2]<=0.5)return;ctx.fillStyle=COL.ves;ctx.strokeStyle='#b07a1a';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(v[0],v[1],v[2],0,6.29);ctx.fill();ctx.stroke();});
-  ctx.fillStyle=COL.rib;D.ribs.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2.6,0,6.29);ctx.fill();});}
+  ctx.fillStyle=PAL['cv-inn'];D.ribs.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2.6,0,6.29);ctx.fill();});}
 function drawPlant(ctx,sim,D,t,hon,ap){const G=geom('plant');
   ctx.fillStyle=COL.wallP;rr(ctx,40,25,560,400,18);ctx.fill();ctx.fillStyle=PAL['cv-ims'];rr(ctx,52,37,536,376,10);ctx.fill();ctx.strokeStyle=COL.mem;ctx.lineWidth=3;rr(ctx,54,39,532,372,9);ctx.stroke();
   if(ap){ctx.strokeStyle=PAL['cv-ims'];ctx.lineWidth=5;G.sh.plasmodesmata.forEach(q=>{ctx.beginPath();if(q.vert){ctx.moveTo(q.x,q.y-8);ctx.lineTo(q.x,q.y+8);}else{ctx.moveTo(q.x-8,q.y);ctx.lineTo(q.x+8,q.y);}ctx.stroke();});}
   ctx.fillStyle=COL.vac;rr(ctx,200,70,360,310,60);ctx.fill();ctx.strokeStyle=COL.vacE;ctx.lineWidth=2.5;ctx.stroke();
   ctx.strokeStyle=COL.rer;ctx.lineWidth=6;ctx.lineCap='round';[60,68,76].forEach(R=>{ctx.beginPath();ctx.arc(105,215,R,0.55,2.1);ctx.stroke();});ctx.lineCap='butt';
-  ctx.fillStyle=COL.rib;G.erRib.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2,0,6.29);ctx.fill();});
+  ctx.fillStyle=PAL['cv-inn'];G.erRib.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2,0,6.29);ctx.fill();});
   drawNucleus(ctx,105,215,52,48,t,98,208,15);
   drawGolgi(ctx,98,338,4,64,7);
   ctx.strokeStyle=COL.ser;ctx.lineWidth=8;ctx.lineCap='round';ctx.lineJoin='round';G.sh.smoothER.forEach(s=>{ctx.beginPath();s.pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();});ctx.lineCap='butt';
@@ -176,7 +176,7 @@ function drawPlant(ctx,sim,D,t,hon,ap){const G=geom('plant');
   D.chl.forEach(c=>{ctx.save();ctx.translate(c[0],c[1]);ctx.rotate(c[2]);ctx.fillStyle=COL.chl;ctx.strokeStyle=COL.gran;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,24,12,0,0,6.29);ctx.fill();ctx.stroke();
     ctx.fillStyle=COL.gran;for(let i=-2;i<=2;i++){ctx.fillRect(i*8-3,-5,6,10);}ctx.restore();});
   D.ves.forEach(v=>{ctx.fillStyle=COL.ves;ctx.beginPath();ctx.arc(v[0],v[1],v[2],0,6.29);ctx.fill();});
-  ctx.fillStyle=COL.rib;D.ribs.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2.4,0,6.29);ctx.fill();});}
+  ctx.fillStyle=PAL['cv-inn'];D.ribs.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2.4,0,6.29);ctx.fill();});}
 function drawBacterium(ctx,sim,D,t,hon){const G=geom('bacterium');
   if(hon){ctx.fillStyle=COL.cap;rr(ctx,100,140,460,170,85);ctx.fill();}
   ctx.strokeStyle=COL.flag;ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();D.fl.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
@@ -184,7 +184,7 @@ function drawBacterium(ctx,sim,D,t,hon){const G=geom('bacterium');
   ctx.fillStyle=COL.wallB;rr(ctx,112,152,436,146,73);ctx.fill();ctx.fillStyle=PAL['cv-ims'];rr(ctx,120,160,420,130,65);ctx.fill();ctx.strokeStyle=COL.mem;ctx.lineWidth=3;rr(ctx,122,162,416,126,63);ctx.stroke();
   ctx.strokeStyle=COL.chrom;ctx.lineWidth=2;ctx.beginPath();G.nucl.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.stroke();
   if(hon){ctx.strokeStyle=COL.plas;ctx.lineWidth=3;G.sh.plasmid.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r-2,0,6.29);ctx.stroke();});}
-  ctx.fillStyle=COL.rib;D.ribs.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2.6,0,6.29);ctx.fill();});}
+  ctx.fillStyle=PAL['cv-inn'];D.ribs.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],2.6,0,6.29);ctx.fill();});}
 /* ---- protein journey for the walkthrough (animal cell) ---- */
 function drawTrip(ctx,sim,k){const tr=sim.st.trip;if(!tr||!sim.tour||!sim.tour.on)return;const u=(((sim.vt-tr.t0)/3.2)%1+1)%1;
   const bead=(x,y,c)=>{ctx.fillStyle=c||PAL['s4'];ctx.beginPath();ctx.arc(x,y,4,0,6.29);ctx.fill();ctx.strokeStyle='#7a4a00';ctx.lineWidth=1;ctx.stroke();};
@@ -267,8 +267,7 @@ const CE={
     h+='<p>'+P.job+'</p><p><b>Think of it as</b> '+P.an+'</p><p><b>Found in:</b> '+P.in.map(c=>CELLNAME[c]+'s').join(', ').replace('bacteriums','bacteria')+'</p>';
     if(hon)h+='<p>'+P.hon+'</p>';if(ap)h+='<p><b>AP:</b> '+P.ap+'</p>';
     return h;},
-  narrate(sim){const p=sim.p,cell=p.cell,q=currentQ(sim);
-    if(q&&q.target&&sim.ch.phase==='ask')return '<b>Quiz:</b> the structure outlined in amber is the one the question asks about.';
+  narrate(sim){const p=sim.p,cell=p.cell;
     if(p.part!=='none'&&PARTS[p.part]){const P=PARTS[p.part];return P.in.includes(cell)?'<b>'+P.n+':</b> '+P.job:'<b>'+P.n+':</b> '+((P.absent&&P.absent[cell])||'not found in this cell.');}
     if(cell==='animal')return 'An animal cell, about 20 µm across. Everything inside the membrane floats in cytoplasm and is constantly moving. Watch the vesicles carry cargo from the Golgi to the membrane.';
     if(cell==='plant')return 'A plant cell, about 50 µm across. The big central vacuole pushes everything against the wall, and the chloroplasts stream around it.';
@@ -309,7 +308,7 @@ const CE={
     const q=currentQ(sim);const showQ=!touring&&q&&q.target&&sim.ch.phase!=='running';
     if(showQ)outline(ctx,sim,q.target,PAL['s4'],true,RM?0:t);
     // labels
-    if(p.labels&&!touring&&!(showQ&&sim.ch.phase==='ask')){ORDER.forEach(id=>{if(!PARTS[id].in.includes(cell)||!partAvailable(id))return;const a=anchorOf(sim,id);pill(ctx,PARTS[id].n,a[0],a[1],PAL['card'],PAL['cv-ink'],11*k);});}
+    if(p.labels&&!touring){ORDER.forEach(id=>{if(!PARTS[id].in.includes(cell)||!partAvailable(id))return;if(showQ&&sim.ch.phase==='ask'&&id===q.target)return;const a=anchorOf(sim,id);pill(ctx,PARTS[id].n,a[0],a[1],PAL['card'],PAL['cv-ink'],11*k);});}
     // selection
     if(p.part!=='none'&&PARTS[p.part]&&!touring){const P=PARTS[p.part];
       if(P.in.includes(cell)){outline(ctx,sim,p.part,PAL['rj'],false,0);const a=anchorOf(sim,p.part);
