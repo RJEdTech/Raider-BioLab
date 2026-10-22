@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive biology simulations for Bio, Honors and AP: cellular respiration, enzyme activity and photosynthesis.">
+<title>Raider BioLab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+/*RJMASTHEAD*/
+/* RJ Ed Tech masthead (suite standard, matches Raider Observation Console):
+   charcoal band + 6px Raider-red rule, full browser width; contents stay
+   aligned with the page column. Same in light and dark. */
+html{overflow-x:clip}
+.rj-masthead{position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  padding-top:14px!important;padding-bottom:14px!important;margin-top:0!important;margin-bottom:34px!important;
+  border:0!important;background:none!important;color:#fff;color-scheme:dark}
+.rj-masthead{box-sizing:border-box;width:100vw;max-width:none!important;margin-left:calc(50% - 50vw)!important;margin-right:calc(50% - 50vw)!important;
+  padding-left:max(20px,calc((100vw - 1000px)/2))!important;padding-right:max(20px,calc((100vw - 1000px)/2))!important}
+.rj-masthead::before{content:"";position:absolute;z-index:-1;top:-64px;bottom:-6px;left:calc(50% - 50vw);right:calc(50% - 50vw);
+  background:#2a2a2a;border-bottom:6px solid #C11430}
+.rj-masthead>.head-row{flex:1;align-items:center}
+body:not(.fs) .rj-masthead .hl,body:not(.fs) .rj-masthead .header-left,body:not(.fs) .rj-masthead .title-lock{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:13px!important;min-width:0}
+.rj-masthead .rj-mark{height:40px;width:auto;display:block;flex-shrink:0}
+.rj-masthead .brand,.rj-masthead h1{color:#fff!important;-webkit-text-fill-color:#fff!important;background:none!important;
+  font-size:20px!important;font-weight:700!important;line-height:1.15!important;letter-spacing:0!important;margin:0!important}
+.rj-masthead .accent{color:inherit!important;-webkit-text-fill-color:inherit!important}
+.rj-masthead .tagline,.rj-masthead .subtitle,.rj-masthead .rjm-sub{color:#b8b8b8!important;font-size:10.5px!important;font-weight:400!important;
+  letter-spacing:.14em!important;text-transform:uppercase;margin:3px 0 0!important;line-height:1.45!important}
+.rj-masthead .last-checked{color:#b8b8b8!important}
+.rj-masthead a{color:#f2f2f2!important}
+body:not(.fs) .rj-masthead button,body:not(.fs) .rj-masthead select{background:rgba(255,255,255,.08)!important;color:#f2f2f2!important;
+  border:1px solid rgba(255,255,255,.22)!important}
+body:not(.fs) .rj-masthead select option{background:#2a2a2a;color:#f2f2f2}
+.rj-masthead .hdr-txt{flex:1;min-width:0}
+.rj-masthead .hdr-txt .sub{color:#b8b8b8!important;font-size:10.5px!important;font-weight:400!important;letter-spacing:.14em!important;text-transform:uppercase;margin:3px 0 0!important;line-height:1.45!important}
+.rj-masthead label{color:#d8d8d8!important}
+.rj-masthead input{background:rgba(255,255,255,.08)!important;color:#f2f2f2!important;border:1px solid rgba(255,255,255,.22)!important}
+.rj-masthead input::placeholder{color:#9a9a9a}
+.rj-masthead .lang-globe{color:#f2f2f2}
+body.fs .rj-masthead{color-scheme:normal;margin-bottom:0!important}
+body.fs .rj-masthead::before{display:none}
+@media(max-width:600px){.rj-masthead .brand,.rj-masthead h1{font-size:17px!important}.rj-masthead>label{flex-basis:100%}}
+@media print{.rj-masthead::before{display:none}.rj-masthead,.rj-masthead .brand,.rj-masthead h1{color:#000!important;-webkit-text-fill-color:#000!important}}
+/*/RJMASTHEAD*/
+
+/* Layout: one 1000px lab-bench column — stage + control drawer, then
+   instruments (readouts, graph, prediction), then the lab notebook (trials). */
+:root{
+  --bg:#f3f3f1; --card:#ffffff; --card2:#f7f7f5; --fg:#1c1c1f; --muted:#5d5d63; --line:#d8d8d3;
+  --rj:#C11430; --rj-ink:#a8102a; --focus:#1f6feb; --good:#1b7339; --bad:#b3261e;
+  --font:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  /* drawing palette for the simulations */
+  --cv-ims:#fcefe4; --cv-matrix:#e8f1f8; --cv-head:#dca23a; --cv-tail:#eadbb2; --cv-ink:#26262b; --cv-soft:#62626a;
+  --cv-h:#d22d68; --cv-e:#f2b705; --cv-estroke:#7a5a00; --cv-atp:#1b7339; --cv-dnp:#7b3fe4;
+  --cv-sol:#e9f3f9; --cv-enz:#3a8a55; --cv-enzd:#7c9a84; --cv-sub:#2d6bd2; --cv-prod:#df741a; --cv-inc:#d32f2f; --cv-inn:#7b3fe4;
+  --cv-water:#d6ebf4; --cv-glass:#8aa6b4; --cv-leaf:#2b8237; --cv-leaf2:#58ad48; --cv-bubble:#ffffff; --cv-bstroke:#6f97ab;
+  --cv-bench:#ddd2bf; --cv-lamp:#3a3e45; --cv-ruler:#efe6cf;
+  --g-line:#C11430; --g-fill:rgba(193,20,48,.10); --g-grid:#e7e7e2; --g-axis:#77777d; --g-dot:#2d6bd2;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15161a; --card:#1d1f24; --card2:#24272d; --fg:#ececef; --muted:#a2a2aa; --line:#353840;
+  --rj-ink:#ed516a; --focus:#6ea8ff; --good:#5cc27f; --bad:#f2827a;
+  --cv-ims:#2a221c; --cv-matrix:#17212a; --cv-head:#b78a35; --cv-tail:#4d4535; --cv-ink:#ececef; --cv-soft:#a2a2aa;
+  --cv-h:#ff6b9a; --cv-e:#ffd23f; --cv-estroke:#3a2c00; --cv-atp:#62d08a; --cv-dnp:#a77dff;
+  --cv-sol:#14212a; --cv-enz:#46a868; --cv-enzd:#5b6f61; --cv-sub:#5c9bff; --cv-prod:#ff9a45; --cv-inc:#ff5d5d; --cv-inn:#a77dff;
+  --cv-water:#132d3a; --cv-glass:#6a8796; --cv-leaf:#3a9c46; --cv-leaf2:#73c562; --cv-bubble:#e6f6ff; --cv-bstroke:#9cc4d8;
+  --cv-bench:#3a342b; --cv-lamp:#9ca2aa; --cv-ruler:#2e2a22;
+  --g-line:#ed516a; --g-fill:rgba(237,81,106,.14); --g-grid:#2b2e35; --g-axis:#8f8f97; --g-dot:#5c9bff;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15161a; --card:#1d1f24; --card2:#24272d; --fg:#ececef; --muted:#a2a2aa; --line:#353840;
+  --rj-ink:#ed516a; --focus:#6ea8ff; --good:#5cc27f; --bad:#f2827a;
+  --cv-ims:#2a221c; --cv-matrix:#17212a; --cv-head:#b78a35; --cv-tail:#4d4535; --cv-ink:#ececef; --cv-soft:#a2a2aa;
+  --cv-h:#ff6b9a; --cv-e:#ffd23f; --cv-estroke:#3a2c00; --cv-atp:#62d08a; --cv-dnp:#a77dff;
+  --cv-sol:#14212a; --cv-enz:#46a868; --cv-enzd:#5b6f61; --cv-sub:#5c9bff; --cv-prod:#ff9a45; --cv-inc:#ff5d5d; --cv-inn:#a77dff;
+  --cv-water:#132d3a; --cv-glass:#6a8796; --cv-leaf:#3a9c46; --cv-leaf2:#73c562; --cv-bubble:#e6f6ff; --cv-bstroke:#9cc4d8;
+  --cv-bench:#3a342b; --cv-lamp:#9ca2aa; --cv-ruler:#2e2a22;
+  --g-line:#ed516a; --g-fill:rgba(237,81,106,.14); --g-grid:#2b2e35; --g-axis:#8f8f97; --g-dot:#5c9bff;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{color-scheme:light}
+body{margin:0}
+img{max-width:100%}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--font);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1000px;margin:0 auto}
+h2,h3{text-wrap:balance}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+.bar{display:flex;flex-wrap:wrap;gap:12px 20px;justify-content:space-between;align-items:center;margin-bottom:22px}
+.tabs{display:flex;flex-wrap:wrap;gap:4px}
+.tab{border:1px solid transparent;background:none;color:var(--muted);font-weight:600;font-size:16px;padding:8px 14px;border-radius:8px;cursor:pointer}
+.tab:hover{color:var(--fg);background:var(--card2)}
+.tab[aria-selected="true"]{color:var(--fg);background:var(--card);border-color:var(--line);box-shadow:inset 0 -3px 0 var(--rj)}
+.lvl{display:flex;align-items:center;gap:10px}
+.lvl-l{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;background:var(--card2);padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:5px 12px;border-radius:6px;font-size:15px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button:hover{color:var(--fg)}
+.seg button[aria-checked="true"],.seg button[aria-pressed="true"]{background:var(--card);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.18)}
+.lvl .seg button[aria-pressed="true"]{background:var(--rj);color:#fff}
+
+.sim-head h2{font-size:26px;line-height:1.2;margin:0 0 6px}
+.lede{color:var(--muted);margin:0;max-width:72ch}
+.bench{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px;margin-top:18px;align-items:start}
+.stage{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0}
+.stage canvas{display:block;width:100%;aspect-ratio:16/9;max-width:100%}
+.transport{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-top:1px solid var(--line)}
+.clock{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted);font-size:15px}
+.btn{border:1px solid var(--line);background:var(--card2);padding:6px 12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;line-height:1.3}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--rj);border-color:var(--rj);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn select{border:0;background:none}
+select.sel{border:1px solid var(--line);background:var(--card2);border-radius:8px;padding:5px 8px;font-size:15px;max-width:100%}
+
+.controls{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:16px}
+.controls h3{margin:0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ctl-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:4px}
+.ctl-top label,.ctl-top .lbl{font-weight:600;font-size:15px}
+.ctl output{font-variant-numeric:tabular-nums;font-weight:600;font-size:15px;color:var(--rj-ink)}
+.ctl input[type=range]{width:100%;accent-color:var(--rj);margin:0}
+.ctl .help{font-size:14px;color:var(--muted);margin:2px 0 0}
+.switch{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.track{flex:0 0 auto;width:40px;height:22px;border-radius:11px;background:var(--line);position:relative;transition:background .15s;margin-top:2px}
+.track::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s}
+.switch input:checked+.track{background:var(--rj)}
+.switch input:checked+.track::after{transform:translateX(18px)}
+.switch input:focus-visible+.track{outline:2px solid var(--focus);outline-offset:2px}
+.tl{display:flex;flex-direction:column;line-height:1.3}
+.tl b{font-size:15px}
+.tl small{font-size:14px;color:var(--muted)}
+
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:10px;margin-top:16px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.t-l{font-size:14px;color:var(--muted);line-height:1.3}
+.t-v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25;margin-top:2px}
+.t-v .u{font-size:14px;font-weight:400;color:var(--muted)}
+.t-bar{height:5px;border-radius:3px;background:var(--card2);border:1px solid var(--line);margin-top:8px;overflow:hidden}
+.t-bar i{display:block;height:100%;background:var(--rj);width:0}
+
+.lower{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:16px;margin-top:16px;align-items:start}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.p-head{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.p-head h3{margin:0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.g-opts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.graph canvas{display:block;width:100%;height:250px}
+
+.predict .q{font-weight:600;font-size:17px;line-height:1.4;margin:0 0 12px}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice{text-align:left;border:1px solid var(--line);background:var(--card2);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:15px;line-height:1.35}
+.choice:hover{border-color:var(--rj)}
+.status{font-size:15px;color:var(--muted);margin:10px 0 0}
+.prog{height:6px;border-radius:3px;background:var(--card2);border:1px solid var(--line);overflow:hidden;margin-top:8px}
+.prog i{display:block;height:100%;background:var(--rj);width:0}
+.verdict{font-weight:700;margin:0 0 6px}
+.verdict.ok{color:var(--good)}.verdict.no{color:var(--bad)}
+.explain{font-size:15px;margin:0 0 12px}
+.pick{font-size:15px;margin:0 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.count{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+.trials{margin-top:16px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{background:var(--card2);font-weight:600;color:var(--muted);font-size:13px}
+th:first-child,td:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+.empty{color:var(--muted);font-size:15px;padding:14px;margin:0}
+.csv-fallback{width:100%;min-height:90px;margin-top:10px;font:13px/1.4 ui-monospace,Consolas,monospace;background:var(--card2);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px}
+.toast{font-size:14px;color:var(--good);font-weight:600}
+
+.notes{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px 16px}
+.notes summary{cursor:pointer;font-weight:700;padding:10px 0}
+.notes .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px 28px;padding-bottom:14px}
+.notes h4{margin:10px 0 4px;font-size:15px}
+.notes p,.notes li{font-size:15px;max-width:68ch}
+.notes ul{padding-left:20px;margin:4px 0}
+.foot{margin-top:22px;font-size:14px;color:var(--muted);text-align:center}
+
+@media (max-width:820px){.bench,.lower{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.sim-head h2{font-size:22px}.t-v{font-size:21px}}
+@media (prefers-reduced-motion: reduce){.track,.track::after{transition:none}}
+</style>
+</head>
+<body>
+
+
+<header class="rj-masthead">
+  <div class="hl">
+    <img class="rj-mark" src="data:image/png;base64,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" alt="RJ">
+    <div>
+      <h1>Raider BioLab</h1>
+      <p class="tagline">Interactive biology simulations · Bio · Honors · AP</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="bar">
+    <div class="tabs" role="tablist" aria-label="Simulations" id="tabs"></div>
+    <div class="lvl"><span class="lvl-l" id="lvl-l">Course level</span>
+      <div class="seg" id="lvl" role="group" aria-labelledby="lvl-l">
+        <button type="button" data-l="bio">Bio</button><button type="button" data-l="honors">Honors</button><button type="button" data-l="ap">AP</button>
+      </div>
+    </div>
+  </nav>
+  <div id="sims"></div>
+
+  <details class="notes" id="notes">
+    <summary>For teachers: how this works</summary>
+    <div class="cols">
+      <div>
+        <h4>One simulation, three levels</h4>
+        <p>The course-level switch keeps the same model running underneath and changes what students can see and control.</p>
+        <ul>
+          <li><b>Bio</b> gives the core variables and plain-language labels.</li>
+          <li><b>Honors</b> adds named structures, inhibitors and a second variable to compare.</li>
+          <li><b>AP</b> adds the quantitative readouts: proton-motive force, P/O ratio, Vmax and Km, gross vs. net O₂.</li>
+        </ul>
+        <h4>A 15-minute lesson shape</h4>
+        <ul>
+          <li>Students run the predict-then-test challenges first, committing to an answer before they see it.</li>
+          <li>Then they design their own trial: change one variable, record trials, and plot them on the Trials graph.</li>
+          <li>Copy the table as CSV into Excel or Desmos for analysis or a lab write-up.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>About the models</h4>
+        <p>Every number on screen is calculated from a model, not played back from an animation, so unexpected combinations of settings still behave correctly. The models are simplified on purpose:</p>
+        <ul>
+          <li><b>Respiration:</b> pumps fill an H⁺ gradient and ATP synthase drains it. NADH pumps 10 H⁺, FADH₂ pumps 6, and each ATP costs about 4 H⁺. Rates are per mitochondrion, in model units.</li>
+          <li><b>Enzymes:</b> Michaelis–Menten kinetics with temperature, pH and inhibitor effects. Substrate is held constant. Heating above about 55 °C damages the enzyme permanently until you press Reset.</li>
+          <li><b>Photosynthesis:</b> light falls off with the square of lamp distance. Bubbles are counted over the last minute and vary randomly, like real data.</li>
+        </ul>
+        <h4>Privacy</h4>
+        <p>Everything runs in the browser. No logins, and no student data leaves the device.</p>
+      </div>
+    </div>
+  </details>
+  <p class="foot">RJ Ed Tech · Raider BioLab example set · Simplified models for instruction</p>
+</main>
+
+<script>
+(function(){
+'use strict';
+/* ---------------- shared helpers ---------------- */
+const LV={bio:0,honors:1,ap:2};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let level=store.get('rjbiolab-level'); if(!(level in LV)) level='honors';
+const atLeast=l=>LV[level]>=LV[l||'bio'];
+const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+const FONT='"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif';
+const RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const PAL={};
+const PAL_KEYS=['cv-ims','cv-matrix','cv-head','cv-tail','cv-ink','cv-soft','cv-h','cv-e','cv-estroke','cv-atp','cv-dnp','cv-sol','cv-enz','cv-enzd','cv-sub','cv-prod','cv-inc','cv-inn','cv-water','cv-glass','cv-leaf','cv-leaf2','cv-bubble','cv-bstroke','cv-bench','cv-lamp','cv-ruler','g-line','g-fill','g-grid','g-axis','g-dot','card','line','fg','muted'];
+function readPal(){const cs=getComputedStyle(document.documentElement);PAL_KEYS.forEach(k=>{PAL[k]=cs.getPropertyValue('--'+k).trim()||'#888';});}
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function txt(ctx,s,x,y,o){o=o||{};ctx.font=(o.w||400)+' '+(o.s||13)+'px '+FONT;ctx.fillStyle=o.c||PAL['cv-ink'];ctx.textAlign=o.a||'left';ctx.textBaseline=o.b||'alphabetic';ctx.fillText(s,x,y);}
+function pill(ctx,s,x,y,bg,fg,size){ctx.font='700 '+size+'px '+FONT;const w=ctx.measureText(s).width+size*1.1,h=size*1.7;rr(ctx,x-w/2,y-h/2,w,h,h/2);ctx.fillStyle=bg;ctx.fill();txt(ctx,s,x,y+1,{s:size,w:700,c:fg,a:'center',b:'middle'});}
+function polyline(pts){const segs=[];let L=0;for(let i=1;i<pts.length;i++){const dx=pts[i][0]-pts[i-1][0],dy=pts[i][1]-pts[i-1][1],l=Math.hypot(dx,dy);segs.push({a:pts[i-1],dx,dy,l,s:L});L+=l;}
+  return {L,at(d){for(const g of segs){if(d<=g.s+g.l){const t=(d-g.s)/g.l;return [g.a[0]+g.dx*t,g.a[1]+g.dy*t];}}const p=pts[pts.length-1];return [p[0],p[1]];}};}
+function niceStep(range,n){const raw=range/(n||5);const p=Math.pow(10,Math.floor(Math.log10(raw)));const m=raw/p;return (m<1.5?1:m<3?2:m<7?5:10)*p;}
+function fmtNum(v,d){if(v===null||v===undefined||Number.isNaN(v))return '—';return Number(v).toFixed(d);}
+
+/* ======================================================================
+   SIM 1 — Cellular respiration: electron transport + chemiosmosis
+   G = H+ gradient (0–1). Pumps fill it, ATP synthase and leaks drain it.
+   ====================================================================== */
+const PATH_N=polyline([[115,318],[115,214],[268,212],[331,212],[331,172],[405,148],[470,172],[470,262],[470,300]]);
+const PATH_F=polyline([[212,300],[212,232],[268,212],[331,212],[331,172],[405,148],[470,172],[470,262],[470,300]]);
+const RESP={
+  id:'resp',hash:'respiration',tab:'Cellular respiration',
+  title:'Cellular respiration in the inner mitochondrial membrane',
+  lede:{bio:'Electrons from your food power protein pumps that push H⁺ ions across the membrane. The H⁺ ions rush back through ATP synthase, which spins and makes ATP.',
+        honors:'NADH and FADH₂ hand electrons to the electron transport chain. Complexes I, III and IV use that energy to pump H⁺ into the intermembrane space, and the gradient drives ATP synthase.',
+        ap:'Chemiosmosis, measured. Track the proton-motive force and P/O ratio, and use inhibitors and an uncoupler to separate electron transport from ATP synthesis.'},
+  timeScale:1,dtMax:0.01,prewarm:20,sampleDt:0.1,window:30,unit:'s',chChange:4,chReveal:12,
+  controls:[
+    {id:'o2',label:'Oxygen available',type:'range',min:0,max:100,step:1,def:100,unit:'%',lvl:'bio'},
+    {id:'fuel',label:'Fuel supply (from glucose)',type:'range',min:0,max:100,step:1,def:80,unit:'%',lvl:'bio'},
+    {id:'carrier',label:'Electron carrier',type:'seg',def:'NADH',lvl:'honors',options:[{v:'NADH',l:'NADH'},{v:'FADH2',l:'FADH₂'}]},
+    {id:'cn',label:'Cyanide',help:'Blocks Complex IV',type:'toggle',def:false,lvl:'honors'},
+    {id:'oligo',label:'Oligomycin',help:'Blocks ATP synthase',type:'toggle',def:false,lvl:'honors'},
+    {id:'dnp',label:'DNP',help:'Makes the membrane leaky to H⁺',type:'toggle',def:false,lvl:'ap'}
+  ],
+  init(){return {G:0,Je:0,P:0,Rs:0,Rl:0,h:10};},
+  step(sim,dt){const p=sim.p,s=sim.st,S=p.fuel/100,ox=p.o2/100,fo=ox*1.08/(ox+0.08),G=s.G;
+    s.Je=p.cn?0:16*S*fo*Math.max(0,1-G);           // NADH (electron pairs) oxidized per s; slowed by back-pressure of the gradient
+    s.h=p.carrier==='NADH'?10:6; s.P=s.h*s.Je;     // H+ pumped per s
+    s.Rs=p.oligo?0:150*G;                          // H+ returning through ATP synthase
+    s.Rl=5*G+(p.dnp?600*G:0);                      // H+ leaking back (heat)
+    s.G=clamp(G+(s.P-s.Rs-s.Rl)/250*dt,0,1);},
+  metrics:[
+    {id:'atp',label:'ATP made',unit:'per s',lvl:'bio',min:0,max:30,d:1,get:s=>s.st.Rs/4},
+    {id:'o2use',label:'O₂ used',unit:'per s',lvl:'bio',min:0,max:8,d:2,get:s=>s.st.Je/2},
+    {id:'grad',label:'H⁺ gradient',unit:'% of max',lvl:'bio',min:0,max:100,d:0,get:s=>s.st.G*100},
+    {id:'ph',label:'Intermembrane pH',unit:'',lvl:'honors',min:6.4,max:7.8,d:2,fixed:true,get:s=>7.8-1.4*s.st.G},
+    {id:'leak',label:'H⁺ leak (as heat)',unit:'per s',lvl:'honors',min:0,max:100,d:1,get:s=>s.st.Rl},
+    {id:'pmf',label:'Proton-motive force',unit:'mV',lvl:'ap',min:0,max:350,d:0,get:s=>350*s.st.G},
+    {id:'po',label:'P/O ratio',unit:'ATP per O',lvl:'ap',min:0,max:3,d:2,get:s=>s.st.Je>0.05?(s.st.Rs/4)/s.st.Je:NaN}
+  ],
+  defaultGraph:'atp',
+  challenges:[
+    {lvl:'bio',q:'The cell runs out of oxygen. What happens to ATP production?',
+     choices:['It goes up, because the cell works harder','It drops to almost zero','Nothing changes; oxygen is only for breathing'],correct:1,
+     change:{o2:0},changeText:'Oxygen set to 0%',watch:'atp',
+     explain:{bio:'Oxygen catches the electrons at the end of the chain. With no oxygen, electrons back up, the pumps stop, the H⁺ gradient runs down, and ATP synthase has nothing to power it. That is why cells die within minutes without oxygen.',
+              honors:'O₂ is the final electron acceptor at Complex IV. Without it, electrons back up through the chain, pumping stops, the H⁺ gradient runs down, and ATP synthase stalls.'}},
+    {lvl:'bio',q:'The fuel supply is cut in half. What happens to the H⁺ gradient?',
+     choices:['It gets bigger','It gets smaller','It stays the same'],correct:1,
+     change:{fuel:40},changeText:'Fuel cut from 80% to 40%',watch:'grad',
+     explain:{bio:'Fewer electrons from food means the pumps run more slowly. Fewer H⁺ ions are pushed across, so the gradient shrinks and ATP production falls with it.'}},
+    {lvl:'honors',q:'Oligomycin blocks ATP synthase. What happens to oxygen use?',
+     choices:['It rises, because the cell is desperate for ATP','It drops, because the H⁺ gradient backs up and slows the pumps','It stays the same; the electron chain does not depend on ATP synthase'],correct:1,
+     change:{oligo:true},changeText:'Oligomycin added',watch:'o2use',
+     explain:{honors:'Electron transport and ATP synthesis are coupled through the gradient. With ATP synthase blocked, H⁺ has nowhere to go, the gradient maxes out, and pumping against it becomes too hard. Electron flow, and so O₂ use, nearly stops.',
+              ap:'This is respiratory control. With the F₀ channel blocked, the proton-motive force climbs until pumping is thermodynamically unfavorable, so electron transport and O₂ consumption nearly stop even though substrate and O₂ are present.'}},
+    {lvl:'honors',q:'Switch the electron carrier from NADH to FADH₂. What happens to ATP output?',
+     choices:['More ATP','Less ATP','The same ATP'],correct:1,
+     change:{carrier:'FADH2'},changeText:'Carrier switched to FADH₂',watch:'atp',
+     explain:{honors:'FADH₂ hands its electrons to Complex II, which skips Complex I. Complex II does not pump H⁺, so each FADH₂ moves fewer H⁺ across and produces less ATP than NADH.',
+              ap:'FADH₂ enters at Complex II and bypasses Complex I’s 4 H⁺. That is 6 H⁺ per pair instead of 10, so at about 4 H⁺ per ATP the P/O ratio falls from about 2.5 to about 1.5.'}},
+    {lvl:'ap',q:'DNP makes the membrane leaky to H⁺. What happens to O₂ use and ATP production?',
+     choices:['Both drop','O₂ use rises while ATP production falls','Both rise','O₂ use falls while ATP production rises'],correct:1,
+     change:{dnp:true},changeText:'DNP added',watch:'o2use',
+     explain:{ap:'DNP is an uncoupler. H⁺ leaks back without passing through ATP synthase, so the proton-motive force collapses and the energy is released as heat. With no back-pressure, electron transport speeds up and O₂ use rises, but ATP output and the P/O ratio crash. DNP was sold as a diet drug in the 1930s and caused fatal overheating.'}},
+    {lvl:'ap',q:'Cyanide binds Complex IV. What happens to the proton-motive force?',
+     choices:['It rises','It collapses toward zero','It is unchanged'],correct:1,
+     change:{cn:true},changeText:'Cyanide added',watch:'pmf',
+     explain:{ap:'Cyanide stops electron transfer to O₂, so no complex can pump. ATP synthase and the small leak keep draining the gradient, and the proton-motive force decays toward zero. Compare this with oligomycin, where the force goes up instead.'}}
+  ],
+  initVis(sim){const r=rng(7),v=sim.vis;v.hpos=[];for(let i=0;i<80;i++)v.hpos.push([12+r()*776,34+r()*112,r()*6.28]);
+    v.mpos=[];for(let i=0;i<7;i++)v.mpos.push([20+r()*560,270+r()*60]);
+    v.e=[];v.p=[];v.atp=[];v.w=[];v.eAcc=0;v.pAcc=0;v.sAcc=0;v.lAcc=0;v.aAcc=0;v.wAcc=0;v.rot=0;},
+  draw(sim,ctx,vdt,k,t){
+    const s=sim.st,p=sim.p,v=sim.vis,hon=atLeast('honors'),ap=atLeast('ap'),R=Math.random;
+    ctx.fillStyle=PAL['cv-ims'];ctx.fillRect(0,0,800,172);
+    ctx.fillStyle=PAL['cv-matrix'];ctx.fillRect(0,248,800,202);
+    ctx.fillStyle=PAL['cv-tail'];ctx.fillRect(0,172,800,76);
+    // phospholipid bilayer
+    ctx.strokeStyle=PAL['cv-head'];ctx.lineWidth=1.4;ctx.globalAlpha=.55;ctx.beginPath();
+    for(let x=6;x<800;x+=11){ctx.moveTo(x-2,181);ctx.lineTo(x-2,205);ctx.moveTo(x+2,181);ctx.lineTo(x+2,205);ctx.moveTo(x-2,215);ctx.lineTo(x-2,239);ctx.moveTo(x+2,215);ctx.lineTo(x+2,239);}
+    ctx.stroke();ctx.globalAlpha=1;ctx.fillStyle=PAL['cv-head'];
+    for(let x=6;x<800;x+=11){ctx.beginPath();ctx.arc(x,177,5,0,6.29);ctx.fill();ctx.beginPath();ctx.arc(x,243,5,0,6.29);ctx.fill();}
+    // region labels
+    txt(ctx,'INTERMEMBRANE SPACE',12,22,{s:12*k,w:700,c:PAL['cv-soft']});
+    txt(ctx,'MATRIX',12,442,{s:12*k,w:700,c:PAL['cv-soft']});
+    // H+ ions accumulated in the intermembrane space
+    const nH=Math.round(4+s.G*72),jit=RM?0:1.6;ctx.fillStyle=PAL['cv-h'];
+    for(let i=0;i<nH&&i<v.hpos.length;i++){const q=v.hpos[i];ctx.beginPath();ctx.arc(q[0]+Math.sin(t*1.7+q[2])*jit,q[1]+Math.cos(t*1.3+q[2])*jit,4.2,0,6.29);ctx.fill();}
+    ctx.globalAlpha=.75;for(const q of v.mpos){ctx.beginPath();ctx.arc(q[0]+Math.sin(t+q[1])*jit,q[1],4.2,0,6.29);ctx.fill();}ctx.globalAlpha=1;
+    // proteins
+    const lab=(s_,x,y,sz)=>txt(ctx,s_,x,y,{s:sz*k,w:700,c:'#fff',a:'center',b:'middle'});
+    ctx.fillStyle='#3f6fb0';rr(ctx,70,160,82,104,14);ctx.fill();rr(ctx,88,250,52,78,14);ctx.fill();
+    ctx.fillStyle='#5d72a0';rr(ctx,190,204,44,62,10);ctx.fill();rr(ctx,194,258,36,42,10);ctx.fill();
+    ctx.fillStyle='#2a8276';rr(ctx,300,156,62,116,14);ctx.fill();
+    ctx.fillStyle='#7a4fa6';rr(ctx,440,156,62,118,14);ctx.fill();
+    ctx.fillStyle='#cf8619';ctx.beginPath();ctx.ellipse(268,212,15,11,0,0,6.29);ctx.fill();
+    ctx.fillStyle='#c4533b';ctx.beginPath();ctx.arc(405,147,14,0,6.29);ctx.fill();
+    if(hon){lab('I',111,205,18);lab('II',212,232,15);lab('III',331,214,18);lab('IV',471,214,18);lab('Q',268,213,12);lab('c',405,148,13);}
+    else{lab('Pump',111,205,13);lab('Pump',331,214,13);lab('Pump',471,214,13);}
+    // ATP synthase: F0 rotor ring in membrane, stalk, F1 head in matrix
+    v.rot+=s.Rs*0.012*vdt;
+    ctx.fillStyle='#8e1023';rr(ctx,616,176,68,68,12);ctx.fill();
+    for(let i=0;i<8;i++){const a=v.rot+i*Math.PI/4,c=Math.cos(a);if(c<0)continue;const x=650+28*Math.sin(a);
+      ctx.fillStyle=c>.5?'#e0455f':'#b5122d';rr(ctx,x-5,180,10,60,5);ctx.fill();}
+    ctx.fillStyle='#8e1023';ctx.fillRect(645,244,10,46);
+    ctx.strokeStyle='#8e1023';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(684,236);ctx.quadraticCurveTo(700,270,690,300);ctx.stroke();
+    [[624,322,'#b5122d'],[650,326,'#e0455f'],[676,322,'#b5122d'],[637,302,'#e0455f'],[663,302,'#b5122d']].forEach(c=>{ctx.fillStyle=c[2];ctx.beginPath();ctx.arc(c[0],c[1],17,0,6.29);ctx.fill();});
+    txt(ctx,'ATP synthase',704,326,{s:13*k,w:700});
+    // entry / exit labels
+    if(p.carrier==='NADH'||!hon)txt(ctx,hon?'NADH → NAD⁺':'Electrons from food',115,350,{s:12.5*k,w:600,a:'center'});
+    if(hon&&p.carrier==='FADH2')txt(ctx,'FADH₂ → FAD',212,322,{s:12.5*k,w:600,a:'center'});
+    txt(ctx,hon?'O₂ + H⁺ → H₂O':'Oxygen catches electrons',470,352,{s:12.5*k,w:600,a:'center'});
+    if(ap){pill(ctx,p.carrier==='NADH'?'4 H⁺':'0 H⁺',111,120,PAL['card'],PAL['cv-ink'],11*k);pill(ctx,'4 H⁺',331,120,PAL['card'],PAL['cv-ink'],11*k);pill(ctx,'2 H⁺',470,120,PAL['card'],PAL['cv-ink'],11*k);pill(ctx,'≈4 H⁺ per ATP',650,120,PAL['card'],PAL['cv-ink'],11*k);}
+    // fuel & oxygen tokens in the matrix
+    const nf=Math.round(p.fuel/100*5);for(let i=0;i<nf;i++)txt(ctx,(hon&&p.carrier==='FADH2')?'FADH₂':'NADH',40+i*38+(i%2)*6,392+(i%2)*22,{s:12*k,w:600,c:PAL['cv-soft']});
+    const no=Math.round(p.o2/100*6);for(let i=0;i<no;i++)txt(ctx,'O₂',400+i*32,392+(i%2)*22,{s:13*k,w:700,c:PAL['cv-soft']});
+    // blockers
+    if(p.cn){ctx.strokeStyle='#d32f2f';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(446,166);ctx.lineTo(496,264);ctx.moveTo(496,166);ctx.lineTo(446,264);ctx.stroke();pill(ctx,'Cyanide',470,92,'#d32f2f','#fff',12*k);}
+    if(p.oligo){ctx.strokeStyle='#e08a00';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(620,180);ctx.lineTo(680,240);ctx.moveTo(680,180);ctx.lineTo(620,240);ctx.stroke();pill(ctx,'Oligomycin',650,92,'#b86e00','#fff',12*k);}
+    if(p.dnp){pill(ctx,'DNP',560,92,'#6a32d0','#fff',12*k);ctx.fillStyle=PAL['cv-dnp'];
+      [530,556,582,720,746,772].forEach((x,i)=>{const y=210+Math.sin(t*3+i*1.3)*30;ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x+6,y);ctx.lineTo(x,y+7);ctx.lineTo(x-6,y);ctx.closePath();ctx.fill();});}
+    // spawn animated particles in proportion to the model's rates
+    v.eAcc+=s.Je*0.55*vdt;while(v.eAcc>=1){v.eAcc--;v.e.push({d:0,path:(hon&&p.carrier==='FADH2')?PATH_F:PATH_N});}
+    const pumps=(hon&&p.carrier==='FADH2')?[[331,4],[470,2]]:[[111,4],[331,4],[470,2]];const tw=pumps.reduce((a,b)=>a+b[1],0);
+    v.pAcc+=s.P*0.05*vdt;while(v.pAcc>=1){v.pAcc--;let r=R()*tw,x=pumps[0][0];for(const q of pumps){if(r<q[1]){x=q[0];break;}r-=q[1];}v.p.push({x:x+R()*18-9,y:262,vy:-120,end:60+R()*80,c:'h'});}
+    v.sAcc+=s.Rs*0.05*vdt;while(v.sAcc>=1){v.sAcc--;v.p.push({x:650+R()*10-5,y:140,vy:120,end:300,c:'h'});}
+    if(p.dnp){v.lAcc+=(s.Rl-5*s.G)*0.05*vdt;while(v.lAcc>=1){v.lAcc--;const x=R()<.5?520+R()*70:710+R()*80;v.p.push({x,y:150,vy:120,end:280,c:'l'});}}
+    v.aAcc+=(s.Rs/4)*0.32*vdt;while(v.aAcc>=1){v.aAcc--;v.atp.push({x:650,y:345,vx:R()*80-40,vy:20+R()*40,life:1.6});}
+    v.wAcc+=(s.Je/2)*0.3*vdt;while(v.wAcc>=1){v.wAcc--;v.w.push({x:470,y:300,vx:R()*30-15,vy:22,life:1.4});}
+    // electrons
+    for(const e of v.e){e.d+=230*vdt;const q=e.path.at(e.d);ctx.fillStyle=PAL['cv-e'];ctx.strokeStyle=PAL['cv-estroke'];ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(q[0],q[1],4.6,0,6.29);ctx.fill();ctx.stroke();}
+    v.e=v.e.filter(e=>e.d<e.path.L);
+    // moving H+
+    for(const h of v.p){h.y+=h.vy*vdt;ctx.fillStyle=PAL['cv-h'];ctx.beginPath();ctx.arc(h.x,h.y,4.4,0,6.29);ctx.fill();if(h.c==='l'){ctx.strokeStyle=PAL['cv-dnp'];ctx.lineWidth=2;ctx.stroke();}}
+    v.p=v.p.filter(h=>h.vy<0?h.y>h.end:h.y<h.end);
+    for(const a of v.atp){a.x+=a.vx*vdt;a.y+=a.vy*vdt;a.life-=vdt;ctx.globalAlpha=clamp(a.life/1.6,0,1);txt(ctx,'ATP',a.x,a.y,{s:13*k,w:800,c:PAL['cv-atp'],a:'center'});}
+    for(const a of v.w){a.x+=a.vx*vdt;a.y+=a.vy*vdt;a.life-=vdt;ctx.globalAlpha=clamp(a.life/1.4,0,1)*.8;txt(ctx,'H₂O',a.x,a.y,{s:11.5*k,w:600,c:PAL['cv-sub'],a:'center'});}
+    ctx.globalAlpha=1;v.atp=v.atp.filter(a=>a.life>0);v.w=v.w.filter(a=>a.life>0);
+    if(v.e.length>200)v.e.splice(0,v.e.length-200);if(v.p.length>300)v.p.splice(0,v.p.length-300);
+    // legend
+    const ly=438;ctx.fillStyle=PAL['cv-e'];ctx.beginPath();ctx.arc(600,ly-4,4.6,0,6.29);ctx.fill();txt(ctx,'electron',610,ly,{s:12*k,c:PAL['cv-soft']});
+    ctx.fillStyle=PAL['cv-h'];ctx.beginPath();ctx.arc(690,ly-4,4.4,0,6.29);ctx.fill();txt(ctx,'H⁺ ion',700,ly,{s:12*k,c:PAL['cv-soft']});
+  }
+};
+
+/* ======================================================================
+   SIM 2 — Enzyme activity: Michaelis–Menten with temperature, pH, inhibitors
+   ====================================================================== */
+const ENZ={amylase:{name:'Amylase',pH:6.8,Tref:37,Tm:44,w:2.5,Tirr:55},
+           pepsin:{name:'Pepsin',pH:2.0,Tref:37,Tm:44,w:2.5,Tirr:55},
+           taq:{name:'Taq polymerase',pH:8.3,Tref:72,Tm:80,w:3,Tirr:95}};
+const KM=5,KI=2,VMAX=100;
+const ENZPOS=[[120,150],[300,130],[480,150],[660,130],[160,320],[340,300],[520,320],[690,300]];
+const ENZYME={
+  id:'enz',hash:'enzymes',tab:'Enzyme activity',
+  title:'Enzyme activity: temperature, pH and inhibitors',
+  lede:{bio:'Enzymes speed up reactions when substrate fits their active site. Change the temperature, pH and amount of substrate, and watch the reaction rate.',
+        honors:'Compare enzymes from different environments, and see how heat, pH and a competitive inhibitor change the active site and the reaction rate.',
+        ap:'Michaelis–Menten kinetics. Read Vmax and Km under any conditions, and tell competitive from noncompetitive inhibition from your own rate data.'},
+  timeScale:0.1,dtMax:0.005,prewarm:3,sampleDt:0.01,window:3,unit:'min',chChange:0.4,chReveal:1.3,
+  controls:[
+    {id:'enzyme',label:'Enzyme',type:'seg',def:'amylase',lvl:'honors',options:[{v:'amylase',l:'Amylase'},{v:'pepsin',l:'Pepsin'},{v:'taq',l:'Taq'}],
+     help:'Amylase: saliva. Pepsin: stomach. Taq: hot-spring bacteria.'},
+    {id:'temp',label:'Temperature',type:'range',min:0,max:100,step:1,def:37,unit:' °C',lvl:'bio'},
+    {id:'ph',label:'pH',type:'range',min:1,max:12,step:0.5,def:7,unit:'',lvl:'bio'},
+    {id:'sub',label:'Substrate concentration',type:'range',min:0,max:50,step:1,def:10,unit:' mM',lvl:'bio'},
+    {id:'inhC',label:'Competitive inhibitor',type:'range',min:0,max:10,step:0.5,def:0,unit:' mM',lvl:'honors',help:'Competes for the active site'},
+    {id:'inhN',label:'Noncompetitive inhibitor',type:'range',min:0,max:10,step:0.5,def:0,unit:' mM',lvl:'ap',help:'Binds elsewhere and changes the enzyme’s shape'}
+  ],
+  init(){return {D:0,ff:1,fk:1,fph:1,intact:1,vmax:0,km:KM,v:0,prod:0};},
+  step(sim,dt){const p=sim.p,s=sim.st,e=ENZ[p.enzyme],T=p.temp;
+    s.D+=(1-s.D)*Math.min(1,0.4*Math.exp((T-e.Tirr)/3)*dt);      // permanent heat damage
+    s.ff=1/(1+Math.exp((T-e.Tm)/e.w));                           // reversible unfolding
+    s.fk=Math.pow(2,(T-e.Tref)/10);                              // molecules move faster when warm (Q10 = 2)
+    s.fph=Math.exp(-Math.pow((p.ph-e.pH)/1.6,2));
+    s.intact=s.ff*(1-s.D);
+    s.vmax=VMAX*s.fk*s.intact*s.fph/(1+p.inhN/KI);
+    s.km=KM*(1+p.inhC/KI);
+    s.v=s.vmax*p.sub/(s.km+p.sub); s.prod+=s.v*dt;},
+  afterPrewarm(sim){sim.st.prod=0;},
+  metrics:[
+    {id:'rate',label:'Reaction rate',unit:'µmol/min',lvl:'bio',min:0,max:110,d:1,get:s=>s.st.v},
+    {id:'prod',label:'Product made',unit:'µmol',lvl:'bio',min:0,max:null,d:0,get:s=>s.st.prod},
+    {id:'intact',label:'Enzymes with working shape',unit:'%',lvl:'bio',min:0,max:100,d:0,get:s=>s.st.intact*100},
+    {id:'occ',label:'Active sites filled',unit:'%',lvl:'honors',min:0,max:100,d:0,get:s=>100*s.p.sub/(s.st.km+s.p.sub)},
+    {id:'vmax',label:'Vmax now',unit:'µmol/min',lvl:'ap',min:0,max:110,d:1,get:s=>s.st.vmax},
+    {id:'km',label:'Km (apparent)',unit:'mM',lvl:'ap',min:0,max:40,d:1,get:s=>s.st.km}
+  ],
+  defaultGraph:'rate',
+  challenges:[
+    {lvl:'bio',q:'You heat amylase from 37 °C to 70 °C. What happens to the reaction rate?',
+     choices:['It rises, because molecules move faster when hot','It drops to almost zero','It stays the same'],correct:1,
+     baseline:{enzyme:'amylase'},change:{temp:70},changeText:'Temperature raised to 70 °C',watch:'rate',
+     explain:{bio:'Heat makes molecules move faster, but too much heat shakes the enzyme out of shape. The active site no longer fits the substrate, so the reaction nearly stops. This is called denaturation.'}},
+    {lvl:'bio',q:'Amylase works in your mouth (about pH 7). What happens at pH 2, the acidity of the stomach?',
+     choices:['The rate rises','The rate drops sharply','No change'],correct:1,
+     baseline:{enzyme:'amylase'},change:{ph:2},changeText:'pH lowered to 2',watch:'rate',
+     explain:{bio:'Each enzyme has an ideal pH. Strong acid changes the charges in amylase’s active site so substrate no longer binds well. That is why starch digestion by saliva stops in the stomach.'}},
+    {lvl:'honors',q:'This amylase was heated to 70 °C. If you cool it back down to 37 °C, what happens to the rate?',
+     choices:['It returns to normal','It stays near zero','It rises above normal'],correct:1,
+     baseline:{enzyme:'amylase',temp:70},change:{temp:37},changeText:'Cooled back to 37 °C',watch:'rate',
+     explain:{honors:'High heat breaks the bonds that hold the enzyme’s shape, and the protein does not refold correctly. Cooling slows a working enzyme but does not damage it; overheating damages it permanently. Press Reset to start with fresh enzyme.'}},
+    {lvl:'honors',q:'A competitive inhibitor is slowing the reaction. What happens if you flood the solution with substrate?',
+     choices:['The rate rises a lot, because substrate outcompetes the inhibitor','Nothing changes; the inhibitor is stuck in the active site','The rate drops further'],correct:0,
+     baseline:{enzyme:'amylase',inhC:5,sub:5},change:{sub:50},changeText:'Substrate raised from 5 to 50 mM',watch:'rate',
+     explain:{honors:'A competitive inhibitor and the substrate take turns in the same active site. With far more substrate around, substrate wins most of the time and the rate climbs back up.',
+              ap:'Competitive inhibition raises the apparent Km but leaves Vmax unchanged, so enough substrate overcomes it. Check the Km readout: 17.5 mM with the inhibitor vs. 5 mM without.'}},
+    {lvl:'ap',q:'A noncompetitive inhibitor binds away from the active site. With much more substrate, can the rate reach the uninhibited maximum?',
+     choices:['Yes, extra substrate outcompetes it','No, the rate rises a little but the maximum stays lower'],correct:1,
+     baseline:{enzyme:'amylase',inhN:3,sub:5},change:{sub:50},changeText:'Substrate raised from 5 to 50 mM',watch:'rate',
+     explain:{ap:'The inhibitor removes working enzyme no matter how much substrate is present, so Vmax drops (here to 40% of normal) while Km is unchanged. Adding substrate only moves you up a lower curve. Record trials at several [S] to see both curves.'}},
+    {lvl:'ap',q:'Pepsin works in the stomach. You move it from pH 7 to pH 2. What happens?',
+     choices:['The rate rises sharply','The rate drops','No change'],correct:0,
+     baseline:{enzyme:'pepsin',ph:7},change:{ph:2},changeText:'pH lowered to 2',watch:'rate',
+     explain:{ap:'An enzyme’s optimum matches its environment. Pepsin’s active site carries the right charges only at low pH, so it is nearly inactive at pH 7 and fully active at pH 2. That is the opposite of amylase.'}}
+  ],
+  initVis(sim){const r=rng(11),v=sim.vis;v.r1=[],v.r2=[],v.r3=[],v.ori=[],v.busy=[];
+    for(let i=0;i<8;i++){v.r1.push((i+.5)/8);v.r2.push(r());v.r3.push(r());v.ori.push(r()*6.28);v.busy.push(0);}
+    v.r1.sort(()=>r()-.5);v.subs=[];v.inC=[];v.inN=[];v.prods=[];v.ev=0;},
+  draw(sim,ctx,vdt,k,t){
+    const s=sim.st,p=sim.p,v=sim.vis,R=Math.random,hon=atLeast('honors'),ap=atLeast('ap');
+    ctx.fillStyle=PAL['cv-sol'];ctx.fillRect(0,0,800,450);
+    if(p.temp>45){ctx.fillStyle='rgba(230,60,40,'+clamp((p.temp-45)/260,0,.2)+')';ctx.fillRect(0,0,800,450);}
+    if(p.temp<15){ctx.fillStyle='rgba(60,130,230,'+clamp((15-p.temp)/90,0,.16)+')';ctx.fillRect(0,0,800,450);}
+    const e=ENZ[p.enzyme];
+    txt(ctx,(hon?e.name:'Amylase')+'  ·  '+p.temp+' °C  ·  pH '+p.ph.toFixed(1)+'  ·  substrate '+p.sub+' mM',16,28,{s:14*k,w:700});
+    // particle populations follow concentrations
+    const speed=Math.sqrt((p.temp+273)/310)*(RM?.5:1);
+    const sync=(arr,n)=>{while(arr.length<n)arr.push({x:20+R()*760,y:50+R()*370,vx:0,vy:0});if(arr.length>n)arr.length=n;};
+    sync(v.subs,Math.round(clamp(p.sub*1.3,0,65)));sync(v.inC,hon?Math.round(p.inhC*2.4):0);sync(v.inN,ap?Math.round(p.inhN*2.4):0);
+    const move=(a,m)=>{a.vx+=(R()-.5)*600*vdt*m;a.vy+=(R()-.5)*600*vdt*m;const sp=Math.hypot(a.vx,a.vy),mx=55*m;if(sp>mx){a.vx*=mx/sp;a.vy*=mx/sp;}
+      a.x+=a.vx*vdt;a.y+=a.vy*vdt;if(a.x<8||a.x>792)a.vx*=-1;if(a.y<44||a.y>442)a.vy*=-1;a.x=clamp(a.x,8,792);a.y=clamp(a.y,44,442);};
+    // which enzymes are unfolded / inhibited right now
+    const denFrac=1-s.intact,compFrac=(p.inhC/KI)/(1+p.inhC/KI+p.sub/KM),nonFrac=p.inhN/(KI+p.inhN);
+    const st=ENZPOS.map((q,i)=>{const den=v.r1[i]<denFrac;return {den,comp:!den&&hon&&v.r2[i]<compFrac,non:!den&&ap&&v.r3[i]<nonFrac};});
+    // reaction events in proportion to the modeled rate
+    v.ev+=s.v*vdt*sim.def.timeScale*0.5;
+    while(v.ev>=1){v.ev--;const free=st.map((q,i)=>i).filter(i=>!st[i].den&&!st[i].comp&&v.busy[i]<=0);if(!free.length){v.ev=Math.min(v.ev,2);break;}v.busy[free[Math.floor(R()*free.length)]]=0.35;}
+    ENZPOS.forEach((q,i)=>{const [cx,cy]=q,o=v.ori[i]+Math.sin(t*.4+i)*0.15,c=st[i],Rr=34;
+      if(c.den){ctx.strokeStyle=PAL['cv-enzd'];ctx.lineWidth=9;ctx.lineCap='round';ctx.beginPath();
+        for(let j=0;j<=28;j++){const x=cx-40+j*2.9,y=cy+Math.sin(j*0.8+i+t*.6)*9;j?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();return;}
+      let a=0.40*s.fph+0.07;if(c.non)a*=0.45;
+      ctx.fillStyle=PAL['cv-enz'];ctx.beginPath();ctx.moveTo(cx+Math.cos(o)*Rr*0.25,cy+Math.sin(o)*Rr*0.25);ctx.arc(cx,cy,Rr,o+a,o+6.283-a);ctx.closePath();ctx.fill();
+      const sx=cx+Math.cos(o)*Rr*0.72,sy=cy+Math.sin(o)*Rr*0.72;
+      if(c.comp){ctx.fillStyle=PAL['cv-inc'];ctx.beginPath();ctx.moveTo(sx+Math.cos(o)*9,sy+Math.sin(o)*9);ctx.lineTo(sx+Math.cos(o+2.2)*8,sy+Math.sin(o+2.2)*8);ctx.lineTo(sx+Math.cos(o-2.2)*8,sy+Math.sin(o-2.2)*8);ctx.closePath();ctx.fill();}
+      if(c.non){const nx=cx-Math.cos(o)*Rr,ny=cy-Math.sin(o)*Rr;ctx.fillStyle=PAL['cv-inn'];ctx.beginPath();ctx.moveTo(nx,ny-9);ctx.lineTo(nx+8,ny);ctx.lineTo(nx,ny+9);ctx.lineTo(nx-8,ny);ctx.closePath();ctx.fill();}
+      if(v.busy[i]>0){v.busy[i]-=vdt;ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(sx,sy,7,0,6.29);ctx.fill();
+        if(v.busy[i]<=0){for(let m=0;m<2;m++)v.prods.push({x:sx,y:sy,vx:Math.cos(o+(m?.6:-.6))*60,vy:Math.sin(o+(m?.6:-.6))*60,life:5});}}
+    });
+    for(const a of v.subs){move(a,speed);ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(a.x,a.y,5.5,0,6.29);ctx.fill();}
+    for(const a of v.inC){move(a,speed);ctx.fillStyle=PAL['cv-inc'];ctx.beginPath();ctx.moveTo(a.x,a.y-7);ctx.lineTo(a.x+6.5,a.y+5);ctx.lineTo(a.x-6.5,a.y+5);ctx.closePath();ctx.fill();}
+    for(const a of v.inN){move(a,speed);ctx.fillStyle=PAL['cv-inn'];ctx.beginPath();ctx.moveTo(a.x,a.y-7);ctx.lineTo(a.x+6,a.y);ctx.lineTo(a.x,a.y+7);ctx.lineTo(a.x-6,a.y);ctx.closePath();ctx.fill();}
+    for(const a of v.prods){move(a,speed);a.life-=vdt;ctx.globalAlpha=clamp(a.life/2,0,1);ctx.fillStyle=PAL['cv-prod'];ctx.beginPath();ctx.arc(a.x,a.y,4.2,0,6.29);ctx.fill();}
+    ctx.globalAlpha=1;v.prods=v.prods.filter(a=>a.life>0);if(v.prods.length>120)v.prods.splice(0,v.prods.length-120);
+    // legend
+    let lx=16;const ly=438,item=(draw,label)=>{draw(lx+5,ly-4);txt(ctx,label,lx+15,ly,{s:12*k,c:PAL['cv-soft']});ctx.font='400 '+12*k+'px '+FONT;lx+=ctx.measureText(label).width+34;};
+    item((x,y)=>{ctx.fillStyle=PAL['cv-enz'];ctx.beginPath();ctx.moveTo(x,y);ctx.arc(x,y,7,.5,5.8);ctx.closePath();ctx.fill();},'enzyme');
+    item((x,y)=>{ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(x,y,5,0,6.29);ctx.fill();},'substrate');
+    item((x,y)=>{ctx.fillStyle=PAL['cv-prod'];ctx.beginPath();ctx.arc(x,y,4,0,6.29);ctx.fill();},'product');
+    if(hon)item((x,y)=>{ctx.fillStyle=PAL['cv-inc'];ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+6,y+5);ctx.lineTo(x-6,y+5);ctx.closePath();ctx.fill();},'competitive inhibitor');
+    if(ap)item((x,y)=>{ctx.fillStyle=PAL['cv-inn'];ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+5,y);ctx.lineTo(x,y+6);ctx.lineTo(x-5,y);ctx.closePath();ctx.fill();},'noncompetitive');
+  }
+};
+
+/* ======================================================================
+   SIM 3 — Photosynthesis: the Elodea bubble lab
+   ====================================================================== */
+const FILT={white:1,red:0.85,blue:0.95,green:0.2};
+const FILTC={red:'rgba(220,40,40,',blue:'rgba(50,100,235,',green:'rgba(40,170,70,',white:'rgba(255,214,90,'};
+const PHOTO={
+  id:'photo',hash:'photosynthesis',tab:'Photosynthesis',
+  title:'Photosynthesis: the Elodea bubble lab',
+  lede:{bio:'Pondweed gives off oxygen bubbles as it photosynthesizes. Move the lamp, change the CO₂ and temperature, and count the bubbles.',
+        honors:'Test which colors of light drive photosynthesis, and find the limiting factor: light, CO₂ or temperature.',
+        ap:'A dissolved-O₂ probe shows gross and net O₂. Find the light compensation point, where photosynthesis exactly balances respiration.'},
+  timeScale:0.25,dtMax:0.005,prewarm:1.5,sampleDt:0.02,window:6,unit:'min',chChange:1,chReveal:3.6,
+  controls:[
+    {id:'dist',label:'Lamp distance',type:'range',min:10,max:60,step:1,def:15,unit:' cm',lvl:'bio'},
+    {id:'co2',label:'Baking soda (CO₂ source)',type:'range',min:0,max:1,step:0.05,def:0.5,unit:'%',lvl:'bio'},
+    {id:'temp',label:'Water temperature',type:'range',min:5,max:45,step:1,def:25,unit:' °C',lvl:'bio'},
+    {id:'filter',label:'Light color',type:'seg',def:'white',lvl:'honors',options:[{v:'white',l:'White'},{v:'red',l:'Red'},{v:'blue',l:'Blue'},{v:'green',l:'Green'}]}
+  ],
+  init(){return {I:0,gross:0,resp:0,net:0,acc:0,thr:1,bub:[],total:0};},
+  step(sim,dt){const p=sim.p,s=sim.st,I=100*Math.pow(10/p.dist,2),Ie=I*FILT[p.filter],Lf=Ie/(Ie+25),C=p.co2+0.02,Cf=C/(C+0.15),T=p.temp;
+    const fT=Math.pow(2,(T-25)/10)/(1+Math.exp((T-38)/2.5));
+    s.I=I;s.gross=50*Lf*Cf*fT;s.resp=4*Math.pow(2,(T-25)/10);s.net=s.gross-s.resp;
+    s.acc+=Math.max(0,s.net)*dt;                                // bubbles arrive at random (Poisson) at the net O2 rate
+    while(s.acc>=s.thr){s.acc-=s.thr;s.bub.push(sim.t);s.total++;s.thr=-Math.log(1-Math.random()*0.999);}
+    while(s.bub.length&&s.bub[0]<sim.t-1.05)s.bub.shift();},
+  afterPrewarm(sim){sim.st.total=0;},
+  metrics:[
+    {id:'bubbles',label:'Bubbles per minute',unit:'counted',lvl:'bio',min:0,max:40,d:0,get:s=>s.st.bub.filter(x=>x>s.t-1).length},
+    {id:'light',label:'Light at the plant',unit:'%',lvl:'bio',min:0,max:100,d:0,get:s=>s.st.I},
+    {id:'gross',label:'Gross O₂ made',unit:'bubble-eq/min',lvl:'ap',min:0,max:40,d:1,get:s=>s.st.gross},
+    {id:'resp',label:'O₂ used (respiration)',unit:'bubble-eq/min',lvl:'ap',min:0,max:20,d:1,get:s=>s.st.resp},
+    {id:'net',label:'Net O₂ (probe)',unit:'bubble-eq/min',lvl:'ap',min:-15,max:40,d:1,get:s=>s.st.net}
+  ],
+  defaultGraph:'bubbles',
+  challenges:[
+    {lvl:'bio',q:'You move the lamp from 15 cm to 40 cm away. What happens to the bubble rate?',
+     choices:['It goes up','It goes down','It stays the same'],correct:1,
+     baseline:{dist:15},change:{dist:40},changeText:'Lamp moved to 40 cm',watch:'bubbles',
+     explain:{bio:'Light spreads out as it travels. At 40 cm the plant gets only about one-seventh of the light it got at 15 cm, so it makes less oxygen and fewer bubbles.',
+              honors:'Light intensity falls with the square of distance: (15 ÷ 40)² ≈ 0.14, so the plant gets about 14% as much light. Light is now the limiting factor.'}},
+    {lvl:'bio',q:'You replace the baking-soda water with plain water. What happens to the bubbles?',
+     choices:['More bubbles','Far fewer bubbles','No change'],correct:1,
+     change:{co2:0},changeText:'Baking soda removed',watch:'bubbles',
+     explain:{bio:'Baking soda releases CO₂ into the water, and the plant needs CO₂ to build sugar. With almost no CO₂, photosynthesis slows even though the light is strong.'}},
+    {lvl:'honors',q:'Plants look green. What happens if the plant gets only green light?',
+     choices:['It photosynthesizes faster than in white light','It photosynthesizes much more slowly','No change'],correct:1,
+     change:{filter:'green'},changeText:'Green filter in front of the lamp',watch:'bubbles',
+     explain:{honors:'Chlorophyll absorbs red and blue light and reflects most green light. That reflected green is why leaves look green, and it is also why green light drives very little photosynthesis.'}},
+    {lvl:'honors',q:'You heat the water from 25 °C to 45 °C. What happens to the bubble rate?',
+     choices:['It keeps rising with temperature','It drops sharply','No change'],correct:1,
+     change:{temp:45},changeText:'Water heated to 45 °C',watch:'bubbles',
+     explain:{honors:'The Calvin cycle runs on enzymes such as rubisco. Warming speeds them up to a point, but at 45 °C they start to lose their shape, so photosynthesis falls. Respiration keeps rising and uses up more of the O₂ that is made.'}},
+    {lvl:'ap',q:'At 60 cm, almost no bubbles appear. Is the plant still photosynthesizing?',
+     choices:['No, photosynthesis has stopped','Yes, but respiration uses about as much O₂ as photosynthesis makes'],correct:1,
+     baseline:{dist:30},change:{dist:60},changeText:'Lamp moved to 60 cm',watch:'net',
+     explain:{ap:'Gross O₂ production is still positive, but cellular respiration uses O₂ the whole time. Near 60 cm the two are about equal, so net O₂ is about zero. This is the light compensation point. Bubbles only measure net O₂.'}}
+  ],
+  initVis(sim){const r=rng(5),v=sim.vis;v.b=[];v.seen=sim.st.total;v.fizz=[];for(let i=0;i<40;i++)v.fizz.push([566+r()*110,190+r()*200,r()*6.28]);
+    v.leaves=[];for(let u=0.06;u<0.99;u+=0.085){for(let j=0;j<3;j++)v.leaves.push([u,j,r()]);}},
+  draw(sim,ctx,vdt,k,t){
+    const s=sim.st,p=sim.p,v=sim.vis,hon=atLeast('honors'),R=Math.random;
+    ctx.fillStyle=PAL['card'];ctx.fillRect(0,0,800,450);
+    ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,400,800,50);
+    // ruler (distance from the plant)
+    const BX=620,PX=8;ctx.fillStyle=PAL['cv-ruler'];ctx.fillRect(BX-60*PX-6,404,60*PX+12,30);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.strokeRect(BX-60*PX-6,404,60*PX+12,30);
+    ctx.beginPath();for(let c=0;c<=60;c++){const x=BX-c*PX,h=c%10===0?11:c%5===0?7:4;ctx.moveTo(x,404);ctx.lineTo(x,404+h);}ctx.stroke();
+    for(let c=0;c<=60;c+=10)txt(ctx,String(c),BX-c*PX,429,{s:11*k,a:'center',c:PAL['cv-soft']});
+    txt(ctx,'cm from plant',BX+50,425,{s:11*k,c:PAL['cv-soft']});
+    // lamp
+    const hx=BX-p.dist*PX-14,hy=232,I=s.I,fc=FILTC[hon?p.filter:'white'];
+    const beam=ctx.createLinearGradient(hx,0,566,0);beam.addColorStop(0,fc+clamp(.18+I/250,0,.6)+')');beam.addColorStop(1,fc+clamp(I/420,.02,.28)+')');
+    ctx.fillStyle=beam;ctx.beginPath();ctx.moveTo(hx+8,206);ctx.lineTo(566,150);ctx.lineTo(566,398);ctx.lineTo(hx+8,258);ctx.closePath();ctx.fill();
+    ctx.fillStyle=PAL['cv-lamp'];ctx.fillRect(hx-44,226,6,174);ctx.beginPath();ctx.ellipse(hx-41,400,22,5,0,0,6.29);ctx.fill();ctx.fillRect(hx-44,228,22,6);
+    ctx.beginPath();ctx.moveTo(hx-28,212);ctx.lineTo(hx+8,196);ctx.lineTo(hx+8,268);ctx.lineTo(hx-28,252);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#ffe28a';ctx.beginPath();ctx.arc(hx+6,232,13,-1.57,1.57);ctx.fill();
+    if(hon&&p.filter!=='white'){ctx.fillStyle=fc+'.75)';rr(ctx,hx+14,198,7,68,2);ctx.fill();}
+    // beaker of water with Elodea
+    ctx.fillStyle=PAL['cv-water'];ctx.fillRect(566,178,108,220);
+    v.fizz.slice(0,Math.round(p.co2*40)).forEach(f=>{ctx.fillStyle=PAL['cv-bstroke'];ctx.globalAlpha=.55;ctx.beginPath();ctx.arc(f[0],f[1]+(RM?0:Math.sin(t*2+f[2])*2),1.6,0,6.29);ctx.fill();});ctx.globalAlpha=1;
+    ctx.strokeStyle=PAL['cv-leaf'];ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(624,396);ctx.quadraticCurveTo(606,320,612,226);ctx.stroke();
+    for(const L of v.leaves){const u=L[0],m=1-u,x=m*m*624+2*u*m*606+u*u*612,y=m*m*396+2*u*m*320+u*u*226;
+      ctx.save();ctx.translate(x,y);ctx.rotate((L[1]-1)*1.05+(L[2]-.5)*.25);ctx.fillStyle=L[1]===1?PAL['cv-leaf2']:PAL['cv-leaf'];ctx.beginPath();ctx.ellipse(0,-11,4.2,12,0,0,6.29);ctx.fill();ctx.restore();}
+    // thermometer
+    ctx.fillStyle=PAL['card'];rr(ctx,654,128,10,250,5);ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.stroke();
+    const th=clamp((p.temp-5)/40,0,1)*200;ctx.fillStyle='#d32f2f';ctx.fillRect(656.5,374-th,5,th+4);ctx.beginPath();ctx.arc(659,382,8,0,6.29);ctx.fill();
+    // bubbles: exactly one per bubble counted by the model
+    while(v.seen<s.total){v.seen++;v.b.push({x:612+R()*4-2,y:224,r:2.6+R()*2.2,ph:R()*6.28});}
+    for(const b of v.b){b.y-=70*vdt;const x=b.x+(RM?0:Math.sin(b.y*.08+b.ph)*2);ctx.fillStyle=PAL['cv-bubble'];ctx.strokeStyle=PAL['cv-bstroke'];ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(x,b.y,b.r,0,6.29);ctx.fill();ctx.stroke();}
+    v.b=v.b.filter(b=>b.y>182);if(v.b.length>80)v.b.splice(0,v.b.length-80);
+    ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(562,146);ctx.lineTo(562,398);ctx.lineTo(678,398);ctx.lineTo(678,146);ctx.stroke();
+    ctx.strokeStyle=PAL['cv-bstroke'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(564,178);ctx.lineTo(676,178);ctx.stroke();
+    // labels
+    txt(ctx,'Elodea (pondweed) in baking-soda water',620,112,{s:12.5*k,w:600,a:'center'});
+    txt(ctx,'Bubbles counted: '+s.total,784,28,{s:14*k,w:700,a:'right'});
+    txt(ctx,'Light at plant: '+Math.round(I)+'%',16,28,{s:14*k,w:700});
+    txt(ctx,'Lamp '+p.dist+' cm away · '+p.temp+' °C'+(hon?' · '+p.filter+' light':''),16,48,{s:12.5*k,c:PAL['cv-soft']});
+  }
+};
+
+/* ---------------- generic runtime ---------------- */
+const DEFS=[RESP,ENZYME,PHOTO];
+const sims={};
+let active=null;
+
+function makeSim(def){const sim={def,p:{},t:0,st:null,vis:{},hist:[],lastSample:-1e9,running:true,speed:1,speedVis:1,vt:0,
+  gmode:'live',gMetric:def.defaultGraph,gx:null,gy:null,ch:{idx:0,phase:'ask',pick:null,changed:false},trials:[],ui:{}};
+  def.controls.forEach(c=>sim.p[c.id]=c.def);
+  try{const saved=JSON.parse(store.get('rjbiolab-trials-'+def.id)||'[]');if(Array.isArray(saved))sim.trials=saved;}catch(e){}
+  return sim;}
+function resetSim(sim){const d=sim.def;sim.st=d.init(sim);sim.t=-d.prewarm;
+  while(sim.t<-1e-9){const h=Math.min(d.dtMax,-sim.t);d.step(sim,h);sim.t+=h;}
+  sim.t=0;if(d.afterPrewarm)d.afterPrewarm(sim);sim.hist=[];sim.lastSample=-1e9;sim.vis={};d.initVis(sim);sample(sim,true);}
+function metricsVisible(sim){return sim.def.metrics.filter(m=>atLeast(m.lvl));}
+function controlsVisible(sim){return sim.def.controls.filter(c=>atLeast(c.lvl));}
+function sample(sim,force){if(!force&&sim.t-sim.lastSample<sim.def.sampleDt)return;sim.lastSample=sim.t;
+  const row={t:sim.t,v:{}};sim.def.metrics.forEach(m=>row.v[m.id]=m.get(sim));sim.hist.push(row);
+  const cut=sim.t-sim.def.window*1.05;while(sim.hist.length&&sim.hist[0].t<cut)sim.hist.shift();}
+function fmtCtl(c,v){if(c.type==='toggle')return v?'on':'off';if(c.type==='seg'){const o=c.options.find(o=>o.v===v);return o?o.l:v;}
+  const d=c.step<1?(c.step<0.1?2:1):0;return Number(v).toFixed(d)+(c.unit||'');}
+function clockText(sim){if(sim.def.unit==='s')return 't = '+sim.t.toFixed(1)+' s';const m=Math.floor(sim.t),sec=Math.floor((sim.t-m)*60);return 'Elapsed '+m+':'+String(sec).padStart(2,'0')+' min';}
+
+/* ---------- build DOM ---------- */
+function el(tag,attrs,html){const e=document.createElement(tag);if(attrs)for(const k in attrs){if(k==='class')e.className=attrs[k];else e.setAttribute(k,attrs[k]);}if(html!==undefined)e.innerHTML=html;return e;}
+function buildSim(sim){
+  const d=sim.def,id=d.id,sec=el('section',{class:'sim',id:'sim-'+id,role:'tabpanel','aria-labelledby':'tab-'+id});
+  sec.innerHTML=`<div class="sim-head"><h2>${d.title}</h2><p class="lede"></p></div>
+  <div class="bench">
+    <div class="stage"><canvas id="${id}-stage" role="img" aria-label="${d.title} simulation"></canvas>
+      <div class="transport">
+        <button type="button" class="btn" data-act="play">Pause</button>
+        <button type="button" class="btn" data-act="reset">Reset</button>
+        <label class="g-opts" for="${id}-speed">Speed <select class="sel" id="${id}-speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+        <span class="clock" aria-live="off"></span>
+      </div>
+    </div>
+    <aside class="controls" aria-label="Variables"><h3>Variables</h3></aside>
+  </div>
+  <div class="readouts"></div>
+  <div class="lower">
+    <div class="panel graph">
+      <div class="p-head"><div class="seg" role="radiogroup" aria-label="Graph mode"><button type="button" role="radio" data-g="live" aria-checked="true">Live</button><button type="button" role="radio" data-g="trials" aria-checked="false">Trials</button></div>
+        <div class="g-opts g-live"><label for="${id}-gm">Plot</label><select class="sel" id="${id}-gm"></select></div>
+        <div class="g-opts g-trials" hidden><label for="${id}-gx">x</label><select class="sel" id="${id}-gx"></select><label for="${id}-gy">y</label><select class="sel" id="${id}-gy"></select></div>
+      </div>
+      <canvas id="${id}-graph" role="img" aria-label="Graph"></canvas>
+    </div>
+    <div class="panel predict" aria-live="polite"></div>
+  </div>
+  <div class="panel trials">
+    <div class="p-head"><h3>Data table</h3><div class="row"><span class="toast" hidden></span><button type="button" class="btn primary" data-act="record">Record trial</button><button type="button" class="btn" data-act="copy">Copy as CSV</button><button type="button" class="btn" data-act="clear">Clear</button></div></div>
+    <div class="tbl"></div>
+  </div>`;
+  const ui=sim.ui;ui.sec=sec;ui.lede=sec.querySelector('.lede');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
+  ui.clock=sec.querySelector('.clock');ui.play=sec.querySelector('[data-act=play]');ui.ctrls=sec.querySelector('.controls');ui.read=sec.querySelector('.readouts');
+  ui.pred=sec.querySelector('.predict');ui.tbl=sec.querySelector('.tbl');ui.gm=sec.querySelector('#'+id+'-gm');ui.gx=sec.querySelector('#'+id+'-gx');ui.gy=sec.querySelector('#'+id+'-gy');
+  ui.toast=sec.querySelector('.toast');ui.ctl={};ui.tiles={};
+  // controls
+  d.controls.forEach(c=>{const cid=id+'-'+c.id;let w;
+    if(c.type==='range'){w=el('div',{class:'ctl','data-lvl':c.lvl});w.innerHTML=`<div class="ctl-top"><label for="${cid}">${c.label}</label><output for="${cid}" id="${cid}-out"></output></div><input type="range" id="${cid}" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.def}">${c.help?`<p class="help">${c.help}</p>`:''}`;
+      const inp=w.querySelector('input'),out=w.querySelector('output');inp.addEventListener('input',()=>{sim.p[c.id]=parseFloat(inp.value);out.textContent=fmtCtl(c,sim.p[c.id]);});
+      ui.ctl[c.id]={set(v){inp.value=v;out.textContent=fmtCtl(c,v);}};}
+    else if(c.type==='toggle'){w=el('div',{class:'ctl','data-lvl':c.lvl});w.innerHTML=`<label class="switch" for="${cid}"><input type="checkbox" id="${cid}"><span class="track"></span><span class="tl"><b>${c.label}</b>${c.help?`<small>${c.help}</small>`:''}</span></label>`;
+      const inp=w.querySelector('input');inp.addEventListener('change',()=>{sim.p[c.id]=inp.checked;});ui.ctl[c.id]={set(v){inp.checked=!!v;}};}
+    else{w=el('div',{class:'ctl','data-lvl':c.lvl});w.innerHTML=`<div class="ctl-top"><span class="lbl" id="${cid}-l">${c.label}</span></div><div class="seg" role="radiogroup" aria-labelledby="${cid}-l">${c.options.map(o=>`<button type="button" role="radio" data-v="${o.v}"${o.lvl?` data-lvl="${o.lvl}"`:''}>${o.l}</button>`).join('')}</div>${c.help?`<p class="help">${c.help}</p>`:''}`;
+      const btns=[...w.querySelectorAll('button')];const set=v=>btns.forEach(b=>b.setAttribute('aria-checked',String(b.dataset.v===v)));
+      btns.forEach(b=>b.addEventListener('click',()=>{sim.p[c.id]=b.dataset.v;set(b.dataset.v);}));ui.ctl[c.id]={set};}
+    ui.ctrls.appendChild(w);ui.ctl[c.id].set(sim.p[c.id]);});
+  // readout tiles
+  d.metrics.forEach(m=>{const t=el('div',{class:'tile','data-lvl':m.lvl});t.innerHTML=`<div class="t-l">${m.label}</div><div class="t-v"><span class="num">—</span> <span class="u">${m.unit}</span></div>${m.max!==null?'<div class="t-bar"><i></i></div>':''}`;
+    ui.read.appendChild(t);ui.tiles[m.id]={num:t.querySelector('.num'),bar:t.querySelector('.t-bar i')};});
+  // transport
+  ui.play.addEventListener('click',()=>{sim.running=!sim.running;ui.play.textContent=sim.running?'Pause':'Play';});
+  sec.querySelector('[data-act=reset]').addEventListener('click',()=>{resetSim(sim);sim.ch.changed=false;if(sim.ch.phase==='running'){sim.ch.phase='ask';renderChallenge(sim);}});
+  sec.querySelector('#'+id+'-speed').addEventListener('change',e=>{sim.speed=parseFloat(e.target.value);});
+  // graph mode
+  const gbtn=[...sec.querySelectorAll('[data-g]')];gbtn.forEach(b=>b.addEventListener('click',()=>{sim.gmode=b.dataset.g;gbtn.forEach(x=>x.setAttribute('aria-checked',String(x===b)));
+    sec.querySelector('.g-live').hidden=sim.gmode!=='live';sec.querySelector('.g-trials').hidden=sim.gmode!=='trials';drawGraph(sim);}));
+  ui.gm.addEventListener('change',()=>{sim.gMetric=ui.gm.value;});
+  ui.gx.addEventListener('change',()=>{sim.gx=ui.gx.value;drawGraph(sim);});ui.gy.addEventListener('change',()=>{sim.gy=ui.gy.value;drawGraph(sim);});
+  // trials
+  sec.querySelector('[data-act=record]').addEventListener('click',()=>{const row={n:sim.trials.length+1};d.controls.forEach(c=>row[c.id]=sim.p[c.id]);d.metrics.forEach(m=>row[m.id]=m.get(sim));
+    sim.trials.push(row);saveTrials(sim);renderTable(sim);flash(sim,'Trial '+row.n+' recorded');if(sim.gmode==='trials')drawGraph(sim);});
+  sec.querySelector('[data-act=clear]').addEventListener('click',()=>{sim.trials=[];saveTrials(sim);renderTable(sim);drawGraph(sim);});
+  sec.querySelector('[data-act=copy]').addEventListener('click',()=>{const csv=toCSV(sim);if(!csv){flash(sim,'Record a trial first');return;}
+    const fallback=()=>{let ta=sec.querySelector('.csv-fallback');if(!ta){ta=el('textarea',{class:'csv-fallback',readonly:'',id:id+'-csv','aria-label':'CSV data'});ui.tbl.after(ta);}ta.value=csv;ta.focus();ta.select();flash(sim,'Selected. Press Ctrl+C to copy');};
+    try{navigator.clipboard.writeText(csv).then(()=>flash(sim,'Copied to clipboard'),fallback);}catch(e){fallback();}});
+  return sec;}
+function flash(sim,msg){const t=sim.ui.toast;t.textContent=msg;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>{t.hidden=true;},2400);}
+function saveTrials(sim){store.set('rjbiolab-trials-'+sim.def.id,JSON.stringify(sim.trials));}
+function trialCols(sim){return [...controlsVisible(sim).map(c=>({id:c.id,label:c.label+(c.unit&&c.type==='range'?' ('+c.unit.trim()+')':''),ctl:c,num:c.type==='range'})),
+  ...metricsVisible(sim).map(m=>({id:m.id,label:m.label+(m.unit?' ('+m.unit+')':''),m,num:true}))];}
+function cellText(col,v){return col.ctl?fmtCtl(col.ctl,v).replace(col.ctl.unit||'§','').trim():fmtNum(v,col.m.d);}
+function renderTable(sim){const cols=trialCols(sim);
+  if(!sim.trials.length){sim.ui.tbl.innerHTML='<p class="empty">No trials yet. Set the variables, let the readings settle, then press Record trial.</p>';return;}
+  sim.ui.tbl.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>Trial</th>${cols.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead><tbody>${
+    sim.trials.map(r=>`<tr><td>${r.n}</td>${cols.map(c=>`<td>${cellText(c,r[c.id])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
+function toCSV(sim){if(!sim.trials.length)return '';const cols=trialCols(sim),q=s=>/[",]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+  return [['Trial',...cols.map(c=>c.label)].map(q).join(','),...sim.trials.map(r=>[r.n,...cols.map(c=>cellText(c,r[c.id]))].map(x=>q(String(x))).join(','))].join('\n');}
+
+/* ---------- level-dependent refresh ---------- */
+function applyLevel(sim){const ui=sim.ui;
+  ui.lede.textContent=sim.def.lede[level];
+  ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl);});
+  sim.def.controls.forEach(c=>{if(!atLeast(c.lvl)&&sim.p[c.id]!==c.def){sim.p[c.id]=c.def;ui.ctl[c.id].set(c.def);}});
+  const mv=metricsVisible(sim);ui.gm.innerHTML=mv.map(m=>`<option value="${m.id}">${m.label}</option>`).join('');
+  if(!mv.find(m=>m.id===sim.gMetric))sim.gMetric=sim.def.defaultGraph;ui.gm.value=sim.gMetric;
+  const nc=trialCols(sim).filter(c=>c.num);const opts=nc.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');ui.gx.innerHTML=opts;ui.gy.innerHTML=opts;
+  if(!nc.find(c=>c.id===sim.gx))sim.gx=nc[0].id;if(!nc.find(c=>c.id===sim.gy))sim.gy=sim.def.defaultGraph;ui.gx.value=sim.gx;ui.gy.value=sim.gy;
+  sim.ch={idx:0,phase:'ask',pick:null,changed:false};renderChallenge(sim);renderTable(sim);}
+
+/* ---------- predict-then-test challenges ---------- */
+function visibleCh(sim){return sim.def.challenges.filter(c=>atLeast(c.lvl));}
+function explainFor(ch){let out='';['bio','honors','ap'].forEach(l=>{if(ch.explain[l]&&atLeast(l))out=ch.explain[l];});return out;}
+function applyValues(sim,vals){for(const k in vals){sim.p[k]=vals[k];sim.ui.ctl[k].set(vals[k]);}}
+function renderChallenge(sim){const list=visibleCh(sim),c=sim.ch,ch=list[c.idx],box=sim.ui.pred;
+  const head=`<div class="p-head"><h3>Predict, then test</h3><span class="count">${c.idx+1} of ${list.length}</span></div><p class="q">${ch.q}</p>`;
+  if(c.phase==='ask'){box.innerHTML=head+`<div class="choices">${ch.choices.map((t,i)=>`<button type="button" class="choice" data-i="${i}">${t}</button>`).join('')}</div>`;
+    box.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>startChallenge(sim,+b.dataset.i)));}
+  else if(c.phase==='running'){box.innerHTML=head+`<p class="pick">Your prediction: <b>${ch.choices[c.pick]}</b></p><p class="status">${c.changed?ch.changeText+'. Watch the graph.':'Holding steady first…'}</p><div class="prog"><i></i></div>`;}
+  else{const ok=c.pick===ch.correct;box.innerHTML=head+`<p class="verdict ${ok?'ok':'no'}">${ok?'Your prediction held up.':'Not what you predicted.'}</p>${ok?'':`<p class="pick">Result: <b>${ch.choices[ch.correct]}</b></p>`}<p class="explain">${explainFor(ch)}</p>
+    <div class="row"><button type="button" class="btn" data-a="again">Run it again</button>${c.idx<list.length-1?'<button type="button" class="btn primary" data-a="next">Next challenge</button>':'<button type="button" class="btn primary" data-a="first">Start over</button>'}</div>`;
+    box.querySelector('[data-a=again]').addEventListener('click',()=>{c.phase='ask';renderChallenge(sim);});
+    const nx=box.querySelector('[data-a=next],[data-a=first]');nx.addEventListener('click',()=>{c.idx=nx.dataset.a==='next'?c.idx+1:0;c.phase='ask';renderChallenge(sim);});}}
+function startChallenge(sim,pick){const ch=visibleCh(sim)[sim.ch.idx],base={};sim.def.controls.forEach(c=>base[c.id]=c.def);
+  applyValues(sim,Object.assign(base,ch.baseline||{}));resetSim(sim);sim.running=true;sim.ui.play.textContent='Pause';
+  sim.gmode='live';sim.ui.sec.querySelector('[data-g=live]').click();sim.gMetric=ch.watch;sim.ui.gm.value=ch.watch;
+  sim.ch.phase='running';sim.ch.pick=pick;sim.ch.changed=false;renderChallenge(sim);}
+function challengeTick(sim){const c=sim.ch;if(c.phase!=='running')return;const d=sim.def,ch=visibleCh(sim)[c.idx];
+  if(!c.changed&&sim.t>=d.chChange){applyValues(sim,ch.change);c.changed=true;renderChallenge(sim);}
+  const bar=sim.ui.pred.querySelector('.prog i');if(bar)bar.style.width=clamp(sim.t/d.chReveal*100,0,100)+'%';
+  if(sim.t>=d.chReveal){c.phase='done';renderChallenge(sim);}}
+
+/* ---------- canvases ---------- */
+function fit(cv,w,h){const dpr=Math.min(2,window.devicePixelRatio||1),W=Math.round(w*dpr),H=Math.round(h*dpr);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}return dpr;}
+function drawStage(sim,vdt){const cv=sim.ui.stage,w=cv.clientWidth;if(!w)return;const h=w*9/16;fit(cv,w,h);const ctx=cv.getContext('2d'),sc=cv.width/800;
+  ctx.setTransform(sc,0,0,sc,0,0);ctx.clearRect(0,0,800,450);const k=clamp(720/w,1,1.8);sim.def.draw(sim,ctx,vdt,k,sim.vt);}
+function drawGraph(sim){const cv=sim.ui.graph,W=cv.clientWidth,H=cv.clientHeight;if(!W)return;const dpr=fit(cv,W,H),ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);const L=56,Rp=14,T=12,B=40,pw=W-L-Rp,ph=H-T-B;
+  let xs=[],ys=[],xmin,xmax,ymin,ymax,xl,yl,line=true,metric;
+  if(sim.gmode==='live'){metric=sim.def.metrics.find(m=>m.id===sim.gMetric);const win=sim.def.window;xmax=Math.max(win,sim.t);xmin=xmax-win;
+    sim.hist.forEach(r=>{if(r.t>=xmin-1e-9){const v=r.v[metric.id];if(Number.isFinite(v)){xs.push(r.t);ys.push(v);}}});
+    if(metric.fixed){ymin=metric.min;ymax=metric.max;}else{const lo=Math.min(metric.min,...ys),hi=Math.max(metric.max||0,...ys,1e-6);ymin=lo;ymax=metric.max!==null&&hi<=metric.max?metric.max:hi*1.1;}
+    xl='Time ('+sim.def.unit+')';yl=metric.label+(metric.unit?' ('+metric.unit+')':'');}
+  else{line=false;const cols=trialCols(sim),cx=cols.find(c=>c.id===sim.gx),cy=cols.find(c=>c.id===sim.gy);
+    if(!cx||!cy||!sim.trials.length){txt(ctx,'Record trials, then choose what to plot on each axis.',W/2,H/2,{s:15,c:PAL['muted'],a:'center',b:'middle'});return;}
+    sim.trials.forEach(r=>{const a=+r[cx.id],b=+r[cy.id];if(Number.isFinite(a)&&Number.isFinite(b)){xs.push(a);ys.push(b);}});
+    const rng=(arr,c)=>{const lim=c.ctl?[c.ctl.min,c.ctl.max]:[Math.min(0,c.m.min,...arr),Math.max(c.m.max===null?0:c.m.max,...arr)];return lim;};
+    [xmin,xmax]=rng(xs,cx);[ymin,ymax]=rng(ys,cy);if(cy.m&&cy.m.max===null)ymax=Math.max(...ys,1)*1.1;
+    xl=cx.label;yl=cy.label;}
+  if(ymax-ymin<1e-9)ymax=ymin+1;
+  const X=x=>L+(x-xmin)/(xmax-xmin)*pw,Y=y=>T+ph-(y-ymin)/(ymax-ymin)*ph;
+  // grid + ticks
+  ctx.strokeStyle=PAL['g-grid'];ctx.lineWidth=1;ctx.font='13px '+FONT;
+  const ys_=niceStep(ymax-ymin,4),y0=Math.ceil(ymin/ys_-1e-9)*ys_,yd=ys_<1?(ys_<0.1?2:1):0;
+  for(let y=y0;y<=ymax+1e-9;y+=ys_){const py=Math.round(Y(y))+.5;ctx.beginPath();ctx.moveTo(L,py);ctx.lineTo(L+pw,py);ctx.stroke();txt(ctx,y.toFixed(yd),L-8,py,{s:13,c:PAL['g-axis'],a:'right',b:'middle'});}
+  const xs_=niceStep(xmax-xmin,6),x0=Math.ceil(xmin/xs_-1e-9)*xs_,xd=xs_<1?(xs_<0.1?2:1):0;
+  for(let x=x0;x<=xmax+1e-9;x+=xs_){const px=Math.round(X(x))+.5;ctx.beginPath();ctx.moveTo(px,T);ctx.lineTo(px,T+ph);ctx.stroke();txt(ctx,x.toFixed(xd),px,T+ph+16,{s:13,c:PAL['g-axis'],a:'center'});}
+  if(ymin<0&&ymax>0){ctx.strokeStyle=PAL['g-axis'];ctx.beginPath();ctx.moveTo(L,Y(0));ctx.lineTo(L+pw,Y(0));ctx.stroke();}
+  ctx.strokeStyle=PAL['g-axis'];ctx.beginPath();ctx.moveTo(L+.5,T);ctx.lineTo(L+.5,T+ph);ctx.lineTo(L+pw,T+ph+.5);ctx.stroke();
+  txt(ctx,xl,L+pw/2,H-4,{s:13,c:PAL['muted'],a:'center'});
+  ctx.save();ctx.translate(14,T+ph/2);ctx.rotate(-Math.PI/2);txt(ctx,yl,0,0,{s:13,c:PAL['muted'],a:'center',b:'middle'});ctx.restore();
+  // challenge change marker
+  if(line&&sim.ch.phase!=='ask'&&sim.ch.changed){const cx=X(sim.def.chChange);if(cx>=L){ctx.setLineDash([4,4]);ctx.strokeStyle=PAL['muted'];ctx.beginPath();ctx.moveTo(cx,T);ctx.lineTo(cx,T+ph);ctx.stroke();ctx.setLineDash([]);txt(ctx,'change',cx+5,T+12,{s:12,c:PAL['muted']});}}
+  ctx.save();ctx.beginPath();ctx.rect(L,T,pw,ph);ctx.clip();
+  if(line&&xs.length>1){ctx.beginPath();xs.forEach((x,i)=>{i?ctx.lineTo(X(x),Y(ys[i])):ctx.moveTo(X(x),Y(ys[i]));});
+    ctx.lineTo(X(xs[xs.length-1]),Y(Math.max(ymin,0)));ctx.lineTo(X(xs[0]),Y(Math.max(ymin,0)));ctx.closePath();ctx.fillStyle=PAL['g-fill'];ctx.fill();
+    ctx.beginPath();xs.forEach((x,i)=>{i?ctx.lineTo(X(x),Y(ys[i])):ctx.moveTo(X(x),Y(ys[i]));});ctx.strokeStyle=PAL['g-line'];ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();
+    ctx.fillStyle=PAL['g-line'];ctx.beginPath();ctx.arc(X(xs[xs.length-1]),Y(ys[ys.length-1]),4.5,0,6.29);ctx.fill();}
+  if(!line){xs.forEach((x,i)=>{ctx.fillStyle=PAL['g-dot'];ctx.beginPath();ctx.arc(X(x),Y(ys[i]),5.5,0,6.29);ctx.fill();ctx.strokeStyle=PAL['card'];ctx.lineWidth=1.5;ctx.stroke();});}
+  ctx.restore();}
+function updateReadouts(sim){sim.def.metrics.forEach(m=>{const v=m.get(sim),t=sim.ui.tiles[m.id];t.num.textContent=fmtNum(v,m.d);
+  if(t.bar)t.bar.style.width=(Number.isFinite(v)?clamp((v-m.min)/(m.max-m.min),0,1)*100:0)+'%';});sim.ui.clock.textContent=clockText(sim);}
+
+/* ---------- tabs, level, loop ---------- */
+const tabsEl=document.getElementById('tabs'),simsEl=document.getElementById('sims');
+DEFS.forEach(d=>{const sim=makeSim(d);sims[d.id]=sim;simsEl.appendChild(buildSim(sim));resetSim(sim);
+  const b=el('button',{class:'tab',role:'tab',id:'tab-'+d.id,'aria-controls':'sim-'+d.id,type:'button'},d.tab);b.addEventListener('click',()=>select(d.id));tabsEl.appendChild(b);});
+function select(id){active=sims[id];DEFS.forEach(d=>{const on=d.id===id;sims[d.id].ui.sec.hidden=!on;document.getElementById('tab-'+d.id).setAttribute('aria-selected',String(on));document.getElementById('tab-'+d.id).tabIndex=on?0:-1;});
+  requestAnimationFrame(()=>{drawGraph(active);});}
+tabsEl.addEventListener('keydown',e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;const i=DEFS.findIndex(d=>sims[d.id]===active),n=(i+(e.key==='ArrowRight'?1:-1)+DEFS.length)%DEFS.length;select(DEFS[n].id);document.getElementById('tab-'+DEFS[n].id).focus();});
+const lvlBtns=[...document.querySelectorAll('#lvl button')];
+function setLevel(l){level=l;store.set('rjbiolab-level',l);lvlBtns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.l===l)));DEFS.forEach(d=>applyLevel(sims[d.id]));}
+lvlBtns.forEach(b=>b.addEventListener('click',()=>setLevel(b.dataset.l)));
+readPal();setLevel(level);
+const fromHash=DEFS.find(d=>location.hash==='#'+d.hash);select(fromHash?fromHash.id:'resp');
+window.addEventListener('hashchange',()=>{const d=DEFS.find(x=>location.hash==='#'+x.hash);if(d)select(d.id);});
+if(window.matchMedia)window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{readPal();drawGraph(active);});
+new MutationObserver(()=>{readPal();drawGraph(active);}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','class']});
+
+let last=performance.now(),acc=0;
+function frame(now){const rdt=Math.min(0.05,(now-last)/1000);last=now;const sim=active;
+  if(sim.running){let dt=rdt*sim.def.timeScale*sim.speed;while(dt>1e-12){const h=Math.min(dt,sim.def.dtMax);sim.def.step(sim,h);sim.t+=h;dt-=h;}challengeTick(sim);sample(sim);}
+  const vdt=sim.running?rdt*sim.speed:0;sim.speedVis=sim.speed;sim.vt+=vdt;drawStage(sim,vdt);
+  acc+=rdt;if(acc>0.1){acc=0;updateReadouts(sim);if(sim.gmode==='live')drawGraph(sim);}
+  requestAnimationFrame(frame);}
+updateReadouts(active);requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
