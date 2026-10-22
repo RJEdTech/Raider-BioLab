@@ -78,7 +78,7 @@ function staticGeom(cell){const r=rng(cell==='animal'?3:cell==='plant'?4:5),G={s
     const dots=[];let n=0;while(dots.length<70&&n<5000){n++;const x=70+r()*520,y=40+r()*370;const a=aNorm(x,y);if(a>0.92)continue;if(((x-230)/100)**2+((y-210)/90)**2<1)continue;if(Math.hypot(x-230,y-210)<140&&Math.abs(Math.atan2(y-210,x-230))<1.2)continue;if(x>380&&x<480&&y>115&&y<190)continue;dots.push([x,y,r()*6.28]);}
     G.free=dots;
     const er=[];[97,110,123].forEach(R=>{for(let a=-1.1;a<=1.1;a+=0.12)er.push([230+Math.cos(a)*(R+4.5),210+Math.sin(a)*(R+4.5)]);});G.erRib=er;
-    G.an={nucleus:[230,150],nucleolus:[212,198],roughER:[352,230],smoothER:[305,352],golgi:[432,128],mito:[480,262],lysosome:[432,335],centrosome:[400,262],membrane:[ACX+ARX*0.93,ACY+ARY*0.42],cytoplasm:[520,330],ribosome:[0,0],vesicle:[0,0],cytoskeleton:[470,330]};
+    G.an={nucleus:[230,150],nucleolus:[212,198],roughER:[352,230],smoothER:[305,352],golgi:[432,128],mito:[480,262],lysosome:[432,335],centrosome:[400,262],membrane:[208,402],cytoplasm:[525,345],ribosome:[0,0],cytoskeleton:[560,292]};
   }else if(cell==='plant'){
     add('nucleus',{k:'e',x:105,y:215,rx:52,ry:48,r:0});add('nucleolus',{k:'c',x:98,y:208,r:15});
     add('roughER',{k:'ring',x:105,y:215,r1:56,r2:76,a1:0.5,a2:2.15});
@@ -107,9 +107,9 @@ function dynamic(sim,cell,t){const G=geom(cell),D={sh:{},an:{}},add=(p,s)=>{(D.s
   if(cell==='animal'){const ves=[];const ends=[-0.9,-0.45,0.05,-1.35];
     for(let i=0;i<4;i++){const u=((t*0.09*mv+i/4)%1+1)%1,e=memPt(ends[i],0.95),x=474+(e[0]-474)*u,y=150+(e[1]-150)*u;ves.push([x,y,u>0.92?7*(1-(u-0.92)/0.08):7]);}
     for(let i=0;i<2;i++){const u=((t*0.13*mv+i/2)%1+1)%1;ves.push([362+(392-362)*u,150+(168-150)*u+Math.sin(u*3.14)*-10,6]);}
-    ves.forEach(v=>add('vesicle',{k:'c',x:v[0],y:v[1],r:v[2]}));D.an.vesicle=[ves[0][0],ves[0][1]];D.ves=ves;}
+    ves.forEach(v=>add('vesicle',{k:'c',x:v[0],y:v[1],r:v[2]}));D.an.vesicle=[525,118];D.ves=ves;}
   else if(cell==='plant'){const ch=[];for(let i=0;i<9;i++){const pt=rrPoint(PPATH[0],PPATH[1],PPATH[2],PPATH[3],PPATH[4],i/9+t*0.012*mv);ch.push(pt);add('chloroplast',{k:'e',x:pt[0],y:pt[1],rx:24,ry:12,r:pt[2]});}
-    D.an.chloroplast=[ch[1][0],ch[1][1]];D.chl=ch;const ves=[];for(let i=0;i<3;i++){const u=((t*0.1*mv+i/3)%1+1)%1;ves.push([165+u*15,330-u*40+Math.sin(i)*10,6]);}ves.forEach(v=>add('vesicle',{k:'c',x:v[0],y:v[1],r:v[2]}));D.an.vesicle=[ves[0][0],ves[0][1]];D.ves=ves;}
+    D.an.chloroplast=[ch[1][0],ch[1][1]];D.chl=ch;const ves=[];for(let i=0;i<3;i++){const u=((t*0.1*mv+i/3)%1+1)%1;ves.push([165+u*15,330-u*40+Math.sin(i)*10,6]);}ves.forEach(v=>add('vesicle',{k:'c',x:v[0],y:v[1],r:v[2]}));D.an.vesicle=[215,296];D.ves=ves;}
   else{const pts=[];for(let x=548;x<=788;x+=6){const f=Math.min(1,(x-548)/40);pts.push([x,225+14*Math.sin((x-548)/22-t*6*mv)*f]);}add('flagellum',{k:'pl',w:6,pts});D.fl=pts;D.an.pili=G.pili[2][1];}
   D.ribs=ribs;return D;}
 function shapesOf(sim,part){const cell=sim.p.cell,G=geom(cell),D=sim.vis.dyn||{sh:{}};return (G.sh[part]||[]).concat(D.sh[part]||[]);}
@@ -298,24 +298,24 @@ const CE={
     if(cell==='animal')drawAnimal(ctx,sim,D,t,hon);else if(cell==='plant')drawPlant(ctx,sim,D,t,hon,ap);else drawBacterium(ctx,sim,D,t,hon);
     if(cell==='animal')drawTrip(ctx,sim,k);
     // right-hand panel
-    const C=CELLS[cell],px=cell==='plant'?614:612;
-    txt(ctx,C.name,px,38,{s:17*k,w:700});txt(ctx,C.size,px,58,{s:12.5*k,c:PAL['cv-soft']});
-    ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(px,82);ctx.lineTo(px+C.bar,82);ctx.moveTo(px,76);ctx.lineTo(px,88);ctx.moveTo(px+C.bar,76);ctx.lineTo(px+C.bar,88);ctx.stroke();
-    txt(ctx,C.barL,px+C.bar/2,102,{s:12*k,w:600,a:'center',c:PAL['cv-soft']});
-    pill(ctx,C.kind,px+40,126,PAL['card2'],PAL['cv-ink'],12*k);
+    const C=CELLS[cell],RX=788;
+    txt(ctx,C.name,RX,38,{s:17*k,w:700,a:'right'});txt(ctx,C.size,RX,58,{s:12.5*k,c:PAL['cv-soft'],a:'right'});
+    ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(RX-C.bar,82);ctx.lineTo(RX,82);ctx.moveTo(RX-C.bar,76);ctx.lineTo(RX-C.bar,88);ctx.moveTo(RX,76);ctx.lineTo(RX,88);ctx.stroke();
+    txt(ctx,C.barL,RX-C.bar/2,102,{s:12*k,w:600,a:'center',c:PAL['cv-soft']});
+    ctx.font='700 '+12*k+'px '+FONT;pill(ctx,C.kind,RX-ctx.measureText(C.kind).width/2-8,126,PAL['card2'],PAL['cv-ink'],12*k);
     const touring=sim.tour&&sim.tour.on;
     // quiz target outline
     const q=currentQ(sim);const showQ=!touring&&q&&q.target&&sim.ch.phase!=='running';
     if(showQ)outline(ctx,sim,q.target,PAL['s4'],true,RM?0:t);
     // labels
-    if(p.labels&&!touring){ORDER.forEach(id=>{if(!PARTS[id].in.includes(cell)||!partAvailable(id))return;if(showQ&&sim.ch.phase==='ask'&&id===q.target)return;const a=anchorOf(sim,id);pill(ctx,PARTS[id].n,a[0],a[1],PAL['card'],PAL['cv-ink'],11*k);});}
+    if(p.labels&&!touring){ORDER.forEach(id=>{if(!PARTS[id].in.includes(cell)||!partAvailable(id))return;if(showQ&&sim.ch.phase==='ask'&&id===q.target)return;const a=anchorOf(sim,id);ctx.font='700 '+11*k+'px '+FONT;const hw=ctx.measureText(PARTS[id].n).width/2+8;pill(ctx,PARTS[id].n,clamp(a[0],hw+2,798-hw),a[1],PAL['card'],PAL['cv-ink'],11*k);});}
     // selection
     if(p.part!=='none'&&PARTS[p.part]&&!touring){const P=PARTS[p.part];
       if(P.in.includes(cell)){outline(ctx,sim,p.part,PAL['rj'],false,0);const a=anchorOf(sim,p.part);
         ctx.font='700 '+13*k+'px '+FONT;const w=ctx.measureText(P.n).width;const lx=clamp(a[0],w/2+16,784-w/2),ly=a[1]<70?a[1]+34:a[1]-30;
         ctx.strokeStyle=PAL['rj'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(lx,ly);ctx.stroke();pill(ctx,P.n,lx,ly,PAL['rj'],'#fff',13*k);}
-      else{txt(ctx,'Not in this cell:',px,160,{s:12.5*k,w:700,c:PAL['rj']});txt(ctx,P.n,px,178,{s:12.5*k,c:PAL['cv-soft']});}}
-    if(!touring&&p.part==='none'&&!p.labels){txt(ctx,'Click any structure',px,cell==='bacterium'?160:170,{s:12.5*k,c:PAL['cv-soft']});txt(ctx,'to learn its job.',px,cell==='bacterium'?178:188,{s:12.5*k,c:PAL['cv-soft']});}
+      else{txt(ctx,'Not in this cell:',RX,160,{s:12.5*k,w:700,c:PAL['rj'],a:'right'});txt(ctx,P.n,RX,178,{s:12.5*k,c:PAL['cv-soft'],a:'right'});}}
+    if(!touring&&p.part==='none'&&!p.labels&&k<1.3){txt(ctx,'Click any structure',RX,cell==='bacterium'?160:170,{s:12.5*k,c:PAL['cv-soft'],a:'right'});txt(ctx,'to learn its job.',RX,cell==='bacterium'?178:188,{s:12.5*k,c:PAL['cv-soft'],a:'right'});}
   }
 };
 BioLab.register(CE);

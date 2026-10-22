@@ -25,8 +25,9 @@ function derived(sim){const gx=gene(sim),key=gx.ver+'|'+sim.p.gene+'|'+(sim.p.in
   const g=GENES[sim.p.gene],dna=gx.seq.map(x=>x.b).join(''),cur=translate(dna),orig=translate(g.dna);
   const intr=!!sim.p.introns&&atLeast('ap'),disp=[];gx.seq.forEach((x,i)=>{if(intr&&i===g.intronAt)INTRON.split('').forEach(b=>disp.push({b,intron:true}));disp.push(Object.assign({ci:i},x));});
   if(intr&&gx.seq.length<=g.intronAt)INTRON.split('').forEach(b=>disp.push({b,intron:true}));
-  let type='No mutation',changed=0,firstChange=null;const n=Math.max(cur.aas.length,orig.aas.length);
-  for(let i=0;i<n;i++)if(cur.aas[i]!==orig.aas[i]){changed++;if(!firstChange)firstChange=[i,orig.aas[i]||'—',cur.aas[i]||'—'];}
+  let type='No mutation',firstChange=null;const n=Math.max(cur.aas.length,orig.aas.length);
+  for(let i=0;i<n;i++)if(cur.aas[i]!==orig.aas[i]){if(!firstChange)firstChange=[i,orig.aas[i]||'—',cur.aas[i]||'—'];}
+  const changed=editDist(orig.aas,cur.aas);
   if(gx.nmut){const dl=dna.length-g.dna.length;
     if(!cur.start)type='Start codon lost';
     else if(dl%3!==0)type='Frameshift';
@@ -41,6 +42,7 @@ function mutate(sim,kind){const gx=gene(sim),s=gx.seq;let i=clamp(Math.round(sim
   else if(kind==='ins'){if(s.length<36){i=clamp(Math.round(sim.p.pos)-1,0,s.length);s.splice(i,0,{b:sim.p.base,mut:true});gx.nmut++;}}
   else{const n=kind==='delc'?3:1;if(s.length>n+3){s.splice(i,n);if(i<s.length)s[i]=Object.assign({},s[i],{delBefore:true});else gx.delEnd=true;gx.nmut++;}}
   gx.ver++;restart(sim);}
+function editDist(a,b){const m=a.length,n=b.length,D=[];for(let i=0;i<=m;i++){D.push([i]);for(let j=1;j<=n;j++)D[i][j]=i?Math.min(D[i-1][j]+1,D[i][j-1]+1,D[i-1][j-1]+(a[i-1]===b[j-1]?0:1)):j;}return D[m][n];}
 const protText=(r,partial)=>!r.start?'None (no start codon)':r.aas.join('–')+(r.stopAt>=0?' (stop)':partial?' … (continues)':' (no stop codon)');
 
 /* ---------------- drawing helpers ---------------- */
@@ -81,7 +83,7 @@ const EXP={
     {id:'protein',label:'Protein',text:true,lvl:'bio',get(sim){return protText(derived(sim).cur,GENES[sim.p.gene].partial);}},
     {id:'len',label:'Protein length',unit:'amino acids',lvl:'bio',min:0,max:null,d:0,get:s=>derived(s).cur.aas.length},
     {id:'mtype',label:'Mutation type',text:true,lvl:'honors',get:s=>derived(s).type},
-    {id:'changed',label:'Amino acids changed',unit:'',lvl:'honors',min:0,max:null,d:0,get:s=>derived(s).changed},
+    {id:'changed',label:'Amino acids changed or lost',unit:'',lvl:'honors',min:0,max:null,d:0,get:s=>derived(s).changed},
     {id:'proc',label:'RNA processing',text:true,lvl:'ap',get(sim){const d=derived(sim);return 'Pre-mRNA '+d.disp.length+' nt → mature '+d.dna.length+' nt'+(d.intr?' (intron removed)':'')+', plus 5′ cap and poly-A tail';}}
   ],
   narrate(sim){const s=sim.st,d=derived(sim),hon=atLeast('honors'),nb=Math.min(d.disp.length,Math.floor(s.tpos));
@@ -93,7 +95,7 @@ const EXP={
       return '<b>Translation.</b> The ribosome reads codon '+(p+2)+': <b>'+c+'</b>. A tRNA with the matching anticodon <b>'+c.split('').map(x=>ANTI[x]).join('')+'</b> brings <b>'+a+'</b> ('+FULL[a]+'), and it is joined to the growing chain.';}
     if(!d.cur.start)return '<b>No start codon.</b> The ribosome needs AUG to start, so this protein is never made.';
     let t='<b>Done:</b> a protein of '+d.cur.aas.length+' amino acids'+(GENES[sim.p.gene].partial?' (the full β-globin protein continues for 137 more)':'')+'.';
-    if(hon&&gene(sim).nmut){t+=' Mutation type: <b>'+d.type.toLowerCase()+'</b>';if(d.firstChange&&d.type!=='Frameshift')t+=' ('+d.firstChange[1]+' → '+d.firstChange[2]+')';t+=d.changed?', '+d.changed+' amino acid'+(d.changed>1?'s':'')+' changed.':', no amino acids changed.';}
+    if(hon&&gene(sim).nmut){t+=' Mutation type: <b>'+d.type.toLowerCase()+'</b>';if(d.firstChange&&(d.type==='Missense'||d.type==='Nonsense'))t+=' ('+d.firstChange[1]+' → '+d.firstChange[2]+')';t+=d.changed?', '+d.changed+' amino acid'+(d.changed>1?'s':'')+' changed or lost.':', no amino acids changed.';if(d.cur.stopAt<0&&!GENES[sim.p.gene].partial)t+=' The new reading frame never reaches a stop codon in this stretch.';}
     return t;},
   infoPanel(sim){const s=sim.st,d=derived(sim);let cur=null,line='';
     if(s.phase==='tl'){const p=Math.floor(s.ci);cur=d.cur.codons[p+1];if(cur){const a=aaOf(cur);line=`<p>Reading codon ${p+2}: <b>${cur}</b> → <b>${a}</b> (${FULL[a]})</p>`;}}
@@ -109,7 +111,7 @@ const EXP={
     // nucleus
     ctx.fillStyle=PAL['cv-bg2'];rr(ctx,8,14,784,196,16);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=3;
     ctx.beginPath();ctx.moveTo(375,210);ctx.lineTo(24,210);ctx.arcTo(8,210,8,194,16);ctx.lineTo(8,30);ctx.arcTo(8,14,24,14,16);ctx.lineTo(776,14);ctx.arcTo(792,14,792,30,16);ctx.lineTo(792,194);ctx.arcTo(792,210,776,210,16);ctx.lineTo(425,210);ctx.stroke();
-    txt(ctx,'NUCLEUS',18,32,{s:12*k,w:700,c:PAL['cv-soft']});txt(ctx,'CYTOPLASM',18,234,{s:12*k,w:700,c:PAL['cv-soft']});txt(ctx,'nuclear pore',400,228,{s:11*k,c:PAL['cv-soft'],a:'center'});
+    txt(ctx,'NUCLEUS',18,32,{s:12*k,w:700,c:PAL['cv-soft']});txt(ctx,'CYTOPLASM',18,234,{s:12*k,w:700,c:PAL['cv-soft']});txt(ctx,'nuclear pore',432,202,{s:11*k,c:PAL['cv-soft']});
     const bw=Math.min(24,620/L),x0=140+(640-L*bw)/2,yc=60,yt=96,ym=146,X=i=>x0+i*bw;
     // DNA strands, unzipped around the polymerase
     const pol=s.phase==='tx'?s.tpos:-99;
@@ -128,29 +130,33 @@ const EXP={
       if(s.phase==='tx'){for(let i=0;i<n&&i<L;i++){const b=d.disp[i];tile(ctx,X(i),ym+Math.min(6,(s.tpos-i)*1.5),bw,COMP[{A:'T',T:'A',G:'C',C:'G'}[b.b]],{intron:b.intron});}
         const px=X(Math.min(s.tpos,L));ctx.fillStyle='rgba(123,63,228,.16)';ctx.strokeStyle=PAL['s5'];ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(px,yt+12,Math.max(46,3.2*bw),56,0,0,6.29);ctx.fill();ctx.stroke();
         txt(ctx,'RNA polymerase',clamp(px,70,730),yc-34,{s:12.5*k,w:700,c:PAL['s5'],a:'center'});}
-      else{const f1=ease(s.proc/.5),f2=ease((s.proc-.15)/.45);let ex=0;
-        d.disp.forEach((b,i)=>{const xs=X(i);if(b.intron){const j=i-d.disp.findIndex(q=>q.intron);ctx.save();const ang=(j/(INTRON.length-1)-.5)*Math.PI;
-            const lx=lerp(xs,X(d.disp.findIndex(q=>q.intron))+INTRON.length*bw/2+Math.sin(ang)*30,f1),ly=lerp(ym+6,ym+6-34-Math.cos(ang)*26,f1);tile(ctx,lx-bw/2+bw/2,ly,bw,COMP[{A:'T',T:'A',G:'C',C:'G'}[b.b]],{intron:true,a:1-ease((s.proc-.45)/.2)});ctx.restore();return;}
-          const xm=x2+ex*bw2*(bw/bw2);const tx2=x0+(L*bw-mat.length*bw)/2+ex*bw;ex++;tile(ctx,lerp(xs,tx2,f2),ym+6,bw,COMP[{A:'T',T:'A',G:'C',C:'G'}[b.b]]);});
+      else{const f1=ease(s.proc/.35),f2=ease((s.proc-.25)/.3),fade=1-ease((s.proc-.4)/.2),i0=d.disp.findIndex(q=>q.intron),ni=d.disp.filter(q=>q.intron).length,gc=i0>=0?X(i0)+ni*bw/2:0;let ex=0;
+        const lft0=x0+(L*bw-mat.length*bw)/2;
+        d.disp.forEach((b,i)=>{const xs=X(i),rb=COMP[{A:'T',T:'A',G:'C',C:'G'}[b.b]];
+          if(b.intron){const j=i-i0,ang=(j/(ni-1)-.5)*Math.PI*1.1,tx=gc+Math.sin(ang)*34-bw/2,ty=ym+6-38+Math.cos(ang)*-22+22;tile(ctx,lerp(xs,tx,f1),lerp(ym+6,ty,f1),bw,rb,{intron:true,a:fade});return;}
+          tile(ctx,lerp(xs,lft0+ex*bw,f2),ym+6,bw,rb);ex++;});
+        if(i0>=0&&s.proc>.42&&s.proc<.7){ctx.globalAlpha=1-ease((s.proc-.55)/.15);txt(ctx,'intron cut out',gc,ym-44,{s:11.5*k,w:700,c:PAL['cv-soft'],a:'center'});ctx.globalAlpha=1;}
         const lft=x0+(L*bw-mat.length*bw)/2;if(s.proc>.5){ctx.globalAlpha=ease((s.proc-.5)/.15);ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(lft-12,ym+16,9,0,6.29);ctx.fill();txt(ctx,'5′ cap',lft-12,ym+44,{s:11*k,c:PAL['cv-soft'],a:'center'});ctx.globalAlpha=1;}
         if(s.proc>.7){const na=Math.round(ease((s.proc-.7)/.3)*6);for(let i=0;i<na;i++)tile(ctx,lft+mat.length*bw+i*bw*.8,ym+6,bw*.8,'A',{a:.85});txt(ctx,'poly-A tail',lft+mat.length*bw+3*bw*.8,ym+44,{s:11*k,c:PAL['cv-soft'],a:'center'});}}}
     else{const e=ease(s.exp),lft=x0+(L*bw-mat.length*bw)/2;
-      mat.forEach((b,i)=>{const sx=lft+i*bw,tx=x2+i*bw2,x=lerp(sx,tx,e),y=s.exp<1?lerp(ym+6,ymC,e)-Math.sin(e*Math.PI)*0:ymC;const w=lerp(bw,bw2,e);
-        const viaPore=s.exp<1?lerp(x,400-mat.length*w/2+i*w,Math.sin(e*Math.PI)*.7):x;tile(ctx,viaPore,y,w,COMP[{A:'T',T:'A',G:'C',C:'G'}[b]],{mut:gx.seq[i]&&gx.seq[i].mut&&hon&&s.exp>=1});});
+      const pw=Math.min(bw,bw2)*.55,e1=ease(s.exp/.5),e2=ease((s.exp-.5)/.5);
+      mat.forEach((b,i)=>{const sx=lft+i*bw,px=400-mat.length*pw/2+i*pw,tx=x2+i*bw2;let x,y,w;
+        if(s.exp<.5){x=lerp(sx,px,e1);y=lerp(ym+6,200,e1);w=lerp(bw,pw,e1);}else{x=lerp(px,tx,e2);y=lerp(200,ymC,e2);w=lerp(pw,bw2,e2);}
+        tile(ctx,x,y,w,COMP[{A:'T',T:'A',G:'C',C:'G'}[b]],{mut:gx.seq[i]&&gx.seq[i].mut&&hon&&s.exp>=1});});
       if(ap&&s.exp>=1){ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(x2-11,ymC+10,8,0,6.29);ctx.fill();for(let i=0;i<5;i++)tile(ctx,x2+mat.length*bw2+i*bw2*.75,ymC,bw2*.75,'A',{a:.8});}
       if(s.exp>=1&&hon){ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;for(let c=0;c*3<mat.length;c++){const a=x2+c*3*bw2+2,b=x2+Math.min(mat.length,(c+1)*3)*bw2-2;ctx.beginPath();ctx.moveTo(a,ymC+25);ctx.lineTo(a,ymC+29);ctx.lineTo(b,ymC+29);ctx.lineTo(b,ymC+25);ctx.stroke();if(c<12)txt(ctx,String(c+1),(a+b)/2,ymC+41,{s:10.5*k,c:PAL['cv-soft'],a:'center'});}}
       if(!hon&&s.exp>=1)txt(ctx,'mRNA',x2-12,ymC+14,{s:13*k,w:700,c:PAL['cv-soft'],a:'right'});
       if(hon&&s.exp>=1){txt(ctx,'5′',x2-(ap?24:8),ymC+14,{s:12*k,c:PAL['cv-soft'],a:'right'});}
       // translation
       const cw=3*bw2,cc=i=>x2+i*cw+cw/2;
-      if(s.phase==='tl'||(s.phase==='done'&&d.cur.start&&d.cycles>0&&false)){const p=Math.floor(s.ci),f=s.ci-p,aas=d.cur.aas,next=d.cur.codons[p+1],isStop=next&&aaOf(next)==='Stop';
+      if(s.phase==='tl'){const p=Math.floor(s.ci),f=s.ci-p,aas=d.cur.aas,next=d.cur.codons[p+1],isStop=next&&aaOf(next)==='Stop';
         let rx=x2+(p+1)*cw;if(f>.65)rx+=cw*ease((f-.65)/.35);
         ctx.fillStyle='rgba(120,98,190,.30)';ctx.strokeStyle='rgba(120,98,190,.9)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(rx,ymC-34,1.45*cw,40,0,0,6.29);ctx.fill();ctx.stroke();
         ctx.fillStyle='rgba(120,98,190,.55)';ctx.beginPath();ctx.ellipse(rx,ymC+30,1.2*cw,15,0,0,6.29);ctx.fill();
-        txt(ctx,'Ribosome',rx,ymC-60,{s:12*k,w:700,c:PAL['cv-ink'],a:'center'});
+        txt(ctx,'Ribosome',rx,ymC+64,{s:12*k,w:700,c:PAL['cv-ink'],a:'center'});
         const tRNA=(x,codon,alpha,dy)=>{ctx.globalAlpha=alpha;ctx.fillStyle='#2a8276';rr(ctx,x-cw*.36,ymC-48+dy,cw*.72,44,7);ctx.fill();
           txt(ctx,codon.split('').map(c=>ANTI[c]).join(''),x,ymC-14+dy,{s:Math.min(12,cw*.28),w:700,c:'#fff',a:'center',b:'middle'});ctx.globalAlpha=1;};
-        const chain=(ax,ay,n,alpha)=>{const first=Math.max(0,n-12);for(let j=n-1;j>=first;j--){const q=n-1-j;aaBall(ctx,ax-q*20,ay-14-q*7-(q%2)*9,aas[j],{alpha,ring:hon&&d.orig.aas[j]!==aas[j]});}};
+        const chain=(ax,ay,n,alpha)=>{const first=Math.max(0,n-12);for(let j=n-1;j>=first;j--){const q=n-1-j;aaBall(ctx,ax-q*23,ay-14-(q?6:0)-(q%2)*13,aas[j],{alpha,ring:hon&&d.orig.aas[j]!==aas[j]});}};
         // P-site tRNA (exits after translocation)
         const pc=d.cur.codons[p];if(pc){const ex=f>.65?ease((f-.65)/.35):0;tRNA(cc(p)-ex*30,pc,1-ex,-ex*40);}
         // incoming tRNA or release factor at the A site
@@ -167,7 +173,7 @@ const EXP={
           d.cur.aas.forEach((a,i)=>aaBall(ctx,sx+i*sp,ymC-26,a,{ring:hon&&d.orig.aas[i]!==a}));}
         else txt(ctx,'No AUG start codon: the ribosome never starts, so no protein is made.',400,ymC-40,{s:14*k,w:700,c:PAL['rj'],a:'center'});}}
     // legend for amino acid colors
-    if(s.phase==='tl'||s.phase==='done'){let lx=470;const ly=440;[['h','nonpolar'],['p','polar'],['+','positive'],['-','negative']].forEach(([kk,l])=>{ctx.fillStyle=KCOL[kk];ctx.beginPath();ctx.arc(lx,ly-4,5.5,0,6.29);ctx.fill();txt(ctx,l,lx+9,ly,{s:11.5*k,c:PAL['cv-soft']});ctx.font='400 '+11.5*k+'px '+FONT;lx+=ctx.measureText(l).width+26;});}},
+    if(s.phase==='tl'||s.phase==='done'){const LG=[['h','nonpolar'],['p','polar'],['+','positive'],['-','negative']];ctx.font='400 '+11.5*k+'px '+FONT;let lx=786-LG.reduce((a,[,l])=>a+ctx.measureText(l).width+26,0)+9;const ly=440;LG.forEach(([kk,l])=>{ctx.fillStyle=KCOL[kk];ctx.beginPath();ctx.arc(lx,ly-4,5.5,0,6.29);ctx.fill();txt(ctx,l,lx+9,ly,{s:11.5*k,c:PAL['cv-soft']});ctx.font='400 '+11.5*k+'px '+FONT;lx+=ctx.measureText(l).width+26;});}},
   tour:[
     {title:'A gene',text:{bio:'This is a short gene: a stretch of DNA. Its order of bases (A, T, G, C) is the recipe for one protein.',honors:'This is a short gene. The coding strand (top) has the same sequence as the mRNA will have. The template strand (bottom) is the one that gets read.'},focus:[120,28,672,100],pause:true},
     {title:'RNA polymerase unzips the DNA',text:'RNA polymerase (purple) opens up a small bubble in the double helix and moves along it, reading one base at a time.',focus:sim=>{const d=derived(sim),bw=Math.min(24,620/d.disp.length),x0=140+(640-d.disp.length*bw)/2,px=x0+sim.st.tpos*bw;return [px-80,22,160,160];},speed:.25},

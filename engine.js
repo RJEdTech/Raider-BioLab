@@ -105,7 +105,7 @@ function buildSim(sim){
     <aside class="controls" aria-label="Variables"><h3>${d.controlsTitle||'Variables'}</h3></aside>
   </div>
   <div class="readouts"></div>
-  <div class="lower${hasGraph&&hasPredict?'':' one'}">
+  <div class="lower${((hasGraph?1:0)+(d.infoPanel?1:0)+(hasPredict?1:0))>=2?'':' one'}">
     ${hasGraph?`<div class="panel graph">
       <div class="p-head"><div class="seg" role="radiogroup" aria-label="Graph mode"><button type="button" role="radio" data-g="live" aria-checked="true">Graph</button><button type="button" role="radio" data-g="trials" aria-checked="false">Trials</button></div>
         <div class="g-opts g-live"><label for="${id}-gm">Plot</label><select class="sel" id="${id}-gm"></select></div>
