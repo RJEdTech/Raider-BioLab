@@ -128,7 +128,7 @@ const CC={
       if(c.dmg&&c.ph!=='APO'){ctx.strokeStyle='#ffd23f';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(c.x+4,c.y-11);ctx.lineTo(c.x-1,c.y-3);ctx.lineTo(c.x+3,c.y-3);ctx.lineTo(c.x-3,c.y+6);ctx.stroke();}
       ctx.globalAlpha=1;}
     // legend
-    const ly=437;let lx=14;const item=(col,label,ring)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(lx+6,ly-4,6,0,6.29);ctx.fill();if(ring){ctx.strokeStyle='rgba(60,30,30,.55)';ctx.lineWidth=1;ctx.stroke();}txt(ctx,label,lx+16,ly,{s:11.5*k,c:PAL['cv-ink']});ctx.font='400 '+11.5*k+'px '+FONT;lx+=ctx.measureText(label).width+30;};
+    const ly=437;let lx=14;const item=(col,label,ring)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(lx+6,ly-4,6,0,6.29);ctx.fill();if(ring){ctx.strokeStyle='rgba(60,30,30,.55)';ctx.lineWidth=1;ctx.stroke();}txt(ctx,label,lx+16,ly,{s:12*k,c:PAL['cv-ink']});ctx.font='400 '+12*k+'px '+FONT;lx+=ctx.measureText(label).width+26;};
     item(NUC.G1,hon?'G1':'growing');item(NUC.S,hon?'S':'copying DNA');item(NUC.G2,hon?'G2':'getting ready');item(NUC.M,hon?'M':'dividing');item(NUC.G0,hon?'G0 (resting)':'resting');
     if(hon)item(NUC.ARR,'arrested by p53');item(BODY[1],'1 mutation',true);item(BODY[2],hon?'cancer (2+)':'cancer',true);
     if(st.cells.length>=CAP)pill(ctx,'Dish full',740,20,'#3a3a44','#fff',11*k);

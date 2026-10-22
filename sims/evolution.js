@@ -151,7 +151,7 @@ const EVO={
     ctx.font='700 '+12.5*k+'px '+FONT;const lw=ctx.measureText(lab).width+14*k;pill(ctx,lab,8+lw/2,22,PAL['card'],PAL['cv-ink'],12.5*k);
     ctx.font='700 '+12*k+'px '+FONT;const pw=ctx.measureText(phase).width+13*k;pill(ctx,phase,8+pw/2,26+22*k,'rgba(20,20,24,.72)','#fff',12*k);
     // all populations (honors+)
-    if(hon){ctx.fillStyle=PAL['card'];rr(ctx,618,8,176,86,10);ctx.fill();txt(ctx,'All 5 populations: D',706,26,{s:11.5*k,w:700,a:'center'});
+    if(hon){ctx.fillStyle=PAL['card'];rr(ctx,618,8,176,86,10);ctx.fill();txt(ctx,k>1.3?'All 5: D':'All 5 populations: D',706,26,{s:11.5*k,w:700,a:'center'});
       s.P.forEach((x,i)=>{const bx=636+i*32,h=50;ctx.fillStyle=PAL['card2'];ctx.fillRect(bx,36,18,h);ctx.fillStyle=serColor(i);ctx.fillRect(bx,36+h*(1-x),18,h*x);ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.strokeRect(bx+.5,36.5,17,h);});}
     // legend
     const items=p.dom?[['dark','dark fur (DD, Dd)'],['light','light fur (dd)']]:[['dark','dark (DD)'],['mid','medium (Dd)'],['light','light (dd)']];

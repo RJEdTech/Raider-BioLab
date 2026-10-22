@@ -120,7 +120,8 @@ const SIG={
       if(hon){txt(ctx,i===0?'Receptor':'',x,64,{s:11*k,w:700,a:'center',c:PAL['cv-soft']});}
     });
     const lab=(s_,x,y)=>txt(ctx,s_,x,y,{s:12*k,w:700,c:PAL['cv-ink']});
-    if(hon){txt(ctx,'G protein',90,178,{s:11*k,w:600,c:PAL['cv-soft'],a:'center'});txt(ctx,'Adenylyl cyclase',167,178,{s:11*k,w:600,c:PAL['cv-soft'],a:'center'});}
+    if(hon&&k<1.3){txt(ctx,'G protein',90,178,{s:11*k,w:600,c:PAL['cv-soft'],a:'center'});txt(ctx,'Adenylyl cyclase',167,178,{s:11*k,w:600,c:PAL['cv-soft'],a:'center'});}
+    else if(hon){txt(ctx,'G protein → cyclase',128,178,{s:11*k,w:600,c:PAL['cv-soft'],a:'center'});}
     else{txt(ctx,'Receptor',70,64,{s:11*k,w:700,a:'center',c:PAL['cv-soft']});txt(ctx,'Relay proteins',130,178,{s:11*k,w:600,c:PAL['cv-soft'],a:'center'});}
     // cAMP cloud
     const nC=Math.round(clamp(s.C*5,0,80));
@@ -147,7 +148,7 @@ const SIG={
         if(on>0.5){ctx.fillStyle='#f2b705';ctx.beginPath();ctx.arc(x+10,g.y-8,5.5,0,6.29);ctx.fill();txt(ctx,'P',x+10,g.y-7.5,{s:8*k,w:800,c:'#3a2c00',a:'center',b:'middle'});}}});
     // glycogen granule and glucose release
     ctx.fillStyle='#c9a227';for(const q of v.gl){ctx.beginPath();ctx.arc(q[0],q[1],5,0,6.29);ctx.fill();}
-    txt(ctx,hon?'Glycogen (stored glucose)':'Stored sugar (glycogen)',712,438,{s:11.5*k,w:600,a:'center',c:PAL['cv-soft']});
+    txt(ctx,hon?'Glycogen (stored glucose)':'Stored sugar (glycogen)',792,438,{s:11.5*k,w:600,a:'right',c:PAL['cv-soft']});
     // GLUT2 transporter
     ctx.fillStyle='#6a8796';rr(ctx,734,94,24,42,6);ctx.fill();
     v.gAcc+=s.glu*0.28*vdt;while(v.gAcc>=1){v.gAcc--;const q=v.gl[Math.floor(R()*v.gl.length)];v.glu.push({x:q[0],y:q[1],ph:0});}
@@ -158,7 +159,7 @@ const SIG={
     if(p.tox)pill(ctx,'Toxin: G protein stuck on',160,40,'#b3261e','#fff',11*k);
     if(p.blk)pill(ctx,'Beta blocker',330,40,'#6a32d0','#fff',11*k);
     // legend
-    let lx=430;const ly=443;
+    let lx=330;const ly=443;
     ctx.fillStyle='#e08a00';ctx.beginPath();ctx.moveTo(lx,ly-10);ctx.lineTo(lx+5,ly-4);ctx.lineTo(lx,ly+2);ctx.lineTo(lx-5,ly-4);ctx.closePath();ctx.fill();txt(ctx,'epinephrine',lx+9,ly,{s:11*k,c:PAL['cv-soft']});
   },
   narrate(sim){const p=sim.p,s=sim.st,hon=atLeast('honors'),g=s.glu.toFixed(1);

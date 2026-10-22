@@ -7,7 +7,7 @@ const MAT='#d24d6a',PAT='#3b74c9';
 const MITO=[['Interphase (G1)','G1'],['Interphase (S): DNA copied','S'],['Prophase','P'],['Metaphase','M'],['Anaphase','A'],['Telophase','T'],['Cytokinesis: two cells','C']];
 const MEIO=[['Interphase (G1)','G1'],['Interphase (S): DNA copied','S'],['Prophase I','PI'],['Metaphase I','MI'],['Anaphase I','AI'],['Telophase I: two cells','TI'],['Prophase II','PII'],['Metaphase II','MII'],['Anaphase II','AII'],['Telophase II: four cells','TII']];
 const TR=1.3,HOLD=0.8,CY=210;
-const LEN=k=>44-10*k;
+const LEN=k=>40-9*k;
 const C1={x:400,y:CY,r:150},CL={x:210,y:CY,r:120},CR={x:590,y:CY,r:120},Q=[{x:110,y:CY,r:86},{x:300,y:CY,r:86},{x:500,y:CY,r:86},{x:690,y:CY,r:86}];
 const ease=p=>p<.5?2*p*p:1-2*(1-p)*(1-p);
 const phases=st=>st.mode==='mitosis'?MITO:MEIO;
@@ -23,18 +23,18 @@ function layout(st,i,nd){const n=st.n,L={cells:[C1,C1,C1,C1],env:1,spin:0,poles:
   if(ph==='G1'||ph==='S'){hs.forEach(([k,h])=>{const p=chromatin(C1,k,h,0);it(k,h,0,p[0],p[1],0);const p1=chromatin(C1,k,h,1);it(k,h,1,ph==='S'?p1[0]:p[0],ph==='S'?p1[1]:p[1],ph==='S'?0.12:0,-1,ph==='S'?1:0);});return L;}
   if(st.mode==='mitosis'){
     if(ph==='P'){L.env=0.25;L.spin=0.35;L.poles=[{x:280,y:CY},{x:520,y:CY}];hs.forEach(([k,h],j)=>{const x=400+(j-(hs.length-1)/2)*40,y=CY+(j%2?-34:34);it(k,h,0,x-5,y,1);it(k,h,1,x+5,y,1);});return L;}
-    if(ph==='M'||ph==='A'){L.env=0;L.spin=1;L.poles=[{x:262,y:CY},{x:538,y:CY}];const ys=stack(hs.map(([k])=>LEN(k)),10);
-      hs.forEach(([k,h],j)=>{const y=ph==='A'?CY+(ys[j]-CY)*0.75:ys[j];const dx=ph==='A'?100:5;it(k,h,0,400-dx,y,1,0);it(k,h,1,400+dx,y,1,1);});
+    if(ph==='M'||ph==='A'){L.env=0;L.spin=1;L.poles=[{x:262,y:CY},{x:538,y:CY}];const ys=stack(hs.map(([k])=>LEN(k)),20);
+      hs.forEach(([k,h],j)=>{const y=ys[j];const dx=ph==='A'?92+(j%2)*16:5;it(k,h,0,400-dx,y,1,0);it(k,h,1,400+dx,y,1,1);});
       if(ph==='A')L.cells=[{x:378,y:CY,r:148},{x:378,y:CY,r:148},{x:422,y:CY,r:148},{x:422,y:CY,r:148}];return L;}
     if(ph==='T'){L.env=0.6;L.spin=0.2;L.poles=[{x:230,y:CY},{x:570,y:CY}];const l={x:300,y:CY,r:125},r={x:500,y:CY,r:125};L.cells=[l,l,r,r];
       hs.forEach(([k,h],j)=>{const x=(j-(hs.length-1)/2)*15;it(k,h,0,285+x,CY,0.55);it(k,h,1,515+x,CY,0.55);});return L;}
     L.cells=[CL,CL,CR,CR];hs.forEach(([k,h])=>{const a=chromatin(CL,k,h,0),b=chromatin(CR,k,h,0);it(k,h,0,a[0],a[1],0.05);it(k,h,1,b[0],b[1],0.05);});return L;}
   // meiosis
   if(ph==='PI'){L.env=0.25;L.spin=0.35;L.poles=[{x:280,y:CY},{x:520,y:CY}];for(let k=0;k<n;k++){const x=400+(k-(n-1)/2)*84;it(k,0,0,x-15,CY,1);it(k,0,1,x-5,CY,1);it(k,1,0,x+5,CY,1);it(k,1,1,x+15,CY,1);}return L;}
-  if(ph==='MI'||ph==='AI'){L.env=0;L.spin=1;L.poles=[{x:262,y:CY},{x:538,y:CY}];const ys=stack([...Array(n)].map((_,k)=>LEN(k)),18);
+  if(ph==='MI'||ph==='AI'){L.env=0;L.spin=1;L.poles=[{x:262,y:CY},{x:538,y:CY}];const ys=stack([...Array(n)].map((_,k)=>LEN(k)),26);
     for(let k=0;k<n;k++){for(let h=0;h<2;h++){let side=ph==='MI'?(st.orient[k]===h?0:1):sideMI(st,k,h,nd);let base;
       if(ph==='MI')base=side===0?389:411;else{base=side===0?300:500;if(nd&&k===0&&h===1)base+=20;}
-      const y=ph==='AI'?CY+(ys[k]-CY)*0.85:ys[k];const pole=side;it(k,h,0,base-5,y,1,pole);it(k,h,1,base+5,y,1,pole);}}
+      const y=ys[k];const pole=side;it(k,h,0,base-5,y,1,pole);it(k,h,1,base+5,y,1,pole);}}
     if(ph==='AI')L.cells=[{x:378,y:CY,r:148},{x:378,y:CY,r:148},{x:422,y:CY,r:148},{x:422,y:CY,r:148}];return L;}
   // after meiosis I: which homologs sit in each cell
   const inCell=[[],[]];for(let k=0;k<n;k++)for(let h=0;h<2;h++)inCell[sideMI(st,k,h,nd)].push([k,h]);
@@ -43,7 +43,7 @@ function layout(st,i,nd){const n=st.n,L={cells:[C1,C1,C1,C1],env:1,spin:0,poles:
     inCell.forEach((list,ci)=>list.forEach(([k,h],j)=>{const cx=cells2[ci].x+(j-(list.length-1)/2)*30,y=CY+(ph==='PII'?(j%2?-26:26):0);it(k,h,0,cx-5,y,ph==='TI'?0.7:1);it(k,h,1,cx+5,y,ph==='TI'?0.7:1);}));return L;}
   if(ph==='MII'||ph==='AII'){L.env=0;L.spin=1;L.poles=[{x:115,y:CY},{x:305,y:CY},{x:495,y:CY},{x:685,y:CY}];
     if(ph==='AII')L.cells=[{x:192,y:CY,r:120},{x:228,y:CY,r:120},{x:572,y:CY,r:120},{x:608,y:CY,r:120}];else L.cells=[CL,CL,CR,CR];
-    inCell.forEach((list,ci)=>{const ys=stack(list.map(([k])=>LEN(k)),12),cx=cells2[ci].x;list.forEach(([k,h],j)=>{const y=ph==='AII'?CY+(ys[j]-CY)*0.8:ys[j],dx=ph==='AII'?68:5;it(k,h,0,cx-dx,y,1,ci*2);it(k,h,1,cx+dx,y,1,ci*2+1);});});return L;}
+    inCell.forEach((list,ci)=>{const ys=stack(list.map(([k])=>LEN(k)),20),cx=cells2[ci].x;list.forEach(([k,h],j)=>{const y=ys[j],dx=ph==='AII'?60+(j%2)*14:5;it(k,h,0,cx-dx,y,1,ci*2);it(k,h,1,cx+dx,y,1,ci*2+1);});});return L;}
   // TII: four cells
   L.cells=Q;inCell.forEach((list,ci)=>list.forEach(([k,h],j)=>{[0,1].forEach(c=>{const cell=Q[ci*2+c];it(k,h,c,cell.x+(j-(list.length-1)/2)*16,CY,0.35);});}));return L;}
 function crossed(st,sim){return st.mode==='meiosis'&&sim.p.xo&&(st.phase>2||(st.phase===2&&(st.from<2?st.prog>0.6:true)));}

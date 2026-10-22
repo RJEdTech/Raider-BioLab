@@ -185,7 +185,8 @@ function tourGo(sim,i){const st=tourSteps(sim);if(!st.length)return;if(i>=st.len
   b.querySelector('.tb-x').innerHTML=lvText(s.text);b.querySelector('[data-tour=back]').disabled=i===0;b.querySelector('[data-tour=next]').textContent=i===st.length-1?'Finish':'Next';}
 function tourExit(sim){sim.tour={on:false,i:0};sim.ui.tourbar.hidden=true;if(sim.ui.cap)sim.ui.cap.hidden=false;setSpeed(sim,1);setRunning(sim,true);if(sim.def.onTourExit)sim.def.onTourExit(sim);}
 function drawFocus(sim,ctx,LH){if(!sim.tour||!sim.tour.on)return;const s=tourSteps(sim)[sim.tour.i];if(!s||!s.focus)return;let f=typeof s.focus==='function'?s.focus(sim):s.focus;if(!f)return;
-  const rects=Array.isArray(f[0])?f:[f];ctx.save();ctx.beginPath();ctx.rect(0,0,800,LH);rects.forEach(r=>{rr(ctx,r[0],r[1],r[2],r[3],10);});ctx.fillStyle='rgba(10,10,14,.5)';ctx.fill('evenodd');
+  const rects=Array.isArray(f[0])?f:[f];const sub=(x,y,w,h,r)=>{r=Math.min(r,w/2,h/2);ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
+  ctx.save();ctx.beginPath();ctx.rect(0,0,800,LH);rects.forEach(r=>sub(r[0],r[1],r[2],r[3],10));ctx.fillStyle='rgba(10,10,14,.5)';ctx.fill('evenodd');
   ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;rects.forEach(r=>{rr(ctx,r[0],r[1],r[2],r[3],10);ctx.stroke();});ctx.restore();}
 BL.h.lvText=lvText;
 function flash(sim,msg){const t=sim.ui.toast;if(!t)return;t.textContent=msg;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>{t.hidden=true;},2400);}
@@ -251,7 +252,7 @@ function fit(cv,w,h){const dpr=Math.min(2,window.devicePixelRatio||1),W=Math.rou
 function drawStageTo(sim,cv,vdt,kOverride){const w=cv.clientWidth;if(!w)return;const asp=sim.def.aspect||16/9,LH=800/asp,h=w/asp;fit(cv,w,h);const ctx=cv.getContext('2d'),sc=cv.width/800;
   ctx.setTransform(sc,0,0,sc,0,0);ctx.clearRect(0,0,800,LH);const k=kOverride||clamp(720/w,1,1.8);ctx.save();sim.def.draw(sim,ctx,vdt,k,sim.vt);ctx.restore();drawFocus(sim,ctx,LH);}
 function drawGraph(sim){const cv=sim.ui.graph;if(!cv)return;const W=cv.clientWidth,H=cv.clientHeight;if(!W)return;const dpr=fit(cv,W,H),ctx=cv.getContext('2d');
-  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);const box={L:56,T:12,W:W-56-14,H:H-12-40,cw:W,ch:H};
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);const box={L:66,T:12,W:W-66-14,H:H-12-40,cw:W,ch:H};
   if(sim.gmode==='live'){const o=graphOptions(sim).find(g=>g.id===sim.gMetric);if(!o){txt(ctx,'No graph for this level.',W/2,H/2,{s:15,c:PAL['muted'],a:'center',b:'middle'});return;}
     if(o.custom){ctx.save();sim.def.plot(sim,ctx,box,o.id);ctx.restore();return;}
     const ms=o.lines.map(id=>metricById(sim,id)),win=sim.def.window||30,xmax=Math.max(win,sim.t),xmin=xmax-win;

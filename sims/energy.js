@@ -9,7 +9,7 @@ const {clamp,rng,rr,txt,pill,atLeast,PAL,FONT,RM,axes,bars,serColor}=BioLab.h;
    Trophic cascade: sea otters O (per km of coast), sea urchins U (per m²), kelp cover Kc (%), time in years. */
 const LEVELS=[{n:'Phytoplankton',r:'Producers',sh:'Phyto'},{n:'Zooplankton',r:'Primary consumers',sh:'Zoo'},{n:'Minnows',r:'Secondary consumers',sh:'Minnows'},{n:'Pike',r:'Tertiary consumers',sh:'Pike'},{n:'Osprey',r:'Quaternary consumers',sh:'Osprey'}];
 const BARC=['#2e8b47','#2f8a84','#3e6fb0','#7a4fa6','#b5122d'];
-const HG0=0.01,FDA=1.0,CX=440,BARMAX=460,ROWH=72,ROW0=405;
+const HG0=0.01,FDA=1.0,CX=440,BARMAX=460,ROWH=72,ROW0=396;
 const rowY=i=>ROW0-i*ROWH;
 function calc(p){const n=p.levels,eff=p.eff/100,gpp=p.gpp,resp=p.resp/100,npp=gpp*(1-resp),E=[],C=[];
   for(let i=0;i<n;i++){E.push(i?E[i-1]*eff:npp);C.push(i?C[i-1]*0.5/eff:HG0);}return {n,eff,gpp,resp,npp,E,C};}
@@ -20,7 +20,7 @@ const isCas=sim=>sim.p.mode==='cascade';
 function derivC(s){const pred=0.0564*s.O*s.U;return {O:0.3*s.O*(1-s.O/10),U:0.6*s.U*(1-s.U/50)-pred+0.05,K:1.0*s.Kc*(1-s.Kc/100)-6.25*s.U*s.Kc/(s.Kc+40)+0.2,pred};}
 
 function syncTiles(sim){if(!sim.ui||!sim.ui.tiles)return;const mode=sim.p.mode;
-  sim.def.metrics.forEach(m=>{const t=sim.ui.tiles[m.id];if(!t)return;const el=t.num.closest('.tile');if(el)el.hidden=!atLeast(m.lvl)||(m.mode&&m.mode!==mode);});}
+  sim.def.metrics.forEach(m=>{const t=sim.ui.tiles[m.id];if(!t)return;const el=t.num.closest('.tile');if(el)el.hidden=!atLeast(m.lvl)||(m.mode&&m.mode!==mode)||(m.id==='toxTop'&&!sim.p.toxin);});}
 function syncGraph(sim){const want=isCas(sim)?'cascade':'levels';if(!atLeast('honors')&&want==='cascade')return;sim.gMetric=want;if(sim.ui&&sim.ui.gm){sim.ui.gm.value=want;BioLab.refresh(sim);}}
 
 /* ---------- little organism icons ---------- */
@@ -53,7 +53,7 @@ const EN={
     {id:'eff',label:'Trophic efficiency',type:'range',min:5,max:20,step:1,def:10,unit:'%',lvl:'bio',help:'Share of a level’s energy that ends up in the level above'},
     {id:'levels',label:'Food chain length',type:'range',min:2,max:5,step:1,def:4,unit:' levels',lvl:'bio'},
     {id:'resp',label:'Plant respiration',type:'range',min:30,max:80,step:5,def:50,unit:'%',lvl:'ap',help:'Share of captured energy plants burn for their own needs'},
-    {id:'toxin',label:'Mercury in the lake',type:'toggle',def:false,lvl:'honors',help:'Phytoplankton absorb 0.01 ppm'},
+    {id:'toxin',label:'Mercury in the lake',type:'toggle',def:false,lvl:'honors',help:'Phytoplankton absorb 0.01 ppm',onChange(sim){syncTiles(sim);}},
     {id:'barScale',label:'Bar widths',type:'seg',def:'true',lvl:'honors',options:[{v:'true',l:'True to scale'},{v:'log',l:'Log scale'}],noTrial:true}
   ],
   actions:[
@@ -84,19 +84,21 @@ const EN={
       const gap=8,sh=(box.H-2*gap)/3,X=x=>box.L+(x-xmin)/(xmax-xmin)*box.W;
       ser.forEach((sr,i)=>{const T=box.T+i*(sh+gap),Y=v=>T+sh-v/sr[2]*sh;ctx.strokeStyle=PAL['g-grid'];ctx.lineWidth=1;ctx.strokeRect(box.L+.5,T+.5,box.W,sh);
         txt(ctx,String(sr[2]),box.L-6,T+6,{s:12,c:PAL['g-axis'],a:'right',b:'middle'});txt(ctx,'0',box.L-6,T+sh,{s:12,c:PAL['g-axis'],a:'right',b:'middle'});
-        txt(ctx,sr[1],box.L+8,T+14,{s:13,c:sr[3],w:700});
+        
         if(rows.length>1){ctx.beginPath();rows.forEach((r,j)=>{const x=X(r.t),y=Y(clamp(r.v[sr[0]],0,sr[2]));j?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.strokeStyle=sr[3];ctx.lineWidth=2.5;ctx.stroke();
-          const lr=rows[rows.length-1];ctx.fillStyle=sr[3];ctx.beginPath();ctx.arc(X(lr.t),Y(clamp(lr.v[sr[0]],0,sr[2])),4,0,6.29);ctx.fill();}});
+          const lr=rows[rows.length-1];ctx.fillStyle=sr[3];ctx.beginPath();ctx.arc(X(lr.t),Y(clamp(lr.v[sr[0]],0,sr[2])),4,0,6.29);ctx.fill();}
+        ctx.font='700 13px '+BioLab.h.FONT;const tw=ctx.measureText(sr[1]).width;ctx.fillStyle=PAL['card'];ctx.globalAlpha=0.9;ctx.fillRect(box.L+4,T+3,tw+10,16);ctx.globalAlpha=1;txt(ctx,sr[1],box.L+9,T+15,{s:13,c:sr[3],w:700});});
       const step=xmax-xmin>20?5:2;for(let x=Math.ceil(xmin/step)*step;x<=xmax+1e-9;x+=step)txt(ctx,x.toFixed(0),X(x),box.T+box.H+16,{s:13,c:PAL['g-axis'],a:'center'});
       txt(ctx,'Year',box.L+box.W/2,box.ch-4,{s:13,c:PAL['muted'],a:'center'});return;}
     if(isCas(sim)){msg('Switch Mode to Energy pyramid to see this graph.');return;}
     const c=calc(sim.p),cats=LEVELS.slice(0,c.n).map(l=>l.sh);
-    if(id==='levels'){const ax=axes(ctx,box,{xmin:0,xmax:c.n,ymin:0,ymax:niceCeil(c.E[0]*1.12),xcats:cats,yl:'Energy (kcal/m²/yr)'});bars(ctx,ax,c.E,{colors:BARC,d:0});return;}
+    const bx={...box,L:box.L+16,W:box.W-16};
+    if(id==='levels'){const ax=axes(ctx,bx,{xmin:0,xmax:c.n,ymin:0,ymax:niceCeil(c.E[0]*1.12),xcats:cats,yl:'Energy (kcal/m²/yr)'});bars(ctx,ax,c.E,{colors:BARC,d:0});return;}
     if(!sim.p.toxin){msg('Turn on Mercury in the lake to see this graph.');return;}
-    const ymax=niceCeil(Math.max(FDA,...c.C)*1.15),ax=axes(ctx,box,{xmin:0,xmax:c.n,ymin:0,ymax,xcats:cats,yl:'Mercury (ppm)'});
+    const ymax=niceCeil(Math.max(FDA,...c.C)*1.15),ax=axes(ctx,bx,{xmin:0,xmax:c.n,ymin:0,ymax,xcats:cats,yl:'Mercury (ppm)'});
     bars(ctx,ax,c.C,{colors:c.C.map(v=>v>FDA?PAL['cv-inc']:PAL['cv-inn']),d:2});
-    ctx.setLineDash([6,4]);ctx.strokeStyle=PAL['cv-inc'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(box.L,ax.Y(FDA));ctx.lineTo(box.L+box.W,ax.Y(FDA));ctx.stroke();ctx.setLineDash([]);
-    txt(ctx,'FDA limit for fish (1 ppm)',box.L+8,ax.Y(FDA)-6,{s:12,c:PAL['cv-inc'],w:600});
+    ctx.setLineDash([6,4]);ctx.strokeStyle=PAL['cv-inc'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(bx.L,ax.Y(FDA));ctx.lineTo(bx.L+bx.W,ax.Y(FDA));ctx.stroke();ctx.setLineDash([]);
+    txt(ctx,'FDA limit for fish (1 ppm)',bx.L+8,ax.Y(FDA)-6,{s:12,c:PAL['cv-inc'],w:600});
   },
   challenges:[
     {lvl:'bio',q:'Producers store 10,000 kcal per m² each year. You add a third level: minnows that eat the zooplankton. About how much energy reaches the minnows?',
@@ -136,13 +138,13 @@ const EN={
     if(hon&&p.toxin)out+=' Mercury is <b>'+Math.round(c.C[c.n-1]/c.C[0]).toLocaleString('en-US')+'×</b> more concentrated in the '+top+' than in the phytoplankton.';
     return out;},
   tour:[
-    {title:'Energy starts as sunlight',text:'Sunlight hits the lake. Phytoplankton, tiny floating algae, capture a small part of it by photosynthesis. Each yellow square is a packet of energy.',focus:[[8,8,112,92],[200,377,500,56]],speed:0.3},
-    {title:'Producers store energy',text:{bio:'Phytoplankton use some of that energy to live and store the rest in their bodies. That stored energy is the food for everything else in the lake.',ap:'Captured energy is gross primary production (GPP). Plants burn part of it in their own cellular respiration (packets that turn to heat right away). What is left, net primary production (NPP), is what consumers can eat.'},focus:[8,377,787,56],speed:0.3},
-    {title:'Eating moves energy up',text:'Zooplankton eat phytoplankton. Follow the packets: only about 1 in 10 makes it up to the next level.',focus:[8,305,787,128],speed:0.25},
-    {title:'Where does the rest go?',text:'Most of the energy each organism takes in is burned for moving, breathing and staying alive, and leaves as heat (orange squiggles). Some is in parts that never get eaten, like shells, bones and waste.',focus:[196,88,508,346],speed:0.3},
-    {title:'Each level gets about 10%',text:'10,000 → 1,000 → 100 → 10 kcal. Each level gets roughly a tenth of the energy of the level below it.',focus:[672,88,128,346],speed:1},
-    {title:'Why top predators are rare',text:'Pike get only about 10 kcal per m² a year. A lake can feed huge numbers of minnows but only a few pike. This is why food chains rarely go past 4 or 5 levels.',focus:[8,161,787,56],speed:1},
-    {lvl:'honors',title:'Mercury builds up',text:'Mercury isn’t burned off like energy. Each predator eats many times its weight in prey and keeps their mercury, so it gets more concentrated at every level. Pike end up above the FDA limit for eating fish.',focus:[196,88,604,346],speed:0.5,setup(sim){BioLab.setValues(sim,{toxin:true});}},
+    {title:'Energy starts as sunlight',text:'Sunlight hits the lake. Phytoplankton, tiny floating algae, capture a small part of it by photosynthesis. Each yellow square is a packet of energy.',focus:[[8,8,112,92],[200,368,500,56]],speed:0.3},
+    {title:'Producers store energy',text:{bio:'Phytoplankton use some of that energy to live and store the rest in their bodies. That stored energy is the food for everything else in the lake.',ap:'Captured energy is gross primary production (GPP). Plants burn part of it in their own cellular respiration (packets that turn to heat right away). What is left, net primary production (NPP), is what consumers can eat.'},focus:[8,368,787,56],speed:0.3},
+    {title:'Eating moves energy up',text:'Zooplankton eat phytoplankton. Follow the packets: only about 1 in 10 makes it up to the next level.',focus:[8,296,787,128],speed:0.25},
+    {title:'Where does the rest go?',text:'Most of the energy each organism takes in is burned for moving, breathing and staying alive, and leaves as heat (orange squiggles). Some is in parts that never get eaten, like shells, bones and waste.',focus:[196,80,508,346],speed:0.3},
+    {title:'Each level gets about 10%',text:'10,000 → 1,000 → 100 → 10 kcal. Each level gets roughly a tenth of the energy of the level below it.',focus:[672,80,128,346],speed:1},
+    {title:'Why top predators are rare',text:'Pike get only about 10 kcal per m² a year. A lake can feed huge numbers of minnows but only a few pike. This is why food chains rarely go past 4 or 5 levels.',focus:[8,152,787,56],speed:1},
+    {lvl:'honors',title:'Mercury builds up',text:'Mercury isn’t burned off like energy. Each predator eats many times its weight in prey and keeps their mercury, so it gets more concentrated at every level. Pike end up above the FDA limit for eating fish.',focus:[196,80,604,346],speed:0.5,setup(sim){BioLab.setValues(sim,{toxin:true});}},
     {lvl:'honors',title:'A trophic cascade',text:'Top predators can shape a whole ecosystem. Here, sea otters eat sea urchins, and urchins eat kelp. After the walkthrough, press <b>Remove the otters</b> and watch what happens to the kelp.',speed:1,setup(sim){BioLab.setValues(sim,{mode:'cascade'});}}
   ],
   onTourExit(sim){BioLab.setValues(sim,{mode:'pyramid',toxin:false});BioLab.reset(sim);},
@@ -160,7 +162,7 @@ const EN={
     v.hg=[];for(let i=0;i<60;i++)v.hg.push([r()*2-1,r()*2-1]);},
   thumbFrames:120,
   draw(sim,ctx,vdt,k,t){
-    const v=sim.vis,p=sim.p,ks=Math.min(k,1.25);
+    const v=sim.vis,p=sim.p,ks=Math.min(k,1.5);
     if(isCas(sim))drawCascade(sim,ctx,vdt,k,t);else drawPyramid(sim,ctx,vdt,ks,t);
     if(v.banner&&v.banner.life>0){v.banner.life-=vdt||0.016;pill(ctx,v.banner.t,400,110,'#b3261e','#fff',14*Math.min(k,1.3));}
   }
@@ -183,10 +185,11 @@ function drawPyramid(sim,ctx,vdt,ks,t){
     if(hon&&p.toxin){const hg=c.C[i];txt(ctx,'Hg '+fmtPPM(hg)+' ppm',790,y+14,{s:12*ks,w:700,a:'right',c:hg>FDA?PAL['cv-inc']:PAL['cv-inn']});
       const nd=Math.min(60,Math.round(3*Math.pow(hg/HG0,0.62))),hw=Math.max(w,64)/2;ctx.fillStyle=PAL['cv-inn'];
       for(let j=0;j<nd;j++){const q=v.hg[j];ctx.beginPath();ctx.arc(CX+q[0]*(hw-5),y+q[1]*17,2.6,0,6.29);ctx.fill();}}
-    else txt(ctx,(100*c.E[i]/c.E[0]>=1?Math.round(100*c.E[i]/c.E[0]):(100*c.E[i]/c.E[0]).toFixed(2))+'% of producers',790,y+14,{s:12*ks,c:PAL['cv-soft'],a:'right'});
+    else txt(ctx,(100*c.E[i]/c.E[0]>=1?Math.round(100*c.E[i]/c.E[0]):(100*c.E[i]/c.E[0]).toFixed(2))+'%',790,y+14,{s:12*ks,c:PAL['cv-soft'],a:'right'});
     if(i<c.n-1){ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(CX-110,y-30);ctx.lineTo(CX-110,y-42);ctx.stroke();ctx.beginPath();ctx.moveTo(CX-114,y-38);ctx.lineTo(CX-110,y-43);ctx.lineTo(CX-106,y-38);ctx.stroke();
       txt(ctx,'eaten',CX-104,y-33,{s:11*ks,c:PAL['cv-soft']});}}
-  if(hon&&p.toxin)txt(ctx,'FDA limit for fish: 1 ppm',790,rowY(c.n-1)-38,{s:11.5*ks,c:PAL['cv-inc'],a:'right',w:600});
+  txt(ctx,hon&&p.toxin?'energy · mercury':'energy · % of producers',790,rowY(c.n-1)-36,{s:11.5*ks,c:PAL['cv-soft'],a:'right',w:600});
+  if(hon&&p.toxin)txt(ctx,'FDA limit for fish: 1 ppm',790,rowY(c.n-1)-54,{s:11.5*ks,c:PAL['cv-inc'],a:'right',w:600});
   // energy packets: each climbs with probability = efficiency, otherwise becomes heat
   v.acc+=vdt*7*(c.gpp/20000);
   while(v.acc>=1&&v.pk.length<240){v.acc--;const w=barW(p,c,0);v.pk.push({x:sx+20,y:sy+20,tx:CX+(R()-.5)*(w-8),ty:rowY(0)+(R()-.5)*30,lvl:0,st:'fly',sp:260,src:'sun'});}
@@ -202,7 +205,7 @@ function drawPyramid(sim,ctx,vdt,ks,t){
   ctx.lineWidth=2;for(const h of v.heat){ctx.globalAlpha=clamp(h.life/1.3,0,1);ctx.strokeStyle='#e0602a';ctx.beginPath();for(let j=0;j<=6;j++){const xx=h.x+j*2*h.dir,yy=h.y+Math.sin(j*1.3+h.ph)*3;j?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);}ctx.stroke();}ctx.globalAlpha=1;
   for(const q of v.pk){ctx.fillStyle=PAL['cv-e'];ctx.strokeStyle=PAL['cv-estroke'];ctx.lineWidth=1;ctx.fillRect(q.x-3,q.y-3,6,6);ctx.strokeRect(q.x-3,q.y-3,6,6);}
   // key
-  const ky=436;ctx.fillStyle=PAL['cv-e'];ctx.fillRect(200,ky-8,8,8);txt(ctx,'energy packet',214,ky,{s:12*ks,c:PAL['cv-soft']});
+  const ky=442;ctx.fillStyle=PAL['cv-e'];ctx.fillRect(200,ky-8,8,8);txt(ctx,'energy packet',214,ky,{s:12*ks,c:PAL['cv-soft']});
   ctx.strokeStyle='#e0602a';ctx.lineWidth=2;ctx.beginPath();for(let j=0;j<=6;j++){const xx=320+j*2.5,yy=ky-4+Math.sin(j*1.3)*3;j?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);}ctx.stroke();
   txt(ctx,ap?'heat (used for living, incl. plant respiration)':'heat (used for living)',342,ky,{s:12*ks,c:PAL['cv-soft']});
 }
