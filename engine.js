@@ -174,7 +174,7 @@ function buildSim(sim){
       try{navigator.clipboard.writeText(csv).then(()=>flash(sim,'Copied to clipboard'),fallback);}catch(e){fallback();}});
     try{const saved=JSON.parse(store.get('rjbiolab-trials-'+id)||'[]');if(Array.isArray(saved))sim.trials=saved;}catch(e){}}
   return sec;}
-function setRunning(sim,on){sim.running=on;sim.ui.play.textContent=on?'Pause':'Play';sim.ui.stepBtn.hidden=on;}
+function setRunning(sim,on){sim.running=on;sim.ui.play.textContent=on?'Pause':'Play';sim.ui.stepBtn.hidden=on||(sim.def.timeless&&!sim.def.animated);}
 function setSpeed(sim,v){sim.speed=v;const sel=sim.ui.speedSel;if(!sel)return;if(![...sel.options].some(o=>o.value===String(v))){const o=document.createElement('option');o.value=String(v);o.textContent=v+'×';sel.insertBefore(o,sel.firstChild);}sel.value=String(v);}
 const lvText=t=>{if(!t||typeof t==='string')return t||'';let out='';['bio','honors','ap'].forEach(l=>{if(t[l]&&atLeast(l))out=t[l];});return out;};
 function tourSteps(sim){return (sim.def.tour||[]).filter(s=>atLeast(s.lvl));}
