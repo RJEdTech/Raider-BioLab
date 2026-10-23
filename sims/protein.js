@@ -129,7 +129,7 @@ const SIM={
     {lvl:'ap',t:'Quaternary structure',d:'Two or more folded chains working together, like hemoglobin’s four subunits.'},{lvl:'ap',t:'Radius of gyration',d:'A measure of how spread out the chain is; small when folded.'}],
   about:'<p>The chain lives on a 2D square grid. It moves by Monte Carlo steps (pivots, corner flips and end moves). Each step is accepted using the Metropolis rule at a temperature mapped from °C. Energy: −1 for each pair of touching nonpolar side chains, −0.6 for each + / − pair (scaled by how charged each is at that pH, with pKa 4.0 for Glu/Asp and 10.5 for Lys/Arg), and +0.5 for touching like charges. % folded is the share of the native fold’s contacts that are present.</p><p><b>Simplified:</b> real proteins fold in 3D, with 20 distinct side chains, explicit hydrogen bonds and much longer chains. The “neighbor molecules” are drawn as copies to show clumping; only one chain is simulated. The real sickle-cell mutation is at position 6 of the 146-amino-acid β-globin; here it is position 5 of a 20-amino-acid model. Simulated time is approximate.</p>',
   initVis(sim){const r=rng(5),v=sim.vis;v.w=[];for(let i=0;i<70;i++)v.w.push([r()*800,60+r()*360,r()*6.28]);v.vp=null;v.c=null;v.nb=0;},
-  draw(sim,ctx,vdt,k,t){const st=sim.st,v=sim.vis,hon=atLeast('honors'),ap=atLeast('ap'),SP=30;
+  draw(sim,ctx,vdt,k,t){const st=sim.st,v=sim.vis,hon=atLeast('honors'),ap=atLeast('ap'),SP=33;
     ctx.fillStyle=PAL['cv-sol'];ctx.fillRect(0,0,800,450);
     // water molecules
     ctx.strokeStyle=PAL['cv-bstroke'];ctx.lineWidth=1.5;ctx.globalAlpha=.5;v.w.forEach(q=>{const x=q[0]+(RM?0:Math.sin(t*.7+q[2])*4),y=q[1]+(RM?0:Math.cos(t*.6+q[2])*4);ctx.beginPath();ctx.moveTo(x-3,y+2);ctx.lineTo(x,y);ctx.lineTo(x+3,y+2);ctx.stroke();});ctx.globalAlpha=1;
@@ -138,12 +138,16 @@ const SIM={
       txt(ctx,n,sx+i*bw+bw/2,30,{s:Math.min(10.5*k,12),w:700,c:'#fff',a:'center',b:'middle'});});
     txt(ctx,'Primary structure: the amino-acid sequence',400,60,{s:Math.min(12*k,14),c:PAL['cv-soft'],a:'center'});
     // smooth display positions
-    let cx=0,cy=0;st.pos.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=N;cy/=N;if(!v.c)v.c=[cx,cy];const a=1-Math.exp(-vdt*6);v.c[0]=lerp(v.c[0],cx,a||0.2);v.c[1]=lerp(v.c[1],cy,a||0.2);
-    const tgt=st.pos.map(p=>[400+(p[0]-v.c[0])*SP,250+(p[1]-v.c[1])*SP]);
+    let cx=0,cy=0;st.pos.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=N;cy/=N;
+    // align to last frame's orientation (rigid rotations/reflections cost no energy, so ignore them on screen)
+    const rel=st.pos.map(p=>[p[0]-cx,p[1]-cy]);let tgt=null,bestD=Infinity;
+    for(const [a1,b1,c1,d1] of [[1,0,0,1],[0,-1,1,0],[-1,0,0,-1],[0,1,-1,0],[-1,0,0,1],[1,0,0,-1],[0,1,1,0],[0,-1,-1,0]]){
+      const c=rel.map(q=>[400+(a1*q[0]+b1*q[1])*SP,250+(c1*q[0]+d1*q[1])*SP]);if(!v.vp){tgt=c;break;}
+      let dd=0;c.forEach((q,i)=>{dd+=(q[0]-v.vp[i][0])**2+(q[1]-v.vp[i][1])**2;});if(dd<bestD){bestD=dd;tgt=c;}}
     if(!v.vp||v.vp.length!==N)v.vp=tgt.map(p=>p.slice());v.vp.forEach((p,i)=>{const b=1-Math.exp(-vdt*10);p[0]=lerp(p[0],tgt[i][0],vdt?b:1);p[1]=lerp(p[1],tgt[i][1],vdt?b:1);});
     const P=v.vp,ty=types(st);
     // neighbor molecules (honors): copies that clump onto a sticky patch
-    if(hon){v.nb=lerp(v.nb,st.stuck?1:0,1-Math.exp(-(vdt||0.05)*1.5));const drawCopy=(ox,oy,rot)=>{ctx.save();ctx.globalAlpha=.45;ctx.translate(ox,oy);ctx.rotate(rot);
+    if(hon){v.nb=lerp(v.nb,st.stuck?1:0,1-Math.exp(-(vdt||0.05)*1.5));const drawCopy=(ox,oy,rot)=>{ctx.save();ctx.globalAlpha=.25+.3*v.nb;ctx.translate(ox,oy);ctx.rotate(rot);
         ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=5;ctx.beginPath();NATIVE.forEach((q,i)=>{const x=(q[0]-1.2)*16,y=(q[1]-0.2)*16;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
         NATIVE.forEach((q,i)=>{ctx.fillStyle=TCOL[TYPES[st.seq[i]]];ctx.beginPath();ctx.arc((q[0]-1.2)*16,(q[1]-0.2)*16,6,0,6.29);ctx.fill();});ctx.restore();};
       const sp=P[SICKLE];const dx=lerp(260,90,v.nb),dy=lerp(-120,-40,v.nb);drawCopy(clamp(sp[0]+dx,60,740),clamp(sp[1]+dy,90,420),0.4);drawCopy(clamp(sp[0]-dx*0.9,60,740),clamp(sp[1]+dy+150*(1-v.nb)+30,90,420),-0.5);
@@ -160,7 +164,7 @@ const SIM={
       if(!col)return;ctx.strokeStyle=col;ctx.lineWidth=3;ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(P[i][0],P[i][1]);ctx.lineTo(P[j][0],P[j][1]);ctx.stroke();ctx.setLineDash([]);});
     // backbone + residues
     ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=6;ctx.lineJoin='round';ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
-    P.forEach((p,i)=>{const n=st.seq[i];ctx.fillStyle=TCOL[TYPES[n]];ctx.beginPath();ctx.arc(p[0],p[1],11,0,6.29);ctx.fill();
+    P.forEach((p,i)=>{const n=st.seq[i];ctx.fillStyle=TCOL[TYPES[n]];ctx.beginPath();ctx.arc(p[0],p[1],12,0,6.29);ctx.fill();
       if(n!==WT[i]){ctx.strokeStyle='#ffd23f';ctx.lineWidth=3;ctx.stroke();}
       txt(ctx,ONE[n],p[0],p[1]+1,{s:11,w:800,c:'#fff',a:'center',b:'middle'});});
     // legend

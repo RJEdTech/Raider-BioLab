@@ -141,12 +141,12 @@ const SIM={
       txt(ctx,'Buffer strip',176,138,{s:11.5*k,w:700,a:'center'});}
     // runoff stream
     const inflow=(p.runoff/100)*(p.buffer?0.4:1)+(v.storm>0?0.6:0);
-    if(inflow>0.02){ctx.strokeStyle='rgba(120,140,60,'+clamp(0.25+inflow*0.6,0,0.85)+')';ctx.lineWidth=2+inflow*7;ctx.lineCap='round';ctx.setLineDash([10,8]);ctx.lineDashOffset=-(RM?0:t*30);
+    if(inflow>0.02){ctx.strokeStyle='rgba(150,190,90,'+clamp(0.45+inflow*0.5,0,0.95)+')';ctx.lineWidth=3+inflow*8;ctx.lineCap='round';ctx.setLineDash([10,8]);ctx.lineDashOffset=-(RM?0:t*30);
       ctx.beginPath();ctx.moveTo(70,140);ctx.quadraticCurveTo(150,165,LAKE_L+8,SURF+4);ctx.stroke();ctx.setLineDash([]);}
     if(v.storm>0){v.storm-=vdt;ctx.strokeStyle='rgba(120,150,190,.6)';ctx.lineWidth=1.5;for(let i=0;i<40;i++){const x=(i*37+t*400)%800,y=(i*53+t*600)%SURF;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-4,y+10);ctx.stroke();}pill(ctx,'Rainstorm: a pulse of fertilizer',300,24,'#4f6d8f','#fff',12*k);}
     // town and sewage pipe
     
-    if(hon||p.sewage){ctx.fillStyle='#5d6168';ctx.fillRect(764,SURF-12,36,10);txt(ctx,'Sewage pipe',796,SURF-18,{s:10.5*k,a:'right',c:PAL['cv-soft']});if(p.sewage){ctx.fillStyle='rgba(110,100,80,.45)';ctx.beginPath();ctx.ellipse(752,SURF+24,46,22,0,0,6.29);ctx.fill();pill(ctx,'Sewage overflow',720,SURF+56,'#6d5a3a','#fff',11*k);}}
+    if(hon||p.sewage){ctx.fillStyle='#5d6168';ctx.fillRect(764,SURF-12,36,10);txt(ctx,'Sewage pipe',796,SURF-18,{s:10.5*k,a:'right',c:PAL['cv-soft']});}
     // lake body
     const lake=new Path2D();lake.moveTo(LAKE_L,SURF);lake.lineTo(800,SURF);lake.lineTo(800,440);lake.quadraticCurveTo(520,452,LAKE_L+50,395);lake.closePath();
     const wcol=`rgb(${Math.round(lerp(120,90,green))},${Math.round(lerp(175,150,green))},${Math.round(lerp(210,90,green))})`;
@@ -177,6 +177,7 @@ const SIM={
     ctx.restore();
     // dead fish float on the surface
     v.dead.forEach(d=>{d.life-=vdt;ctx.globalAlpha=clamp(d.life/3,0,1);ctx.fillStyle='#b9b1a3';ctx.beginPath();ctx.ellipse(d.x,SURF-1,9,3.2,0,Math.PI,0);ctx.fill();ctx.globalAlpha=1;});v.dead=v.dead.filter(d=>d.life>0);if(v.dead.length>30)v.dead.splice(0,v.dead.length-30);
+    if(p.sewage){ctx.fillStyle='rgba(120,105,80,.55)';ctx.beginPath();ctx.ellipse(758,SURF+26,52,24,0,0,6.29);ctx.fill();pill(ctx,'Sewage overflow',724,SURF+62,'#6d5a3a','#fff',11*k);}
     // labels on the water
     txt(ctx,'Surface water',LAKE_L+30,SURF+(chl>8?30:22),{s:12*k,w:700,c:'#fff'});txt(ctx,'Bottom water',LAKE_L+120,385,{s:12*k,w:700,c:'#fff'});
     if(strat)txt(ctx,'thermocline (layers don’t mix)',560,296,{s:11*k,c:'#fff'});

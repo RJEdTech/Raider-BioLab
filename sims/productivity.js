@@ -83,12 +83,12 @@ const SIM={
     // water bath
     ctx.fillStyle=PAL['cv-water'];ctx.globalAlpha=.55;ctx.fillRect(160,150,610,236);ctx.globalAlpha=1;
     ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(160,140);ctx.lineTo(160,386);ctx.lineTo(770,386);ctx.lineTo(770,140);ctx.stroke();
-    txt(ctx,'Water bath '+p.temp+' °C',762,376,{s:12*k,c:PAL['cv-soft'],a:'right'});
+    txt(ctx,'Water bath '+p.temp+' °C',168,166,{s:12*k,w:600,c:PAL['cv-soft']});
     // bottles
     const bottles=[{key:'I',x:78,lab:'Initial',sub:'measured at 0 h',val:s.doI,kind:'init'},{key:'L',x:hon?280:330,lab:'Light',sub:'clear glass',val:s.doL,kind:'light',P:s.pL},
       ...(hon?[{key:'S',x:460,lab:'Shaded',sub:Math.round(shadeT(sim)*100)+'% light',val:s.doS,kind:'shade',P:s.pS}]:[]),{key:'D',x:hon?640:580,lab:'Dark',sub:'wrapped in foil',val:s.doD,kind:'dark'}];
     const algN=Math.round(ALG[p.nut]*18);
-    bottles.forEach(b=>{const x=b.x,y=200,w=86,h=150;
+    bottles.forEach(b=>{const x=b.x,y=192,w=86,h=146;
       // neck & stopper
       ctx.fillStyle=PAL['cv-glass'];ctx.globalAlpha=.5;ctx.fillRect(x-12,y-34,24,36);ctx.globalAlpha=1;ctx.fillStyle=PAL['cv-lamp'];rr(ctx,x-14,y-46,28,14,4);ctx.fill();
       // body

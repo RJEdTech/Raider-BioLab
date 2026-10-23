@@ -115,7 +115,7 @@ const SIM={
               honors:'Halving contacts halves R₀ (2.8 → 1.4). The epidemic still happens, but it grows slowly, peaks much lower and later, and infects fewer people in total.'}},
     {lvl:'honors',q:'Flu needs only about 25% of people immune to stop spreading. Measles has R₀ ≈ 15. With 80% of the town vaccinated, can measles still spread?',
      choices:['No, 80% is far above what flu needs','Yes, measles needs about 93% immune before it stops'],correct:1,
-     baseline:{disease:'measles',vax:80},change:{},changeText:'Measles arrives in a town that is 80% vaccinated',watch:'sir',reveal:100,
+     baseline:{disease:'measles',contacts:20,trans:9.4,days:8,lat:10,vax:80},change:{},changeText:'Measles arrives in a town that is 80% vaccinated',watch:'sir',reveal:100,
      explain:{honors:'The threshold is 1 − 1/R₀. For flu (R₀ ≈ 1.3) that is about 25%, but for measles (R₀ ≈ 15) it is about 93%. At 80% vaccinated, Rₑ = 15 × 0.20 = 3, so measles still tears through the unvaccinated 20%. That is why measles outbreaks start when vaccination rates slip even a little.'}},
     {lvl:'honors',q:'A new treatment makes people contagious for 3 days instead of 7. Contacts and chance per meeting stay the same. What happens?',
      choices:['Nothing, because the same people still meet','The outbreak becomes much smaller, because R₀ drops from 2.8 to about 1.2','The outbreak gets bigger'],correct:1,
@@ -127,7 +127,7 @@ const SIM={
      explain:{ap:'A latent period stretches each generation of infection, so the epidemic grows more slowly and peaks later. But each case still causes R₀ new cases, and the final size depends only on R₀: about 92% here, same as the SIR model. Compare the “Ever infected” readout.'}},
     {lvl:'ap',q:'Flu (R₀ ≈ 1.3) arrives in 50 separate villages of 100 people, one sick traveler each. In how many does a big outbreak (10+ people) happen?',
      choices:['All 50, because R₀ is above 1','Only some, roughly 1 in 4 to 1 in 3; the rest fizzle out by chance','None, because R₀ is so close to 1'],correct:1,
-     baseline:{disease:'flu',model:'village'},changeAction:'batch',at:1,reveal:4,changeText:'50 villages simulated',watch:'batch',
+     baseline:{disease:'flu',contacts:10,trans:3.3,days:4,lat:2,model:'village'},changeAction:'batch',at:1,reveal:4,changeText:'50 villages simulated',watch:'batch',
      explain:{ap:'With R₀ = 1.3, the first sick person often recovers before infecting anyone, or the first few cases happen to infect no one. Branching-process theory says a single case fizzles out with probability about 1/R₀ ≈ 0.77, so only a quarter to a third of villages get a real outbreak (a few small chains reach 10 people before dying out). The smooth city model cannot show this; only a chance-driven model can.'}}
   ],
   narrate(sim){const s=sim.st,q=params(sim),re=q.R*s.S/s.N,imm=(s.R+s.V)/s.N*100,th=hit(q.R),hon=atLeast('honors');

@@ -9,14 +9,14 @@ const BCOL={A:'#2f9a4c',C:'#2f6fd0',G:'#d89a12',T:'#d0453a','-':'#9aa0a6'};
 const SEQLEN=150;
 const DB=(function(){const r=rng(2026),B='ACGT',rand=n=>Array.from({length:n},()=>B[Math.floor(r()*4)]).join('');
   const mut=(s,f)=>s.split('').map(c=>r()<f?B[(B.indexOf(c)+1+Math.floor(r()*3))%4]:c).join('');
-  const root=rand(SEQLEN),fish=mut(root,0.18),tet=mut(root,0.18),bird=mut(tet,0.12),mam=mut(tet,0.10),rum=mut(mam,0.05);
+  const root=rand(SEQLEN),fish=mut(root,0.18),tet=mut(root,0.18),bird=mut(tet,0.12),mam=mut(tet,0.10),rum=mut(mam,0.04);
   const del=(s,i,n)=>s.slice(0,i)+s.slice(i+n),ins=(s,i,t)=>s.slice(0,i)+t+s.slice(i);
   const D=[
-    {id:'human',name:'Human',sci:'Homo sapiens',seq:mut(mam,0.09)},
-    {id:'cow',name:'Cow',sci:'Bos taurus',seq:mut(rum,0.04)},
-    {id:'deer',name:'Deer',sci:'Odocoileus virginianus',seq:mut(rum,0.04)},
-    {id:'pig',name:'Pig',sci:'Sus scrofa',seq:mut(mam,0.07)},
-    {id:'horse',name:'Horse',sci:'Equus caballus',seq:ins(mut(mam,0.07),70,'GCA')},
+    {id:'human',name:'Human',sci:'Homo sapiens',seq:mut(mam,0.07)},
+    {id:'cow',name:'Cow',sci:'Bos taurus',seq:mut(rum,0.03)},
+    {id:'deer',name:'Deer',sci:'Odocoileus virginianus',seq:mut(rum,0.03)},
+    {id:'pig',name:'Pig',sci:'Sus scrofa',seq:mut(mam,0.06)},
+    {id:'horse',name:'Horse',sci:'Equus caballus',seq:ins(mut(mam,0.06),70,'GCA')},
     {id:'chicken',name:'Chicken',sci:'Gallus gallus',seq:mut(bird,0.05)},
     {id:'turkey',name:'Turkey',sci:'Meleagris gallopavo',seq:mut(bird,0.05)},
     {id:'tuna',name:'Tuna',sci:'Thunnus albacares',seq:mut(fish,0.11)},
@@ -50,7 +50,7 @@ function sw(q,s){const m=q.length,n=s.length,H=[],T=[];for(let i=0;i<=m;i++){H.p
   let id=0;for(let k=0;k<aq.length;k++)if(aq[k]===as[k])id++;
   return {score:best,qs:i,qe:bi,ss:j,se:bj,aq,as,ident:aq.length?id/aq.length:0,len:aq.length};}
 function search(sim){const s=sim.st,raw=querySeq(sim.p.query),q=sim.p.rc&&atLeast('ap')?revcomp(raw):raw,W=+sim.p.word||11;
-  const space=q.length*DB.reduce((a,d)=>a+d.seq.length,0);
+  const space=q.length*1e10; // E values as if searching a 10-billion-base database
   s.q=q;s.res=DB.map((d,k)=>{const sd=seeds(q,d.seq,W);if(!sd.length)return {k,d,seeds:[],hit:false};const a=sw(q,d.seq);
     const E=KK*space*Math.exp(-LAMBDA*a.score),bits=(LAMBDA*a.score-Math.log(KK))/Math.LN2;
     return Object.assign({k,d,seeds:sd,hit:E<10,E,bits,cover:(a.qe-a.qs)/q.length},a);});
@@ -95,14 +95,15 @@ const BL={
   ],
   graphs:[{id:'scores',label:'Bit score for each database sequence',custom:true}],defaultGraph:'scores',
   plot(sim,ctx,box){const s=sim.st;if(s.phase!=='done'||!s.res){txt(ctx,'Run BLAST to see a score for every sequence in the database.',box.cw/2,box.ch/2,{s:15,c:PAL['muted'],a:'center',b:'middle'});return;}
-    const vals=DB.map((d,i)=>{const r=s.res[i];return r.hit?r.bits:0;}),mx=Math.max(60,...vals)*1.15;
-    const ax=axes(ctx,box,{xmin:0,xmax:DB.length,ymin:0,ymax:mx,xcats:DB.map(d=>d.name.replace(' gene','').slice(0,7)),yl:'Bit score (0 = no hit)'});
-    bars(ctx,ax,vals,{colors:vals.map((v,i)=>i===s.sel?serColor(0):serColor(1)),d:0,width:.7});},
+    const rows=s.res.slice().sort((a,b)=>(b.hit?b.bits:0)-(a.hit?a.bits:0)),mx=Math.max(60,...rows.map(r=>r.hit?r.bits:0))*1.1,x0=78,w=box.cw-x0-46,rh=(box.ch-34)/rows.length;
+    txt(ctx,'Bit score (no bar = no significant hit)',x0,14,{s:13,c:PAL['muted']});
+    rows.forEach((r,i)=>{const y=26+i*rh,v=r.hit?r.bits:0;txt(ctx,r.d.name.replace(' gene',''),x0-8,y+rh/2+4,{s:12.5,c:r.hit?PAL['fg']:PAL['muted'],a:'right'});
+      ctx.fillStyle=r.k===s.sel?serColor(0):serColor(1);ctx.fillRect(x0,y+2,v/mx*w,rh-4);if(r.hit)txt(ctx,v.toFixed(0),x0+v/mx*w+5,y+rh/2+4,{s:12,c:PAL['fg']});});},
   infoPanel(sim){const s=sim.st,q=QUERIES[sim.p.query];
     if(s.phase!=='done')return `<h3>Hit list</h3><p>${s.phase==='idle'?'Press <b>Run BLAST</b> to search the database for sequences similar to the sample.':'Searching…'}</p>`;
     if(!s.ranked.length)return `<h3>Hit list</h3><p><b>No significant similarity found.</b> Nothing in the database shares even one exact ${sim.p.word||11}-base word with this query.</p>${atLeast('ap')?'<p class="help">Hint: which strand was this read from?</p>':''}`;
     return `<h3>Hit list: ${q.l}</h3><div class="tbl-wrap"><table><thead><tr><th>Description</th>${atLeast('honors')?'<th>Score</th><th>E value</th><th>Cover</th>':''}<th>Identity</th><th></th></tr></thead><tbody>${
-      s.ranked.map(r=>`<tr><td><b>${r.d.name}</b> <i>${r.d.sci}</i></td>${atLeast('honors')?`<td>${r.bits.toFixed(0)}</td><td>${fmtE(r.E)}</td><td>${Math.round(r.cover*100)}%</td>`:''}<td>${(r.ident*100).toFixed(0)}%</td><td><button type="button" class="btn" data-hit="${r.k}"${r.k===s.sel?' aria-pressed="true"':''}>${r.k===s.sel?'Shown':'Align'}</button></td></tr>`).join('')}</tbody></table></div>
+      s.ranked.map(r=>`<tr><td><b>${r.d.name}</b><br><i>${r.d.sci}</i></td>${atLeast('honors')?`<td>${r.bits.toFixed(0)}</td><td>${fmtE(r.E)}</td><td>${Math.round(r.cover*100)}%</td>`:''}<td>${(r.ident*100).toFixed(0)}%</td><td><button type="button" class="btn" data-hit="${r.k}"${r.k===s.sel?' aria-pressed="true"':''}>${r.k===s.sel?'Shown':'Align'}</button></td></tr>`).join('')}</tbody></table></div>
       <p class="help" style="margin-top:8px">Teaching sequences, not real GenBank records.</p>`;},
   bindInfo(sim,el){el.querySelectorAll('[data-hit]').forEach(b=>b.addEventListener('click',()=>{sim.st.sel=+b.dataset.hit;BioLab.refresh(sim);}));},
   onClick(sim,x,y){const s=sim.st;if(s.phase!=='done')return;DB.forEach((d,i)=>{const ry=88+s.rowY[i]*21;if(Math.abs(y-ry)<10&&s.res[i].hit)s.sel=i;});},
@@ -187,7 +188,7 @@ const BL={
   terms:[{t:'BLAST',d:'Basic Local Alignment Search Tool: finds database sequences similar to a query.'},{t:'Query',d:'The sequence you are searching with.'},{t:'Percent identity',d:'The share of aligned positions where the bases match.'},{t:'DNA barcoding',d:'Identifying a species from a short, standard gene region such as mitochondrial COI.'},
     {lvl:'honors',t:'E value',d:'The number of hits this good expected by chance. Smaller means more significant.'},{lvl:'honors',t:'Query cover',d:'How much of the query is included in the alignment.'},
     {lvl:'ap',t:'Seed (word)',d:'A short exact match that starts a BLAST hit.'},{lvl:'ap',t:'Local alignment',d:'The best-scoring matching stretch between two sequences (Smith–Waterman).'},{lvl:'ap',t:'Reverse complement',d:'The sequence of the opposite strand, read 5′ to 3′.'}],
-  about:'<p>The database holds 12 short <b>teaching sequences</b> generated for this tool, not real GenBank records. They were made by mutating a shared ancestor along a realistic family tree (fish, birds, mammals; cow and deer as close relatives), so related species really are more similar. The horse and tilapia sequences carry small insertions or deletions so some alignments show gaps.</p><p><b>Search:</b> exact word seeds (default 11 bases, as in BLASTN’s smaller word sizes), then a Smith–Waterman local alignment scored +2 match, −3 mismatch, −5 per gap. E = K·m·n·e<sup>−λS</sup> with λ = 0.634 and K = 0.46 (ungapped estimates for this scoring), using the size of this tiny database, so real E values for the same score would be larger. Only the plus strand is searched, so you can see why strands matter; real BLASTN searches both.</p>'
+  about:'<p>The database holds 12 short <b>teaching sequences</b> generated for this tool, not real GenBank records. They were made by mutating a shared ancestor along a realistic family tree (fish, birds, mammals; cow and deer as close relatives), so related species really are more similar. The horse and tilapia sequences carry small insertions or deletions so some alignments show gaps.</p><p><b>Search:</b> exact word seeds (default 11 bases, as in BLASTN’s smaller word sizes), then a Smith–Waterman local alignment scored +2 match, −3 mismatch, −5 per gap. E = K·m·n·e<sup>−λS</sup> with λ = 0.634 and K = 0.46 (ungapped estimates for this scoring), computed as if searching a 10-billion-base database, about the size of a large real one, so chance matches of a single short word drop out just as they do in real BLAST. Only the plus strand is searched, so you can see why strands matter; real BLASTN searches both.</p>'
 };
 BioLab.register(BL);
 })();

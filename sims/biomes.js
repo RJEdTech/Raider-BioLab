@@ -44,7 +44,8 @@ function climate(sim){const p=sim.p,mys=quizCity(sim);let Tm,Pm,name,key=mys||p.
   return {Tm,Pm,T,Pcm,dry,name:mys?'Mystery city':name,mystery:!!mys,biome:classify(T,Pcm,dry)};}
 
 const WX={x0:62,x1:392,y0:40,y1:372,tmin:-15,tmax:30,pmax:450};
-const wX=T=>WX.x0+(T-WX.tmin)/(WX.tmax-WX.tmin)*(WX.x1-WX.x0),wY=P=>WX.y1-Math.min(P,WX.pmax)/WX.pmax*(WX.y1-WX.y0);
+const wX=T=>WX.x0+(T-WX.tmin)/(WX.tmax-WX.tmin)*(WX.x1-WX.x0),wY=P=>WX.y1-Math.sqrt(clamp(P,0,WX.pmax)/WX.pmax)*(WX.y1-WX.y0);
+const yP=y=>Math.pow(clamp((WX.y1-y)/(WX.y1-WX.y0),0,1),2)*WX.pmax;
 
 function quizList(sim){return [
   {lvl:'bio',q:'Denver averages about 10 °C and gets about 38 cm of precipitation a year. Which biome is Denver in?',choices:['Temperate deciduous forest','Temperate grassland (shortgrass prairie)','Desert','Taiga'],correct:1,instant:true,
@@ -117,24 +118,24 @@ const SIM={
   infoPanel(sim){const c=climate(sim),b=BIOME[c.biome],hon=atLeast('honors'),ap=atLeast('ap');
     if(c.mystery)return '<h3>Mystery climatograph</h3><p>Read the red temperature line and the blue precipitation bars, then answer the quiz. The city’s name and biome appear after you answer.</p><p>Tip: first check yearly precipitation (under 25 cm means desert), then the temperature.</p>';
     return `<h3>${b.name}</h3><p><b>Climate:</b> ${b.climate}</p><p><b>Plants:</b> ${b.plants}</p><p><b>Animals:</b> ${b.animals}</p>${hon?`<p><b>Limiting factor:</b> ${b.limit}.</p>`:''}${ap?`<p><b>Human impact:</b> ${b.threat}</p>`:''}`;},
-  onClick(sim,x,y){if(x>=WX.x0&&x<=WX.x1&&y>=WX.y0&&y<=WX.y1){const T=Math.round(WX.tmin+(x-WX.x0)/(WX.x1-WX.x0)*(WX.tmax-WX.tmin)),P=Math.round(clamp((WX.y1-y)/(WX.y1-WX.y0)*WX.pmax,0,450)/5)*5;BioLab.setValues(sim,{place:'custom',tmean:T,pcm:P});}},
+  onClick(sim,x,y){if(x>=WX.x0&&x<=WX.x1&&y>=WX.y0&&y<=WX.y1){const T=Math.round(WX.tmin+(x-WX.x0)/(WX.x1-WX.x0)*(WX.tmax-WX.tmin)),P=Math.round(clamp(yP(y),0,450)/5)*5;BioLab.setValues(sim,{place:'custom',tmean:T,pcm:P});}},
   draw(sim,ctx,vdt,k,t){
     const c=climate(sim),ap=atLeast('ap');
     ctx.fillStyle=PAL['card'];ctx.fillRect(0,0,800,450);
     // Whittaker diagram: shade each biome region
-    const cw=6;for(let px=WX.x0;px<WX.x1;px+=cw)for(let py=WX.y0;py<WX.y1;py+=cw){const T=WX.tmin+(px+cw/2-WX.x0)/(WX.x1-WX.x0)*(WX.tmax-WX.tmin),P=(WX.y1-py-cw/2)/(WX.y1-WX.y0)*WX.pmax;
+    const cw=6;for(let px=WX.x0;px<WX.x1;px+=cw)for(let py=WX.y0;py<WX.y1;py+=cw){const T=WX.tmin+(px+cw/2-WX.x0)/(WX.x1-WX.x0)*(WX.tmax-WX.tmin),P=yP(py+cw/2);
       ctx.fillStyle=TINT[classify(T,P,false)];ctx.fillRect(px,py,cw+0.5,cw+0.5);}
     ctx.globalAlpha=1;
     // chaparral zone (needs dry summers)
     ctx.setLineDash([5,4]);ctx.strokeStyle='#7a5c2e';ctx.lineWidth=2;ctx.strokeRect(wX(10),wY(90),wX(20)-wX(10),wY(25)-wY(90));ctx.setLineDash([]);
     const lab=(s,T,P)=>txt(ctx,s,wX(T),wY(P),{s:11.5*k,w:700,a:'center',b:'middle',c:'#1d2318'});
-    lab('Tundra',-10,12);lab('Taiga',-1,110);lab('Desert',12,10);lab('Grassland',11,43);lab('Temperate',10,160);lab('deciduous forest',10,140);lab('Savanna',25,90);lab('Tropical',25,300);lab('rainforest',25,280);
-    txt(ctx,'Chaparral (dry summers)',wX(15),wY(90)-6,{s:10.5*k,w:600,a:'center',c:PAL['cv-soft']});
+    lab('Tundra',-10,40);lab('Taiga',-1,140);lab('Desert',16,9);lab('Grassland',16,45);lab('Temperate',10,200);lab('deciduous forest',10,176);lab('Savanna',25,90);lab('Tropical',25,320);lab('rainforest',25,290);
+    txt(ctx,'Chaparral (dry summers)',wX(15),wY(90)-5,{s:10.5*k,w:600,a:'center',c:PAL['cv-soft']});
     ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.strokeRect(WX.x0,WX.y0,WX.x1-WX.x0,WX.y1-WX.y0);
     for(let T=-10;T<=30;T+=10){txt(ctx,String(T),wX(T),WX.y1+15,{s:11*k,a:'center',c:PAL['cv-soft']});}
-    for(let P=0;P<=400;P+=100){txt(ctx,String(P),WX.x0-6,wY(P)+4,{s:11*k,a:'right',c:PAL['cv-soft']});}
+    [0,25,60,150,300,450].forEach(P=>{txt(ctx,String(P),WX.x0-6,wY(P)+4,{s:11*k,a:'right',c:PAL['cv-soft']});ctx.strokeStyle=PAL['cv-soft'];ctx.globalAlpha=.4;ctx.beginPath();ctx.moveTo(WX.x0-3,wY(P));ctx.lineTo(WX.x0,wY(P));ctx.stroke();ctx.globalAlpha=1;});
     txt(ctx,'Average yearly temperature (°C)',(WX.x0+WX.x1)/2,WX.y1+32,{s:11.5*k,a:'center',c:PAL['cv-soft']});
-    ctx.save();ctx.translate(16,(WX.y0+WX.y1)/2);ctx.rotate(-Math.PI/2);txt(ctx,'Yearly precipitation (cm)',0,0,{s:11.5*k,a:'center',b:'middle',c:PAL['cv-soft']});ctx.restore();
+    ctx.save();ctx.translate(16,(WX.y0+WX.y1)/2);ctx.rotate(-Math.PI/2);txt(ctx,'Yearly precipitation (cm, √ scale)',0,0,{s:11.5*k,a:'center',b:'middle',c:PAL['cv-soft']});ctx.restore();
     txt(ctx,'Whittaker biome diagram',WX.x0,WX.y0-12,{s:13*k,w:700});
     // AP: show where the climate started before the shift
     if(ap&&!c.mystery&&(sim.p.warm||sim.p.pchg)){const T0=c.T-sim.p.warm,P0=c.Pcm/(1+sim.p.pchg/100);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(wX(T0),wY(P0));ctx.lineTo(wX(c.T),wY(c.Pcm));ctx.stroke();ctx.setLineDash([]);

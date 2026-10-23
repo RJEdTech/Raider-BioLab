@@ -174,9 +174,9 @@ const SIM={
       ctx.globalAlpha=.85;ctx.beginPath();ctx.arc(xy[0],xy[1],fos?3.6:2.8,0,6.29);ctx.fill();});ctx.globalAlpha=1;
     v.parts=v.parts.filter(q=>q.d<PATHS[q.key].L);
     // flux labels (honors+)
-    if(hon){const fl=(s_,x,y)=>txt(ctx,s_,x,y,{s:11*k,w:600,c:PAL['cv-soft'],a:'center'});
-      fl('photosynthesis '+f.gpp.toFixed(0),230,98);fl('respiration '+(f.ra).toFixed(0),110,98);fl('ocean in '+f.as.toFixed(0)+' / out '+f.sa.toFixed(0),650,120);
-      if(f.E>0.05)fl('burning '+f.E.toFixed(1),425,128);}
+    if(hon){const fl=(s_,x,y)=>pill(ctx,s_,x,y,PAL['card'],PAL['cv-ink'],10.5*Math.min(k,1.3));
+      fl('↓ photosynthesis '+f.gpp.toFixed(0),262,128);fl('↑ respiration '+(f.ra).toFixed(0),70,128);fl('↓ in '+f.as.toFixed(0)+' · ↑ out '+f.sa.toFixed(0),650,168);
+      if(f.E>0.05)fl('↑ burning '+f.E.toFixed(1),478,120);}
     // tracked atom during the walkthrough
     if(sim.tour&&sim.tour.on){const steps=SIM.tour.filter(st=>atLeast(st.lvl)),i=sim.tour.i;const path=[
         [[400,70],[330,60],[250,75],[330,80]],[[230,60],[205,110],[190,160],[195,175]],[[195,175],[230,185],[262,198]],[[262,198],[270,150],[275,90],[300,60]],

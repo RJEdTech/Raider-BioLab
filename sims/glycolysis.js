@@ -83,10 +83,10 @@ const SIM={
     // ledger strip
     ctx.fillStyle=PAL['card'];rr(ctx,8,6,784,30,8);ctx.fill();
     const pg=perGlucose(p);
-    txt(ctx,'Per glucose: '+pg.atp+' ATP · '+pg.nadh+' NADH'+(hon?' · '+pg.fadh+' FADH₂':'')+' · '+pg.co2+' CO₂'+(p.o2?'':(p.ferm==='muscle'&&hon?' · 2 lactate':' · 2 ethanol')),18,26,{s:14*k,w:700});
-    txt(ctx,'Total so far: '+s.atp+' ATP, '+s.co2+' CO₂',782,26,{s:12.5*k,c:PAL['cv-soft'],a:'right'});
+    txt(ctx,'Per glucose: '+pg.atp+' ATP · '+pg.nadh+' NADH'+(hon&&k<1.3?' · '+pg.fadh+' FADH₂':'')+' · '+pg.co2+' CO₂'+(p.o2?'':(p.ferm==='muscle'&&hon?' · 2 lactate':' · 2 ethanol')),18,26,{s:14*k,w:700});
+    if(k<1.3)txt(ctx,'Total so far: '+s.atp+' ATP, '+s.co2+' CO₂',782,26,{s:12.5*k,c:PAL['cv-soft'],a:'right'});
     // glycolysis lane labels
-    const steps=hon?[['Glucose (6 carbons)',80],['Uses 2 ATP',140],['Splits into two 3-carbon sugars',200],['Makes 4 ATP and 2 NADH',265],['2 pyruvate (3 carbons each)',325]]
+    const steps=(hon&&k<1.3)?[['Glucose (6 carbons)',80],['Uses 2 ATP',140],['Splits into two 3-carbon sugars',200],['Makes 4 ATP and 2 NADH',265],['2 pyruvate (3 carbons each)',325]]
                    :[['Glucose',80],['Uses 2 ATP',140],['Splits in half',200],['Makes 4 ATP',265],['2 pyruvate',325]];
     txt(ctx,'GLYCOLYSIS',172,58,{s:12*k,w:700,c:PAL['s1']});
     steps.forEach(q=>txt(ctx,q[0],172,q[1]+4,{s:12.5*k,c:PAL['cv-ink']}));

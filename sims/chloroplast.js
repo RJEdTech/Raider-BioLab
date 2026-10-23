@@ -78,7 +78,7 @@ const SIM={
     ctx.fillStyle='#5d72a0';rr(ctx,500,176,46,52,10);ctx.fill();
     lab(hon?'PSII':'PS II',96,262,15);lab('PS I',401,262,15);if(hon){lab('PQ',190,263,10);lab('b6f',263,262,12);lab('PC',332,329,10);lab('Fd',470,213,10);}
     txt(ctx,'Photosystem II',96,196,{s:12*k,w:600,a:'center'});txt(ctx,'Photosystem I',401,196,{s:12*k,w:600,a:'center'});
-    txt(ctx,hon?'NADP⁺ reductase':'makes NADPH',515,168,{s:11.5*k,w:600,a:'center'});
+    if(k<1.3)txt(ctx,hon?'NADP⁺ reductase':'makes NADPH',515,168,{s:11.5*k,w:600,a:'center'});
     // ATP synthase
     v.rot+=s.Rs*0.02*vdt;ctx.fillStyle='#8e1023';rr(ctx,616,232,48,60,10);ctx.fill();
     for(let i=0;i<6;i++){const a=v.rot+i*Math.PI/3,c=Math.cos(a);if(c<0)continue;ctx.fillStyle=c>.5?'#e0455f':'#b5122d';rr(ctx,640+18*Math.sin(a)-4,236,8,52,4);ctx.fill();}
@@ -94,8 +94,8 @@ const SIM={
     v.wh+=s.F*0.25*vdt;ctx.strokeStyle=PAL['s3'];ctx.lineWidth=10;ctx.globalAlpha=.35;ctx.beginPath();ctx.arc(W.x,W.y,W.r,0,6.29);ctx.stroke();ctx.globalAlpha=1;
     for(let i=0;i<6;i++){const a=v.wh+i*Math.PI/3;ctx.fillStyle=serColor(2);ctx.beginPath();ctx.arc(W.x+Math.cos(a)*W.r,W.y+Math.sin(a)*W.r,6,0,6.29);ctx.fill();}
     txt(ctx,'Calvin',W.x,W.y-4,{s:15*k,w:700,a:'center'});txt(ctx,'cycle',W.x,W.y+14,{s:15*k,w:700,a:'center'});
-    if(hon){txt(ctx,'fixation (rubisco)',790,W.y+W.r+12,{s:11*k,c:PAL['cv-soft'],a:'right'});txt(ctx,'reduction',W.x-W.r-8,W.y+8,{s:11*k,c:PAL['cv-soft'],a:'right'});txt(ctx,'regeneration',W.x,W.y-W.r-10,{s:11*k,c:PAL['cv-soft'],a:'center'});}
-    txt(ctx,'sugar made: '+(s.sugar).toFixed(1),790,188,{s:12*k,w:600,a:'right'});
+    if(hon&&k<1.3){txt(ctx,'fixation (rubisco)',790,W.y+W.r+12,{s:11*k,c:PAL['cv-soft'],a:'right'});txt(ctx,'reduction',W.x-W.r-8,W.y+8,{s:11*k,c:PAL['cv-soft'],a:'right'});txt(ctx,'regeneration',W.x,W.y-W.r-10,{s:11*k,c:PAL['cv-soft'],a:'center'});}
+    if(k<1.3)txt(ctx,'sugar made: '+(s.sugar).toFixed(1),790,188,{s:12*k,w:600,a:'right'});
     // particles at rates from the model
     v.acc.e+=s.Je*0.9*vdt;while(v.acc.e>=1){v.acc.e--;v.e.push({d:0});}
     v.acc.h+=(3*s.Je+2*s.Jc)*0.25*vdt;while(v.acc.h>=1){v.acc.h--;const x=R()<.4?96+R()*30-15:263+R()*20-10;v.h.push({x,y:x<150?318:200,vy:x<150?40:120,end:x<150?380:340});}
