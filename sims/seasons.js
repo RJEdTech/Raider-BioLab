@@ -158,13 +158,13 @@ function drawOrbit(sim,ctx,k,t){const s=sun(sim),p=sim.p,hon=atLeast('honors');
     ctx.strokeStyle='#ffb000';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(ax+20,ay);ctx.lineTo(ax+40,ay+52);ctx.stroke();ctx.lineWidth=Math.max(1,6*a.a);ctx.beginPath();ctx.moveTo(ax+46,ay+52);ctx.lineTo(ax+66,ay+4);ctx.stroke();
     txt(ctx,'reflects '+Math.round(a.a*100)+'%',ax+70,ay+18,{s:11*k,c:PAL['cv-soft']});}
 }
-function drawWinds(sim,ctx,k,t){const p=sim.p,s=sun(sim),cx=300,cy=228,R=185,cor=atLeast('ap')&&p.coriolis,v=sim.vis;
+function drawWinds(sim,ctx,k,t){const p=sim.p,s=sun(sim),cx=338,cy=228,R=172,cor=atLeast('ap')&&p.coriolis,v=sim.vis;
   const Y=lat=>cy-R*Math.sin(rad(lat)),HW=lat=>R*Math.cos(rad(lat));
   ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.clip();ctx.fillStyle='#2f6fa8';ctx.fillRect(cx-R,cy-R,2*R,2*R);
   const band=(a,b,c)=>{ctx.fillStyle=c;ctx.fillRect(cx-R,Y(b),2*R,Y(a)-Y(b));};
   band(-12,12,'#3f8f4a');band(18,36,'#d8b46a');band(-36,-18,'#d8b46a');band(38,60,'#6fa05a');band(-60,-38,'#6fa05a');band(66,90,'#e8eef4');band(-90,-66,'#e8eef4');
   ctx.restore();ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.stroke();
-  ctx.strokeStyle='rgba(255,255,255,.65)';ctx.lineWidth=1;[0,30,60,-30,-60].forEach(l=>{ctx.beginPath();ctx.moveTo(cx-HW(l),Y(l));ctx.lineTo(cx+HW(l),Y(l));ctx.stroke();txt(ctx,(l===0?'0°':Math.abs(l)+'°'+(l>0?'N':'S')),cx-HW(l)-6,Y(l)+4,{s:11.5*k,w:600,a:'right'});});
+  ctx.strokeStyle='rgba(255,255,255,.65)';ctx.lineWidth=1;[0,30,60,-30,-60].forEach(l=>{ctx.beginPath();ctx.moveTo(cx-HW(l),Y(l));ctx.lineTo(cx+HW(l),Y(l));ctx.stroke();txt(ctx,(l===0?'0°':Math.abs(l)+'°'+(l>0?'N':'S')),cx+HW(l)+6,Y(l)+4,{s:11.5*k,w:600,a:'left'});});
   // ITCZ clouds follow the overhead Sun
   const itcz=0.55*s.dl;ctx.fillStyle='rgba(255,255,255,.92)';v.cl.forEach((c,i)=>{const x=cx-R*0.8+c[0]*R*1.6,y=Y(itcz+(c[1]-0.5)*8);if(Math.abs(x-cx)<HW(itcz)-12){ctx.beginPath();ctx.arc(x,y,7,0,6.29);ctx.arc(x+8,y-3,6,0,6.29);ctx.fill();}});
   // surface winds
@@ -176,9 +176,9 @@ function drawWinds(sim,ctx,k,t){const p=sim.p,s=sun(sim),cx=300,cy=228,R=185,cor
       const n=l===75?2:3;for(let i=0;i<n;i++){const f=(i+0.5)/n,x=cx-HW(lat)*0.75+f*HW(lat)*1.5+(phase-0.5)*10*vx,y=Y(lat)+(phase-0.5)*10*vy-vy*13;arrow(x-vx*13,y,vx,vy,'#fff');}
       if(h>0&&atLeast('honors'))pill(ctx,name,cx,Y(lat)+(l===75?-2:-1),'rgba(0,0,0,.55)','#fff',11*k);});});
   // labels
-  txt(ctx,'Rising air: rain (ITCZ)',cx-R-10,Y(itcz)-14,{s:11.5*k,w:600,a:'right'});
-  txt(ctx,'Sinking dry air: deserts',cx-R+10,Y(30)-24,{s:11.5*k,w:600,a:'right'});
-  txt(ctx,'Sinking dry air: deserts',cx-R+10,Y(-30)+30,{s:11.5*k,w:600,a:'right'});
+  txt(ctx,'Rain belt (rising air)',cx-R-12,Y(itcz)+4,{s:11*k,w:600,a:'right'});
+  txt(ctx,'Deserts (sinking air)',cx-HW(30)-30,Y(30)+4,{s:11*k,w:600,a:'right'});
+  txt(ctx,'Deserts (sinking air)',cx-HW(30)-30,Y(-30)+4,{s:11*k,w:600,a:'right'});
   // convection cells (altitude to the right)
   const X0=540,X1=770;txt(ctx,'Convection cells',(X0+X1)/2,26,{s:13*k,w:700,a:'center'});
   ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X0,Y(90));ctx.lineTo(X0,Y(-90));ctx.stroke();

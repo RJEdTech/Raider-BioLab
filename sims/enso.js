@@ -127,7 +127,7 @@ function drawPacific(sim,ctx,k,t){const st=sim.st,v=sim.vis,W=st.W;
   ctx.fillStyle='#6a7d4a';ctx.beginPath();ctx.moveTo(0,SEA-30);ctx.lineTo(X0+4,SEA-18);ctx.lineTo(X0,450);ctx.lineTo(0,450);ctx.closePath();ctx.fill();
   ctx.fillStyle='#7a6a4a';ctx.beginPath();ctx.moveTo(800,60);ctx.lineTo(770,70);ctx.lineTo(752,120);ctx.lineTo(X1,SEA-8);ctx.lineTo(X1,450);ctx.lineTo(800,450);ctx.closePath();ctx.fill();
   ctx.fillStyle='#f2f2f2';ctx.beginPath();ctx.moveTo(800,60);ctx.lineTo(778,68);ctx.lineTo(790,78);ctx.closePath();ctx.fill();
-  txt(ctx,'Indonesia',X0-4,SEA-40,{s:12*k,w:700,a:'right'});txt(ctx,'Peru',X1+6,SEA-24,{s:12*k,w:700});
+  txt(ctx,'Indonesia',4,SEA-38,{s:12*k,w:700});txt(ctx,'Peru',X1+6,SEA-24,{s:12*k,w:700});
   // Walker circulation + rain
   const rx=lonX(rainLon(W)),str=clamp(W,0.15,1.6);
   ctx.fillStyle=PAL['card'];ctx.strokeStyle=PAL['line'];v.cl.forEach((c,i)=>{ctx.globalAlpha=.95;cloud(ctx,rx-40+c[0]*60,50+c[1]*30,0.8+0.4*str);});ctx.globalAlpha=1;

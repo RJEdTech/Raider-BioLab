@@ -70,7 +70,7 @@ const BEAK={
         ap:'Measure survival for each beak type, calculate relative fitness, and connect frequency-dependent competition to the coexistence of specialists.'},
   scale:'A model island like the Galápagos, where Peter and Rosemary Grant measured finch beaks for 40 years. Each generation is one breeding season.',
   timeScale:0.5,dtMax:0.05,prewarm:0,sampleDt:0.25,window:30,unit:'generations',timeLabel:'Generation',chChange:1,chReveal:13,
-  clock(sim){return 'Generation '+sim.st.g;},
+  clock(sim){return 'Generation '+(sim.st.g+1);},
   controls:[
     {id:'food',label:'Food on the island',type:'seg',def:'mixed',lvl:'bio',options:[{v:'mixed',l:'Mixed'},{v:'small',l:'Small seeds'},{v:'worms',l:'Worms'},{v:'drought',l:'Drought'},{v:'nuts',l:'Hard nuts',lvl:'honors'}],
      help:'Drought leaves only large, hard seeds.'},
@@ -171,13 +171,13 @@ const BEAK={
     if(!R.birds.length)pill(ctx,'No birds left',IX,IY,'#d32f2f','#fff',13*k);
     // side panel: beak types
     ctx.fillStyle=PAL['card'];ctx.globalAlpha=0.94;rr(ctx,636,38,158,198,10);ctx.fill();ctx.globalAlpha=1;
-    txt(ctx,'Beak types',646,56,{s:12.5*k,w:700,c:PAL['cv-ink']});const N=s.n.reduce((x,y)=>x+y,0);
-    BEAKS.forEach((b,i)=>{const y=80+i*34;drawBird(ctx,658,y,i,1,1,0.85);txt(ctx,b.name,684,y-3,{s:12*k,w:600,c:PAL['cv-ink']});
-      const w=96*(N?s.n[i]/N:0);ctx.fillStyle=PAL['line'];ctx.fillRect(684,y+5,96,5);ctx.fillStyle=b.col;ctx.fillRect(684,y+5,w,5);txt(ctx,String(s.n[i]),786,y-3,{s:12*k,w:700,c:PAL['cv-ink'],a:'right'});});
+    const compact=k>1.35;txt(ctx,compact?'Beaks':'Beak types',646,56,{s:12.5*k,w:700,c:PAL['cv-ink']});const N=s.n.reduce((x,y)=>x+y,0);
+    BEAKS.forEach((b,i)=>{const y=80+i*34;drawBird(ctx,658,y,i,1,1,0.85);if(!compact)txt(ctx,b.name,684,y-3,{s:12*k,w:600,c:PAL['cv-ink']});
+      const w=96*(N?s.n[i]/N:0);ctx.fillStyle=PAL['line'];ctx.fillRect(684,y+5,96,5);ctx.fillStyle=b.col;ctx.fillRect(684,y+5,w,5);txt(ctx,String(s.n[i]),786,compact?y+1:y-3,{s:12*k,w:700,c:PAL['cv-ink'],a:'right'});});
     // food legend
-    ctx.fillStyle=PAL['card'];ctx.globalAlpha=0.94;rr(ctx,636,244,158,174,10);ctx.fill();ctx.globalAlpha=1;txt(ctx,'Food here',646,262,{s:12.5*k,w:700,c:PAL['cv-ink']});
-    const a=ISL[p.food];let fy=284;FOODS.forEach((f,j)=>{const on=a[j]>0;ctx.globalAlpha=on?1:0.35;drawFood(ctx,j,656,fy-4,0.4);txt(ctx,f.name+(on&&a[j]<1?' ('+Math.round(a[j]*100)+'%)':''),672,fy,{s:12*k,c:PAL['cv-ink']});ctx.globalAlpha=1;fy+=26;});
-    txt(ctx,'Dots above a bird: items eaten (needs '+T+')',16,440,{s:12*k,c:PAL['cv-soft']});},
+    ctx.fillStyle=PAL['card'];ctx.globalAlpha=0.94;rr(ctx,636,244,158,174,10);ctx.fill();ctx.globalAlpha=1;txt(ctx,compact?'Food':'Food here',646,262,{s:12.5*k,w:700,c:PAL['cv-ink']});
+    const a=ISL[p.food];let fy=284;FOODS.forEach((f,j)=>{const on=a[j]>0;ctx.globalAlpha=on?1:0.35;drawFood(ctx,j,656,fy-4,0.4);txt(ctx,compact?(on?Math.round(a[j]*100)+'%':'—'):f.name+(on&&a[j]<1?' ('+Math.round(a[j]*100)+'%)':''),672,fy,{s:12*k,c:PAL['cv-ink']});ctx.globalAlpha=1;fy+=26;});
+    txt(ctx,compact?'Dots: food eaten (needs '+T+')':'Dots above a bird: items eaten (needs '+T+')',16,440,{s:12*k,c:PAL['cv-soft']});},
   thumbFrames:60
 };
 BioLab.register(BEAK);
