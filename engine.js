@@ -230,7 +230,7 @@ function applyLevel(sim){const ui=sim.ui,d=sim.def;
 /* ---------- predict-then-test challenges ---------- */
 function visibleCh(sim){const d=sim.def;const list=typeof d.challenges==='function'?d.challenges(sim):(d.challenges||[]);return list.filter(c=>atLeast(c.lvl));}
 function explainFor(ch){if(typeof ch.explain==='string')return ch.explain;let out='';['bio','honors','ap'].forEach(l=>{if(ch.explain&&ch.explain[l]&&atLeast(l))out=ch.explain[l];});return out;}
-function applyValues(sim,vals){for(const k in vals){sim.p[k]=vals[k];if(sim.ui.ctl[k])sim.ui.ctl[k].set(vals[k]);const c=(sim.def.controls||[]).find(c=>c.id===k);if(c&&c.onChange)c.onChange(sim);}sim.infoDirty=true;}
+function applyValues(sim,vals){for(const k in vals){sim.p[k]=vals[k];if(sim.ui&&sim.ui.ctl&&sim.ui.ctl[k])sim.ui.ctl[k].set(vals[k]);const c=(sim.def.controls||[]).find(c=>c.id===k);if(c&&c.onChange)c.onChange(sim);}sim.infoDirty=true;}
 function runAction(sim,id){const a=(sim.def.actions||[]).find(a=>a.id===id);if(a)a.run(sim);sim.infoDirty=true;}
 function renderChallenge(sim){const box=sim.ui.pred;if(!box)return;const list=visibleCh(sim),c=sim.ch;
   if(!list.length){box.innerHTML='<div class="p-head"><h3>Predict, then test</h3></div><p class="status">Choose more detail at the top of the page to see challenges for this simulation.</p>';return;}
