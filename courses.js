@@ -7,8 +7,8 @@ BioLab.COURSES = [
     blurb: 'Tools in the order the Biology course covers them, unit by unit.',
     units: [
       { n: 'Unit 1', t: 'Nature of science', ids: ['expdesign', 'pillbug'] },
-      { n: 'New', t: 'Ecology', ids: ['energy', 'carboncycle', 'popgrowth', 'predprey', 'biodiversity'], note: 'Ecology is being added to Biology. These are the tools Honors Biology uses for it.' },
-      { n: 'Unit 2', t: 'Chemistry of life', ids: ['water', 'macromolecules', 'foodtests'] },
+      { n: 'New', t: 'Ecology', ids: ['energy', 'carboncycle', 'popgrowth', 'wolfmoose', 'predprey', 'biodiversity'], note: 'Ecology is being added to Biology. These are the tools Honors Biology uses for it.' },
+      { n: 'Unit 2', t: 'Chemistry of life', ids: ['waterprops', 'water', 'macromolecules', 'foodtests'] },
       { n: 'Unit 3', t: 'Cells and microscopes', ids: ['cellexplorer', 'microscope', 'transport', 'potato'] },
       { n: 'Unit 4', t: 'Cell energy', ids: ['enzymes', 'photosynthesis', 'chloroplast', 'glycolysis', 'respiration'] },
       { n: 'Unit 5', t: 'Cell cycle and cancer', ids: ['cellcycle', 'division', 'roottip'] },
@@ -22,8 +22,8 @@ BioLab.COURSES = [
     blurb: 'Tools in the order Honors Biology covers them: first semester, then second.',
     units: [
       { n: 'Fall 1', t: 'Science skills: experimental design and data', ids: ['expdesign', 'pillbug'] },
-      { n: 'Fall 2', t: 'Ecology', ids: ['energy', 'carboncycle', 'popgrowth', 'predprey', 'biodiversity'] },
-      { n: 'Fall 3', t: 'Biochemistry and water', ids: ['water', 'macromolecules', 'protein', 'foodtests'] },
+      { n: 'Fall 2', t: 'Ecology', ids: ['energy', 'carboncycle', 'popgrowth', 'wolfmoose', 'predprey', 'biodiversity'] },
+      { n: 'Fall 3', t: 'Biochemistry and water', ids: ['waterprops', 'water', 'macromolecules', 'protein', 'foodtests'] },
       { n: 'Fall 4', t: 'Cells', ids: ['cellexplorer', 'microscope', 'sav'] },
       { n: 'Fall 5', t: 'Membranes and transport', ids: ['transport', 'potato'] },
       { n: 'Fall 6', t: 'Enzymes', ids: ['enzymes'] },
@@ -39,8 +39,8 @@ BioLab.COURSES = [
   { id: 'ap', name: 'AP Biology',
     blurb: 'Tools in the order AP Biology covers them, starting with the summer ecology unit.',
     units: [
-      { n: 'Summer', t: 'Ecology (AP Unit 8) and science practices', ids: ['pillbug', 'popgrowth', 'predprey', 'biodiversity', 'energy', 'carboncycle'], note: 'Chi-square, population growth, communities and ecosystems.' },
-      { n: 'Unit 1', t: 'Chemistry of life', ids: ['water', 'macromolecules', 'protein', 'foodtests'] },
+      { n: 'Summer', t: 'Ecology (AP Unit 8) and science practices', ids: ['pillbug', 'popgrowth', 'wolfmoose', 'predprey', 'biodiversity', 'energy', 'carboncycle'], note: 'Chi-square, population growth, communities and ecosystems.' },
+      { n: 'Unit 1', t: 'Chemistry of life', ids: ['waterprops', 'water', 'macromolecules', 'protein', 'foodtests'] },
       { n: 'Unit 2', t: 'Cells, membranes and water potential', ids: ['cellexplorer', 'sav', 'transport', 'potato'] },
       { n: 'Unit 4', t: 'Cell communication and neurons', ids: ['signaling', 'neuron'] },
       { n: 'Unit 3', t: 'Enzymes, respiration and photosynthesis', ids: ['enzymes', 'glycolysis', 'respiration', 'chloroplast', 'photosynthesis'] },
@@ -57,7 +57,7 @@ BioLab.COURSES = [
     units: [
       { n: 'Unit 1', t: 'Ecosystems', ids: ['commons', 'carboncycle', 'productivity', 'energy', 'biomes'], note: 'Biogeochemical cycles, primary productivity, trophic levels and biomes.' },
       { n: 'Unit 2', t: 'Biodiversity', ids: ['biodiversity', 'islandbio', 'succession', 'evolution'], note: 'Ecosystem services, island biogeography, tolerance, succession and bottlenecks.' },
-      { n: 'Unit 3', t: 'Populations', ids: ['popgrowth', 'predprey', 'humanpop'], note: 'r- and K-selection, survivorship, carrying capacity and human populations.' },
+      { n: 'Unit 3', t: 'Populations', ids: ['popgrowth', 'wolfmoose', 'predprey', 'humanpop'], note: 'r- and K-selection, survivorship, carrying capacity and human populations.' },
       { n: 'Unit 4', t: 'Earth systems and resources', ids: ['soil', 'seasons', 'enso'], note: 'Soil, solar radiation and seasons, atmospheric circulation, ocean currents and ENSO.' },
       { n: 'Unit 5', t: 'Land and water use', ids: ['commons', 'footprint'], note: 'Tragedy of the commons, agriculture, forestry and carbon footprints.' },
       { n: 'Unit 9', t: 'Global change', ids: ['climate', 'carboncycle'], note: 'Greenhouse effect, climate impacts, stabilization wedges and ocean acidification.' },
@@ -80,14 +80,14 @@ BioLab.COURSES = [
 /* "By topic" view: tools inside each section, in the order the topics are taught. */
 BioLab.TOPIC_ORDER = {
   0: ['expdesign', 'pillbug'],
-  1: ['water', 'macromolecules', 'protein', 'foodtests'],
+  1: ['waterprops', 'water', 'macromolecules', 'protein', 'foodtests'],
   2: ['cellexplorer', 'microscope', 'sav', 'transport', 'potato'],
   3: ['enzymes', 'glycolysis', 'respiration', 'chloroplast', 'photosynthesis'],
   4: ['signaling', 'neuron', 'cellcycle', 'division', 'roottip'],
   5: ['karyotype', 'crosses', 'bloodtype', 'pedigree'],
   6: ['replication', 'expression', 'lacoperon', 'virus'],
   7: ['evolution', 'beaks', 'hardyweinberg', 'cladogram'],
-  8: ['productivity', 'energy', 'carboncycle', 'biomes', 'biodiversity', 'islandbio', 'succession', 'popgrowth', 'predprey', 'humanpop'],
+  8: ['productivity', 'energy', 'carboncycle', 'biomes', 'biodiversity', 'islandbio', 'succession', 'popgrowth', 'wolfmoose', 'predprey', 'humanpop'],
   9: ['homeostasis'],
   10: ['pipette', 'gel', 'plasmid', 'pcr', 'blast', 'transformation'],
   12: ['soil', 'seasons', 'enso', 'climate'],

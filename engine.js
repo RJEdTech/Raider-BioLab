@@ -4,12 +4,15 @@
 'use strict';
 const BL={};window.BioLab=BL;
 const LV={bio:0,honors:1,ap:2};
-const UNITS={1:'Chemistry of life',2:'Cell structure and function',3:'Cellular energetics',4:'Cell communication and cell cycle',5:'Heredity',6:'Gene expression and regulation',7:'Natural selection',8:'Ecology'};
-const XSEC={0:'Science skills and data',9:'Human body systems',10:'Biotechnology lab',12:'Earth systems and climate',13:'Energy, land and resources',14:'Pollution and human health',11:'Go further'};
-const SECTIONS=[0,1,2,3,4,5,6,7,8,9,10,12,13,14,11];
+let UNITS={1:'Chemistry of life',2:'Cell structure and function',3:'Cellular energetics',4:'Cell communication and cell cycle',5:'Heredity',6:'Gene expression and regulation',7:'Natural selection',8:'Ecology'};
+let XSEC={0:'Science skills and data',9:'Human body systems',10:'Biotechnology lab',12:'Earth systems and climate',13:'Energy, land and resources',14:'Pollution and human health',11:'Go further'};
+let SECTIONS=[0,1,2,3,4,5,6,7,8,9,10,12,13,14,11];
 const secName=u=>UNITS[u]||XSEC[u]||'';
-const secLabel=u=>UNITS[u]?'Unit '+u+' · '+UNITS[u]:secName(u);
+const secLabel=u=>UNITS[u]?(UNIT_PREFIX?UNIT_PREFIX+' '+u+' · ':'')+UNITS[u]:secName(u);
 BL.UNITS=UNITS;BL.XSEC=XSEC;
+/* Another site can reuse the engine with its own sections: BioLab.setSections({units:{1:'Kinematics',...}, extra:{0:'Science skills',...}, order:[0,1,2,...], further:13, unitPrefix:'Unit'}) */
+let FURTHER=11,UNIT_PREFIX='Unit';
+BL.setSections=function(o){if(o.units)UNITS=o.units;if(o.extra)XSEC=o.extra;if(o.order)SECTIONS=o.order;if(o.further!==undefined)FURTHER=o.further;if(o.unitPrefix!==undefined)UNIT_PREFIX=o.unitPrefix;BL.UNITS=UNITS;BL.XSEC=XSEC;};
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 let level=store.get('rjbiolab-level');if(!(level in LV))level='honors';
 const atLeast=l=>LV[level]>=LV[l||'bio'];
@@ -309,7 +312,7 @@ function renderRelated(sim){const box=sim.ui.sec.querySelector('.related');if(!b
   const back=linkList(d.prereq),fwd=linkList(d.next),also=DEFS.filter(x=>x!==d&&(x.prereq||[]).includes(d.id)&&!(d.next||[]).includes(x.id));
   const nextAll=fwd.concat(also);let h='';
   if(back.length)h+=`<p class="rel-row"><span class="rel-l">Start with</span>${back.map(x=>`<a class="chip" href="#${x.hash}">${x.tab}</a>`).join('')}</p>`;
-  if(nextAll.length)h+=`<p class="rel-row"><span class="rel-l">Go further</span>${nextAll.map(x=>`<a class="chip${x.apUnit===11?' adv':''}" href="#${x.hash}">${x.tab}</a>`).join('')}</p>`;
+  if(nextAll.length)h+=`<p class="rel-row"><span class="rel-l">Go further</span>${nextAll.map(x=>`<a class="chip${x.apUnit===FURTHER?' adv':''}" href="#${x.hash}">${x.tab}</a>`).join('')}</p>`;
   box.innerHTML=h;box.hidden=!h;}
 const thumbSims={};const thumbQueue=[];let thumbBusy=false;let thumbObs=null;
 function thumbFor(d){let s=thumbSims[d.id];if(s)return s;s=makeSim(d);resetSim(s);if(d.thumbSetup)d.thumbSetup(s);thumbSims[d.id]=s;
@@ -328,7 +331,7 @@ function drawThumbs(force){const cvs=[...document.querySelectorAll('canvas.thumb
 const thumbCanvas=document.createElement('canvas');
 let browse=store.get('rjbiolab-browse')||'topic';
 function sortSec(list,u){const ord=(BL.TOPIC_ORDER||{})[u]||[];const ix=d=>{const i=ord.indexOf(d.id);return i<0?1000+(d.order||0):i;};return list.slice().sort((a,b)=>ix(a)-ix(b));}
-function card(d){return `<a class="card${d.apUnit===11?' adv':''}" href="#${d.hash}"><canvas class="thumb" data-sim="${d.id}" aria-hidden="true"></canvas><span class="card-b"><span class="card-t">${d.tab}</span><span class="card-d">${d.card||''}</span>${d.kind?`<span class="kind">${d.kind}</span>`:''}</span></a>`;}
+function card(d){return `<a class="card${d.apUnit===FURTHER?' adv':''}" href="#${d.hash}"><canvas class="thumb" data-sim="${d.id}" aria-hidden="true"></canvas><span class="card-b"><span class="card-t">${d.tab}</span><span class="card-d">${d.card||''}</span>${d.kind?`<span class="kind">${d.kind}</span>`:''}</span></a>`;}
 function buildHome(){const units=document.getElementById('units');units.innerHTML='';const courses=BL.COURSES||[];
   const bw=document.getElementById('browse');
   if(bw){bw.innerHTML=['<button type="button" data-b="topic">By topic</button>'].concat(courses.map(c=>`<button type="button" data-b="${c.id}">${c.name}</button>`)).join('');
@@ -340,7 +343,7 @@ function buildHome(){const units=document.getElementById('units');units.innerHTM
     const adv=linkList(course.further);if(adv.length){const sec=el('section',{class:'unit further'});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">Go further</span> For students who want more</h3><p class="unit-note">Optional tools that go past what class time allows.</p><div class="cards">${adv.map(card).join('')}</div>`;units.appendChild(sec);}}
   else{const groups={};DEFS.forEach(d=>{(groups[d.apUnit]=groups[d.apUnit]||[]).push(d);});
     SECTIONS.forEach(u=>{const list=sortSec(groups[u]||[],u);if(!list.length)return;
-      const sec=el('section',{class:'unit'+(u===11?' further':'')});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${UNITS[u]?'Unit '+u:''}</span> ${secName(u)}</h3>${u===11?'<p class="unit-note">Optional, advanced tools for students who want to go past what class time allows.</p>':''}<div class="cards">${list.map(card).join('')}</div>`;units.appendChild(sec);});}
+      const sec=el('section',{class:'unit'+(u===FURTHER?' further':'')});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${UNITS[u]&&UNIT_PREFIX?UNIT_PREFIX+' '+u:''}</span> ${secName(u)}</h3>${u===FURTHER?'<p class="unit-note">Optional, advanced tools for students who want to go past what class time allows.</p>':''}<div class="cards">${list.map(card).join('')}</div>`;units.appendChild(sec);});}
   const groups={};DEFS.forEach(d=>{(groups[d.apUnit]=groups[d.apUnit]||[]).push(d);});
   jumpEl.innerHTML='<option value="">All simulations</option>'+SECTIONS.map(u=>{const list=sortSec(groups[u]||[],u);if(!list.length)return '';return `<optgroup label="${secLabel(u)}">${list.map(d=>`<option value="${d.hash}">${d.tab}</option>`).join('')}</optgroup>`;}).join('');}
 
