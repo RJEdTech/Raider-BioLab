@@ -122,7 +122,7 @@ const SUC={
     return '<b>Climax forest.</b> '+(hon?'Spruce and fir':'Shade-tolerant trees')+' now dominate. Few sun-loving species survive in the deep shade, so the number of species has dropped'+(ap?' (richness '+richness(c).toFixed(0)+')':'')+'. Without disturbance, this community can last for centuries.';},
   tour:[
     {title:'Bare rock',text:'A glacier has just melted away, leaving bare rock. There is no soil at all. This is where <b>primary succession</b> begins.',focus:[0,250,800,200],speed:0.3,setup(sim){BioLab.setValues(sim,{start:'primary'});}},
-    {title:'Pioneers make soil',text:'Lichens are the <b>pioneer species</b>. They cling to rock, release acids that slowly break it down, and add their dead remains. The close-up shows rock grains turning into the first soil.',focus:[[0,290,800,90],[548,48,224,232]],speed:0.5},
+    {title:'Pioneers make soil',text:'Lichens are the <b>pioneer species</b>. They cling to rock, release acids that slowly break it down, and add their dead remains. The close-up shows rock grains turning into the first soil.',focus:[[0,290,800,90],[470,50,280,232]],speed:0.5},
     {title:'Mosses and grasses move in',text:'Once there is a little soil, mosses and then grasses can grow. Each stage changes the conditions and makes room for the next one.',focus:[0,150,800,200],speed:0.8},
     {title:'Shrubs and trees',text:'With deeper soil, shrubs and then fast-growing trees take root. They shade out the smaller sun-loving plants beneath them.',focus:[0,40,800,320],speed:1},
     {title:'The climax community',text:'Shade-tolerant trees eventually take over. This stable, long-lasting stage is the <b>climax community</b>.',focus:[0,40,800,320],speed:2},
@@ -186,14 +186,14 @@ const SUC={
       else if(kind===2){const m=clamp(c[2]/0.4,0.3,1);ctx.strokeStyle=G[2].col;ctx.lineWidth=2;for(let b=-2;b<=2;b++){const sw=Math.sin(t*1.5+i+b)*1.5*sway;ctx.beginPath();ctx.moveTo(x+b*2,surf);ctx.quadraticCurveTo(x+b*3,surf-8*m,x+b*5+sw,surf-16*m*q.h);ctx.stroke();}
         if(q.u3<0.35){ctx.fillStyle=hon?'#d94f9b':'#e8c547';ctx.beginPath();ctx.arc(x+4,surf-17*m,2.6,0,6.29);ctx.fill();}}});
     // close-up of pioneers weathering rock (early primary succession)
-    if(s.S<4&&c[5]<0.2){const ix=660,iy=158,R=92;ctx.save();ctx.beginPath();ctx.arc(ix,iy,R,0,6.29);ctx.fillStyle='#8b8f94';ctx.fill();ctx.clip();
+    if(s.S<4&&c[5]<0.2){const ix=610,iy=150,R=88;ctx.save();ctx.beginPath();ctx.arc(ix,iy,R,0,6.29);ctx.fillStyle='#8b8f94';ctx.fill();ctx.clip();
       const rr2=rng(77);for(let i=0;i<26;i++){ctx.fillStyle=i%2?'#7d8186':'#9a9ea3';ctx.beginPath();ctx.arc(ix-R+rr2()*2*R,iy-R+rr2()*2*R,10+rr2()*16,0,6.29);ctx.fill();}
       const nS=Math.round(clamp(s.S/3,0,1)*120);ctx.fillStyle='#5a3d24';for(let i=0;i<nS;i++){ctx.beginPath();ctx.arc(ix-R+rr2()*2*R,iy+R*0.15+rr2()*R,2+rr2()*2,0,6.29);ctx.fill();}
       const nL=Math.round(c[0]*16);for(let i=0;i<nL;i++){const x=ix-R*0.8+rr2()*1.6*R,y=iy-R*0.7+rr2()*1.2*R,rad=8+rr2()*9;ctx.fillStyle=i%3?'#c8b44f':'#9fb04a';for(let l=0;l<7;l++){const a=l/7*6.28;ctx.beginPath();ctx.arc(x+Math.cos(a)*rad*0.6,y+Math.sin(a)*rad*0.6,rad*0.45,0,6.29);ctx.fill();}}
       const nM=Math.round(c[1]*14);ctx.strokeStyle='#4f7f2a';ctx.lineWidth=2;for(let i=0;i<nM;i++){const x=ix-R*0.8+rr2()*1.6*R,y=iy+rr2()*R*0.7;for(let b=-3;b<=3;b++){ctx.beginPath();ctx.moveTo(x+b*2,y);ctx.lineTo(x+b*3,y-9-rr2()*5);ctx.stroke();}}
       ctx.restore();ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(ix,iy,R,0,6.29);ctx.stroke();
       txt(ctx,'Close-up: about 5 cm of rock',ix,iy+R+16,{s:12*k,w:700,a:'center'});
-      txt(ctx,c[0]>0.05?'Lichens break down rock; grains + dead lichen = soil':'Bare rock: waiting for lichen spores',ix,iy+R+32,{s:11*k,c:PAL['cv-soft'],a:'center'});}
+      txt(ctx,c[0]>0.05?'Lichen acids break rock into soil grains':'Bare rock: waiting for lichen spores',ix,iy+R+32,{s:11*k,c:PAL['cv-soft'],a:'center'});}
     // disturbance effects
     const ev=s.event,age=ev?sim.t-ev.t:99;
     if(ev&&age>=0&&age<6){const a=1-age/6;
