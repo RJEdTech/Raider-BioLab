@@ -210,10 +210,10 @@ function drawMS(sim,ctx,k){const s=sim.st,p=sim.p,g=msGen(s),H=OLD,L=NEW;
     for(let G=0;G<=Math.min(g,3);G++){const y=yRow(G);txt(ctx,'Gen '+G,16,y+22,{s:12.5*k,w:700});const n=Math.pow(2,G);
       for(let i=0;i<n;i++){const x=70+i*42;if(G===0)mol(x,y+8,H,H);else if(i<2)mol(x,y+8,H,L);else mol(x,y+8,L,L);}}}
   else{const models=[['Semiconservative','semi'],['Conservative','cons'],['Dispersive','disp']];txt(ctx,'Predicted bands for each model',16,54,{s:12.5*k,w:600,c:PAL['cv-soft']});
-    models.forEach(([nm,id],r)=>{const y=80+r*112;txt(ctx,nm,16,y,{s:12.5*k,w:700});for(let G=0;G<=3;G++){const x=30+G*92;tube(ctx,x,y+8,22,82,predict(id,G),k,G);}});}
-  for(let G=0;G<=Math.min(g,4);G++){const x=470+G*66;tube(ctx,x,58,34,300,predict('semi',G),k,G,true);}
-  const lab=(t_,y)=>txt(ctx,t_,796,y,{s:12*k,c:PAL['cv-soft'],a:'right'});lab('light',58+300*0.38);lab('hybrid',58+300*0.55);lab('heavy',58+300*0.72);
-  txt(ctx,'Observed density gradient',470,392,{s:12.5*k,w:600,c:PAL['cv-soft']});}
+    models.forEach(([nm,id],r)=>{const y=80+r*118;txt(ctx,nm,16,y,{s:12.5*k,w:700});for(let G=0;G<=3;G++){const x=30+G*92;tube(ctx,x,y+8,22,70,predict(id,G),k,G);}});}
+  for(let G=0;G<=Math.min(g,4);G++){const x=430+G*60;tube(ctx,x,58,32,300,predict('semi',G),k,G,true);}
+  const lab=(t_,y)=>txt(ctx,t_,716,y+4,{s:12*k,c:PAL['cv-soft']});lab('light',58+300*0.38);lab('hybrid',58+300*0.55);lab('heavy',58+300*0.72);
+  txt(ctx,'Observed density gradient',430,392,{s:12.5*k,w:600,c:PAL['cv-soft']});}
 function predict(model,G){if(model==='semi'){const f=msFrac(G);return [[0.72,f.heavy],[0.55,f.hybrid],[0.38,f.light]];}
   if(model==='cons'){if(G===0)return [[0.72,100]];const hv=100/Math.pow(2,G);return [[0.72,hv],[0.38,100-hv]];}
   const frac=1/Math.pow(2,G);return [[0.38+0.34*frac,100]];}

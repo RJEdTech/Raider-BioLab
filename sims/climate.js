@@ -181,8 +181,8 @@ const CLIMATE={
     pill(ctx,'+'+s.T.toFixed(1)+' °C',tx+11,ty0-14,'#b5122d','#fff',12*k);
     // wedge deck
     const n=(sim.wedges||[]).length;
-    txt(ctx,'Stabilization wedges',452,30,{s:15*k,w:700});
-    txt(ctx,n+' of 8 needed to keep emissions flat',452,52,{s:12.5*k,c:n>=8?PAL.s3:PAL['cv-soft'],w:600});
+    fitTxt(ctx,'Stabilization wedges',452+170,30,340,15*k,700,PAL['cv-ink']);
+    fitTxt(ctx,n+' of 8 needed to keep emissions flat',452+170,52,340,12.5*k,600,n>=8?PAL.s3:PAL['cv-soft']);
     WEDGES.forEach((w,i)=>{const [x,y,W,H]=cardRect(i),on=(sim.wedges||[]).includes(w.id);
       rr(ctx,x,y,W,H,9);ctx.fillStyle=on?'#2c7a46':PAL.card;ctx.fill();ctx.strokeStyle=on?'#2c7a46':PAL.line;ctx.lineWidth=1.5;ctx.stroke();
       icon(ctx,w.ic,x+W/2,y+20,on?'#fff':PAL['cv-ink']);
