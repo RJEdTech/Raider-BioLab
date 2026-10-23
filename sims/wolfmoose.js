@@ -191,7 +191,7 @@ const SIM={
     const evTxt=(ev.drought?'<b>Drought:</b> half the grass sits out this year. ':'')+(ev.winter?'<b>Cold winter:</b> half the moose died before the round. ':'')+(ev.removeWolves?'<b>All wolves were removed.</b> ':'');
     if(f<0.15)return evTxt+'Year '+s.year+' starts with <b>'+n(P.D.W,'wolf','wolves')+', '+P.D.M+' moose and '+P.D.G+' grass</b>. The moose line up at home, ready to run.';
     if(f<0.66)return evTxt+'The moose sprint for the meadow. Each wolf can tag one moose on the way, and each moose can tag one grass player.';
-    if(f<0.84){const hung=P.starve+P.kd;return (P.c?'<b>'+P.c+' tagged moose</b> become wolves. ':'No moose were tagged. ')+(P.f?'<b>'+P.f+' moose reached grass</b>, and each grass they tagged becomes a moose. ':'No moose reached grass. ')+(hung||P.failW?[hung?hung+' moose found no grass':'',P.failW?n(P.failW,'wolf','wolves')+' caught nothing':''].filter(Boolean).join(' and ')+', so they become grass.':'');}
+    if(f<0.84){const hung=P.starve+P.kd;return (P.c?'<b>'+P.c+' tagged moose</b> '+(P.c===1?'becomes a wolf. ':'become wolves. '):'No moose were tagged. ')+(P.f?'<b>'+P.f+' moose reached grass</b>, and each grass they tagged becomes a moose. ':'No moose reached grass. ')+(hung||P.failW?[hung?hung+' moose found no grass':'',P.failW?n(P.failW,'wolf','wolves')+' caught nothing':''].filter(Boolean).join(' and ')+', so they become grass.':'');}
     return 'Next year: '+ab+'<b>'+n(P.D2.W,'wolf','wolves')+', '+P.D2.M+' moose and '+P.D2.G+' grass</b>.'+(avg?' Average game shows the expected numbers, so they can be fractions in the table.':'');},
   initVis(sim){},
   thumbFrames:30,

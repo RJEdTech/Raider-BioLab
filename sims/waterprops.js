@@ -488,7 +488,13 @@ function drawInset(sim,ctx,vdt,k,t){const s=sim.st,stn=sim.p.station,X=548,Y=48,
       for(let r=0;r<4;r++)for(let c=0;c<3;c++){const x=X+40+c*54,y=Y+66+r*48;if(sim.p.streamLiquid==='water'){const a=on?0:(r*c+t*0.8*jig);water(ctx,x,y,a,0.85);}else oilMol(ctx,x-18,y,0.3*(r%2?1:-1),0.6,4);}
       break;}
     case '8':{const d=s.d8;title(d.mode==='buffer'?'A buffer soaks up H⁺':'pH counts H⁺ ions',d.mode==='buffer'?'HCO₃⁻ + H⁺ → H₂CO₃':'more H⁺ = lower pH');
-      const n=d.mode==='buffer'?d.acid:(d.dipped?6:2);for(let i=0;i<14;i++){const q=v.ionsN[i],x=X+24+q.x*(W-48),y=Y+44+q.y*(H-80);
+      const n=d.mode==='buffer'?d.acid:(d.dipped?6:2);
+      if(d.mode==='buffer'){const fr=Math.min(n,6);txt(ctx,'acid added',X+16,Y+50,{s:10.5*k,c:PAL['cv-soft']});
+        for(let i=0;i<fr;i++){const bob=Math.sin(t*2+i)*2*jig,cap=i<4;txt(ctx,'H⁺',X+30+i*34,Y+76+bob,{s:12*k,w:800,c:cap?PAL['cv-soft']:PAL['s1'],a:'center'});}
+        txt(ctx,'bicarbonate in blood',X+16,Y+112,{s:10.5*k,c:PAL['cv-soft']});
+        for(let i=0;i<4;i++){const conv=i<n,x=X+64+(i%2)*110,y=Y+142+Math.floor(i/2)*36;txt(ctx,conv?'H₂CO₃':'HCO₃⁻',x,y,{s:12*k,w:800,c:conv?PAL['s5']:PAL['s2'],a:'center'});}
+        txt(ctx,n?Math.min(n,4)+' H⁺ caught by the buffer':'add acid to see it work',X+16,Y+H-34,{s:10.5*k,w:600});break;}
+      for(let i=0;i<14;i++){const q=v.ionsN[i],x=X+24+q.x*(W-48),y=Y+44+q.y*(H-80);
         if(d.mode==='buffer'){if(i<Math.min(n,7)){txt(ctx,'H⁺',x,y,{s:12*k,w:800,c:PAL['s1'],a:'center'});}else if(i<10){txt(ctx,i<10-Math.min(n,3)?'HCO₃⁻':'H₂CO₃',x,y,{s:11*k,w:700,c:PAL['s2'],a:'center'});}}
         else{if(i<n)txt(ctx,'H₃O⁺',x,y,{s:11.5*k,w:800,c:PAL['s1'],a:'center'});else if(i<n+2)txt(ctx,'OH⁻',x,y,{s:11.5*k,w:800,c:PAL['s2'],a:'center'});else water(ctx,x,y,q.ph+t*0.3*jig,0.7);}}
       break;}}
