@@ -64,7 +64,7 @@ const VIRUS={
     {id:'plq',mode:'phage',label:'Plaques on last plate',unit:'',lvl:'honors',text:true,get:s=>{const pl=s.st.plate;return pl?(pl.n>300?'Too many to count':String(pl.n)):'No plate yet';}},
     {id:'titer',mode:'phage',label:'Titer from that plate',unit:'',lvl:'honors',text:true,get:s=>{const pl=s.st.plate;if(!pl)return '—';if(pl.n>300||pl.n<30)return 'Use a plate with 30–300 plaques';return sci(pl.n/(0.1*Math.pow(10,-pl.dil)))+' PFU/mL';}},
     {id:'tc',mode:'hiv',label:'Helper T cells',unit:'cells/µL',lvl:'ap',min:0,max:1100,d:0,get:s=>s.st.T},
-    {id:'vlog',mode:'hiv',label:'Viral load',unit:'log₁₀ copies/mL',lvl:'ap',min:0,max:8,d:1,get:s=>{const v=(s.st.V+s.st.Vr)*1000;return v>1?Math.log10(v):0;}},
+    {id:'vlog',mode:'hiv',label:'Viral load (log scale)',unit:'log₁₀ copies/mL',lvl:'ap',min:0,max:8,d:1,get:s=>{const v=(s.st.V+s.st.Vr)*1000;return v>1?Math.log10(v):0;}},
     {id:'vl',mode:'hiv',label:'Viral load',unit:'copies/mL',lvl:'ap',text:true,get:s=>{const v=(s.st.V+s.st.Vr)*1000;return v<20?'Undetectable (< 20)':sci(v);}},
     {id:'res',mode:'hiv',label:'Drug-resistant virus',unit:'% of virus',lvl:'ap',min:0,max:100,d:0,get:s=>{const t=s.st.V+s.st.Vr;return t>1e-9?100*s.st.Vr/t:0;}}
   ],
@@ -115,7 +115,7 @@ const VIRUS={
     if(sim.t-s.uvT<40)return '<b>UV light damaged the DNA.</b> The hidden prophages are cutting themselves out of the chromosome and switching to the lytic cycle. A burst of new phage is coming.';
     if(N<1e5)return '<b>The flask has gone clear.</b> Nearly every bacterium was infected and burst. What remains is about '+sci(s.P)+' phage per mL with almost nothing left to infect.';
     if(p.type==='temperate'&&s.L>0.5*N)return '<b>Most cells now carry hidden phage DNA (prophage).</b> They grow and divide normally, copying the phage DNA each time. The culture stays cloudy.';
-    if(f&&f.phase)return '<b>'+f.phase+'.</b> '+(PH_TEXT[f.phase]||'')+' In the flask, '+Math.round(100*totI(s)/Math.max(1,N))+'% of cells are infected right now.';
+    if(f&&f.phase){const pi=Math.round(100*totI(s)/Math.max(1,N));return '<b>'+f.phase+'.</b> '+(PH_TEXT[f.phase]||'')+(pi>=1?' In the flask, '+pi+'% of cells are infected right now.':' In the flask, phage are just starting to find cells.');}
     return 'Phage are finding bacteria and injecting their DNA. Each infected cell will burst after about 25 minutes and release about 100 new phage.';},
   tour:[
     {title:'Meet the phage',text:'This virus (bacteriophage T4) infects E. coli. It has a protein head full of DNA, a tail and tail fibers. It is not alive on its own: it can only reproduce inside a cell.',focus:[0,0,470,395],pause:true,setup(sim){BioLab.setValues(sim,{type:'lytic'});forcePhase(sim,'lytic',0.5);}},

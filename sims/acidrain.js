@@ -141,7 +141,8 @@ const ACID={
     if(ap)pill(ctx,'CaCO₃ + 2H⁺ → Ca²⁺ + CO₂ + H₂O',660,412,'rgba(255,255,255,.85)','#4a3b1e',10.5*k);
     if(s.limed>0)pill(ctx,'Limestone added',370,412,'rgba(255,255,255,.9)','#4a3b1e',11*k);
     // rain pH badge + year
-    ctx.fillStyle='rgba(20,24,32,.82)';rr(ctx,600,8,192,32,7);ctx.fill();ctx.fillStyle=phColor(rph);rr(ctx,607,14,12,20,3);ctx.fill();txt(ctx,'Rain pH '+rph.toFixed(2)+(rph<5.6?'  (acid rain)':'  (normal)'),626,29,{s:12*k,w:700,c:'#fff'});
+    const rl='Rain pH '+rph.toFixed(2)+(rph<5.6?' (acid rain)':' (normal)');ctx.font='700 '+12*k+'px '+FONT;const rw=ctx.measureText(rl).width+34,rx=792-rw;
+    ctx.fillStyle='rgba(20,24,32,.82)';rr(ctx,rx,8,rw,32,7);ctx.fill();ctx.fillStyle=phColor(rph);rr(ctx,rx+7,14,12,20,3);ctx.fill();txt(ctx,rl,rx+26,29,{s:12*k,w:700,c:'#fff'});
     ctx.fillStyle='rgba(20,24,32,.82)';rr(ctx,8,8,170,32,7);ctx.fill();txt(ctx,'Year '+Math.floor(sim.t),18,30,{s:15*k,w:800,c:'#fff'});
     // dilution series (honors)
     if(hon){const bx=10,by=360;ctx.fillStyle='rgba(255,255,255,.88)';rr(ctx,bx,by-14,205,92,8);ctx.fill();txt(ctx,'Dilution lab: rain sample',bx+102,by+2,{s:10.5*k,w:700,c:'#2a2f36',a:'center'});

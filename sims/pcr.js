@@ -90,7 +90,7 @@ const PCR={
       return '<b>Anneal, '+p.anneal+' °C.</b> The tube cools so the short primers can base-pair with each single strand, one at each end of the target.';}
     return '<b>Extend, 72 °C.</b> Taq polymerase, from bacteria in hot springs, adds nucleotides to the end of each primer and builds a new complementary strand. After this cycle there are about <b>'+words((s.OO+s.OL+s.LX+s.XX)*(1+(s.E||1)))+'</b> copies.';},
   initVis(sim){const r=rng(3);sim.vis.jit=[];for(let i=0;i<64;i++)sim.vis.jit.push([r(),r()]);},
-  draw(sim,ctx,vdt,k,t){
+  draw(sim,ctx,vdt,k,t){k=Math.min(k,1.3);
     const s=sim.st,p=sim.p,pr=primers(sim),ph=phaseOf(sim),hon=atLeast('honors'),ap=atLeast('ap');
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
     // ---------- thermocycler ----------

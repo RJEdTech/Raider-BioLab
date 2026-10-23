@@ -86,7 +86,7 @@ const QPCR={
     const f=fit(sim);return 'Run finished. Each 10-fold dilution crosses about <b>'+(f?(-f.m).toFixed(2):'3.3')+' cycles</b> later, because 2<sup>3.32</sup> ≈ 10.'+(hon?' The unknown’s Ct places it between the standards.':'');},
   initVis(sim){},
   thumbSetup(sim){for(let i=0;i<340;i++)sim.def.step(sim,0.1);},thumbFrames:1,
-  draw(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,thr=p.thr,hon=atLeast('honors'),n=s.list.length;
+  draw(sim,ctx,vdt,k,t){k=Math.min(k,1.3);const s=sim.st,p=sim.p,thr=p.thr,hon=atLeast('honors'),n=s.list.length;
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
     // instrument + plate
     ctx.fillStyle='#3d434c';rr(ctx,16,24,320,236,16);ctx.fill();ctx.fillStyle='#262a30';rr(ctx,30,38,292,170,10);ctx.fill();

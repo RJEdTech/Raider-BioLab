@@ -35,7 +35,7 @@ const BEN=[[0,'#2f63c9','Blue','−'],[0.5,'#3f9d4a','Green','+ trace'],[1.5,'#d
 function benedictColor(sugar){let c=BEN[0][1];for(let i=1;i<BEN.length;i++){const a=BEN[i-1],b=BEN[i];if(sugar>=b[0])c=b[1];else{c=mixC(a[1],b[1],(sugar-a[0])/(b[0]-a[0]));break;}}return c;}
 function benedictLabel(sugar){let r=BEN[0];for(const b of BEN)if(sugar>=b[0])r=b;return r;}
 
-function samples(sim){return KNOWN.concat(sim.st.unk.map((u,i)=>Object.assign({},u,{short:['Unknown',String.fromCharCode(65+i)],label:'Unknown '+String.fromCharCode(65+i)})));}
+function samples(sim){return KNOWN.concat(sim.st.unk.map((u,i)=>Object.assign({},u,{short:[String.fromCharCode(65+i)],label:'Unknown '+String.fromCharCode(65+i)})));}
 function nameOf(sm){return sm.label||sm.name;}
 // final appearance + result text of sample sm with reagent r after heating h (min)
 function outcome(sm,r,h){const c=sm.c;

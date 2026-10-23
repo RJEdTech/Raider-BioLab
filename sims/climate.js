@@ -170,10 +170,10 @@ const CLIMATE={
     for(const p of v.ph){if(p.vis){ctx.strokeStyle='#e8b500';ctx.lineWidth=2.5;ctx.beginPath();const a=Math.atan2(p.ty-p.y,p.tx-p.x);ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-Math.cos(a)*14,p.y-Math.sin(a)*14);ctx.stroke();}
       else{ctx.strokeStyle='#e0452f';ctx.lineWidth=2.2;ctx.beginPath();const a=Math.atan2(p.vy,p.vx),L=16;for(let j=0;j<=8;j++){const f=j/8,px=p.x-Math.cos(a)*L*f+Math.sin(a)*Math.sin(f*12+t*20)*3,py=p.y-Math.sin(a)*L*f-Math.cos(a)*Math.sin(f*12+t*20)*3;j?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();}}
     // labels
-    pill(ctx,'Sunlight (visible)',150,48,PAL.card,PAL['cv-ink'],11*k);
-    pill(ctx,hon?'Greenhouse gases: CO₂'+(hon?' and CH₄':''):'Greenhouse gases',120,130,PAL.card,PAL['cv-ink'],11*k);
-    pill(ctx,'Infrared heat',330,370,PAL.card,'#c0392b',11*k);
-    pill(ctx,'Year '+(2025+Math.min(YEARS,Math.floor(sim.t)))+' · '+P.toFixed(0)+' ppm CO₂',250,20,PAL.card,PAL['cv-ink'],12*k);
+    pillIn(ctx,'Sunlight (visible)',150,48,PAL.card,PAL['cv-ink'],11*k,0,380);
+    pillIn(ctx,hon?'Greenhouse gases: CO₂ and CH₄':'Greenhouse gases',150,130,PAL.card,PAL['cv-ink'],11*k,0,380);
+    pillIn(ctx,'Infrared heat',300,370,PAL.card,'#c0392b',11*k,0,380);
+    pillIn(ctx,'Year '+(2025+Math.min(YEARS,Math.floor(sim.t)))+' · '+P.toFixed(0)+' ppm CO₂',230,20,PAL.card,PAL['cv-ink'],12*k,90,380);
     // thermometer
     const tx=396,ty0=60,ty1=350;ctx.fillStyle=PAL.card;rr(ctx,tx,ty0,22,ty1-ty0,11);ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.stroke();
     const fr=clamp(s.T/5,0,1),fy=ty1-8-(ty1-ty0-20)*fr;ctx.fillStyle='#d23b3b';rr(ctx,tx+6,fy,10,ty1-fy+6,5);ctx.fill();ctx.beginPath();ctx.arc(tx+11,ty1+10,13,0,6.29);ctx.fill();
@@ -186,10 +186,12 @@ const CLIMATE={
     WEDGES.forEach((w,i)=>{const [x,y,W,H]=cardRect(i),on=(sim.wedges||[]).includes(w.id);
       rr(ctx,x,y,W,H,9);ctx.fillStyle=on?'#2c7a46':PAL.card;ctx.fill();ctx.strokeStyle=on?'#2c7a46':PAL.line;ctx.lineWidth=1.5;ctx.stroke();
       icon(ctx,w.ic,x+W/2,y+20,on?'#fff':PAL['cv-ink']);
-      txt(ctx,w.l,x+W/2,y+47,{s:11.5*k,w:700,a:'center',c:on?'#fff':PAL['cv-ink']});
-      txt(ctx,w.l2,x+W/2,y+65,{s:10.5*k,a:'center',c:on?'#e8f5ec':PAL['cv-soft']});});
+      fitTxt(ctx,w.l,x+W/2,y+47,W-8,11.5*k,700,on?'#fff':PAL['cv-ink']);
+      fitTxt(ctx,w.l2,x+W/2,y+65,W-8,10.5*k,400,on?'#e8f5ec':PAL['cv-soft']);});
     txt(ctx,'Click a card to add or remove it.',452,440,{s:11.5*k,c:PAL['cv-soft']});}
 };
+function fitTxt(ctx,s,x,y,maxW,size,w,c){ctx.font=w+' '+size+'px '+FONT;const m=ctx.measureText(s).width;const sz=m>maxW?size*maxW/m:size;txt(ctx,s,x,y,{s:sz,w,c,a:'center'});}
+function pillIn(ctx,s,x,y,bg,fg,size,x0,x1){ctx.font='700 '+size+'px '+FONT;const w=ctx.measureText(s).width+size*1.1;const cx=clamp(x,x0+w/2+2,x1-w/2-2);pill(ctx,s,cx,y,bg,fg,size);}
 function toggleW(sim,id){const w=sim.wedges||(sim.wedges=[]),i=w.indexOf(id);if(i>=0)w.splice(i,1);else w.push(id);}
 function cardRect(i){const c=i%3,r=Math.floor(i/3);return [452+c*114,72+r*88,110,80];}
 function cardAt(x,y){for(let i=0;i<WEDGES.length;i++){const [cx,cy,w,h]=cardRect(i);if(x>=cx&&x<=cx+w&&y>=cy&&y<=cy+h)return i;}return -1;}

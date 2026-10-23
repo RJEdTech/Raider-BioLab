@@ -75,7 +75,7 @@ const SIM={
     const nextIn=s.tk>=10?null:Math.ceil((0.5-(s.tk%0.5))*60);
     txt(ctx,s.tk>=10?'Trial over: counting done':'Next count in '+nextIn+' s',20,48,{s:12.5*k,c:PAL['cv-soft']});
     s.flash=Math.max(0,s.flash-vdt*1.5);
-    [[c[0],X0+(MID-X0)/2,'Left'],[c[1],MID+(X1-MID)/2,'Right']].forEach(q=>{const r=22+s.flash*6;ctx.fillStyle=PAL['card'];ctx.strokeStyle=s.flash>0.05?PAL['s1']:PAL['line'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(q[1],48,r,0,6.29);ctx.fill();ctx.stroke();
+    [[c[0],MID-60,'Left'],[c[1],MID+60,'Right']].forEach(q=>{const r=22+s.flash*6;ctx.fillStyle=PAL['card'];ctx.strokeStyle=s.flash>0.05?PAL['s1']:PAL['line'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(q[1],48,r,0,6.29);ctx.fill();ctx.stroke();
       txt(ctx,String(q[0]),q[1],49,{s:18*k,w:800,a:'center',b:'middle'});});
     // sides
     [[X0,MID,cL,'L'],[MID,X1,cR,'R']].forEach(sd=>{const [a,b,cc]=sd;ctx.save();ctx.beginPath();ctx.rect(a,Y0,b-a,Y1-Y0);ctx.clip();
@@ -90,7 +90,7 @@ const SIM={
     for(const b of s.bugs){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.th);
       const wig=b.v>0&&!RM?Math.sin(t*25+b.ph)*1.6:0;
       ctx.strokeStyle='#4b4652';ctx.lineWidth=1.2;for(let i=-2;i<=2;i++){const lx=i*3.6;ctx.beginPath();ctx.moveTo(lx,-6);ctx.lineTo(lx+wig,-9);ctx.moveTo(lx,6);ctx.lineTo(lx-wig,9);ctx.stroke();}
-      ctx.fillStyle=b.rest?'#6e6977':'#5d5866';ctx.beginPath();ctx.ellipse(0,0,13,7.5,0,0,6.29);ctx.fill();
+      ctx.fillStyle=b.rest?'#6e6977':'#5d5866';ctx.beginPath();ctx.ellipse(0,0,13,7.5,0,0,6.29);ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.stroke();
       ctx.strokeStyle='#8f8a99';ctx.lineWidth=1;for(let i=-3;i<=3;i++){ctx.beginPath();ctx.moveTo(i*3.4,-6.6);ctx.quadraticCurveTo(i*3.4+1.2,0,i*3.4,6.6);ctx.stroke();}
       ctx.fillStyle='#4b4652';ctx.beginPath();ctx.ellipse(13,0,3,4.5,0,0,6.29);ctx.fill();
       ctx.strokeStyle='#4b4652';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(15,-2);ctx.lineTo(21,-6);ctx.moveTo(15,2);ctx.lineTo(21,6);ctx.stroke();ctx.restore();}

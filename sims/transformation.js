@@ -83,7 +83,7 @@ const TRANS={
     if(p.uv&&s.h>=18)return s.plates[3].n>0?'<b>Under UV light only the LB/amp/ara colonies glow green.</b> Every +pGLO colony has the GFP gene, but '+(hon?'the araC protein turns on the GFP gene only when arabinose is present.':'arabinose is needed to switch the gene on.'):'Nothing glows: no cells took in the plasmid.';
     if(s.h<16)return 'Colonies are appearing: each one started from a single cell.';
     return 'After '+s.h.toFixed(0)+' h: a <b>lawn</b> on LB −pGLO (no ampicillin, so everything grows), <b>none</b> on LB/amp −pGLO, and <b>'+c3+'</b> and <b>'+c4+'</b> colonies on the two +pGLO ampicillin plates. Turn on the UV light.';},
-  draw(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,hon=atLeast('honors');
+  draw(sim,ctx,vdt,k,t){k=Math.min(k,1.3);const s=sim.st,p=sim.p,hon=atLeast('honors');
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,196,540,44);
     const where=STEPS[s.stage].where,a=s.anim;
     // ice bucket and water bath
@@ -94,8 +94,8 @@ const TRANS={
     txt(ctx,'Water bath',443,224,{s:12.5*k,w:700,a:'center'});
     // tube rack + tubes
     ctx.fillStyle='#c9ccd2';rr(ctx,40,150,140,40,6);ctx.fill();txt(ctx,'Rack',110,224,{s:12.5*k,w:700,a:'center'});
-    const home=[[80,92],[140,92]],dest=where==='ice'?[[244,74],[292,74]]:where==='bath'?[[420,68],[466,68]]:home;
-    const prev=s.stage>0?STEPS[s.stage-1].where:'rack',src=prev==='ice'?[[244,74],[292,74]]:prev==='bath'?[[420,68],[466,68]]:home;
+    const home=[[80,92],[140,92]],dest=where==='ice'?[[240,74],[298,74]]:where==='bath'?[[414,68],[472,68]]:home;
+    const prev=s.stage>0?STEPS[s.stage-1].where:'rack',src=prev==='ice'?[[240,74],[298,74]]:prev==='bath'?[[414,68],[472,68]]:home;
     ['+pGLO','−pGLO'].forEach((lab,i)=>{const e=a<1?a*a*(3-2*a):1,x=lerp(src[i][0],dest[i][0],e),y=lerp(src[i][1],dest[i][1],e)-Math.sin(e*Math.PI)*30;
       ctx.fillStyle='rgba(235,242,248,.95)';ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-13,y);ctx.lineTo(x+13,y);ctx.lineTo(x+10,y+58);ctx.quadraticCurveTo(x,y+72,x-10,y+58);ctx.closePath();ctx.fill();ctx.stroke();
       ctx.fillStyle=i===0?'#9a3445':'#3d5f8f';rr(ctx,x-15,y-10,30,12,3);ctx.fill();
@@ -116,7 +116,7 @@ const TRANS={
       const P=s.plates&&s.plates[i];if(P&&s.stage>=8){const grow=clamp((s.h-10)/24,0,1)+0.35*clamp((s.h-34)/14,0,1);
         if(P.lawn){const op=clamp((s.h-6)/16,0,1);ctx.fillStyle=uv?'rgba(220,220,240,'+0.35*op+')':'rgba(236,226,190,'+op+')';ctx.beginPath();ctx.arc(cx,cy,R-6,0,6.29);ctx.fill();
           ctx.fillStyle=uv?'rgba(255,255,255,'+0.25*op+')':'rgba(210,195,150,'+op+')';P.lawnDots.forEach(d=>{ctx.beginPath();ctx.arc(cx+d[0]*R,cy+d[1]*R,1.6,0,6.29);ctx.fill();});}
-        else if(grow>0)P.pos.forEach(d=>{const r=Math.max(0.6,(1+3.2*grow)*d[2]);const x=cx+d[0]*(R-6),y=cy+d[1]*(R-6);
+        else if(grow>0)P.pos.forEach(d=>{const r=Math.max(0.6,(1+2.1*grow)*d[2]);const x=cx+d[0]*(R-6),y=cy+d[1]*(R-6);
           if(uv&&pl.ara&&s.h>=18){const g=ctx.createRadialGradient(x,y,0,x,y,r*2.6);g.addColorStop(0,'rgba(140,255,150,.95)');g.addColorStop(1,'rgba(140,255,150,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*2.6,0,6.29);ctx.fill();ctx.fillStyle='#d9ffd9';}
           else ctx.fillStyle=uv?'rgba(235,235,250,.85)':'#fbf6e8';
           ctx.beginPath();ctx.arc(x,y,r,0,6.29);ctx.fill();if(!uv){ctx.strokeStyle='rgba(150,130,90,.6)';ctx.lineWidth=0.6;ctx.stroke();}});}
