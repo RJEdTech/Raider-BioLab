@@ -147,26 +147,25 @@ const HP={
   initVis(sim){sim.vis.drops=[];sim.vis.acc=0;},
   draw(sim,ctx,vdt,k,t){const s=sim.st,v=sim.vis,hon=atLeast('honors'),ap=atLeast('ap'),P=PRESETS[sim.p.preset];
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
-    const m=groups5(s.m),f=groups5(s.f),T=total(s),cx=280,top=52,bh=17.4,gap=2,half=22,scaleX=230/10; // 10% fills the side
+    const m=groups5(s.m),f=groups5(s.f),T=total(s),cx=280,top=54,bh=14.6,gap=2.2,half=22,scaleX=230/10; // 10% fills the side
     const yOf=i=>top+(20-i)*(bh+gap);
     // grid
     ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;for(let pc=2;pc<=10;pc+=2){const dx=half+pc*scaleX;ctx.beginPath();ctx.moveTo(cx-dx,top-4);ctx.lineTo(cx-dx,yOf(0)+bh);ctx.moveTo(cx+dx,top-4);ctx.lineTo(cx+dx,yOf(0)+bh);ctx.stroke();
-      txt(ctx,pc+'%',cx-dx,yOf(0)+bh+15,{s:11*k,c:PAL['cv-soft'],a:'center'});txt(ctx,pc+'%',cx+dx,yOf(0)+bh+15,{s:11*k,c:PAL['cv-soft'],a:'center'});}
+      txt(ctx,pc+'%',cx-dx,yOf(0)+bh+14,{s:11*k,c:PAL['cv-soft'],a:'center'});txt(ctx,pc+'%',cx+dx,yOf(0)+bh+14,{s:11*k,c:PAL['cv-soft'],a:'center'});}
     const male=PAL['s2'],fem=PAL['s1'];
     for(let i=0;i<21;i++){const y=yOf(i),wm=Math.min(260,100*m[i]/T*scaleX),wf=Math.min(260,100*f[i]/T*scaleX);const dep=(i<3||i>=13);
       ctx.globalAlpha=hon&&dep?0.55:1;ctx.fillStyle=male;ctx.fillRect(cx-half-wm,y,wm,bh);ctx.fillStyle=fem;ctx.fillRect(cx+half,y,wf,bh);ctx.globalAlpha=1;
-      if(i%2===0||k<1.2)txt(ctx,i===20?'100+':String(i*5),cx,y+bh/2,{s:10.5*k,c:PAL['cv-soft'],a:'center',b:'middle'});
+      if(i%2===0)txt(ctx,i===20?'100+':String(i*5),cx,y+bh/2,{s:10.5*Math.min(k,1.4),c:PAL['cv-soft'],a:'center',b:'middle'});
       // ghost of the starting pyramid
       const gm=100*s.start.m[i]/s.start.T*scaleX,gf=100*s.start.f[i]/s.start.T*scaleX;ctx.setLineDash([3,3]);ctx.strokeStyle=PAL['cv-ink'];ctx.globalAlpha=0.55;ctx.lineWidth=1.2;
       ctx.strokeRect(cx-half-Math.min(260,gm),y,Math.min(260,gm),bh);ctx.strokeRect(cx+half,y,Math.min(260,gf),bh);ctx.setLineDash([]);ctx.globalAlpha=1;}
-    txt(ctx,'Male',cx-half-8,top-12,{s:13*k,w:700,c:male,a:'right'});txt(ctx,'Female',cx+half+8,top-12,{s:13*k,w:700,c:fem});txt(ctx,'Age',cx,top-12,{s:12*k,w:700,c:PAL['cv-soft'],a:'center'});
-    if(hon){txt(ctx,'Faded bars: dependents (under 15, 65+)',cx,yOf(0)+bh+32,{s:11*k,c:PAL['cv-soft'],a:'center'});}
-    txt(ctx,'Dashed: pyramid at the start',cx,yOf(0)+bh+(hon?47:32),{s:11*k,c:PAL['cv-soft'],a:'center'});
+    txt(ctx,'Male',cx-half-8,top-8,{s:13*k,w:700,c:male,a:'right'});txt(ctx,'Female',cx+half+8,top-8,{s:13*k,w:700,c:fem});txt(ctx,'Age',cx,top-8,{s:12*k,w:700,c:PAL['cv-soft'],a:'center'});
+    txt(ctx,'Dashed outline: the pyramid at the start'+(hon?' · Faded bars: dependents (under 15, 65+)':''),cx,yOf(0)+bh+30,{s:11*Math.min(k,1.3),c:PAL['cv-soft'],a:'center'});
     // births dropping into the youngest bar
     if(vdt>0){v.acc+=Math.min(8,s.births/T*1000*0.35)*vdt*sim.speed;while(v.acc>=1){v.acc--;const male_=Math.random()<0.512;v.drops.push({x:male_?cx-half-10-Math.random()*60:cx+half+10+Math.random()*60,y:yOf(0)-30,vy:40,life:0.8,c:male_?male:fem});}}
     for(const d of v.drops){d.y+=d.vy*vdt;d.life-=vdt;ctx.globalAlpha=clamp(d.life/0.8,0,1);ctx.fillStyle=d.c;ctx.beginPath();ctx.arc(d.x,d.y,3.2,0,6.29);ctx.fill();}ctx.globalAlpha=1;v.drops=v.drops.filter(d=>d.life>0);if(v.drops.length>40)v.drops.splice(0,v.drops.length-40);
     // header
-    const yr=(P?P.year:2026)+Math.floor(sim.t);pill(ctx,(P?P.l.replace(/ \(.*\)/,''):'Country')+' · '+yr+' · '+fmtPop(T),cx,20,PAL['card'],PAL['cv-ink'],13*k);
+    const yr=(P?P.year:2026)+Math.floor(sim.t);pill(ctx,(P?P.l.replace(/ \(.*\)/,''):'Country')+' · '+yr+' · '+fmtPop(T),cx,18,PAL['card'],PAL['cv-ink'],13*Math.min(k,1.3));
     // demographic transition mini-chart
     const bx=556,by=40,bw=232,bH=196;ctx.fillStyle=PAL['card'];rr(ctx,bx-8,by-6,bw+16,bH+12,10);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.stroke();
     txt(ctx,'Demographic transition',bx+bw/2,by+12,{s:12.5*k,w:700,a:'center'});

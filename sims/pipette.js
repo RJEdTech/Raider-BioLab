@@ -154,7 +154,7 @@ const PIP={
 function poisson(m){if(m>60)return Math.max(0,Math.round(m+Math.sqrt(m)*BioLab.h.randn()));let L=Math.exp(-m),kk=0,pp=1;do{kk++;pp*=Math.random();}while(pp>L);return kk-1;}
 
 /* ---------- drawing: pipetting ---------- */
-function drawPip(sim,ctx,k,t){const p=sim.p,s=sim.st,P=PIPS[p.pip],v=volOf(sim);
+function drawPip(sim,ctx,k0,t){const k=Math.min(k0,1.35);const p=sim.p,s=sim.st,P=PIPS[p.pip],v=volOf(sim);
   const SRC=380,DST=520;const px=lerp(lerp(205,SRC,clamp(s.px,0,1)),DST,clamp(s.px-1,0,1));const dipped=s.where!=='air';const py=dipped?28:0;
   // tubes
   const tube=(x,label,fill,col)=>{ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x-28,300);ctx.lineTo(x-28,390);ctx.quadraticCurveTo(x,430,x+28,390);ctx.lineTo(x+28,300);ctx.stroke();
@@ -179,8 +179,8 @@ function drawPip(sim,ctx,k,t){const p=sim.p,s=sim.st,P=PIPS[p.pip],v=volOf(sim);
   // stops diagram
   const SX=616,SY=252;txt(ctx,'Plunger',SX,SY,{s:12.5*k,w:700,c:PAL['cv-soft']});
   [['rest',0],['1st stop',1],['2nd stop',2]].forEach((r,i)=>{const y=SY+22+i*28;ctx.fillStyle=Math.round(s.pv)===r[1]?PAL['rj']:PAL['line'];ctx.beginPath();ctx.arc(SX+6,y,6,0,6.29);ctx.fill();txt(ctx,r[0],SX+20,y,{s:12.5*k,b:'middle',c:PAL['cv-ink']});});
-  txt(ctx,'Display '+dg[0]+'-'+dg[1]+'-'+dg[2]+' = '+fmtUL(v)+' µL',SX,SY+118,{s:13*k,w:700});
-  txt(ctx,P.note,SX,SY+138,{s:11.5*k,c:PAL['cv-soft']});
+  txt(ctx,'Display '+dg[0]+'-'+dg[1]+'-'+dg[2]+' = '+fmtUL(v)+' µL',24,404,{s:14*k,w:700});
+  txt(ctx,P.note+' on a '+p.pip,24,426,{s:12*k,c:PAL['cv-soft']});
   // task card
   rr(ctx,610,24,178,200,10);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
   const tv=TASKS[p.task],best=bestPip(tv);txt(ctx,'Task',624,48,{s:12*k,w:700,c:PAL['cv-soft']});txt(ctx,fmtUL(tv)+' µL',624,76,{s:22*k,w:700});

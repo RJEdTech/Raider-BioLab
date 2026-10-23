@@ -79,7 +79,7 @@ const SIM={
     else{
       const fs=1-2*hill(p.fdrug),fr=(1-cost)*(1-2*hill(p.fdrug/8)),N=s.fS+s.fR,lg=Math.max(0,1-N/KF);
       s.fS*=Math.exp(RF*fs*(fs>0?lg:1)*dt);s.fR*=Math.exp(RF*fr*(fr>0?lg:1)*dt);
-      if(Math.floor(t+dt)>s.day){s.day=Math.floor(t+dt);s.fS*=0.01;s.fR*=0.01;s.transfer=t;}}
+      if(Math.floor(t+dt)>s.day){s.day=Math.floor(t+dt);s.prevFrac=s.fR/(s.fS+s.fR);s.fS*=0.01;s.fR*=0.01;s.transfer=t;}}
     if(t<s.lastSer)s.series=[];
     if(t-s.lastSer>=0.1||s.lastSer<0){s.lastSer=t;s.series.push(snap(sim));if(s.series.length>600)s.series.shift();}},
   metrics:[
@@ -220,6 +220,7 @@ function drawMega(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,bands=BANDS[p.steps],c
   txt(ctx,'Day '+sim.t.toFixed(1),PL.x+PL.w,26,{s:14*k,w:700,a:'right'});}
 
 function drawPatient(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis,N=s.S+s.R,cx=230,cy=220,R=168;
+  const k0=k;k=Math.min(k,1.3);
   txt(ctx,'Inside an infected wound',24,26,{s:14*k,w:700});
   ctx.fillStyle='#e9b8b4';ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.fill();ctx.strokeStyle='#b5736d';ctx.lineWidth=3;ctx.stroke();
   // drug shading
@@ -235,12 +236,11 @@ function drawPatient(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis,N=s.S+s.R
   txt(ctx,'Bacteria in the infection',PX+14,64,{s:13*k,c:PAL['cv-soft']});txt(ctx,fmtCells(N),PX+14,98,{s:28,w:800});
   const f=feel(s),fc=f==='Sick'?PAL['s1']:f==='Cured'?PAL['s3']:PAL['s4'];pill(ctx,f,PX+280,86,fc,'#ffffff',13*k);
   const bx=PX+14,bw=312;ctx.fillStyle=PAL['card2'];ctx.fillRect(bx,114,bw,16);if(N>=1){ctx.fillStyle=PAL['s2'];ctx.fillRect(bx,114,bw*s.S/N,16);ctx.fillStyle=PAL['s1'];ctx.fillRect(bx+bw*s.S/N,114,bw*s.R/N,16);}
-  txt(ctx,'Sensitive '+fmtCells(s.S),bx,148,{s:12.5*k,c:PAL['s2'],w:700});txt(ctx,'Resistant '+fmtCells(s.R),bx+bw,148,{s:12.5*k,c:PAL['s1'],w:700,a:'right'});
+  txt(ctx,'Sensitive: '+fmtCells(s.S),bx,148,{s:12.5*k,c:PAL['s2'],w:700});txt(ctx,'Resistant: '+fmtCells(s.R),bx,148+16*k,{s:12.5*k,c:PAL['s1'],w:700});
   // drug gauge with MIC marks
-  txt(ctx,'Antibiotic level',PX+14,180,{s:13*k,c:PAL['cv-soft']});const gx=PX+14,gw=312,gy=190,mx=8,X=c=>gx+gw*clamp(c/mx,0,1);
+  const gy=172+16*k+18*k;txt(ctx,'Antibiotic level',PX+14,gy-22*k,{s:13*k,c:PAL['cv-soft']});const gx=PX+14,gw=312,mx=8,X=c=>gx+gw*clamp(c/mx,0,1);
   ctx.fillStyle=PAL['card2'];ctx.fillRect(gx,gy,gw,14);ctx.fillStyle=PAL['s5'];ctx.fillRect(gx,gy,X(s.C)-gx,14);
-  [[1,'kills sensitive'],[MICR,'kills resistant']].forEach(([c,l],i)=>{const x=X(c);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,gy-4);ctx.lineTo(x,gy+18);ctx.stroke();txt(ctx,l,x,gy+32,{s:11.5*k,c:PAL['cv-soft'],a:i?'right':'left'});});
-  txt(ctx,'Each dose fades with a 6-hour half-life',PX+14,270,{s:12*k,c:PAL['cv-soft']});
+  [[1,'kills sensitive'],[MICR,'kills resistant']].forEach(([c,l],i)=>{const x=X(c);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,gy-4);ctx.lineTo(x,gy+18);ctx.stroke();txt(ctx,l,i?x-4:x+4,gy+18+14*k*(i+1),{s:11.5*k,c:PAL['cv-soft'],a:i?'right':'left'});});
   // dose timeline
   const TX=40,TW=720,TY=318;ctx.fillStyle=PAL['card'];rr(ctx,20,298,760,140,10);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.stroke();
   txt(ctx,'Doses',TX,TY+6,{s:13*k,w:700});const DX=d=>TX+60+(TW-80)*d/20;
@@ -259,6 +259,7 @@ function drawFlask(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis,frac=s.fR/(
     ctx.fillStyle=PAL['cv-water'];ctx.globalAlpha=0.5+0.5*alpha;ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=3;ctx.stroke();ctx.restore();txt(ctx,label,cx,base+24,{s:13*k,w:700,a:'center'});};
   // yesterday (small) and today (big)
   flask(130,330,150,170,0,'Yesterday’s flask',0.8);
+  for(let i=0;i<40;i++){const r=v.fr[i],x=130+(r.x-0.5)*(36+r.y*80),y=330-8-r.y*90;ctx.save();ctx.translate(x,y);ctx.rotate(r.a);ctx.fillStyle=i<Math.round(40*(s.prevFrac===undefined?frac:s.prevFrac))?PAL['s1']:PAL['s2'];rr(ctx,-5,-2,10,4,2);ctx.fill();ctx.restore();}
   flask(430,380,300,320,0,'Today’s flask',clamp(Math.log10(N/1e7)/2,0,1));
   // transfer pipette animation
   const ph=sim.t-Math.floor(sim.t);if(ph<0.12&&!RM){const a=ph/0.12;const x=lerpN(130,430,a),y=150-Math.sin(a*Math.PI)*60;ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y-40);ctx.lineTo(x,y+20);ctx.stroke();ctx.fillStyle=PAL['s2'];ctx.beginPath();ctx.arc(x,y+24,4,0,6.29);ctx.fill();}

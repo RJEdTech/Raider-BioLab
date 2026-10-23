@@ -42,7 +42,7 @@ function mob(bp){return Math.max(0.02,0.35*(5-Math.log10(bp)));}
 const LADDER=[10000,8000,6000,5000,4000,3000,2000,1500,1000,500,250];
 
 /* ---------- geometry ---------- */
-const CX=200,CY=228,R=128;
+const CX=222,CY=232,R=120;
 const ang=(pos,len)=>-Math.PI/2+2*Math.PI*pos/len;
 
 const PL={
@@ -199,9 +199,9 @@ function drawEnds(ctx,sim,k){const p=sim.p,e=ENZ[p.e1];const X=412,Y=268;
   txt(ctx,p.e1+' cut site',X,Y-24,{s:12.5*k,w:700,c:PAL['cv-soft']});
   const top=e.site,bot=comp(e.site);const cw=16;const cutT=e.cut,cutB=6-e.cut;const sep=clamp(sim.st.anim-0.6,0,1)*12;
   ctx.font='700 '+(15*Math.min(k,1.3))+'px '+MONO;ctx.textBaseline='middle';ctx.textAlign='center';
-  for(let i=0;i<6;i++){const leftTop=i<cutT,leftBot=i<cutB;ctx.fillStyle=PAL['cv-ink'];ctx.fillText(top[i],X+20+i*cw+(leftTop?-sep:sep),Y);ctx.fillStyle=PAL['cv-ink'];ctx.fillText(bot[i],X+20+i*cw+(leftBot?-sep:sep),Y+22);}
-  ctx.fillStyle=PAL['cv-soft'];ctx.font=(11*k)+'px '+FONT;ctx.textAlign='left';ctx.fillText('5′',X,Y);ctx.fillText('3′',X,Y+22);ctx.textAlign='right';ctx.fillText('3′',X+20+6*cw+14,Y);ctx.fillText('5′',X+20+6*cw+14,Y+22);
-  if(sep<2){ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2;ctx.beginPath();const xt=X+20+cutT*cw-cw/2,xb=X+20+cutB*cw-cw/2;ctx.moveTo(xt,Y-12);ctx.lineTo(xt,Y+11);ctx.lineTo(xb,Y+11);ctx.lineTo(xb,Y+34);ctx.stroke();}
+  for(let i=0;i<6;i++){const leftTop=i<cutT,leftBot=i<cutB;ctx.fillStyle=PAL['cv-ink'];ctx.fillText(top[i],X+30+i*cw+(leftTop?-sep:sep),Y);ctx.fillStyle=PAL['cv-ink'];ctx.fillText(bot[i],X+30+i*cw+(leftBot?-sep:sep),Y+22);}
+  ctx.fillStyle=PAL['cv-soft'];ctx.font=(11*k)+'px '+FONT;ctx.textAlign='left';ctx.fillText('5′',X,Y);ctx.fillText('3′',X,Y+22);ctx.textAlign='left';ctx.fillText('3′',X+30+6*cw+8,Y);ctx.fillText('5′',X+30+6*cw+8,Y+22);
+  if(sep<2){ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2;ctx.beginPath();const xt=X+30+cutT*cw-cw/2,xb=X+30+cutB*cw-cw/2;ctx.moveTo(xt,Y-12);ctx.lineTo(xt,Y+11);ctx.lineTo(xb,Y+11);ctx.lineTo(xb,Y+34);ctx.stroke();}
   txt(ctx,e.end==='blunt'?'Blunt ends: no overhang':e.end+' ends: '+e.over+' overhang',X,Y+60,{s:12.5*k,w:600,c:e.end==='blunt'?PAL['cv-soft']:PAL['s3']});
   if(atLeast('honors')){const b=ENZ[p.insEnz];const ok=e.end==='blunt'?b.end==='blunt':(e.over===b.over&&e.end===b.end);
     txt(ctx,'Insert ('+p.insEnz+'): '+(ok?'ends match':'ends don’t match'),X,Y+84,{s:12*k,c:ok?PAL['s3']:PAL['s1']});}}

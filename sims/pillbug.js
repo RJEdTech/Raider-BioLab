@@ -7,7 +7,7 @@ const PX=25,X0=60,X1=740,Y0=96,Y1=384,MID=400,DY0=190,DY1=290;
 const CRIT=[[2.71,'p > 0.10'],[3.84,'0.05 < p < 0.10'],[6.63,'0.01 < p < 0.05'],[10.83,'0.001 < p < 0.01'],[Infinity,'p < 0.001']];
 function sideCond(sim,side){const p=sim.p,hon=atLeast('honors');return {dry:p[side+'m']==='dry',light:p[side+'l']==='light',T:hon?p[side+'T']:20};}
 /* How unpleasant a side is for an isopod: dry and bright are bad, and so is far from about 17 °C. */
-function unfav(c){return Math.min(2,(c.dry?1.3:0)+(c.light?0.8:0)+0.8*Math.pow((c.T-17)/9,2));}
+function unfav(c){return Math.min(2,(c.dry?1.3:0)+(c.light?1.1:0)+0.8*Math.pow((c.T-17)/9,2));}
 function spawn(sim,s){const n=sim.p.n;s.bugs=[];for(let i=0;i<n;i++){const left=i<n/2;s.bugs.push({x:left?X0+30+Math.random()*(MID-X0-60):MID+30+Math.random()*(X1-MID-60),y:Y0+22+Math.random()*(Y1-Y0-44),th:Math.random()*6.283,rest:Math.random()<0.3,v:0,ph:Math.random()*6.28});}}
 function sideCount(s){let L=0;for(const b of s.bugs)if(b.x<MID)L++;return [L,s.bugs.length-L];}
 function chiData(sim){const s=sim.st,r=s.reads;if(!r.length)return null;let L,R,src;
@@ -100,7 +100,7 @@ const SIM={
     // walls with the doorway
     ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=5;rr(ctx,X0,Y0,X1-X0,Y1-Y0,18);ctx.stroke();
     ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(MID,Y0);ctx.lineTo(MID,DY0);ctx.moveTo(MID,DY1);ctx.lineTo(MID,Y1);ctx.stroke();ctx.lineCap='butt';
-    txt(ctx,'doorway',MID,DY0-8,{s:11*k,a:'center',c:PAL['cv-soft'],w:600});
+    pill(ctx,'doorway',MID,DY0-14,PAL['card'],PAL['cv-soft'],11*k);
     // side labels
     const lab=cc=>(cc.dry?'Dry':'Wet')+' · '+(cc.light?'light':'dark')+(hon?' · '+cc.T+' °C':'');
     txt(ctx,'Left: '+lab(cL),X0+(MID-X0)/2,Y1+22,{s:13*k,w:700,a:'center'});txt(ctx,'Right: '+lab(cR),MID+(X1-MID)/2,Y1+22,{s:13*k,w:700,a:'center'});

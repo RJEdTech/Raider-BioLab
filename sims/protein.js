@@ -144,20 +144,22 @@ const SIM={
     for(const [a1,b1,c1,d1] of [[1,0,0,1],[0,-1,1,0],[-1,0,0,-1],[0,1,-1,0],[-1,0,0,1],[1,0,0,-1],[0,1,1,0],[0,-1,-1,0]]){
       const c=rel.map(q=>[400+(a1*q[0]+b1*q[1])*SP,250+(c1*q[0]+d1*q[1])*SP]);if(!v.vp){tgt=c;break;}
       let dd=0;c.forEach((q,i)=>{dd+=(q[0]-v.vp[i][0])**2+(q[1]-v.vp[i][1])**2;});if(dd<bestD){bestD=dd;tgt=c;}}
-    if(!v.vp||v.vp.length!==N)v.vp=tgt.map(p=>p.slice());v.vp.forEach((p,i)=>{const b=1-Math.exp(-vdt*10);p[0]=lerp(p[0],tgt[i][0],vdt?b:1);p[1]=lerp(p[1],tgt[i][1],vdt?b:1);});
+    if(!v.vp||v.vp.length!==N)v.vp=tgt.map(p=>p.slice());v.vp.forEach((p,i)=>{const b=1-Math.exp(-vdt*14);p[0]=lerp(p[0],tgt[i][0],vdt?b:1);p[1]=lerp(p[1],tgt[i][1],vdt?b:1);});
     const P=v.vp,ty=types(st);
     // neighbor molecules (honors): copies that clump onto a sticky patch
     if(hon){v.nb=lerp(v.nb,st.stuck?1:0,1-Math.exp(-(vdt||0.05)*1.5));const drawCopy=(ox,oy,rot)=>{ctx.save();ctx.globalAlpha=.25+.3*v.nb;ctx.translate(ox,oy);ctx.rotate(rot);
         ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=5;ctx.beginPath();NATIVE.forEach((q,i)=>{const x=(q[0]-1.2)*16,y=(q[1]-0.2)*16;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
         NATIVE.forEach((q,i)=>{ctx.fillStyle=TCOL[TYPES[st.seq[i]]];ctx.beginPath();ctx.arc((q[0]-1.2)*16,(q[1]-0.2)*16,6,0,6.29);ctx.fill();});ctx.restore();};
-      const sp=P[SICKLE];const dx=lerp(260,90,v.nb),dy=lerp(-120,-40,v.nb);drawCopy(clamp(sp[0]+dx,60,740),clamp(sp[1]+dy,90,420),0.4);drawCopy(clamp(sp[0]-dx*0.9,60,740),clamp(sp[1]+dy+150*(1-v.nb)+30,90,420),-0.5);
+      const sp=P[SICKLE];let mx=0,my=0;P.forEach(q=>{mx+=q[0];my+=q[1];});mx/=N;my/=N;let ux=sp[0]-mx,uy=sp[1]-my;const ul=Math.hypot(ux,uy)||1;ux/=ul;uy/=ul;
+      if(Math.abs(ux)<0.35){ux=ux<0?-0.8:0.8;uy*=0.6;}const d1=lerp(230,98,v.nb),d2=lerp(330,190,v.nb);
+      drawCopy(clamp(sp[0]+ux*d1,70,730),clamp(sp[1]+uy*d1*0.5,110,400),0.3);drawCopy(clamp(sp[0]+ux*d2,70,730),clamp(sp[1]+uy*d2*0.5+20,110,400),-0.4);
       if(st.stuck)txt(ctx,'Molecules clumping on the sticky patch',400,440,{s:Math.min(12.5*k,14),w:700,a:'center',c:PAL['s1']});}
     // hydrophobic core glow
     const hi=ty.map((x,i)=>x==='H'?i:-1).filter(i=>i>=0);const buried=1-st.m.expH/st.m.possH;
     if(buried>0.45){let hx=0,hy=0;hi.forEach(i=>{hx+=P[i][0];hy+=P[i][1];});hx/=hi.length;hy/=hi.length;ctx.fillStyle='rgba(217,150,43,'+(0.12+0.15*buried)+')';ctx.beginPath();ctx.arc(hx,hy,48,0,6.29);ctx.fill();
-      txt(ctx,'nonpolar core',hx,hy+64,{s:Math.min(11.5*k,13),w:600,a:'center',c:PAL['cv-soft']});}
+}
     // contacts
-    contactsOf(st.pos).forEach(([i,j])=>{const a_=ty[i],b_=ty[j];let col=null,dash=[];
+    contactsOf(st.pos).forEach(([i,j])=>{if(Math.hypot(P[i][0]-P[j][0],P[i][1]-P[j][1])>SP*1.4)return;const a_=ty[i],b_=ty[j];let col=null,dash=[];
       if(a_==='H'&&b_==='H'){col='rgba(217,150,43,.9)';}
       else if((a_==='+'&&b_==='-')||(a_==='-'&&b_==='+')){const {fm,fp}=charges(sim.p.ph);if(fm*fp<0.3)return;col=PAL['cv-inn'];dash=[4,3];}
       else if(hon){col=PAL['s2'];dash=[2,4];}
@@ -167,6 +169,7 @@ const SIM={
     P.forEach((p,i)=>{const n=st.seq[i];ctx.fillStyle=TCOL[TYPES[n]];ctx.beginPath();ctx.arc(p[0],p[1],12,0,6.29);ctx.fill();
       if(n!==WT[i]){ctx.strokeStyle='#ffd23f';ctx.lineWidth=3;ctx.stroke();}
       txt(ctx,ONE[n],p[0],p[1]+1,{s:11,w:800,c:'#fff',a:'center',b:'middle'});});
+    if(buried>0.45){const by=Math.max(...P.map(q=>q[1]));let hx2=0;hi.forEach(i=>{hx2+=P[i][0];});hx2/=hi.length;txt(ctx,'nonpolar core in the middle',hx2,by+30,{s:Math.min(11.5*k,13),w:600,a:'center',c:PAL['cv-soft']});}
     // legend
     const items=[['nonpolar','H'],['polar','P'],['positive','+'],['negative','-']];let lx=14;
     items.forEach(([l,tp])=>{ctx.fillStyle=TCOL[tp];ctx.beginPath();ctx.arc(lx+6,418,6,0,6.29);ctx.fill();txt(ctx,l,lx+16,422,{s:Math.min(11.5*k,13),c:PAL['cv-ink']});ctx.font='11.5px '+FONT;lx+=ctx.measureText(l).width*Math.min(k,1.13)+34;});

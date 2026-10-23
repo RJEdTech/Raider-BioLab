@@ -117,7 +117,7 @@ const SMOG={
     const len=p.season==='summer'?15:9.5,rise=12-len/2,x01=(h-rise)/len;
     if(x01>0&&x01<1){const sx=740-x01*680,sy=GY-40-Math.sin(Math.PI*x01)*(p.season==='summer'?300:190);
       ctx.fillStyle='rgba(255,220,90,.35)';ctx.beginPath();ctx.arc(sx,sy,30,0,6.29);ctx.fill();ctx.fillStyle='#ffd34d';ctx.beginPath();ctx.arc(sx,sy,17,0,6.29);ctx.fill();
-      if(ap&&S>0.2)txt(ctx,'NO₂ + sunlight → NO + O,  O + O₂ → O₃',clamp(sx,170,630),sy+40,{s:11.5*k,w:700,c:'#5a3b00',a:'center'});}
+      if(ap&&S>0.2)pill(ctx,'NO₂ + sunlight → NO + O,  O + O₂ → O₃',600,78,'rgba(255,240,200,.92)','#5a3b00',11*k);}
     else{ctx.fillStyle='#e8e6d8';ctx.beginPath();ctx.arc(640,70,13,0,6.29);ctx.fill();ctx.fillStyle=rgb(skyTop);ctx.beginPath();ctx.arc(646,66,12,0,6.29);ctx.fill();}
     // mountains (west = left)
     ctx.fillStyle=day>0.4?'#6d7f8f':'#2c3446';ctx.beginPath();ctx.moveTo(0,GY);ctx.lineTo(0,190);ctx.lineTo(40,150);ctx.lineTo(80,190);ctx.lineTo(120,140);ctx.lineTo(165,200);ctx.lineTo(200,175);ctx.lineTo(250,GY);ctx.closePath();ctx.fill();
@@ -154,13 +154,13 @@ const SMOG={
     ctx.setLineDash([7,6]);ctx.strokeStyle=p.inv?'#d9534f':'rgba(255,255,255,.75)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(250,topY);ctx.lineTo(800,topY);ctx.stroke();ctx.setLineDash([]);
     pill(ctx,p.inv?'Inversion lid: warm air on top':(hon?'Top of mixing layer ('+Math.round(s.H)+' m)':'Top of the mixing air'),540,topY-12,p.inv?'#c0392b':'rgba(30,40,60,.75)','#fff',11*k);
     // temperature profile inset
-    const ix=255,iy=12,iw=150,ih=118;ctx.fillStyle=PAL['card'];ctx.globalAlpha=0.92;rr(ctx,ix,iy,iw,ih,8);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;rr(ctx,ix,iy,iw,ih,8);ctx.stroke();
+    const ix=255,iy=12,iw=162,ih=132;ctx.fillStyle=PAL['card'];ctx.globalAlpha=0.92;rr(ctx,ix,iy,iw,ih,8);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;rr(ctx,ix,iy,iw,ih,8);ctx.stroke();
     txt(ctx,'Air temperature with height',ix+iw/2,iy+15,{s:10.5*k,w:700,a:'center'});
-    const ax0=ix+18,ay0=iy+ih-14,aw=iw-30,ah=ih-36;ctx.strokeStyle=PAL['cv-soft'];ctx.beginPath();ctx.moveTo(ax0,ay0-ah);ctx.lineTo(ax0,ay0);ctx.lineTo(ax0+aw,ay0);ctx.stroke();
-    txt(ctx,'height',ax0-4,ay0-ah+8,{s:9.5*k,c:PAL['cv-soft'],a:'right'});txt(ctx,'warmer →',ax0+aw,ay0+11,{s:9.5*k,c:PAL['cv-soft'],a:'right'});
+    const ax0=ix+14,ay0=iy+ih-32,aw=iw-26,ah=ih-58;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ax0,ay0-ah);ctx.lineTo(ax0,ay0);ctx.lineTo(ax0+aw,ay0);ctx.stroke();
+    txt(ctx,'↑ higher',ax0+4,ay0-ah+4,{s:9.5*k,c:PAL['cv-soft']});txt(ctx,'warmer →',ax0+aw,ay0+11,{s:9.5*k,c:PAL['cv-soft'],a:'right'});
     ctx.strokeStyle=p.inv?'#c0392b':'#2e86de';ctx.lineWidth=2.5;ctx.beginPath();
     if(p.inv){ctx.moveTo(ax0+aw*0.25,ay0);ctx.lineTo(ax0+aw*0.75,ay0-ah*0.35);ctx.lineTo(ax0+aw*0.45,ay0-ah);}else{ctx.moveTo(ax0+aw*0.85,ay0);ctx.lineTo(ax0+aw*0.2,ay0-ah);}ctx.stroke();
-    txt(ctx,p.inv?'warm layer traps cold air':'cooler as you go up',ax0+aw/2+4,iy+30,{s:9.5*k,c:p.inv?'#c0392b':'#2e86de',a:'center',w:600});
+    txt(ctx,p.inv?'Warm layer traps cold air':'Cooler as you go up',ix+iw/2,iy+ih-8,{s:10*k,c:p.inv?'#c0392b':'#2e86de',a:'center',w:700});
     // clock + AQI badge
     const a=SMOG.aqi(sim),c=cat(a);
     ctx.fillStyle='rgba(15,20,35,.72)';rr(ctx,10,10,200,46,8);ctx.fill();

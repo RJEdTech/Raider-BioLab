@@ -98,7 +98,7 @@ const GRIDMIX={
     return `Demand is ${fmtNum(o.D,0)} MW. Coal and gas are supplying ${fmtNum(o.coal+o.gas,0)} MW and putting out ${fmtNum(o.coal+o.gas*0.4,0)} tons of CO₂ every hour.`;},
   tour:[
     {title:'The city needs power all the time',text:'Demand changes through the day: low at night, up in the morning, highest in the late afternoon and evening when air conditioners, ovens and TVs are all running. Supply must match it every second.',focus:[610,40,190,310],speed:0.5},
-    {title:'Baseload plants',text:'Coal and nuclear plants run steadily because they can’t start and stop quickly. They supply the base of the demand all day and night.',focus:[[380,170,100,250],[270,170,110,250]],speed:0.5},
+    {title:'Baseload plants',text:'Coal and nuclear plants run steadily because they can’t start and stop quickly. They supply the base of the demand all day and night.',focus(sim){return sim.p.nuclear>0?[[385,160,90,260],[272,200,66,220]]:[385,160,90,260];},speed:0.5},
     {title:'Solar follows the sun',text:'At midday the solar panels are at full output. Watch the gas plant idle and CO₂ fall.',focus:[0,190,160,240],speed:0.4,setup(sim){advanceTo(sim,12.5);}},
     {title:'The evening peak',text:'As the sun sets, demand is at its highest. Gas plants ramp up quickly to fill the gap left by solar. This is the hardest hour for a clean grid.',focus:[[470,170,90,250],[610,40,190,310]],speed:0.4,setup(sim){advanceTo(sim,19.5);}},
     {title:'Wind comes and goes',text:'Wind is often stronger at night, but it can die down for hours. The turbines spin faster when the wind is strong.',focus:[155,90,120,340],speed:1},
@@ -153,7 +153,7 @@ const GRIDMIX={
     const supply=o.D-o.unmet;v.flow+=vdt*supply/12;for(let i=0;i<14;i++){const x=10+((v.flow+i*44)%610);ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.arc(x,300,3,0,6.29);ctx.fill();}
     const lab=(name,mw,x,on)=>{txt(ctx,name,x,418,{s:11.5*k,w:700,a:'center',c:'#fff'});txt(ctx,on?fmtNum(mw,0)+' MW':'none',x,436,{s:11*k,a:'center',c:'#e8f5ec'});};
     // solar farm
-    if(p.solar>0){const rows=clamp(Math.ceil(p.solar/600),1,5);for(let r=0;r<rows;r++)for(let c=0;c<4;c++){const x=18+c*34,y=338+r*11;ctx.fillStyle=sf>0.05?'#3f6fb0':'#24324a';ctx.beginPath();ctx.moveTo(x,y+8);ctx.lineTo(x+6,y);ctx.lineTo(x+32,y);ctx.lineTo(x+26,y+8);ctx.closePath();ctx.fill();
+    if(p.solar>0){const rows=clamp(Math.ceil(p.solar/400),1,5);for(let r=0;r<rows;r++)for(let c=0;c<4;c++){const x=18+c*34,y=338+r*11;ctx.fillStyle=sf>0.05?'#3f6fb0':'#24324a';ctx.beginPath();ctx.moveTo(x,y+8);ctx.lineTo(x+6,y);ctx.lineTo(x+32,y);ctx.lineTo(x+26,y+8);ctx.closePath();ctx.fill();
       if(sf>0.1){ctx.fillStyle='rgba(255,255,255,'+(sf*0.45)+')';ctx.fillRect(x+10,y+1,8,2);}}}
     lab('Solar',o.solar,85,p.solar>0);
     // wind turbines
@@ -165,7 +165,7 @@ const GRIDMIX={
     if(p.nuclear>0){ctx.fillStyle='#d9dde3';ctx.beginPath();ctx.moveTo(282,330);ctx.quadraticCurveTo(296,280,288,240);ctx.lineTo(322,240);ctx.quadraticCurveTo(314,280,328,330);ctx.closePath();ctx.fill();
       for(let i=0;i<3;i++){ctx.fillStyle='rgba(255,255,255,.75)';ctx.beginPath();ctx.arc(305+Math.sin(t+i)*6,225-i*14-((t*10)%14),10+i*3,0,6.29);ctx.fill();}lab('Nuclear',o.nuclear,305,true);}
     // hydro dam
-    if(p.hydro>0){ctx.fillStyle='#5b8fd0';ctx.fillRect(340,300,50,30);ctx.fillStyle='#9ca3af';ctx.beginPath();ctx.moveTo(352,330);ctx.lineTo(360,262);ctx.lineTo(372,262);ctx.lineTo(378,330);ctx.closePath();ctx.fill();lab('Hydro',o.hydro,365,true);}
+    if(p.hydro>0){ctx.fillStyle='#4a7fc4';ctx.beginPath();ctx.moveTo(338,330);ctx.lineTo(338,276);ctx.lineTo(362,276);ctx.lineTo(362,330);ctx.closePath();ctx.fill();ctx.fillStyle='#a3a8b0';ctx.beginPath();ctx.moveTo(360,330);ctx.lineTo(360,268);ctx.lineTo(370,268);ctx.lineTo(384,330);ctx.closePath();ctx.fill();if(o.hydro>1){ctx.fillStyle='rgba(220,235,255,.85)';ctx.fillRect(372,322,16,8);}lab('Hydro',o.hydro,362,true);}
     // coal plant
     const smoke=(x,y,rate,col)=>{if(Math.random()<rate*vdt*3)v.smoke.push({x,y,r:6,a:.75,c:col});};
     if(p.coal>0){ctx.fillStyle='#6b6f76';ctx.fillRect(395,268,70,62);ctx.fillStyle='#55585e';ctx.fillRect(440,170,16,98);ctx.fillStyle='#b91c1c';ctx.fillRect(440,176,16,5);smoke(448,168,o.coal/150,'90,90,95');lab('Coal',o.coal,430,true);}
@@ -183,6 +183,6 @@ const GRIDMIX={
     pill(ctx,GRIDMIX.clock(sim)+' · '+p.season[0].toUpperCase()+p.season.slice(1),120,22,PAL.card,PAL['cv-ink'],12*k);
     const co2=o.coal*CO2T.coal+o.gas*CO2T.gas;pill(ctx,'CO₂ '+fmtNum(co2,0)+' t/h',300,22,PAL.card,PAL['cv-ink'],12*k);}
 };
-function advanceTo(sim,hour){const d=GRIDMIX;let guard=0;while(hourOf(sim.t)<hour-1e-6&&guard<2000){d.step(sim,0.05);sim.t+=0.05;guard++;}}
+function advanceTo(sim,hour){const d=GRIDMIX,delta=((hour-hourOf(sim.t))%24+24)%24,n=Math.round(delta/0.05);for(let i=0;i<n;i++){d.step(sim,0.05);sim.t+=0.05;}}
 BioLab.register(GRIDMIX);
 })();

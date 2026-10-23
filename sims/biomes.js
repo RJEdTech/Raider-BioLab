@@ -130,7 +130,7 @@ const SIM={
     ctx.setLineDash([5,4]);ctx.strokeStyle='#7a5c2e';ctx.lineWidth=2;ctx.strokeRect(wX(10),wY(90),wX(20)-wX(10),wY(25)-wY(90));ctx.setLineDash([]);
     const lab=(s,T,P)=>txt(ctx,s,wX(T),wY(P),{s:11.5*k,w:700,a:'center',b:'middle',c:'#1d2318'});
     lab('Tundra',-10,40);lab('Taiga',-1,140);lab('Desert',16,9);lab('Grassland',16,45);lab('Temperate',10,200);lab('deciduous forest',10,176);lab('Savanna',25,90);lab('Tropical',25,320);lab('rainforest',25,290);
-    txt(ctx,'Chaparral (dry summers)',wX(15),wY(90)-5,{s:10.5*k,w:600,a:'center',c:PAL['cv-soft']});
+    txt(ctx,'Chaparral',wX(10)-4,wY(70),{s:10.5*k,w:600,a:'right',c:'#5a4420'});txt(ctx,'(dry summers)',wX(10)-4,wY(70)+12,{s:10*k,a:'right',c:'#5a4420'});
     ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.strokeRect(WX.x0,WX.y0,WX.x1-WX.x0,WX.y1-WX.y0);
     for(let T=-10;T<=30;T+=10){txt(ctx,String(T),wX(T),WX.y1+15,{s:11*k,a:'center',c:PAL['cv-soft']});}
     [0,25,60,150,300,450].forEach(P=>{txt(ctx,String(P),WX.x0-6,wY(P)+4,{s:11*k,a:'right',c:PAL['cv-soft']});ctx.strokeStyle=PAL['cv-soft'];ctx.globalAlpha=.4;ctx.beginPath();ctx.moveTo(WX.x0-3,wY(P));ctx.lineTo(WX.x0,wY(P));ctx.stroke();ctx.globalAlpha=1;});

@@ -244,7 +244,7 @@ function startChallenge(sim,pick){const ch=visibleCh(sim)[sim.ch.idx];sim.ch.pic
   if(ch.instant){sim.ch.phase='done';if(sim.def.onChallenge)sim.def.onChallenge(sim,ch,'done');renderChallenge(sim);return;}
   const base={};(sim.def.controls||[]).forEach(c=>base[c.id]=c.def);
   applyValues(sim,Object.assign(base,ch.baseline||{}));resetSim(sim);if(ch.baselineAction)runAction(sim,ch.baselineAction);sim.running=true;sim.ui.play.textContent='Pause';
-  if(sim.ui.gm&&ch.watch){const lb=sim.ui.sec.querySelector('[data-g=live]');if(lb&&!lb.hidden)lb.click();sim.gMetric=ch.watch;sim.ui.gm.value=ch.watch;}
+  if(sim.ui.gm&&ch.watch){const go=graphOptions(sim),g=go.find(x=>x.id===ch.watch)||go.find(x=>!x.custom&&x.lines.includes(ch.watch));if(g){const lb=sim.ui.sec.querySelector('[data-g=live]');if(lb&&!lb.hidden)lb.click();sim.gMetric=g.id;sim.ui.gm.value=g.id;}}
   sim.ch.phase='running';sim.ch.changed=false;renderChallenge(sim);}
 function challengeTick(sim){const c=sim.ch;if(c.phase!=='running')return;const d=sim.def,ch=visibleCh(sim)[c.idx];if(!ch){c.phase='ask';return;}
   const tc=ch.at!==undefined?ch.at:(d.chChange||0),tr=ch.reveal!==undefined?ch.reveal:(d.chReveal||1);

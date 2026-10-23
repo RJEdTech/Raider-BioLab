@@ -73,7 +73,7 @@ const COM={
     return '<b>The lake is recovering.</b> Fish are reproducing faster ('+gg.toLocaleString()+') than they are caught ('+c.toLocaleString()+').'+(p.quota&&hon?' The quota is holding catches down.':'');},
   tour:[
     {title:'One lake, four fleets',text:'Four fishing fleets share this lake. Nobody owns the fish, so anyone can take them. Resources like this are called a <b>commons</b>.',focus:[0,90,800,345],speed:0.3},
-    {title:'Your fleet',text:'The red boat is yours. Set how many fish you try to catch each season with the slider.',focus(sim){return [140,60,130,120];},speed:0.3},
+    {title:'Your fleet',text:'The red boat is yours. Set how many fish you try to catch each season with the slider.',focus(sim){return [270,52,130,130];},speed:0.3},
     {title:'Fish reproduce',text:'After fishing, the survivors reproduce. Green + marks show new fish. A lake with more fish adds more young, up to the lake’s carrying capacity.',focus:[0,150,800,285],speed:0.4},
     {title:'The scoreboard',text:'Fish in the lake, last season’s catch and each fleet’s catch are on the dock. Watch how they change.',focus:[8,8,250,92],speed:0.4},
     {title:'Everyone gets greedy',text:'Now the other fleets switch to greedy, and you raise your catch too. Each fleet earns more this season, but watch what happens to the lake.',focus:[0,90,800,345],speed:1.5,setup(sim){BioLab.setValues(sim,{others:'greedy',catch:1200});}},
@@ -120,7 +120,7 @@ const COM={
     // fish: shown count ∝ stock
     const per=100,nShow=Math.min(v.fish.length,Math.round(s.F/per));
     // season events: catches lift fish to boats, growth adds +
-    const BX=[205,355,505,655],BY=118;
+    const BX=[335,465,595,725],BY=118;
     while(s.events.length){const e=s.events.shift();e.caught.forEach((c,i)=>{const n=Math.min(12,Math.round(c/per));for(let j=0;j<n;j++)v.anim.push({x:BX[i]-30+Math.random()*60,y:200+Math.random()*120,tx:BX[i],ty:BY,life:1.4,col:FLEETS[i].col});});
       const nb=Math.min(14,Math.round(e.born/per));for(let j=0;j<nb;j++)v.plus.push({x:40+Math.random()*720,y:220+Math.random()*190,life:1.4});v.net=1.2;}
     for(let i=0;i<nShow;i++){const f=v.fish[i];if(vdt>0){f.x+=f.dir*f.sp*vdt;if(f.x<20||f.x>780)f.dir*=-1;}const y=f.y+Math.sin(t*1.3+f.ph)*4*(RM?0:1);
@@ -142,7 +142,7 @@ const COM={
     txt(ctx,'Fish: '+Math.round(s.F).toLocaleString()+' of '+K.toLocaleString(),22,50,{s:12.5*k,c:PAL['cv-soft']});
     ctx.fillStyle=PAL['line'];rr(ctx,22,62,220,14,7);ctx.fill();ctx.fillStyle=st==='Healthy'?PAL['s3']:st==='Collapsed'?PAL['s1']:PAL['s4'];rr(ctx,22,62,Math.max(4,220*s.F/K),14,7);ctx.fill();
     if(ap){const mx=22+220*msy(sim.p.r).F/K;ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.setLineDash([3,2]);ctx.beginPath();ctx.moveTo(mx,58);ctx.lineTo(mx,80);ctx.stroke();ctx.setLineDash([]);txt(ctx,'MSY level',mx,90,{s:10.5*k,c:PAL['cv-soft'],a:'center'});}
-    if(sim.p.quota&&hon)pill(ctx,'Quota: '+sim.p.quotaAmt.toLocaleString()+' fish per season',530,30,PAL['s5'],'#fff',12*k);
+    if(sim.p.quota&&hon)pill(ctx,'Quota: '+sim.p.quotaAmt.toLocaleString()+' fish per season',530,22,PAL['s5'],'#fff',12*k);
     if(nShow<Math.round(s.F/per)||per>1)txt(ctx,'Each fish shown = '+per+' fish',790,440,{s:11.5*k,c:'#ffffff',a:'right',w:600});}
 };
 BioLab.register(COM);

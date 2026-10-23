@@ -12,7 +12,7 @@ function tempCol(T){const f=clamp((T-17)/12,0,1);const c=[[40,90,200],[60,160,20
 const target=sim=>sim.p.state==='custom'?sim.p.trade:PRESET[sim.p.state];
 function eq(W){const De=clamp(40+110*(1-W),15,170),Dw=160+40*W;return {De,Dw};}
 const rainLon=W=>130+100*(1-clamp(W,0,1));
-function rainRegion(lon){return lon<150?'Over Indonesia and Australia':lon<200?'Central Pacific':'Eastern Pacific, toward Peru';}
+function rainRegion(lon){return lon<150?'Over Indonesia and Australia':lon<222?'Central Pacific':'Eastern Pacific, toward Peru';}
 function outlook(s){const a=s.st.Te-21;if(a>1)return 'El Niño winter: wetter, cooler southern US; southern Colorado mountains often snowier';if(a<-0.8)return 'La Niña winter: drier, warmer southern US; northern Colorado mountains often snowier';return 'Neutral: no strong ENSO signal';}
 function stateName(sim){const a=sim.st.Te-21;return a>1?'El Niño conditions':a<-0.8?'La Niña conditions':'Normal (neutral) conditions';}
 
