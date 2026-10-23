@@ -5,7 +5,11 @@
 const BL={};window.BioLab=BL;
 const LV={bio:0,honors:1,ap:2};
 const UNITS={1:'Chemistry of life',2:'Cell structure and function',3:'Cellular energetics',4:'Cell communication and cell cycle',5:'Heredity',6:'Gene expression and regulation',7:'Natural selection',8:'Ecology'};
-BL.UNITS=UNITS;
+const XSEC={0:'Science skills and data',9:'Human body systems',10:'Biotechnology lab',12:'Earth systems and climate',13:'Energy, land and resources',14:'Pollution and human health',11:'Go further'};
+const SECTIONS=[0,1,2,3,4,5,6,7,8,9,10,12,13,14,11];
+const secName=u=>UNITS[u]||XSEC[u]||'';
+const secLabel=u=>UNITS[u]?'Unit '+u+' · '+UNITS[u]:secName(u);
+BL.UNITS=UNITS;BL.XSEC=XSEC;
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 let level=store.get('rjbiolab-level');if(!(level in LV))level='honors';
 const atLeast=l=>LV[level]>=LV[l||'bio'];
@@ -87,7 +91,7 @@ function el(tag,attrs,html){const e=document.createElement(tag);if(attrs)for(con
 function buildSim(sim){
   const d=sim.def,id=d.id,asp=d.aspect||16/9,sec=el('section',{class:'sim',id:'sim-'+id,'aria-labelledby':'h-'+id});
   const hasGraph=d.graph!==false,hasPredict=!!d.challenges;
-  sec.innerHTML=`<div class="sim-head"><p class="eyebrow">Unit ${d.apUnit} · ${UNITS[d.apUnit]}</p><h2 id="h-${id}">${d.title}</h2><p class="lede"></p></div>
+  sec.innerHTML=`<div class="sim-head"><p class="eyebrow">${secLabel(d.apUnit)}</p><h2 id="h-${id}">${d.title}</h2><p class="lede"></p></div>
   <div class="bench">
     <div class="stage">${d.scale?`<p class="scale"></p>`:''}<canvas id="${id}-stage" style="aspect-ratio:${asp}" role="img" aria-label="${d.title} simulation"></canvas>
       <div class="tourbar" hidden><div class="tb-h"><span class="tb-n"></span><b class="tb-t"></b></div><p class="tb-x"></p>
@@ -122,7 +126,8 @@ function buildSim(sim){
     <div class="tbl"></div>
   </div>`}
   ${d.terms?`<details class="about terms"><summary>Key terms</summary><dl class="about-b">${d.terms.map(t=>`<div data-lvl="${t.lvl||'bio'}"><dt>${t.t}</dt><dd>${t.d}</dd></div>`).join('')}</dl></details>`:''}
-  ${d.about?`<details class="about"><summary>About this model</summary><div class="about-b">${d.about}</div></details>`:''}`;
+  ${d.about?`<details class="about"><summary>About this model</summary><div class="about-b">${d.about}</div></details>`:''}
+  <div class="related" hidden></div>`;
   const ui=sim.ui;ui.sec=sec;ui.lede=sec.querySelector('.lede');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
   ui.clock=sec.querySelector('.clock');ui.play=sec.querySelector('[data-act=play]');ui.ctrls=sec.querySelector('.controls');ui.read=sec.querySelector('.readouts');
   ui.pred=sec.querySelector('.predict');ui.info=sec.querySelector('.info');ui.tbl=sec.querySelector('.tbl');ui.gm=sec.querySelector('#'+id+'-gm');ui.gx=sec.querySelector('#'+id+'-gx');ui.gy=sec.querySelector('#'+id+'-gy');
@@ -296,26 +301,48 @@ let homeEl,simsEl,jumpEl,backEl;
 function ensureBuilt(id){const sim=sims[id];if(sim.ui.sec)return sim;simsEl.appendChild(buildSim(sim));resetSim(sim);applyLevel(sim);return sim;}
 function show(hash){const def=DEFS.find(d=>d.hash===hash);
   if(!def){active=null;homeEl.hidden=false;backEl.hidden=true;jumpEl.value='';DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=true;});document.title='Raider BioLab';drawThumbs();return;}
-  const sim=ensureBuilt(def.id);active=sim;homeEl.hidden=true;backEl.hidden=false;jumpEl.value=def.hash;
+  const sim=ensureBuilt(def.id);active=sim;homeEl.hidden=true;backEl.hidden=false;jumpEl.value=def.hash;renderRelated(sim);
   DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=d.id!==def.id;});document.title=def.tab+' · Raider BioLab';
   window.scrollTo(0,0);requestAnimationFrame(()=>{updateReadouts(sim);drawGraph(sim);});}
-const thumbSims={};
-function drawThumbs(){DEFS.forEach(d=>{const cv=document.getElementById('thumb-'+d.id);if(!cv)return;try{
-  let s=thumbSims[d.id];const LH=Math.round(800/(d.aspect||16/9));thumbCanvas.width=800;thumbCanvas.height=LH;const ctx=thumbCanvas.getContext('2d');
-  const once=vdt=>{ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,800,LH);ctx.save();d.draw(s,ctx,vdt,1.3,s.vt);ctx.restore();};
-  if(!s){s=makeSim(d);resetSim(s);if(d.thumbSetup)d.thumbSetup(s);thumbSims[d.id]=s;const n=d.thumbFrames!==undefined?d.thumbFrames:40;
-    for(let i=0;i<n;i++){if(!d.timeless){let dt=0.05*(d.timeScale||1);while(dt>1e-12){const h=Math.min(dt,d.dtMax||0.01);d.step(s,h);s.t+=h;dt-=h;}}else if(d.animated&&d.step){d.step(s,0.05);s.t+=0.05;}s.vt+=0.05;once(0.05);}}
-  else once(0);
+function linkList(ids){return (ids||[]).map(id=>DEFS.find(d=>d.id===id||d.hash===id)).filter(Boolean);}
+function renderRelated(sim){const box=sim.ui.sec.querySelector('.related');if(!box)return;const d=sim.def;
+  const back=linkList(d.prereq),fwd=linkList(d.next),also=DEFS.filter(x=>x!==d&&(x.prereq||[]).includes(d.id)&&!(d.next||[]).includes(x.id));
+  const nextAll=fwd.concat(also);let h='';
+  if(back.length)h+=`<p class="rel-row"><span class="rel-l">Start with</span>${back.map(x=>`<a class="chip" href="#${x.hash}">${x.tab}</a>`).join('')}</p>`;
+  if(nextAll.length)h+=`<p class="rel-row"><span class="rel-l">Go further</span>${nextAll.map(x=>`<a class="chip${x.apUnit===11?' adv':''}" href="#${x.hash}">${x.tab}</a>`).join('')}</p>`;
+  box.innerHTML=h;box.hidden=!h;}
+const thumbSims={};const thumbQueue=[];let thumbBusy=false;let thumbObs=null;
+function thumbFor(d){let s=thumbSims[d.id];if(s)return s;s=makeSim(d);resetSim(s);if(d.thumbSetup)d.thumbSetup(s);thumbSims[d.id]=s;
+  const LH=Math.round(800/(d.aspect||16/9));thumbCanvas.width=800;thumbCanvas.height=LH;const ctx=thumbCanvas.getContext('2d');const n=d.thumbFrames!==undefined?d.thumbFrames:24;
+  for(let i=0;i<n;i++){if(!d.timeless){let dt=0.05*(d.timeScale||1);while(dt>1e-12){const h=Math.min(dt,d.dtMax||0.01);d.step(s,h);s.t+=h;dt-=h;}}else if(d.animated&&d.step){d.step(s,0.05);s.t+=0.05;}s.vt+=0.05;
+    ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,800,LH);ctx.save();d.draw(s,ctx,0.05,1.3,s.vt);ctx.restore();}
+  return s;}
+function paintThumb(cv){const d=DEFS.find(x=>x.id===cv.dataset.sim);if(!d)return;try{const s=thumbFor(d);const LH=Math.round(800/(d.aspect||16/9));thumbCanvas.width=800;thumbCanvas.height=LH;
+  const ctx=thumbCanvas.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,800,LH);ctx.save();d.draw(s,ctx,0,1.3,s.vt);ctx.restore();
   const w=cv.clientWidth||300,h=w*9/16;fit(cv,w,h);const c=cv.getContext('2d');c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,cv.width,cv.height);
-  const cropH=Math.min(LH,450),sy=(LH-cropH)/2;c.drawImage(thumbCanvas,0,sy,800,cropH,0,0,cv.width,cv.height);}catch(e){console.warn('thumb '+d.id,e);}});}
+  const cropH=Math.min(LH,450),sy=(LH-cropH)/2;c.drawImage(thumbCanvas,0,sy,800,cropH,0,0,cv.width,cv.height);cv.dataset.painted='1';}catch(e){console.warn('thumb '+d.id,e);}}
+function pumpThumbs(){if(thumbBusy)return;thumbBusy=true;const go=()=>{const cv=thumbQueue.shift();if(!cv){thumbBusy=false;return;}if(cv.isConnected&&!homeEl.hidden)paintThumb(cv);setTimeout(go,0);};go();}
+function drawThumbs(force){const cvs=[...document.querySelectorAll('canvas.thumb')];
+  if(!thumbObs&&'IntersectionObserver' in window){thumbObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&(!e.target.dataset.painted||e.target._force)){e.target._force=false;thumbQueue.push(e.target);}});pumpThumbs();},{rootMargin:'300px'});}
+  cvs.forEach(cv=>{if(force){cv.dataset.painted='';}if(thumbObs){thumbObs.unobserve(cv);thumbObs.observe(cv);}else{thumbQueue.push(cv);}});if(!thumbObs)pumpThumbs();}
 const thumbCanvas=document.createElement('canvas');
-function buildHome(){const units=document.getElementById('units');units.innerHTML='';
+let browse=store.get('rjbiolab-browse')||'topic';
+function sortSec(list,u){const ord=(BL.TOPIC_ORDER||{})[u]||[];const ix=d=>{const i=ord.indexOf(d.id);return i<0?1000+(d.order||0):i;};return list.slice().sort((a,b)=>ix(a)-ix(b));}
+function card(d){return `<a class="card${d.apUnit===11?' adv':''}" href="#${d.hash}"><canvas class="thumb" data-sim="${d.id}" aria-hidden="true"></canvas><span class="card-b"><span class="card-t">${d.tab}</span><span class="card-d">${d.card||''}</span>${d.kind?`<span class="kind">${d.kind}</span>`:''}</span></a>`;}
+function buildHome(){const units=document.getElementById('units');units.innerHTML='';const courses=BL.COURSES||[];
+  const bw=document.getElementById('browse');
+  if(bw){bw.innerHTML=['<button type="button" data-b="topic">By topic</button>'].concat(courses.map(c=>`<button type="button" data-b="${c.id}">${c.name}</button>`)).join('');
+    bw.querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.b===browse));b.onclick=()=>{browse=b.dataset.b;store.set('rjbiolab-browse',browse);buildHome();drawThumbs();};});}
+  const course=courses.find(c=>c.id===browse);
+  if(course){const intro=el('p',{class:'lede course-lede'},course.blurb||'');units.appendChild(intro);
+    course.units.forEach((u,i)=>{const list=linkList(u.ids);if(!list.length)return;const sec=el('section',{class:'unit'});
+      sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${u.n||('Step '+(i+1))}</span> ${u.t}</h3>${u.note?`<p class="unit-note">${u.note}</p>`:''}<div class="cards">${list.map(card).join('')}</div>`;units.appendChild(sec);});
+    const adv=linkList(course.further);if(adv.length){const sec=el('section',{class:'unit further'});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">Go further</span> For students who want more</h3><p class="unit-note">Optional tools that go past what class time allows.</p><div class="cards">${adv.map(card).join('')}</div>`;units.appendChild(sec);}}
+  else{const groups={};DEFS.forEach(d=>{(groups[d.apUnit]=groups[d.apUnit]||[]).push(d);});
+    SECTIONS.forEach(u=>{const list=sortSec(groups[u]||[],u);if(!list.length)return;
+      const sec=el('section',{class:'unit'+(u===11?' further':'')});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${UNITS[u]?'Unit '+u:''}</span> ${secName(u)}</h3>${u===11?'<p class="unit-note">Optional, advanced tools for students who want to go past what class time allows.</p>':''}<div class="cards">${list.map(card).join('')}</div>`;units.appendChild(sec);});}
   const groups={};DEFS.forEach(d=>{(groups[d.apUnit]=groups[d.apUnit]||[]).push(d);});
-  Object.keys(UNITS).forEach(u=>{const list=(groups[u]||[]).sort((a,b)=>(a.order||0)-(b.order||0));if(!list.length)return;
-    const sec=el('section',{class:'unit'});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">Unit ${u}</span> ${UNITS[u]}</h3><div class="cards"></div>`;
-    const cards=sec.querySelector('.cards');list.forEach(d=>{const a=el('a',{class:'card',href:'#'+d.hash});a.innerHTML=`<canvas class="thumb" id="thumb-${d.id}" aria-hidden="true"></canvas><span class="card-b"><span class="card-t">${d.tab}</span><span class="card-d">${d.card||''}</span>${d.kind?`<span class="kind">${d.kind}</span>`:''}</span>`;cards.appendChild(a);});
-    units.appendChild(sec);});
-  jumpEl.innerHTML='<option value="">All simulations</option>'+Object.keys(UNITS).map(u=>{const list=(groups[u]||[]).sort((a,b)=>(a.order||0)-(b.order||0));if(!list.length)return '';return `<optgroup label="Unit ${u} · ${UNITS[u]}">${list.map(d=>`<option value="${d.hash}">${d.tab}</option>`).join('')}</optgroup>`;}).join('');}
+  jumpEl.innerHTML='<option value="">All simulations</option>'+SECTIONS.map(u=>{const list=sortSec(groups[u]||[],u);if(!list.length)return '';return `<optgroup label="${secLabel(u)}">${list.map(d=>`<option value="${d.hash}">${d.tab}</option>`).join('')}</optgroup>`;}).join('');}
 
 BL.start=function(){
   homeEl=document.getElementById('home');simsEl=document.getElementById('sims');jumpEl=document.getElementById('jump');backEl=document.getElementById('back');
@@ -327,10 +354,10 @@ BL.start=function(){
   jumpEl.addEventListener('change',()=>{location.hash=jumpEl.value?'#'+jumpEl.value:'#home';});
   backEl.addEventListener('click',e=>{e.preventDefault();location.hash='#home';});
   window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
-  const repaint=()=>{readPal();Object.values(thumbSims).forEach(s=>{});if(active)drawGraph(active);else drawThumbs();};
+  const repaint=()=>{readPal();if(active)drawGraph(active);else drawThumbs(true);};
   if(window.matchMedia)window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',repaint);
   new MutationObserver(repaint).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','class']});
-  let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{if(!active)drawThumbs();else drawGraph(active);},150);});
+  let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{if(!active)drawThumbs(true);else drawGraph(active);},150);});
   show(location.hash.slice(1));
   let last=performance.now(),acc=0;
   function frame(now){const rdt=Math.min(0.05,(now-last)/1000);last=now;const sim=active;
