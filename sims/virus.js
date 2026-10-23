@@ -150,7 +150,7 @@ function phage(ctx,x,y,sc,col){ctx.save();ctx.translate(x,y);ctx.scale(sc,sc);
   [[-1,1],[1,1]].forEach(([d])=>{ctx.beginPath();ctx.moveTo(d*4,8);ctx.lineTo(d*10,13);ctx.lineTo(d*12,21);ctx.stroke();ctx.beginPath();ctx.moveTo(d*2,8);ctx.lineTo(d*5,16);ctx.lineTo(d*4,23);ctx.stroke();});ctx.restore();}
 function bact(ctx,x,y,w,h,alpha){ctx.globalAlpha=alpha===undefined?1:alpha;ctx.fillStyle='#b9dca0';rr(ctx,x,y,w,h,h/2);ctx.fill();ctx.strokeStyle='#5f8f45';ctx.lineWidth=3;ctx.stroke();ctx.globalAlpha=1;}
 function chromo(ctx,cx,cy,rx,ry,t,col){ctx.strokeStyle=col||'#2f5f8a';ctx.lineWidth=2.4;ctx.beginPath();for(let i=0;i<=60;i++){const a=i/60*6.283,r=1+0.18*Math.sin(a*5+t*0.3);ctx.lineTo(cx+Math.cos(a)*rx*r,cy+Math.sin(a)*ry*r);}ctx.stroke();}
-function steps(ctx,k,list,cur){let x=12;const y=420;ctx.font='700 '+11.5*k+'px '+FONT;list.forEach((l,i)=>{const w=ctx.measureText(l).width+16;const on=l===cur;ctx.fillStyle=on?PAL['s1']:PAL['card2'];rr(ctx,x,y-14,w,24,12);ctx.fill();
+function steps(ctx,k0,list,cur){const k=Math.min(k0,1.25);let x=12;const y=420;ctx.font='700 '+11.5*k+'px '+FONT;list.forEach((l,i)=>{const w=ctx.measureText(l).width+16;const on=l===cur;ctx.fillStyle=on?PAL['s1']:PAL['card2'];rr(ctx,x,y-14,w,24,12);ctx.fill();
   txt(ctx,l,x+w/2,y-1,{s:11.5*k,w:700,c:on?'#fff':PAL['cv-soft'],a:'center',b:'middle'});x+=w+6;});}
 
 function drawCell(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis,f=v.fc,hon=atLeast('honors');
@@ -197,9 +197,9 @@ function drawCell(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis,f=v.fc,hon=a
   f.phase=phase;
   const list=L==='lyso'?['Attachment','Injection','Integration','Cell division']:['Attachment','Injection','Replication','Assembly','Lysis'];
   steps(ctx,k,L==='induce'&&phase==='Induction'?['Induction','Replication','Assembly','Lysis']:list,phase);
-  txt(ctx,'phage DNA',380,30,{s:11.5*k,w:700,c:'#d32f2f',a:'right'});txt(ctx,'host DNA',456,30,{s:11.5*k,w:700,c:'#2f5f8a',a:'right'});}
+  txt(ctx,'red = phage DNA',20,54,{s:11.5*Math.min(k,1.4),w:700,c:'#d32f2f'});ctx.font='700 '+11.5*Math.min(k,1.4)+'px '+FONT;const wq=ctx.measureText('red = phage DNA').width;txt(ctx,'blue = host DNA',34+wq,54,{s:11.5*Math.min(k,1.4),w:700,c:'#2f5f8a'});}
 
-function drawFlask(sim,ctx,k,t){const s=sim.st,N=s.B+totI(s)+s.L,cl=clamp(N/K,0,1);
+function drawFlask(sim,ctx,k0,t){const k=Math.min(k0,1.3),s=sim.st,N=s.B+totI(s)+s.L,cl=clamp(N/K,0,1);
   ctx.fillStyle=PAL['card'];rr(ctx,478,6,316,236,12);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
   const fx=560,fy=40;ctx.beginPath();ctx.moveTo(fx+24,fy);ctx.lineTo(fx+24,fy+60);ctx.lineTo(fx-28,fy+180);ctx.lineTo(fx+124,fy+180);ctx.lineTo(fx+76,fy+60);ctx.lineTo(fx+76,fy);ctx.closePath();
   ctx.save();ctx.clip();ctx.fillStyle=PAL['cv-water'];ctx.fillRect(fx-30,fy+90,160,95);ctx.fillStyle='rgba(205,180,110,'+(0.9*Math.sqrt(cl))+')';ctx.fillRect(fx-30,fy+90,160,95);ctx.restore();
@@ -210,7 +210,7 @@ function drawFlask(sim,ctx,k,t){const s=sim.st,N=s.B+totI(s)+s.L,cl=clamp(N/K,0,
   row(98,'Bacteria per mL',sci(N));row(140,'Phage per mL',sci(s.P));if(s.L>1e5)row(182,'Lysogens per mL',sci(s.L),PAL['s3']);
   if(sim.t-s.uvT<20){ctx.fillStyle='rgba(150,90,255,.25)';ctx.fillRect(478,6,316,236);pill(ctx,'UV on',740,210,'#7b3fe4','#fff',12*k);}}
 
-function drawPlate(sim,ctx,k){const s=sim.st,hon=atLeast('honors'),pl=s.plate;
+function drawPlate(sim,ctx,k0){const k=Math.min(k0,1.3),s=sim.st,hon=atLeast('honors'),pl=s.plate;
   ctx.fillStyle=PAL['card'];rr(ctx,478,250,316,192,12);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
   if(!hon){txt(ctx,'Key',494,276,{s:13*k,w:800});phage(ctx,505,316,1.1);txt(ctx,'bacteriophage',528,312,{s:12*k,c:PAL['cv-soft']});
     bact(ctx,492,348,40,20);txt(ctx,'E. coli cell',540,362,{s:12*k,c:PAL['cv-soft']});ctx.strokeStyle='#d32f2f';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(494,398);ctx.lineTo(530,398);ctx.stroke();txt(ctx,'phage DNA',540,402,{s:12*k,c:PAL['cv-soft']});return;}
@@ -220,7 +220,7 @@ function drawPlate(sim,ctx,k){const s=sim.st,hon=atLeast('honors'),pl=s.plate;
     txt(ctx,'10⁻'+String(pl.dil).split('').map(c=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[+c]).join('')+' dilution',662,316,{s:12*k,w:700});
     txt(ctx,pl.n>300?'Too many to count':pl.n+' plaques',662,338,{s:15*k,w:800,c:pl.n>300||pl.n<30?PAL['s1']:PAL['s3']});
     txt(ctx,pl.n>=30&&pl.n<=300?'Countable':'Pick another dilution',662,360,{s:11.5*k,c:PAL['cv-soft']});}
-  else{txt(ctx,'Press Plate a sample',662,330,{s:12*k,c:PAL['cv-soft']});txt(ctx,'to spread 0.1 mL',662,348,{s:12*k,c:PAL['cv-soft']});txt(ctx,'on a bacterial lawn.',662,366,{s:12*k,c:PAL['cv-soft']});}
+  else{['Press Plate','a sample to','spread 0.1 mL','on a lawn.'].forEach((l,i)=>txt(ctx,l,662,322+i*17,{s:12*k,c:PAL['cv-soft']}));}
   txt(ctx,'clear spots = plaques',662,416,{s:11*k,c:PAL['cv-soft']});}
 
 function drawHIV(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis;
@@ -247,7 +247,7 @@ function drawHIV(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis;
   const SH={'Binding':'Bind','Fusion':'Fuse','Reverse transcription':'RNA → DNA','Integration':'Integrate','Transcription and translation':'Make parts','Budding':'Bud'};
   steps(ctx,k,['Bind','Fuse','RNA → DNA','Integrate','Make parts','Bud'],SH[phase]);
   v.fc.phase=phase;}
-function drawBlood(sim,ctx,k,t){const s=sim.st,p=sim.p,v=sim.vis;
+function drawBlood(sim,ctx,k0,t){const k=Math.min(k0,1.3),s=sim.st,p=sim.p,v=sim.vis;
   ctx.fillStyle=PAL['card'];rr(ctx,478,6,316,436,12);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
   txt(ctx,'Blood sample',494,30,{s:13*k,w:800});
   const cx=636,cy=150,r=100;ctx.fillStyle=PAL['cv-ims'];ctx.beginPath();ctx.arc(cx,cy,r,0,6.29);ctx.fill();ctx.strokeStyle=PAL['s1'];ctx.lineWidth=2;ctx.stroke();
