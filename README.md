@@ -20,7 +20,7 @@ The home page has a **Browse** switch. **By topic** groups tools by AP unit and 
 Each course list ends with **Go further** tools: optional, advanced tools for students who want more than class time allows.
 
 ## What every tool has
-- **Detail switch (Essentials / More / Full):** the same model underneath, with more variables and more math as detail increases. Any student can choose any level; Essentials fits Biology, More fits Honors, Full fits AP.
+- **Detail switch (Big picture / Closer look / Deep dive):** the same model underneath, with more parts named and more math as you go deeper. Any student can choose any view; Big picture fits Biology, Closer look fits Honors, Deep dive fits AP.
 - **Walk me through it:** a guided, slowed-down tour that spotlights one step at a time.
 - **Slow motion (down to 0.1×) and Step:** step through a process frame by frame.
 - **Live caption:** says what is happening and why.
