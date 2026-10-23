@@ -230,7 +230,7 @@ function explainFor(ch){if(typeof ch.explain==='string')return ch.explain;let ou
 function applyValues(sim,vals){for(const k in vals){sim.p[k]=vals[k];if(sim.ui.ctl[k])sim.ui.ctl[k].set(vals[k]);const c=(sim.def.controls||[]).find(c=>c.id===k);if(c&&c.onChange)c.onChange(sim);}sim.infoDirty=true;}
 function runAction(sim,id){const a=(sim.def.actions||[]).find(a=>a.id===id);if(a)a.run(sim);sim.infoDirty=true;}
 function renderChallenge(sim){const box=sim.ui.pred;if(!box)return;const list=visibleCh(sim),c=sim.ch;
-  if(!list.length){box.innerHTML='<div class="p-head"><h3>Predict, then test</h3></div><p class="status">Switch the course level to see challenges for this simulation.</p>';return;}
+  if(!list.length){box.innerHTML='<div class="p-head"><h3>Predict, then test</h3></div><p class="status">Choose more detail at the top of the page to see challenges for this simulation.</p>';return;}
   if(c.idx>=list.length)c.idx=0;const ch=list[c.idx];
   const head=`<div class="p-head"><h3>${sim.def.challengeTitle||'Predict, then test'}</h3><span class="count">${c.idx+1} of ${list.length}</span></div><p class="q">${ch.q}</p>`;
   if(c.phase==='ask'){box.innerHTML=head+`<div class="choices">${ch.choices.map((t,i)=>`<button type="button" class="choice" data-i="${i}">${t}</button>`).join('')}</div>`;
