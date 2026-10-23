@@ -14,7 +14,8 @@ BL.UNITS=UNITS;BL.XSEC=XSEC;
 let FURTHER=11,UNIT_PREFIX='Unit';
 BL.setSections=function(o){if(o.units)UNITS=o.units;if(o.extra)XSEC=o.extra;if(o.order)SECTIONS=o.order;if(o.further!==undefined)FURTHER=o.further;if(o.unitPrefix!==undefined)UNIT_PREFIX=o.unitPrefix;BL.UNITS=UNITS;BL.XSEC=XSEC;};
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-let level=store.get('rjbiolab-level');if(!(level in LV))level='honors';
+const LAB_META=n=>{const m=document.querySelector('meta[name="'+n+'"]');return m?m.content:null;};const LAB_NAME=LAB_META('lab-name')||'Raider BioLab',LAB_KEY=LAB_META('lab-key')||'rjbiolab';
+let level=store.get(LAB_KEY+'-level');if(!(level in LV))level='honors';
 const atLeast=l=>LV[level]>=LV[l||'bio'];
 const clamp=(x,a,b)=>x<a?a:x>b?b:x;
 const lerp=(a,b,t)=>a+(b-a)*t;
@@ -180,7 +181,7 @@ function buildSim(sim){
     sec.querySelector('[data-act=copy]').addEventListener('click',()=>{const csv=toCSV(sim);if(!csv){flash(sim,'Record a trial first');return;}
       const fallback=()=>{let ta=sec.querySelector('.csv-fallback');if(!ta){ta=el('textarea',{class:'csv-fallback',readonly:'',id:id+'-csv','aria-label':'CSV data'});ui.tbl.after(ta);}ta.value=csv;ta.focus();ta.select();flash(sim,'Selected. Press Ctrl+C to copy');};
       try{navigator.clipboard.writeText(csv).then(()=>flash(sim,'Copied to clipboard'),fallback);}catch(e){fallback();}});
-    try{const saved=JSON.parse(store.get('rjbiolab-trials-'+id)||'[]');if(Array.isArray(saved))sim.trials=saved;}catch(e){}}
+    try{const saved=JSON.parse(store.get(LAB_KEY+'-trials-'+id)||'[]');if(Array.isArray(saved))sim.trials=saved;}catch(e){}}
   return sec;}
 function setRunning(sim,on){sim.running=on;sim.ui.play.textContent=on?'Pause':'Play';sim.ui.stepBtn.hidden=on||(sim.def.timeless&&!sim.def.animated);}
 function setSpeed(sim,v){sim.speed=v;const sel=sim.ui.speedSel;if(!sel)return;if(![...sel.options].some(o=>o.value===String(v))){const o=document.createElement('option');o.value=String(v);o.textContent=v+'×';sel.insertBefore(o,sel.firstChild);}sel.value=String(v);}
@@ -198,7 +199,7 @@ function drawFocus(sim,ctx,LH){if(!sim.tour||!sim.tour.on)return;const s=tourSte
   ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;rects.forEach(r=>{rr(ctx,r[0],r[1],r[2],r[3],10);ctx.stroke();});ctx.restore();}
 BL.h.lvText=lvText;
 function flash(sim,msg){const t=sim.ui.toast;if(!t)return;t.textContent=msg;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>{t.hidden=true;},2400);}
-function saveTrials(sim){store.set('rjbiolab-trials-'+sim.def.id,JSON.stringify(sim.trials));}
+function saveTrials(sim){store.set(LAB_KEY+'-trials-'+sim.def.id,JSON.stringify(sim.trials));}
 function trialCols(sim){return [...controlsVisible(sim).filter(c=>!c.noTrial).map(c=>({id:c.id,label:c.label+(c.unit&&c.type==='range'&&c.unit.trim()?' ('+c.unit.trim()+')':''),ctl:c,num:c.type==='range'})),
   ...metricsVisible(sim).filter(m=>!m.noTrial).map(m=>({id:m.id,label:m.label+(m.unit?' ('+m.unit+')':''),m,num:!m.text}))];}
 function cellText(col,v){if(col.ctl){const s=fmtCtl(col.ctl,v);return col.ctl.unit&&col.ctl.type==='range'?s.slice(0,s.length-col.ctl.unit.length).trim():s;}return fmtNum(v,col.m.d);}
@@ -303,9 +304,9 @@ BL.gotoChallenge=function(sim,i){sim.ch={idx:i,phase:'ask',pick:null,changed:fal
 let homeEl,simsEl,jumpEl,backEl;
 function ensureBuilt(id){const sim=sims[id];if(sim.ui.sec)return sim;simsEl.appendChild(buildSim(sim));resetSim(sim);applyLevel(sim);return sim;}
 function show(hash){const def=DEFS.find(d=>d.hash===hash);
-  if(!def){active=null;homeEl.hidden=false;backEl.hidden=true;jumpEl.value='';DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=true;});document.title='Raider BioLab';drawThumbs();return;}
+  if(!def){active=null;homeEl.hidden=false;backEl.hidden=true;jumpEl.value='';DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=true;});document.title=LAB_NAME;drawThumbs();return;}
   const sim=ensureBuilt(def.id);active=sim;homeEl.hidden=true;backEl.hidden=false;jumpEl.value=def.hash;renderRelated(sim);
-  DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=d.id!==def.id;});document.title=def.tab+' · Raider BioLab';
+  DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=d.id!==def.id;});document.title=def.tab+' · '+LAB_NAME;
   window.scrollTo(0,0);requestAnimationFrame(()=>{updateReadouts(sim);drawGraph(sim);});}
 function linkList(ids){return (ids||[]).map(id=>DEFS.find(d=>d.id===id||d.hash===id)).filter(Boolean);}
 function renderRelated(sim){const box=sim.ui.sec.querySelector('.related');if(!box)return;const d=sim.def;
@@ -329,13 +330,13 @@ function drawThumbs(force){const cvs=[...document.querySelectorAll('canvas.thumb
   if(!thumbObs&&'IntersectionObserver' in window){thumbObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&(!e.target.dataset.painted||e.target._force)){e.target._force=false;thumbQueue.push(e.target);}});pumpThumbs();},{rootMargin:'300px'});}
   cvs.forEach(cv=>{if(force){cv.dataset.painted='';}if(thumbObs){thumbObs.unobserve(cv);thumbObs.observe(cv);}else{thumbQueue.push(cv);}});if(!thumbObs)pumpThumbs();}
 const thumbCanvas=document.createElement('canvas');
-let browse=store.get('rjbiolab-browse')||'topic';
+let browse=store.get(LAB_KEY+'-browse')||'topic';
 function sortSec(list,u){const ord=(BL.TOPIC_ORDER||{})[u]||[];const ix=d=>{const i=ord.indexOf(d.id);return i<0?1000+(d.order||0):i;};return list.slice().sort((a,b)=>ix(a)-ix(b));}
 function card(d){return `<a class="card${d.apUnit===FURTHER?' adv':''}" href="#${d.hash}"><canvas class="thumb" data-sim="${d.id}" aria-hidden="true"></canvas><span class="card-b"><span class="card-t">${d.tab}</span><span class="card-d">${d.card||''}</span>${d.kind?`<span class="kind">${d.kind}</span>`:''}</span></a>`;}
 function buildHome(){const units=document.getElementById('units');units.innerHTML='';const courses=BL.COURSES||[];
   const bw=document.getElementById('browse');
   if(bw){bw.innerHTML=['<button type="button" data-b="topic">By topic</button>'].concat(courses.map(c=>`<button type="button" data-b="${c.id}">${c.name}</button>`)).join('');
-    bw.querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.b===browse));b.onclick=()=>{browse=b.dataset.b;store.set('rjbiolab-browse',browse);buildHome();drawThumbs();};});}
+    bw.querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.b===browse));b.onclick=()=>{browse=b.dataset.b;store.set(LAB_KEY+'-browse',browse);buildHome();drawThumbs();};});}
   const course=courses.find(c=>c.id===browse);
   if(course){const intro=el('p',{class:'lede course-lede'},course.blurb||'');units.appendChild(intro);
     course.units.forEach((u,i)=>{const list=linkList(u.ids);if(!list.length)return;const sec=el('section',{class:'unit'});
@@ -352,7 +353,7 @@ BL.start=function(){
   DEFS.forEach(d=>{sims[d.id]=makeSim(d);});
   readPal();buildHome();
   const lvlBtns=[...document.querySelectorAll('#lvl button')];
-  const setLevel=l=>{level=l;store.set('rjbiolab-level',l);lvlBtns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.l===l)));DEFS.forEach(d=>{if(sims[d.id].ui.sec)applyLevel(sims[d.id]);});if(active){updateReadouts(active);drawGraph(active);}};
+  const setLevel=l=>{level=l;store.set(LAB_KEY+'-level',l);lvlBtns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.l===l)));DEFS.forEach(d=>{if(sims[d.id].ui.sec)applyLevel(sims[d.id]);});if(active){updateReadouts(active);drawGraph(active);}};
   lvlBtns.forEach(b=>b.addEventListener('click',()=>setLevel(b.dataset.l)));setLevel(level);
   jumpEl.addEventListener('change',()=>{location.hash=jumpEl.value?'#'+jumpEl.value:'#home';});
   backEl.addEventListener('click',e=>{e.preventDefault();location.hash='#home';});
