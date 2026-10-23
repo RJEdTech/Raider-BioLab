@@ -1,42 +1,45 @@
 # Raider BioLab
 
-Interactive biology simulations and learning tools for Regis Jesuit Bio, Honors Biology and AP Biology, in the style of PhET.
+Interactive biology and environmental science simulations, virtual labs and learning tools for Regis Jesuit Biology, Honors Biology, AP Biology, AP Environmental Science and Molecular Biology & Genetic Engineering Techniques Lab, in the style of PhET.
 
 **Live site:** https://rjedtech.github.io/Raider-BioLab/
 
-## What's inside
-Simulations are grouped by the eight AP Biology units. Every one has a **Bio / Honors / AP** level switch.
+## Browse by course
+The home page has a **Browse** switch. **By topic** groups tools by AP unit and theme. Each course option lists tools in the order that course teaches them, unit by unit; the order comes from the courses' Canvas modules:
 
-| Unit | Simulations and tools |
-|---|---|
-| 1 · Chemistry of life | Properties of water · Build a macromolecule |
-| 2 · Cell structure and function | Cell explorer · Virtual microscope · Cell size and diffusion · Membrane transport and osmosis |
-| 3 · Cellular energetics | Cellular respiration · Photosynthesis · Enzyme activity |
-| 4 · Cell communication and cell cycle | Cell signaling · Cell cycle and cancer · Mitosis and meiosis |
-| 5 · Heredity | Genetic crosses · Pedigree detective |
-| 6 · Gene expression and regulation | DNA to protein · Lac operon |
-| 7 · Natural selection | Natural selection and drift |
-| 8 · Ecology | Population growth · Predators and prey · Energy flow and food webs |
+- **Biology:** Nature of science → Ecology (new) → Chemistry of life → Cells and microscopes → Cell energy → Cell cycle and cancer → Meiosis → Genetics → DNA and protein synthesis → Evolution
+- **Honors Biology:**
+  - Fall: Science skills → Ecology → Biochemistry → Cells → Membranes → Enzymes → Respiration
+  - Spring: Photosynthesis → Cell division → Mendel → DNA → Evolution → Anatomy and homeostasis
+- **AP Biology:** Summer ecology and science practices → Unit 1 → Unit 2 → Unit 4 signaling and neurons → Unit 3 → Cell cycle → Unit 5 → Unit 6 (with viruses and biotech) → Unit 7
+- **AP Environmental Science:**
+  - Fall: Units 1–5
+  - Spring: Unit 9 → Units 6–8
+- **Genetic Engineering:** Lab techniques → Genetic engineering 101 → Genetic engineering 102
 
-Link straight to any simulation with `#<name>`, e.g. `#respiration`, `#transport` or `#crosses`.
+Each course list ends with **Go further** tools: optional, advanced tools for students who want more than class time allows.
 
-## Built to make processes concrete
-- **Walk me through it:** a guided, slowed-down tour that dims everything except the step being explained.
-- **Slow motion (down to 0.1×) and Step:** advance a moment at a time while paused.
-- **Live caption:** says what is happening right now, and why.
-- **Scale line:** where in the body (or the world) the view is, and how big it is.
+## What every tool has
+- **Bio / Honors / AP level switch:** the same model underneath, with more variables and more math at higher levels.
+- **Walk me through it:** a guided, slowed-down tour that spotlights one step at a time.
+- **Slow motion (down to 0.1×) and Step:** step through a process frame by frame.
+- **Live caption:** says what is happening and why.
+- **Scale line:** real sizes and units.
 - **Predict, then test:** challenges where students commit to a prediction before they see the result.
-- **Investigation prompt + data table:** record trials, plot them, and copy as CSV for a lab write-up.
+- **Investigation prompt and data table:** a data table with CSV export for lab write-ups.
+
+Link straight to any tool with `#<name>`, e.g. `#transport`, `#pcr` or `#smog`.
 
 ## Files
 - `index.html`: page shell
 - `biolab.css`: styles (RJ masthead standard)
 - `engine.js`: the shared lab bench
-- `sims/*.js`: one file per simulation
+- `courses.js`: course pathways and teaching order
+- `sims/*.js`: one file per tool
 
-See `ENGINE.md` for how to add a simulation.
+See `ENGINE.md` to add a tool.
 
 ## Privacy
-Static files only. Everything runs in the browser, with no logins and no data collection. Trial data is kept in the student's own browser.
+Static files only. Everything runs in the browser, with no logins and no data collection. Trial data stays in the student's own browser.
 
-The models are simplified for instruction. Each simulation's "About this model" section lists its assumptions.
+The models are simplified for instruction; each tool's "About this model" section lists its assumptions.

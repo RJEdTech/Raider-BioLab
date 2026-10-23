@@ -18,10 +18,11 @@ BioLab.register(SIM);
 | Field | Meaning |
 |---|---|
 | `id`, `hash` | Same short lowercase token (e.g. `'transport'`). The page lives at `index.html#<hash>`. |
-| `apUnit` (1–8), `order` | Which unit section the sim appears in on the home page, and its order within it. |
+| `apUnit`, `order` | Home-page section and order within it. 1–8 = AP units; 0 = Science skills and data; 9 = Human body systems; 10 = Biotechnology lab; 12 = Earth systems and climate; 13 = Energy, land and resources; 14 = Pollution and human health; 11 = Go further (advanced, optional). APES ecology tools go in 8. |
+| `prereq`, `next` | Arrays of sim ids. `prereq` shows "Start with" links on this page; every sim listed in another sim's `prereq` automatically shows a "Go further" link back to it. `next` adds extra "Go further" links. Advanced (apUnit 11) tools should set `prereq` to the core sims they build on. |
 | `tab` | Short name used on the home card and in the menu ("Membrane transport"). |
 | `card` | One sentence for the home card. Say what students do, not what the page is. |
-| `kind` | Card badge: `'Simulation'`, `'Learning tool'`, `'Lab skills'` or `'Process walkthrough'`. |
+| `kind` | Card badge: `'Simulation'`, `'Virtual lab'`, `'Learning tool'`, `'Lab skills'`, `'Process walkthrough'` or `'Go further'`. |
 | `title` | Page heading. |
 | `lede` | `{bio,honors,ap}` sentence under the title. Every level-aware text field accepts either a string or `{bio,honors,ap}`; the highest level ≤ the current one wins. |
 | `scale` | One line answering "where am I and how big is this?" Give real units ("one red blood cell, about 8 µm across"). |
@@ -74,3 +75,6 @@ BioLab.register(SIM);
 
 ## Testing
 `NODE_PATH=$(npm root -g) node /home/claude/biolab-test/harness.js <hash> [...]` prints a JSON report. It covers errors, NaN readouts, sweeps of every control and action, every challenge answered correctly at every level (each verdict must be "Your prediction held up." or "Correct."), and the walkthrough steps. Screenshots go to `/home/claude/biolab-test/out/<hash>/`. Look at the screenshots: `desk-ap.png`, `desk-dark.png`, `phone-dark.png`, `tour-step2.png`.
+
+## Course pathways
+`courses.js` lists each RJ course's units in teaching order with tool ids (owned by the lead; builders don't edit it). The course sequences come from Canvas; see the build notes.
