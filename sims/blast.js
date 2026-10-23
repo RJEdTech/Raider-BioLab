@@ -119,7 +119,7 @@ const BL={
     if(atLeast('honors')&&sim.p.query==='snapper')m+=' The fillet is not snapper at all.';
     if(atLeast('honors')&&sim.p.query==='burger')m+=' The “beef” is horse.';
     return m;},
-  draw(sim,ctx,vdt,k){const s=sim.st,soft=PAL['cv-soft'],ink=PAL['cv-ink'],H=500,q=s.q||'';ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,H);
+  draw(sim,ctx,vdt,k){k=Math.min(k,1.15);const s=sim.st,soft=PAL['cv-soft'],ink=PAL['cv-ink'],H=500,q=s.q||'';ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,H);
     const QX=112,QW=570,qx=i=>QX+i*QW/100,SX=112,sx=j=>SX+j*QW/SEQLEN;
     // query strip
     txt(ctx,'Query',16,46,{s:13*k,w:700});txt(ctx,QUERIES[sim.p.query].l+(sim.p.rc&&atLeast('ap')?' · reverse complement':''),QX,22,{s:13*k,w:600,c:soft});

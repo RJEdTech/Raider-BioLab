@@ -86,7 +86,7 @@ const CLAD={
     if(sc.done)return `Done. Each trait evolves exactly once, so the tree needs only <b>${sc.total} changes</b>. ${S.taxa[S.taxa.length-1]} and ${S.taxa[S.taxa.length-2]} share the most recent common ancestor.`;
     const last=S.traits[p[p.length-1]],lost=sc.tr.nodes[sc.tr.nodes.length-1].lose.map(i=>S.taxa[i]);
     return `<b>${last.n}</b> evolved after ${lost.length?lost.join(' and ')+' branched off':'the last branch point'}. Next, find the trait shared by the most ${nm} still on the main line.`;},
-  draw(sim,ctx,vdt,k){const L=layout(sim),S=L.S,ink=PAL['cv-ink'],soft=PAL['cv-soft'],time=sim.p.view==='time'&&atLeast('ap');
+  draw(sim,ctx,vdt,k){k=Math.min(k,1.3);const L=layout(sim),S=L.S,ink=PAL['cv-ink'],soft=PAL['cv-soft'],time=sim.p.view==='time'&&atLeast('ap');
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
     if(time)return drawTime(sim,ctx,k,S);
     // stem and branches

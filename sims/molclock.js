@@ -102,11 +102,11 @@ const MC={
     const eS=est(sim,0,5),eC=est(sim,0,3);let t=`Tree complete. Calibrated with ${c.label.toLowerCase()}, the clock dates the shark split at <b>${fmtMya(eS)}</b> (true: 450 Mya)`+(c.b===3?'.':` and human–chicken at <b>${fmtMya(eC)}</b> (true: 320 Mya).`);
     if(sim.p.gene==='fast'&&!useJC(sim)&&eS<380)t+=' Deep splits come out too young: many sites have changed more than once, so the differences you can count undercount the real mutations.';
     return t;},
-  draw(sim,ctx,vdt,k){const s=sim.st,soft=PAL['cv-soft'],ink=PAL['cv-ink'];ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
+  draw(sim,ctx,vdt,k){k=Math.min(k,1.2);const s=sim.st,soft=PAL['cv-soft'],ink=PAL['cv-ink'];ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
     const X=t=>34+t/END*290,rowY=i=>66+i*28;
-    txt(ctx,'What really happened',16,24,{s:13.5*k,w:700});txt(ctx,'The gene in each species (first 120 of 1,000 sites)',412,24,{s:13.5*k,w:700});
+    txt(ctx,'What really happened',16,24,{s:13.5*k,w:700});txt(ctx,'The gene (first 120 of 1,000 sites)',412,24,{s:13.5*k,w:700});
     // time axis
-    ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;[0,100,200,300,400,450].forEach(t=>{ctx.beginPath();ctx.moveTo(X(t),42);ctx.lineTo(X(t),222);ctx.stroke();txt(ctx,t===450?'today':t===0?'450 Mya':mya(t)+'',X(t),236,{s:11.5*k,c:soft,a:t===0?'left':'center'});});
+    ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;[0,100,200,300,400,450].forEach(t=>{ctx.beginPath();ctx.moveTo(X(t),42);ctx.lineTo(X(t),222);ctx.stroke();txt(ctx,t===450?'today':t===0?'450':mya(t)+'',X(t),236,{s:11.5*k,c:soft,a:t===0?'left':'center'});});txt(ctx,'Mya',X(0),250,{s:11*k,c:soft});
     // edges of the true tree, up to the current time
     const yOf=n=>n.leaves.reduce((a,i)=>a+rowY(i),0)/n.leaves.length;
     ctx.lineCap='round';
