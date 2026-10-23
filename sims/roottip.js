@@ -19,11 +19,11 @@ function chi2(obs,expP){const N=obs.reduce((a,b)=>a+b,0);let x=0;obs.forEach((o,
 const CX=530,CY=226,R=206,CW=56,CHh=46;
 function key(p){return p.zone+'|'+p.treat;}
 function makeField(sim){const p=sim.p,s=sim.st;s.field++;const r=rng(s.field*7919+(p.zone==='meristem'?1:p.zone==='elong'?2:3)*31+(p.treat==='colch'?97:0));
-  const d=dist(p.zone,p.treat),cells=[];
+  const d=dist(p.zone,p.treat),cells=[],edge=[];
   for(let row=0;row<10;row++)for(let col=0;col<10;col++){const x=CX-R+4+col*CW+(r()-.5)*4,y=CY-R+4+row*CHh+(r()-.5)*3;const cx=x+CW/2,cy=y+CHh/2;
-    if(Math.hypot(cx-CX,cy-CY)>R-26)continue;cells.push({i:cells.length,x,y,w:CW-3-r()*3,h:CHh-3-r()*2,ph:pick(d,r()),rot:(r()-.5)*0.25,seed:Math.floor(r()*1e9),label:null});}
+    const dd=Math.hypot(cx-CX,cy-CY);if(dd>R+30)continue;if(dd>R-26){edge.push({x,y,w:CW-3-r()*3,h:CHh-3-r()*2,ph:pick(d,r()),rot:(r()-.5)*0.25,seed:Math.floor(r()*1e9),label:null});continue;}cells.push({i:cells.length,x,y,w:CW-3-r()*3,h:CHh-3-r()*2,ph:pick(d,r()),rot:(r()-.5)*0.25,seed:Math.floor(r()*1e9),label:null});}
   if(p.zone==='meristem'){['pro','meta','ana','telo'].forEach(ph=>{if(!cells.some(c=>c.ph===ph)){const c=cells.filter(c=>c.ph==='inter')[Math.floor(r()*30)%cells.filter(c=>c.ph==='inter').length];if(c)c.ph=ph;}});}
-  s.cells=cells;s.sel=0;s.checked=false;sim.infoDirty=true;}
+  s.cells=cells;s.edge=edge;s.sel=0;s.checked=false;sim.infoDirty=true;}
 function tally(s,k){return s.tally[k]||(s.tally[k]={inter:0,pro:0,meta:0,ana:0,telo:0,right:0});}
 function counts(s,k){const t=tally(s,k);return PH.map(ph=>t[ph]);}
 function total(s,k){return counts(s,k).reduce((a,b)=>a+b,0);}
@@ -81,18 +81,18 @@ const ROOT={
     {id:'answers',label:'Show answer key',type:'toggle',def:false,lvl:'bio',noTrial:true,help:'Letters on every cell: I, P, M, A, T'}
   ],
   actions:[
-    {id:'li',label:'Interphase',primary:true,run(sim){labelSel(sim,'inter');}},
-    {id:'lp',label:'Prophase',primary:true,run(sim){labelSel(sim,'pro');}},
-    {id:'lm',label:'Metaphase',primary:true,run(sim){labelSel(sim,'meta');}},
-    {id:'la',label:'Anaphase',primary:true,run(sim){labelSel(sim,'ana');}},
-    {id:'lt',label:'Telophase',primary:true,run(sim){labelSel(sim,'telo');}},
+    {id:'li',label:'Interphase',run(sim){labelSel(sim,'inter');}},
+    {id:'lp',label:'Prophase',run(sim){labelSel(sim,'pro');}},
+    {id:'lm',label:'Metaphase',run(sim){labelSel(sim,'meta');}},
+    {id:'la',label:'Anaphase',run(sim){labelSel(sim,'ana');}},
+    {id:'lt',label:'Telophase',run(sim){labelSel(sim,'telo');}},
     {id:'next',label:'Next cell ›',run(sim){nextCell(sim,false);sim.st.last=null;}},
     {id:'all',label:'Count this field for me',run(sim){countAll(sim);}},
     {id:'field',label:'New field of view',run(sim){makeField(sim);}},
     {id:'clear',label:'Clear my counts',run(sim){sim.st.tally={};sim.st.cells.forEach(c=>c.label=null);sim.st.last=null;}}
   ],
   controlsTitle:'Label the selected cell',
-  init(sim){return {field:0,cells:[],sel:0,tally:{},last:null};},
+  init(sim){return {field:0,cells:[],edge:[],sel:0,tally:{},last:null};},
   afterPrewarm(sim){makeField(sim);},
   step(){},
   onClick(sim,x,y){const s=sim.st;const c=s.cells.find(c=>x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.h);if(c){s.sel=c.i;s.last=null;}},
@@ -194,10 +194,10 @@ const ROOT={
     // eyepiece view
     ctx.fillStyle='#0d0d10';ctx.beginPath();ctx.arc(CX,CY,R+12,0,6.29);ctx.fill();
     ctx.save();ctx.beginPath();ctx.arc(CX,CY,R,0,6.29);ctx.clip();ctx.fillStyle='#f6f0f6';ctx.fillRect(CX-R,CY-R,2*R,2*R);
-    s.cells.forEach(c=>drawCell(ctx,c,c.i===s.sel,p.answers,k));
+    s.edge.forEach(c=>drawCell(ctx,c,false,false,k));s.cells.forEach(c=>drawCell(ctx,c,c.i===s.sel,p.answers,k));
     const g=ctx.createRadialGradient(CX,CY,R*0.7,CX,CY,R);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.28)');ctx.fillStyle=g;ctx.fillRect(CX-R,CY-R,2*R,2*R);ctx.restore();
     // scale bar inside field
-    const sb=CW*20/20;ctx.fillStyle='#222';ctx.fillRect(CX+R*0.36,CY+R*0.78,sb,4);txt(ctx,'20 µm',CX+R*0.36+sb/2,CY+R*0.78-5,{s:11*k,w:700,c:'#222',a:'center'});
+    const sb=CW;ctx.fillStyle=PAL['cv-ink'];ctx.fillRect(786-sb,420,sb,4);txt(ctx,'20 µm',786-sb/2,412,{s:11*k,w:700,c:PAL['cv-ink'],a:'center'});
     // status
     const n=total(s,key(p));txt(ctx,`Field ${s.field} · ${n} counted`,786,22,{s:12.5*k,w:700,a:'right',c:PAL['cv-ink']});
     if(p.treat==='colch')pill(ctx,'Colchicine-treated',786-70,42,'#7b3fe4','#fff',11*k);}
