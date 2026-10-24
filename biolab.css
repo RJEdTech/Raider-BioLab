@@ -238,3 +238,14 @@ dl.about-b dt{font-weight:700}dl.about-b dd{margin:2px 0 0;color:var(--muted)}
 .chip{display:inline-block;padding:4px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card2);color:var(--fg);text-decoration:none;font-size:15px;font-weight:600}
 .chip:hover{border-color:var(--rj)}
 .chip.adv{border-color:var(--rj);color:var(--rj-ink)}
+
+/* Raider Labs switcher on the home page */
+.labs{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 20px}
+.labs-l{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.labs a{display:inline-flex;align-items:baseline;gap:6px;padding:6px 13px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--fg);text-decoration:none;font-weight:700;font-size:14px;line-height:1.3}
+.labs a small{font-weight:400;color:var(--muted);font-size:12px}
+.labs a:hover{border-color:var(--rj)}
+.labs a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.labs a[aria-current=page]{background:var(--rj);border-color:var(--rj);color:#fff}
+.labs a[aria-current=page] small{color:rgba(255,255,255,.88)}
+@media(max-width:520px){.labs a small{display:none}}
