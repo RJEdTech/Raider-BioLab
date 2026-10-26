@@ -15,6 +15,9 @@ let FURTHER=11,UNIT_PREFIX='Unit';
 BL.setSections=function(o){if(o.units)UNITS=o.units;if(o.extra)XSEC=o.extra;if(o.order)SECTIONS=o.order;if(o.further!==undefined)FURTHER=o.further;if(o.unitPrefix!==undefined)UNIT_PREFIX=o.unitPrefix;BL.UNITS=UNITS;BL.XSEC=XSEC;};
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const LAB_META=n=>{const m=document.querySelector('meta[name="'+n+'"]');return m?m.content:null;};const LAB_NAME=LAB_META('lab-name')||'Raider BioLab',LAB_KEY=LAB_META('lab-key')||'rjbiolab';
+/* Raider Labs bug report / feature request form (Microsoft Forms, RJ sign-in). Pre-fills the lab and the tool. */
+const FB_FORM='https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=4SwuQZc-CEClZjjFdYLisQzihhIB-7hPp9L3AOSeJONUOVJaVTVMOE9YMFNSVVM3TUNOOFVQR1pYTi4u';
+const fbUrl=tool=>FB_FORM+'&rba3eb377e6854b15b9a02aadcdd38deb='+encodeURIComponent(tool||'')+'&rc59cb41123d3497584d2ca10cb9e1c54='+encodeURIComponent('"'+LAB_NAME+'"');
 let level=store.get(LAB_KEY+'-level');if(!(level in LV))level='bio';
 /* Embedding (e.g. in a Canvas page): ?embed=1 hides the site chrome; ?mode=guided|game|lab|vlab picks the starting view (&lab=<id> picks the virtual lab);
    ?level=bio|honors|ap picks the starting detail level for this visit only. */
@@ -150,7 +153,7 @@ function buildSim(sim){
   ${d.terms?`<details class="about terms"><summary>Key terms</summary><dl class="about-b">${d.terms.map(t=>`<div data-lvl="${t.lvl||'bio'}"><dt>${t.t}</dt><dd>${t.d}</dd></div>`).join('')}</dl></details>`:''}
   ${d.about?`<details class="about"><summary>About this model</summary><div class="about-b">${d.about}</div></details>`:''}
   <div class="related" hidden></div>
-  <p class="fb-line"><a class="fb-link" href="https://forms.microsoft.com/r/sKU9sHY45r" target="_blank" rel="noopener" data-tool="${d.tab}">Report a bug or request a feature</a><span class="fb-hint">Opens a Microsoft Form. Sign in with your RJ account and name this tool: ${LAB_NAME} › ${d.tab}.</span></p>
+  <p class="fb-line"><a class="fb-link" href="${fbUrl(d.tab)}" target="_blank" rel="noopener" data-tool="${d.tab}">Report a bug or request a feature</a><span class="fb-hint">Opens a short Microsoft Form with this tool already filled in. Sign in with your RJ account.</span></p>
   <details class="about embed-box"><summary>Embed this tool in Canvas</summary><div class="about-b embed-b"></div></details>`;
   const ui=sim.ui;ui.sec=sec;ui.lede=sec.querySelector('.lede');ui.uses=sec.querySelector('.real-uses');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
   ui.clock=sec.querySelector('.clock');ui.play=sec.querySelector('[data-act=play]');ui.ctrls=sec.querySelector('.controls');ui.read=sec.querySelector('.readouts');
@@ -301,12 +304,10 @@ function renderGame(sim){const g=sim.def.game,G=sim.game,c=sim.ui.gamecard;if(!G
    While a lab is open, sim.vlab = {lab, seed, bench, rng(k), raw(key), val(table,col,row), col(table,col), step}.
    sim.vlab.bench is a plain object the sim keeps its bench state in; the engine saves it with the notebook. */
 let setLevelFn=null;
-/* Feedback link: copy which tool, level and mode the person was on, so it can be pasted into the form. */
+/* Feedback link: fill in the tool, detail level and mode the person was on, so the form arrives pre-filled. */
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('.fb-link');if(!a)return;
   const sec=a.closest('section'),lv=document.querySelector('[data-l][aria-pressed="true"]'),m=sec&&[...sec.classList].find(c=>/^m-/.test(c));
-  const info=LAB_NAME+' › '+(a.dataset.tool||'')+(lv?' · '+lv.textContent.trim():'')+(m?' · '+m.slice(2)+' mode':'');
-  const hint=a.parentElement.querySelector('.fb-hint');
-  try{navigator.clipboard.writeText(info).then(()=>{if(hint)hint.textContent='Copied “'+info+'”. Paste it into the form.';},()=>{});}catch(_){}});
+  a.href=fbUrl((a.dataset.tool||'')+(lv?' · '+lv.textContent.trim():'')+(m?' · '+m.slice(2)+' mode':''));},true);
 const vlKey=(sim,lab)=>LAB_KEY+'-vlab-'+sim.def.id+'-'+lab.id,vlCurKey=sim=>LAB_KEY+'-vlab-'+sim.def.id;
 const vlLabs=sim=>sim.def.labs||[];
 const stripTags=s=>String(s===undefined||s===null?'':s).replace(/<[^>]+>/g,'');
