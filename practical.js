@@ -325,12 +325,12 @@ signaling: {
   lede: 'Adrenaline reaches a liver cell but never goes inside. Follow how the cell passes the message along and multiplies it until sugar pours into your blood.',
   tour: [
     'Epinephrine (orange diamonds) is adrenaline, the hormone behind a racing heart after a scare. It travels in the blood but cannot cross the cell membrane, so the message has to be passed in from outside.',
-    'When epinephrine fits into the receptor on the outside, the receptor changes shape on the inside, like a key turning a lock from one side of a door. That shape change is the message.',
-    'The receptor switches on a relay protein (a G protein), which slides over and switches on an enzyme in the membrane. Each step is a hand-off, like runners passing a baton.',
-    'That enzyme pumps out many small messenger molecules (green, called cAMP), which spread through the cell. One switched-on enzyme makes many messengers, so the signal is already bigger.',
-    'Each messenger switches on relay kinases, and each kinase switches on many more. Count the rows: 4, then 8, then 16. In a real cell the rows run to many thousands, which is how a few hormone molecules move millions of sugars.',
-    'The last enzyme snips glucose off glycogen, the cell’s stored sugar. The glucose leaves through a transporter and enters your blood as fuel for your muscles, ready for a sprint.',
-    'Now the hormone is removed. Every relay protein switches itself off within seconds, so the sugar release stops. A signal that could not switch off would keep dumping sugar into your blood.'
+    'Step 1: when epinephrine fits into the receptor on the outside, the receptor changes shape on the inside, like a key turning a lock from one side of a door. That shape change is the message.',
+    'Step 2: the receptor switches on the G protein. The G protein trades GDP for GTP, which turns it on, then slides over and switches on adenylyl cyclase, an enzyme in the membrane. Each step is a hand-off, like runners passing a baton.',
+    'Step 3: adenylyl cyclase turns ATP into cAMP, the green second messenger, which spreads through the cell. One switched-on enzyme makes many cAMP, so the signal is already bigger.',
+    'Step 4: cAMP switches on protein kinase A, which starts the kinase cascade: phosphorylase kinase, then glycogen phosphorylase. Each kinase adds phosphates (yellow P) to switch on many more. Count the rows: 4, then 8, then 16. In a real cell the rows run to many thousands, which is how a few hormone molecules move millions of sugars.',
+    'Step 5: glycogen phosphorylase snips glucose off glycogen, the cell’s stored sugar. The glucose leaves through a transporter and enters your blood as fuel for your muscles, ready for a sprint.',
+    'Now the hormone is removed. The G protein, cAMP and the kinases all switch off within seconds, so the sugar release stops. A signal that could not switch off would keep dumping sugar into your blood.'
   ]
 },
 cellcycle: {

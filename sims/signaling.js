@@ -114,15 +114,23 @@ const SIG={
       const ga=p.tox?1:clamp(s.G*(bound?1.4:0.7),0,1),ax=x+38+ga*28;
       ctx.fillStyle='#8a8f99';ctx.beginPath();ctx.ellipse(x+32,150,11,9,0,0,6.29);ctx.fill();
       ctx.fillStyle=ga>0.4?'#2a9d6a':'#7aa58f';ctx.beginPath();ctx.ellipse(ax,148,12,10,0,0,6.29);ctx.fill();
-      if(ga>0.4)txt(ctx,'GTP',ax,149,{s:9*k,w:700,c:'#fff',a:'center',b:'middle'});
+      txt(ctx,ga>0.4?'GTP':'GDP',ax,149,{s:9*k,w:700,c:ga>0.4?'#fff':'#17402c',a:'center',b:'middle'});
       // adenylyl cyclase
       ctx.fillStyle=ga>0.4?'#b0552d':'#9a7666';rr(ctx,x+80,92,34,48,8);ctx.fill();rr(ctx,x+76,138,42,22,8);ctx.fill();
-      if(hon){txt(ctx,i===0?'Receptor':'',x,64,{s:11*k,w:700,a:'center',c:PAL['cv-soft']});}
     });
-    const lab=(s_,x,y)=>txt(ctx,s_,x,y,{s:12*k,w:700,c:PAL['cv-ink']});
-    if(hon&&k<1.3){txt(ctx,'G protein',90,178,{s:11*k,w:600,c:PAL['cv-soft'],a:'center'});txt(ctx,'Adenylyl cyclase',167,178,{s:11*k,w:600,c:PAL['cv-soft'],a:'center'});}
-    else if(hon){txt(ctx,'G protein → cyclase',128,178,{s:11*k,w:600,c:PAL['cv-soft'],a:'center'});}
-    else{txt(ctx,'Receptor',70,64,{s:11*k,w:700,a:'center',c:PAL['cv-soft']});txt(ctx,'Relay proteins',130,178,{s:11*k,w:600,c:PAL['cv-soft'],a:'center'});}
+    // Labels use the real names at every detail level, so switching levels never renames a part.
+    // Numbered badges follow the pathway: 1 receptor, 2 G protein, 3 adenylyl cyclase/cAMP, 4 kinase cascade, 5 glycogen to glucose.
+    const sm=k>=1.3;
+    const badge=(n,x,y)=>{ctx.fillStyle='#9e1b32';ctx.beginPath();ctx.arc(x,y,7.5*k,0,6.29);ctx.fill();txt(ctx,String(n),x,y+0.5*k,{s:10*k,w:800,c:'#fff',a:'center',b:'middle'});};
+    const tag=(n,s_,x,y,o)=>{o=o||{};const sz=(o.s||12)*k,w=o.w||700;ctx.font=w+' '+sz+'px '+FONT;const tw=ctx.measureText(s_).width,bw=n?18*k:0;
+      const x0=o.a==='right'?x-tw-bw:o.a==='center'?x-(tw+bw)/2:x;if(n)badge(n,x0+7.5*k,y-sz*0.35);txt(ctx,s_,x0+bw,y,{s:sz,w,c:o.c||PAL['cv-ink']});return x0+bw+tw;};
+    const lab=(s_,x,y,n)=>tag(n,s_,x,y);
+    tag(1,sm?'Receptor':'Receptor (GPCR)',10,64);
+    tag(3,'Adenylyl cyclase',sm?150:136,sm?82:64);
+    tag(2,'G protein',sm?30:58,178,{s:11.5});
+    if(!sm)txt(ctx,'ATP → cAMP',150,178,{s:11*k,w:600,c:PAL['cv-soft']});
+    txt(ctx,'Cell membrane',566,119,{s:11*k,w:600,c:PAL['cv-soft']});
+    txt(ctx,sm?'Transporter':'Glucose transporter',796,64,{s:11*k,w:600,c:PAL['cv-soft'],a:'right'});
     // cAMP cloud
     const nC=Math.round(clamp(s.C*5,0,80));
     while(v.cmp.length<nC){const u=UNITS[Math.floor(R()*3)];v.cmp.push({x:u+97+R()*10-5,y:166,vx:R()*40-20,vy:20+R()*20,a:0});}
@@ -135,20 +143,21 @@ const SIG={
     // phosphodiesterase (PDE) breaking down cAMP
     [[470,200],[540,232],[400,238]].forEach((q,i)=>{ctx.fillStyle=p.caf?'#9a9aa2':'#6d6d78';ctx.beginPath();ctx.moveTo(q[0],q[1]);ctx.arc(q[0],q[1],10,0.6+Math.sin(t*4+i)*(p.caf?0:0.3),5.7);ctx.closePath();ctx.fill();
       if(p.caf){ctx.fillStyle='#7a4a24';ctx.beginPath();ctx.arc(q[0]+8,q[1],4.5,0,6.29);ctx.fill();}});
-    if(hon)txt(ctx,p.caf?'Phosphodiesterase (blocked by caffeine)':'Phosphodiesterase breaks down cAMP',598,262,{s:11*k,c:PAL['cv-soft'],a:'right'});
-    txt(ctx,hon?'cAMP (second messenger)':'Messenger molecules',598,184,{s:12*k,w:700,c:PAL['cv-ink'],a:'right'});
+    txt(ctx,p.caf?'Phosphodiesterase (blocked by caffeine)':(sm?'Phosphodiesterase':'Phosphodiesterase breaks down cAMP'),598,sm?254:262,{s:11*k,c:PAL['cv-soft'],a:'right'});
+    txt(ctx,'cAMP (second messenger)',598,184,{s:12*k,w:700,c:PAL['cv-ink'],a:'right'});
     // kinase rows with fan-out amplification
-    const rows=[['pka',s.PKA,hon?'Protein kinase A':'Relay kinase 1','#3f6fb0'],['phk',s.K,hon?'Phosphorylase kinase':'Relay kinase 2','#7a4fa6'],['gp',s.P,hon?'Glycogen phosphorylase':'Sugar-releasing enzyme','#2a8276']];
+    const rows=[['pka',s.PKA,'Protein kinase A (PKA)','#3f6fb0'],['phk',s.K,'Phosphorylase kinase','#7a4fa6'],['gp',s.P,'Glycogen phosphorylase','#2a8276']];
     rows.forEach((row,ri)=>{const g=ROWS[row[0]],act=row[1]*g.n;
-      lab(row[2],20,g.y-20);
+      lab(row[2],20,g.y-20,ri===0?4:0);
       if(ri<2){const nxt=ROWS[rows[ri+1][0]],na=rows[ri+1][1]*nxt.n;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.globalAlpha=.45;
         for(let i=0;i<g.n;i++){if(i>=act)continue;const per=nxt.n/g.n;for(let j=0;j<per;j++){const jj=Math.floor(i*per+j);if(jj>=na+0.5)continue;const tx=nxt.x0+jj*nxt.dx;ctx.beginPath();ctx.moveTo(g.x0+i*g.dx,g.y+10);ctx.lineTo(tx,nxt.y-10);ctx.stroke();}}ctx.globalAlpha=1;}
       for(let i=0;i<g.n;i++){const x=g.x0+i*g.dx,on=clamp(act-i,0,1);
         ctx.globalAlpha=0.35+0.65*on;ctx.fillStyle=row[3];rr(ctx,x-12,g.y-9,24,18,7);ctx.fill();ctx.globalAlpha=1;
         if(on>0.5){ctx.fillStyle='#f2b705';ctx.beginPath();ctx.arc(x+10,g.y-8,5.5,0,6.29);ctx.fill();txt(ctx,'P',x+10,g.y-7.5,{s:8*k,w:800,c:'#3a2c00',a:'center',b:'middle'});}}});
+    if(!sm)txt(ctx,'Kinase cascade: each switched-on enzyme switches on many of the next (4 → 8 → 16)',20,424,{s:11*k,c:PAL['cv-soft']});
     // glycogen granule and glucose release
     ctx.fillStyle='#c9a227';for(const q of v.gl){ctx.beginPath();ctx.arc(q[0],q[1],5,0,6.29);ctx.fill();}
-    txt(ctx,hon?'Glycogen (stored glucose)':'Stored sugar (glycogen)',792,438,{s:11.5*k,w:600,a:'right',c:PAL['cv-soft']});
+    tag(5,sm?'Glycogen':'Glycogen (stored glucose)',792,438,{s:11.5,w:600,a:'right',c:PAL['cv-soft']});
     // GLUT2 transporter
     ctx.fillStyle='#6a8796';rr(ctx,734,94,24,42,6);ctx.fill();
     v.gAcc+=s.glu*0.28*vdt;while(v.gAcc>=1){v.gAcc--;const q=v.gl[Math.floor(R()*v.gl.length)];v.glu.push({x:q[0],y:q[1],ph:0});}
@@ -159,33 +168,51 @@ const SIG={
     if(p.tox)pill(ctx,'Toxin: G protein stuck on',160,40,'#b3261e','#fff',11*k);
     if(p.blk)pill(ctx,'Beta blocker',330,40,'#6a32d0','#fff',11*k);
     // legend
-    let lx=330;const ly=443;
-    ctx.fillStyle='#e08a00';ctx.beginPath();ctx.moveTo(lx,ly-10);ctx.lineTo(lx+5,ly-4);ctx.lineTo(lx,ly+2);ctx.lineTo(lx-5,ly-4);ctx.closePath();ctx.fill();txt(ctx,'epinephrine',lx+9,ly,{s:11*k,c:PAL['cv-soft']});
+    let lx=sm?92:190;const ly=sm?22:443;const key=(name,mark)=>{mark(lx,ly-4);txt(ctx,name,lx+9*k,ly,{s:11*k,c:PAL['cv-soft']});ctx.font='400 '+(11*k)+'px '+FONT;lx+=9*k+ctx.measureText(name).width+16*k;};
+    const hex=(c,st)=>(x,y)=>{ctx.fillStyle=c;ctx.beginPath();for(let j=0;j<6;j++){const an=j*Math.PI/3+0.5;ctx[j?'lineTo':'moveTo'](x+Math.cos(an)*5,y+Math.sin(an)*5);}ctx.closePath();ctx.fill();if(st){ctx.strokeStyle=st;ctx.lineWidth=1;ctx.stroke();}};
+    key('epinephrine',(x,y)=>{ctx.fillStyle='#e08a00';ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+5,y);ctx.lineTo(x,y+6);ctx.lineTo(x-5,y);ctx.closePath();ctx.fill();});
+    key('cAMP',hex('#1f9d55'));
+    key('phosphate',(x,y)=>{ctx.fillStyle='#f2b705';ctx.beginPath();ctx.arc(x,y,5.5,0,6.29);ctx.fill();txt(ctx,'P',x,y+0.5,{s:8*k,w:800,c:'#3a2c00',a:'center',b:'middle'});});
+    key('glucose',hex('#e0b800','#7a5a00'));
   },
   narrate(sim){const p=sim.p,s=sim.st,hon=atLeast('honors'),g=s.glu.toFixed(1);
     if(p.tox)return '<b>The toxin has locked the G proteins “on”.</b> Adenylyl cyclase keeps making cAMP whether or not any hormone is bound, so the cell releases '+g+' million glucose per second with no signal at all.';
-    if(p.epi<0.05&&s.glu>0.5)return '<b>The hormone is gone, so the signal is shutting off.</b> '+(hon?'Phosphodiesterase breaks down cAMP and phosphatases remove phosphates from the kinases.':'Each relay protein switches itself back off.')+' Glucose release is falling.';
+    if(p.epi<0.05&&s.glu>0.5)return '<b>The hormone is gone, so the signal is shutting off.</b> '+(hon?'Phosphodiesterase breaks down cAMP and phosphatases remove phosphates from the kinases.':'The G protein, cAMP and the kinases all switch back off.')+' Glucose release is falling.';
     if(p.epi<0.05)return 'No epinephrine, so the receptors are empty and the cell is quiet. Glucose stays stored as glycogen.';
     if(p.blk)return '<b>The beta blocker occupies most receptors without switching them on.</b> Little hormone can bind, so the whole chain stays weak: '+g+' million glucose per second.';
     if(p.caf&&hon)return '<b>Caffeine is blocking phosphodiesterase</b>, so cAMP builds up to '+s.C.toFixed(1)+' µM instead of being broken down. The signal is stronger and lasts longer.';
     if(atLeast('ap')&&p.ph>1.5)return '<b>Phosphatases are working hard</b>, pulling phosphates off the kinases almost as fast as they are added, so the response is damped.';
-    return 'Epinephrine has bound '+Math.round(s.R*100)+'% of the receptors. Each '+(hon?'active receptor switches on many G proteins, each cyclase makes many cAMP, and each kinase activates many more enzymes':'switched-on protein turns on many of the next')+'. The result: <b>'+g+' million glucose released per second</b>.';},
+    return 'Epinephrine has bound '+Math.round(s.R*100)+'% of the receptors. Each '+'active receptor switches on many G proteins, each adenylyl cyclase makes many cAMP, and each kinase switches on many more enzymes'+'. The result: <b>'+g+' million glucose released per second</b>.';},
   tour:[
     {title:'The hormone stays outside',text:'Epinephrine (orange diamonds) travels in the blood. It cannot cross the cell membrane, so the message has to be passed in from the outside.',focus:[0,0,800,96],speed:0.5},
-    {title:'The receptor changes shape',text:{bio:'When epinephrine fits into the receptor on the outside, the receptor changes shape on the inside. That shape change is the message.',honors:'Epinephrine binds a G-protein-coupled receptor, which snakes back and forth across the membrane seven times. Binding changes its shape on the cytoplasm side.'},focus:[36,60,74,84],speed:0.25},
-    {title:'G protein to adenylyl cyclase',text:{bio:'The receptor switches on a relay protein, which slides over and switches on an enzyme in the membrane.',honors:'The active receptor makes the G protein swap GDP for GTP. The GTP-bound α subunit slides to adenylyl cyclase and switches it on.'},focus:[90,86,130,104],speed:0.1},
-    {title:'cAMP spreads the message',text:{bio:'That enzyme pumps out many small messenger molecules (green), which spread through the cell.',honors:'Adenylyl cyclase converts ATP into cAMP, the second messenger. Each cyclase makes many cAMP molecules: the first big amplification.'},focus:[10,140,600,112],speed:0.25},
-    {title:'The kinase cascade fans out',text:{bio:'Each messenger switches on relay kinases, and each kinase switches on many more. Count the rows: 4, then 8, then 16, and in a real cell, many thousands.',honors:'cAMP activates protein kinase A. PKA phosphorylates many phosphorylase kinases, and each of those phosphorylates many glycogen phosphorylases. The yellow P marks an added phosphate.'},focus:[10,250,600,170],speed:0.25},
-    {title:'Glycogen becomes glucose',text:'The last enzyme snips glucose off stored glycogen. The glucose leaves through a transporter and enters the blood, fuel for running away.',focus:[630,88,170,362],speed:0.5},
+    {title:'The receptor changes shape',text:{bio:'When epinephrine binds the receptor on the outside (step 1), the receptor changes shape on the inside. That shape change is the message.',honors:'Epinephrine binds a G-protein-coupled receptor, which snakes back and forth across the membrane seven times. Binding changes its shape on the cytoplasm side.'},focus:[36,60,74,84],speed:0.25},
+    {title:'G protein to adenylyl cyclase',text:{bio:'The receptor switches on the G protein (step 2). The G protein trades GDP for GTP, which turns it on, and slides over to switch on adenylyl cyclase, an enzyme in the membrane.',honors:'The active receptor makes the G protein swap GDP for GTP. The GTP-bound α subunit slides to adenylyl cyclase and switches it on.'},focus:[90,86,130,104],speed:0.1},
+    {title:'cAMP spreads the message',text:{bio:'Adenylyl cyclase turns ATP into cAMP (step 3), small green messenger molecules that spread through the cell. cAMP is called the second messenger; the hormone was the first.',honors:'Adenylyl cyclase converts ATP into cAMP, the second messenger. Each cyclase makes many cAMP molecules: the first big amplification.'},focus:[10,140,600,112],speed:0.25},
+    {title:'The kinase cascade fans out',text:{bio:'cAMP switches on protein kinase A (step 4). Each kinase adds phosphates (yellow P) to switch on many of the next enzyme: phosphorylase kinase, then glycogen phosphorylase. Count the rows: 4, then 8, then 16, and in a real cell, many thousands.',honors:'cAMP activates protein kinase A. PKA phosphorylates many phosphorylase kinases, and each of those phosphorylates many glycogen phosphorylases. The yellow P marks an added phosphate.'},focus:[10,250,600,170],speed:0.25},
+    {title:'Glycogen becomes glucose',text:'Glycogen phosphorylase snips glucose off stored glycogen (step 5). The glucose leaves through a transporter and enters the blood, fuel for running away.',focus:[630,88,170,362],speed:0.5},
     {title:'Switching it off',text:{bio:'Now the hormone is removed. Every relay protein switches itself off within seconds, so the sugar release stops.',honors:'With no hormone, the G protein hydrolyzes its GTP, phosphodiesterase breaks down cAMP, and phosphatases remove the phosphates. The whole pathway resets.'},focus:[0,0,800,450],speed:1,setup(sim){BioLab.setValues(sim,{epi:0});}}
   ],
   onTourExit(sim){BioLab.setValues(sim,{epi:1});},
   lab:{bio:'<p><b>Question:</b> How does the amount of epinephrine affect glucose release?</p><ol><li>Record glucose released at epinephrine 0, 0.1, 0.25, 0.5, 1, 2, 5 and 10 nM. Wait about 10 seconds after each change.</li><li>Plot epinephrine (x) against glucose released (y).</li></ol><p>Describe the shape of your graph. Why does adding more hormone eventually stop helping?</p>',
        honors:'<p><b>Question:</b> How do caffeine and beta blockers change the response?</p><ol><li>At 1 nM epinephrine, record a baseline, then a caffeine trial, then a beta-blocker trial (switch the first one off before the next).</li><li>Compare cAMP and glucose released.</li></ol><p>Explain each result by naming the exact step of the pathway the drug acts on.</p>',
        ap:'<p><b>Question:</b> Where in the pathway does the signal get amplified, and where can it be controlled?</p><ol><li>Record every readout at 0.2, 1 and 5 nM epinephrine.</li><li>Repeat at 1 nM with phosphatase at 0.5× and 3×, then with the toxin on and no hormone.</li></ol><p><b>Claim–evidence–reasoning:</b> Explain why a cell needs both kinases and phosphatases, and why a G protein that cannot switch off causes disease.</p>'},
-  terms:[{t:'Ligand',d:'A signal molecule that binds a receptor. Here, epinephrine.'},{t:'Receptor',d:'A protein that a signal binds to. It changes shape when the signal binds.'},{t:'Signal transduction',d:'Turning an outside signal into a response inside the cell.'},{t:'Amplification',d:'Each step activates many copies of the next, so a small signal causes a big response.'},
-    {lvl:'honors',t:'G protein',d:'A relay switch that is on when bound to GTP and off when bound to GDP.'},{lvl:'honors',t:'Second messenger',d:'A small molecule, like cAMP, that carries the signal through the cytoplasm.'},{lvl:'honors',t:'Kinase',d:'An enzyme that adds a phosphate group to another protein, often switching it on.'},{lvl:'honors',t:'Phosphodiesterase',d:'The enzyme that breaks down cAMP, ending the signal.'},
-    {lvl:'ap',t:'Phosphatase',d:'An enzyme that removes phosphate groups, reversing a kinase.'},{lvl:'ap',t:'Antagonist',d:'A molecule, like a beta blocker, that binds a receptor without activating it.'},{lvl:'ap',t:'GPCR',d:'G-protein-coupled receptor: a seven-pass membrane receptor that activates G proteins.'}],
+  terms:[{t:'Signal transduction',d:'Turning an outside signal into a response inside the cell.'},
+    {t:'1 · Epinephrine',d:'Adrenaline, the hormone (ligand) in the blood. It binds the receptor but never enters the cell.'},
+    {t:'1 · Receptor (GPCR)',d:'G-protein-coupled receptor: a protein that crosses the membrane seven times. Epinephrine binding changes its shape on the inside.'},
+    {t:'2 · G protein',d:'A relay switch under the membrane. It is off when holding GDP and on when holding GTP. Its α part slides over to adenylyl cyclase.'},
+    {t:'GTP / GDP',d:'Energy-carrying nucleotides. Trading GDP for GTP turns the G protein on; breaking GTP back to GDP turns it off.'},
+    {t:'3 · Adenylyl cyclase',d:'A membrane enzyme that turns ATP into cAMP once the G protein switches it on.'},
+    {t:'3 · cAMP (second messenger)',d:'Cyclic AMP, a small molecule that carries the signal through the cytoplasm. The hormone is the first messenger.'},
+    {t:'Phosphodiesterase',d:'The enzyme that breaks down cAMP, ending the signal. Caffeine blocks it.'},
+    {t:'4 · Protein kinase A (PKA)',d:'The kinase cAMP switches on. It starts the kinase cascade.'},
+    {t:'4 · Kinase cascade',d:'Kinases switching on more kinases: protein kinase A, then phosphorylase kinase, then glycogen phosphorylase. Each step multiplies the signal.'},
+    {t:'Kinase',d:'An enzyme that adds a phosphate group to another protein, often switching it on.'},
+    {t:'Phosphate (P)',d:'The small chemical group a kinase attaches. The yellow P shows which enzymes are switched on.'},
+    {t:'5 · Glycogen phosphorylase',d:'The last enzyme in the cascade. It snips glucose off glycogen.'},
+    {t:'5 · Glycogen',d:'The liver’s stored form of glucose: long branched chains of glucose.'},
+    {t:'Glucose transporter',d:'A membrane protein (GLUT2) that lets glucose leave the liver cell and enter the blood.'},
+    {t:'Amplification',d:'Each step activates many copies of the next, so a small signal causes a big response.'},
+    {lvl:'ap',t:'Phosphatase',d:'An enzyme that removes phosphate groups, reversing a kinase.'},{lvl:'ap',t:'Antagonist',d:'A molecule, like a beta blocker, that binds a receptor without activating it.'}],
   about:'<p>Each step is a simple rate equation. Receptor occupancy is [E]/([E]+K<sub>d</sub>) with K<sub>d</sub> = 1 nM, rising to 10 nM with the beta blocker. G-protein activation is 2·occupancy·(1−G) minus GTP hydrolysis at 1/s. cAMP is made at 8·G µM/s and broken down by phosphodiesterase at 1/s (0.3/s with caffeine). PKA follows cAMP²/(cAMP²+25). The two downstream kinases are phosphorylated in proportion to the step above them and dephosphorylated by phosphatases.</p><p>Simplified: one receptor type, no receptor desensitization, no calcium branch, and glucose output in model units (about 25 million glucose per second at maximum). The pictures show a few copies of each protein. A real cell has thousands of receptors and far more enzymes in each row.</p>',
   thumbFrames:60
 };

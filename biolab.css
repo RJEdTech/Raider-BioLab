@@ -420,3 +420,8 @@ select.vl-in{width:auto;max-width:100%}
 
 /* an action row with no visible buttons takes no space */
 .actions:not(:has(>button:not([hidden]))){display:none}
+
+/* Bug report / feature request link under each tool */
+.fb-line{margin:16px 0 0;font-size:14px;color:var(--muted);text-align:center;line-height:1.5}
+.fb-line a,.foot a{color:inherit;text-decoration:underline;font-weight:600}
+.fb-hint{display:block;font-size:13px}
