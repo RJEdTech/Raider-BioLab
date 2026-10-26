@@ -3,25 +3,32 @@
 const {clamp,rng,rr,txt,pill,atLeast,PAL,FONT,RM,lvText}=BioLab.h;
 
 /* Blood sugar: a minimal glucose–insulin–glucagon model (mg/dL, µU/mL, pg/mL, minutes).
+   Tuned so a healthy 75 g meal peaks near 130 mg/dL about 40 minutes after eating, with insulin near 50 µU/mL,
+   and is back near 100 mg/dL by 2 hours (typical healthy adult response; it stays under 140).
    Body temperature: heat balance in units of resting heat (1 unit ≈ 80 W; 0.02 °C/min if nothing were lost). */
+const GK={empty:0.0241,abs:0.0152,Si:0.000978,secG:1.0,act:0.0383,up0:0.004,X15:80,t2:0.1};
+GK.hgp0=(GK.up0+GK.Si*10)*90*(1+10/GK.X15);   // liver output that balances uptake at 90 mg/dL when fasting
 function glucStep(s,p,dt){
-  const Ra=0.017*s.Q;s.Q=Math.max(0,s.Q-Ra*dt);
-  const Si=0.002*(p.t2?0.25:1);
-  const sec=p.t1?0:(10+0.9*Math.max(0,s.G-90))*(s.G<90?Math.max(0.2,s.G/90):1);
+  const e=GK.empty*s.Q;s.Q=Math.max(0,s.Q-e*dt);s.Q2+=e*dt;          // stomach empties into the small intestine
+  const Ra=GK.abs*s.Q2;s.Q2=Math.max(0,s.Q2-Ra*dt);                  // the intestine absorbs glucose into the blood
+  const Si=GK.Si*(p.t2?GK.t2:1);
+  const sec=p.t1?0:(10+GK.secG*Math.max(0,s.G-90))*(s.G<90?Math.max(0.2,s.G/90):1);
   const ab=0.02*s.D;s.D=Math.max(0,s.D-ab*dt);
   s.I+=dt*(0.3*(sec-s.I)+ab);s.I=Math.max(0,s.I);s.Ipk=Math.max(s.Ipk,s.I);
-  s.X+=dt*0.025*(s.I-s.X);
+  s.X+=dt*GK.act*(s.I-s.X);
   const gnT=Math.max(20,60+5*Math.max(0,85-s.G)-0.8*Math.max(0,s.X-10)+(s.ex>0?20:0));s.Gn+=dt*0.2*(gnT-s.Gn);
-  s.hgp=(s.Lg>5?1:s.Lg/5)*4.5*(s.Gn/60)/(1+s.X/15);
+  s.hgp=(s.Lg>5?1:s.Lg/5)*GK.hgp0*(s.Gn/60)/(1+s.X/GK.X15);
   const exU=s.ex>0?0.012:0;
-  s.upt=(0.01+Si*s.X+exU)*s.G;s.ren=s.G>180?0.05*(s.G-180):0;s.Ra=Ra;
+  s.upt=(GK.up0+Si*s.X+exU)*s.G;s.ren=s.G>180?0.05*(s.G-180):0;s.Ra=Ra;
   s.Lg=clamp(s.Lg+dt*0.05*((Si/0.002)*(s.X/10)*(s.G/90)-s.hgp/2.7),0,120);
   s.G=Math.max(20,s.G+dt*(Ra*6.67+s.hgp-s.upt-s.ren));
   s.sec=sec;}
 function tempStep(s,p,dt){
   const S=p.fever?39:37;s.S=S;
-  s.vaso=clamp(1+3*(s.Tc-S),0.35,3);s.shiv=clamp(4*(S-0.2-s.Tc),0,3);s.sweat=clamp(6*(s.Tc-S-0.1),0,6);
-  const exH=s.ex>0?3:0;s.made=1+s.shiv+exH;s.dry=0.0667*s.vaso*(s.Tc-p.ta);s.lost=s.dry+s.sweat;
+  s.vaso=clamp(1+3*(s.Tc-S),0.35,3);s.shiv=clamp(2.5*(S-0.2-s.Tc),0,4);s.sweat=clamp(6*(s.Tc-S-0.1),0,6);
+  /* Dry heat loss through skin and a T-shirt. Narrowed skin vessels cut it, but not to zero (tissue still conducts),
+     and colder air strips heat faster (convection), so a T-shirt at −10 °C loses about 2.6× resting heat. */
+  const exH=s.ex>0?3:0;s.made=1+s.shiv+exH;s.dry=0.0667*(0.4+0.6*s.vaso)*(s.Tc-p.ta)*(1+0.012*Math.max(0,22-p.ta));s.lost=s.dry+s.sweat;
   s.Tc+=dt*0.02*(s.made-s.lost);}
 const isG=sim=>sim.p.mode==='glucose';
 function syncMode(sim){if(!sim.ui||!sim.ui.tiles)return;const mode=sim.p.mode;
@@ -52,9 +59,9 @@ const HOMEO={
   actions:[
     {id:'meal',label:'Eat a meal',primary:true,mode:'glucose',run(sim){sim.st.Q+=sim.p.carbs;}},
     {id:'exercise',label:'Exercise for 30 min',run(sim){sim.st.ex=30;}},
-    {id:'insulin',label:'Inject insulin',lvl:'honors',mode:'glucose',run(sim){sim.st.D+=600;}}
+    {id:'insulin',label:'Inject insulin',lvl:'honors',mode:'glucose',run(sim){sim.st.D+=900;}}
   ],
-  init(){return {G:90,I:10,X:10,Gn:60,Q:0,D:0,Lg:80,ex:0,Ipk:10,hgp:2.7,upt:2.7,ren:0,Ra:0,sec:10,Tc:37,S:37,vaso:1,shiv:0,sweat:0,made:1,dry:1,lost:1};},
+  init(){return {G:90,I:10,X:10,Gn:60,Q:0,Q2:0,D:0,Lg:80,ex:0,Ipk:10,hgp:2.7,upt:2.7,ren:0,Ra:0,sec:10,Tc:37,S:37,vaso:1,shiv:0,sweat:0,made:1,dry:1,lost:1};},
   step(sim,dt){const s=sim.st,p=sim.p;glucStep(s,p,dt);tempStep(s,p,dt);if(s.ex>0)s.ex=Math.max(0,s.ex-dt);},
   afterPrewarm(sim){sim.st.Ipk=sim.st.I;},
   onLevel(sim){syncMode(sim);},
@@ -67,7 +74,7 @@ const HOMEO={
     {id:'Ipk',mode:'glucose',label:'Highest insulin since reset',unit:'µU/mL',lvl:'ap',min:0,max:150,d:0,get:s=>s.st.Ipk},
     {id:'Tc',mode:'temp',label:'Core temperature',unit:'°C',lvl:'bio',min:34,max:41,fixed:true,d:1,get:s=>s.st.Tc},
     {id:'S',mode:'temp',label:'Brain’s set point',unit:'°C',lvl:'honors',min:34,max:41,fixed:true,d:1,get:s=>s.st.S},
-    {id:'shiv',mode:'temp',label:'Shivering',unit:'W',lvl:'bio',min:0,max:240,d:0,get:s=>s.st.shiv*80},
+    {id:'shiv',mode:'temp',label:'Shivering',unit:'W',lvl:'bio',min:0,max:320,d:0,get:s=>s.st.shiv*80},
     {id:'sweat',mode:'temp',label:'Sweating',unit:'L/h',lvl:'bio',min:0,max:0.8,d:2,get:s=>s.st.sweat*0.12},
     {id:'skin',mode:'temp',label:'Blood flow to skin',unit:'% of normal',lvl:'honors',min:0,max:300,d:0,get:s=>s.st.vaso*100},
     {id:'Hm',mode:'temp',label:'Heat made',unit:'W',lvl:'ap',min:0,max:600,d:0,get:s=>s.st.made*80},
@@ -81,11 +88,11 @@ const HOMEO={
      choices:['It rises and stays high','It rises, then insulin brings it back to about normal','It drops below normal and stays there'],correct:1,
      baseline:{mode:'glucose'},changeAction:'meal',changeText:'Meal eaten',watch:'G',at:10,reveal:180,
      explain:{bio:'Sugar from the meal raises blood glucose. The pancreas senses the rise and releases insulin, which tells muscle, fat and liver cells to take glucose in. As glucose falls, insulin falls too. That is negative feedback.',
-              ap:'Peak glucose comes about 20–30 minutes after the meal. Insulin rises with glucose, increases uptake (GLUT4 transporters in muscle and fat) and suppresses liver glucose output, returning glucose to its set point within about 90 minutes.'}},
+              ap:'Glucose peaks about 30–45 minutes after the meal, near 130 mg/dL, as the stomach empties and the gut absorbs. Insulin rises with glucose, increases uptake (GLUT4 transporters in muscle and fat) and suppresses liver glucose output, bringing glucose back near 100 mg/dL by about 2 hours.'}},
     {lvl:'bio',q:'You step outside into −10 °C air in a T-shirt. What does your body do?',
-     choices:['Lets its core temperature drop to about 30 °C','Shivers and narrows skin blood vessels, keeping the core near 37 °C','Sweats to warm up'],correct:1,
+     choices:['Lets its core temperature drop to about 30 °C','Shivers and narrows skin blood vessels, keeping the core within about a degree of 37 °C','Sweats to warm up'],correct:1,
      baseline:{mode:'temp'},change:{ta:-10},changeText:'Air temperature dropped to −10 °C',watch:'Tc',at:10,reveal:60,
-     explain:{bio:'Your brain senses the drop and fights back. Skin blood vessels narrow so less heat escapes, and muscles shiver to make extra heat. Your core stays close to 37 °C.'}},
+     explain:{bio:'Your brain senses the drop and fights back. Skin blood vessels narrow so less heat escapes, and muscles shiver, making more than 100 W of extra heat. Your core dips only to about 36 °C instead of crashing. Stay out much longer or colder in a T-shirt and it keeps sliding toward hypothermia, which is why you put on a coat.'}},
     {lvl:'honors',q:'An immune attack destroys the beta cells in the pancreas (type 1 diabetes). What happens to blood glucose, even without eating?',
      choices:['It climbs and stays high','It drops dangerously low','It stays normal because glucagon takes over'],correct:0,
      baseline:{mode:'glucose'},change:{t1:true},changeText:'Insulin production stopped',watch:'G',at:10,reveal:240,
@@ -98,16 +105,16 @@ const HOMEO={
      choices:['Glucagon rises and the liver releases stored glucose','Insulin rises','Glucagon falls'],correct:0,
      baseline:{mode:'glucose'},changeAction:'exercise',changeText:'Exercise started',watch:'horm',at:10,reveal:34,
      explain:{ap:'Falling glucose lowers insulin and raises glucagon from alpha cells. Glucagon signals the liver to break down glycogen (and make new glucose), so blood glucose dips only slightly. Watch liver glycogen fall.'}},
-    {lvl:'ap',q:'A person with type 2 diabetes eats the same meal. In a healthy person insulin peaks near 72 µU/mL. How does this person’s insulin compare?',
+    {lvl:'ap',q:'A person with type 2 diabetes eats the same meal. In a healthy person insulin peaks near 50 µU/mL. How does this person’s insulin compare?',
      choices:['It peaks higher, because cells resist insulin and glucose stays high longer','It stays lower, because the pancreas is damaged','It is the same'],correct:0,
      baseline:{mode:'glucose',t2:true},changeAction:'meal',changeText:'Meal eaten',watch:'horm',at:10,reveal:70,
-     explain:{ap:'In insulin resistance, each unit of insulin moves less glucose, so glucose stays high and the beta cells keep secreting. Early type 2 diabetes often shows high insulin. Over years, overworked beta cells can fail. Compare the Highest insulin readout with about 72 in a healthy run.'}}
+     explain:{ap:'In insulin resistance, each unit of insulin moves less glucose, so glucose stays high and the beta cells keep secreting. Early type 2 diabetes often shows high insulin. Over years, overworked beta cells can fail. Compare the Highest insulin readout with about 50 in a healthy run.'}}
   ],
   narrate(sim){const s=sim.st,p=sim.p,hon=atLeast('honors');
     if(isG(sim)){const G=f0(s.G);
       if(s.G<70)return '<b>Low blood sugar ('+G+' mg/dL).</b> Insulin is shut off and glucagon is high, telling the liver to release glucose. Too much injected insulin can cause this.';
       if(p.t1&&hon&&s.G>150)return '<b>No insulin is being made.</b> Glucose stays at '+G+' mg/dL because cells can’t take it in and the liver keeps releasing more.'+(s.G>180?' The kidneys are spilling sugar into the urine.':'');
-      if(s.Ra>0.3&&s.G>100)return '<b>Sugar from food is entering the blood.</b> Glucose is '+G+' mg/dL, so beta cells release insulin ('+f0(s.I)+' µU/mL), and muscle, fat and liver cells start taking glucose in.';
+      if(s.Ra>0.1&&s.G>100)return '<b>Sugar from food is entering the blood.</b> Glucose is '+G+' mg/dL, so beta cells release insulin ('+f0(s.I)+' µU/mL), and muscle, fat and liver cells start taking glucose in.';
       if(s.ex>0)return '<b>Exercising muscles are pulling glucose from the blood.</b> Glucagon rises to '+f0(s.Gn)+' pg/mL, so the liver breaks down glycogen and keeps blood glucose near '+G+' mg/dL.';
       if(s.G>110)return 'Glucose is still high ('+G+' mg/dL). Insulin ('+f0(s.I)+' µU/mL) keeps cells taking up glucose and holds back the liver, so glucose is falling.';
       return 'Blood glucose is in the normal range ('+G+' mg/dL). Insulin and glucagon are both at their resting levels.'+(p.t2&&hon?' With insulin resistance, it takes more insulin to keep it here.':'')+' Try <b>Eat a meal</b>.';}
@@ -126,13 +133,13 @@ const HOMEO={
     {title:'Too hot: sweat',text:'In the heat, skin vessels widen (that’s why you flush) and you sweat. Evaporating sweat carries heat away and pulls the core back toward 37 °C.',focus:[150,30,240,410],speed:1,setup(sim){BioLab.setValues(sim,{ta:40});sim.st.ex=30;}}
   ],
   onTourExit(sim){BioLab.setValues(sim,{mode:'glucose',ta:22,fever:false});BioLab.reset(sim);},
-  lab:{bio:'<p><b>Question:</b> How does the body respond to meals of different sizes?</p><ol><li>Choose Blood sugar.</li><li>Set the meal to 25 g, press Eat a meal, and record a trial at 30 minutes (peak) and again at 2 hours.</li><li>Press Reset and repeat for 75 g and 150 g.</li></ol><p>Describe what insulin does after each meal and how long glucose takes to return to normal.</p>',
+  lab:{bio:'<p><b>Question:</b> How does the body respond to meals of different sizes?</p><ol><li>Choose Blood sugar.</li><li>Set the meal to 25 g, press Eat a meal, and record a trial at 45 minutes (near the peak) and again at 2 hours.</li><li>Press Reset and repeat for 75 g and 150 g.</li></ol><p>Describe what insulin does after each meal and how long glucose takes to return to normal.</p>',
        honors:'<p><b>Question:</b> How do type 1 and type 2 diabetes change the response to a meal?</p><ol><li>Record glucose and insulin 30, 60 and 120 minutes after a 75 g meal for a healthy body.</li><li>Repeat with Type 1 diabetes on, then Type 2 diabetes on (Reset between runs).</li><li>For type 1, try Inject insulin and record what happens.</li></ol><p>Explain each result in terms of the feedback loop: which part is broken?</p>',
        ap:'<p><b>Question:</b> How does the body balance heat at different air temperatures?</p><ol><li>Choose Body temperature. Record core temperature, heat made, heat lost, shivering and sweating at air temperatures of −20, 0, 10, 22, 30 and 40 °C (wait about 60 minutes at each).</li><li>Repeat with a fever.</li></ol><p><b>Claim–evidence–reasoning:</b> Identify the stimulus, sensor, control center and effectors, and explain why core temperature stays nearly constant.</p>'},
   terms:[{t:'Homeostasis',d:'Keeping the body’s internal conditions in a stable range.'},{t:'Negative feedback',d:'A response that reverses a change, bringing a value back toward its set point.'},{t:'Insulin',d:'Hormone from beta cells that lowers blood glucose.'},{t:'Glucagon',d:'Hormone from alpha cells that raises blood glucose.'},
     {lvl:'honors',t:'Glycogen',d:'Stored glucose in the liver and muscles.'},{lvl:'honors',t:'Set point',d:'The target value a feedback loop holds, such as 37 °C.'},{lvl:'honors',t:'Vasodilation / vasoconstriction',d:'Widening or narrowing of skin blood vessels to lose or keep heat.'},{lvl:'honors',t:'Type 1 / type 2 diabetes',d:'No insulin is made (type 1), or cells resist insulin (type 2).'},
     {lvl:'ap',t:'Stimulus, sensor, control center, effector',d:'The parts of a feedback loop, e.g. high glucose, beta cells, pancreas, muscle and liver.'},{lvl:'ap',t:'Insulin resistance',d:'Cells need more insulin to take in the same glucose.'}],
-  about:'<p><b>Blood sugar:</b> glucose G changes with gut absorption (1.7% of the meal per minute), liver output (raised by glucagon, lowered by insulin) and uptake ((0.01 + S<sub>i</sub>·insulin action)·G), plus kidney loss above 180 mg/dL. Insulin secretion rises 0.9 µU/mL per mg/dL above 90; insulin action lags insulin by about 40 minutes. Type 1 sets secretion to zero; type 2 cuts insulin sensitivity to 25%. Injected insulin is absorbed from a depot over about an hour.</p><p><b>Temperature:</b> heat made = 80 W resting + shivering + exercise; heat lost = skin conduction (scaled by blood flow) + sweating. Responses scale with how far the core is from the set point.</p><p><b>Simplified:</b> one compartment for blood, no stress hormones (cortisol, epinephrine), no humidity or wind, and no behavior such as putting on a coat. Numbers are typical adult values, not a medical model.</p>',
+  about:'<p><b>Blood sugar:</b> the stomach empties into the small intestine (2.4% per minute) and the intestine absorbs glucose into the blood (1.5% per minute), so a meal’s glucose peaks 30–45 minutes after eating. Glucose G also changes with liver output (raised by glucagon, lowered by insulin), uptake ((0.004 + S<sub>i</sub>·insulin action)·G) and kidney loss above 180 mg/dL. Insulin secretion rises 1 µU/mL per mg/dL above 90; insulin action lags insulin by about 25 minutes. Type 1 sets secretion to zero; type 2 cuts insulin sensitivity to 10%. Injected insulin is absorbed from a depot over about an hour. A healthy 75 g meal peaks near 130 mg/dL with insulin near 50 µU/mL, in line with typical healthy adults (under 140 mg/dL, back near baseline in 2–3 hours).</p><p><b>Temperature:</b> heat made = 80 W resting + shivering (up to 320 W) + exercise; heat lost = dry loss through skin and a T-shirt (cut, but not to zero, when skin vessels narrow, and faster in colder air) + sweating. Responses scale with how far the core is from the set point.</p><p><b>Simplified:</b> one compartment for blood, no stress hormones (cortisol, epinephrine), no humidity or wind, and no behavior such as putting on a coat. Numbers are typical adult values, not a medical model.</p>',
   initVis(sim){const r=rng(23),v=sim.vis;v.bl=[];for(let i=0;i<110;i++)v.bl.push({x:r()*780+10,y:190+r()*72,k:r(),ph:r()*6.3});
     v.gly=[];for(let i=0;i<30;i++)v.gly.push([60+r()*150,55+r()*80]);v.food=[];for(let i=0;i<30;i++)v.food.push([320+r()*170,60+r()*70,r()*6.3]);
     v.flakes=[];for(let i=0;i<40;i++)v.flakes.push([r()*520,r()*440,0.5+r()]);v.drops=[];v.fl=0;},
@@ -149,9 +156,9 @@ function drawGlucose(sim,ctx,vdt,k,t,s,p,v,hon,ap,j){
   if(s.hgp>3.2)pill(ctx,'releasing glucose',150,30,PAL['s4'],'#1c1c1f',11*k);
   // intestine
   ctx.strokeStyle='#d79a82';ctx.lineWidth=18;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(310,55);for(let i=0;i<4;i++){ctx.lineTo(490,55+i*26);ctx.lineTo(310,68+i*26);}ctx.stroke();
-  const nf=Math.min(30,Math.round(s.Q/2.5));ctx.fillStyle=PAL['s4'];v.food.slice(0,nf).forEach(f=>{ctx.beginPath();ctx.arc(f[0]+Math.sin(t+f[2])*3*j,f[1],3.4,0,6.29);ctx.fill();});
+  const nf=Math.min(30,Math.round((s.Q+s.Q2)/2.5));ctx.fillStyle=PAL['s4'];v.food.slice(0,nf).forEach(f=>{ctx.beginPath();ctx.arc(f[0]+Math.sin(t+f[2])*3*j,f[1],3.4,0,6.29);ctx.fill();});
   txt(ctx,'Small intestine',400,30,{s:12*k,w:700,c:PAL['cv-soft'],a:'center'});
-  if(s.Ra>0.2){ctx.strokeStyle=PAL['s4'];ctx.lineWidth=3;[360,400,440].forEach(x=>{ctx.beginPath();ctx.moveTo(x,148);ctx.lineTo(x,178);ctx.stroke();ctx.beginPath();ctx.moveTo(x-5,172);ctx.lineTo(x,180);ctx.lineTo(x+5,172);ctx.stroke();});}
+  if(s.Ra>0.08){ctx.strokeStyle=PAL['s4'];ctx.lineWidth=3;[360,400,440].forEach(x=>{ctx.beginPath();ctx.moveTo(x,148);ctx.lineTo(x,178);ctx.stroke();ctx.beginPath();ctx.moveTo(x-5,172);ctx.lineTo(x,180);ctx.lineTo(x+5,172);ctx.stroke();});}
   // kidney
   if(hon){ctx.fillStyle='#a0524a';ctx.beginPath();ctx.ellipse(650,92,40,56,0.15,0,6.29);ctx.fill();ctx.fillStyle=PAL['cv-bg'];ctx.beginPath();ctx.ellipse(682,96,14,20,0.15,0,6.29);ctx.fill();
     txt(ctx,'Kidney',638,74,{s:13*k,w:800,c:'#fff',a:'center',b:'middle'});
@@ -233,7 +240,7 @@ function drawTemp(sim,ctx,vdt,k,t,s,p,v,hon,ap,j){
   txt(ctx,'Core',569,40,{s:12*k,w:700,a:'center'});txt(ctx,s.Tc.toFixed(1)+' °C',660,40,{s:18*k,w:800,c:Math.abs(s.Tc-37)>1?PAL['s1']:PAL['cv-ink']});
   txt(ctx,'set',600,TY(s.S)+4,{s:11*k,w:700,c:PAL['s3']});
   const bar=(y,lab,val,col)=>{txt(ctx,lab,660,y,{s:12*k,w:700});ctx.fillStyle=PAL['card2'];rr(ctx,660,y+6,120,12,6);ctx.fill();ctx.fillStyle=col;rr(ctx,660,y+6,Math.max(2,clamp(val,0,1)*120),12,6);ctx.fill();};
-  bar(110,'Shivering',s.shiv/3,PAL['s2']);bar(150,'Sweating',s.sweat/6,'#5aa9e6');bar(190,'Skin blood flow',s.vaso/3,PAL['s1']);
+  bar(110,'Shivering',s.shiv/4,PAL['s2']);bar(150,'Sweating',s.sweat/6,'#5aa9e6');bar(190,'Skin blood flow',s.vaso/3,PAL['s1']);
   if(ap){bar(240,'Heat made '+Math.round(s.made*80)+' W',s.made/6,PAL['s4']);bar(280,'Heat lost '+Math.round(s.lost*80)+' W',clamp(s.lost,0,6)/6,PAL['s6']);
     const msg=s.shiv>0.05?['Too cold → hypothalamus','→ shiver, constrict vessels','→ more heat kept']:s.sweat>0.05?['Too hot → hypothalamus','→ sweat, widen vessels','→ more heat lost']:['At set point','small blood-flow changes'];
     msg.forEach((m,i)=>txt(ctx,m,660,330+i*17,{s:11*k,c:PAL['cv-soft']}));}
