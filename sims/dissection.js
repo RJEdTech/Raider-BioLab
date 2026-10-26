@@ -259,9 +259,11 @@ function judge(ans,id){const a=norm(ans);if(!a)return {ok:false,blank:true};cons
 
 /* ================= pig geometry (ventral view: head left, tail right, pig's left side at the top) ================= */
 const NIP=[290,335,380,425,520,560];
-const LIVER=[[392,162,30,24],[405,200,30,20],[403,247,32,24],[392,292,30,27]];
+const LIVER_OUT=[[360,150],[378,136],[406,138],[426,156],[436,186],[440,214],[437,238],[443,266],[436,296],[416,318],[388,323],[366,312],[357,282],[354,225],[356,180]];
+const LIVER_FIS=[[[436,186],[402,184]],[[440,226],[396,226]],[[443,266],[404,270]]];
+const flipX=pts=>pts.map(p=>[712-p[0],p[1]]);
 const STOM=[[378,186],[384,152],[415,133],[458,132],[488,148],[494,176],[482,198],[458,206],[440,196],[415,186],[392,192]];
-const PANC=[[480,202],[500,197],[520,203],[517,216],[492,219]];
+const PANC=[[462,204],[482,196],[506,197],[520,204],[514,216],[488,219],[466,215]];
 const SPL=[[432,124],[462,122],[494,131]];
 const SIB=[[445,222],[490,212],[540,214],[574,232],[576,290],[556,322],[500,328],[452,316],[440,270]];
 const CAV=[[352,124],[420,117],[500,117],[578,130],[584,225],[578,320],[500,333],[420,333],[352,326],[345,225]];
@@ -272,7 +274,14 @@ const RIBT=[[262,142],[352,124],[348,72],[270,84]];
 const LUNGT=[[268,198],[272,162],[300,146],[338,145],[350,170],[346,200],[330,207],[300,207]];
 const LUNGB=mir(LUNGT);
 const DIA=[[360,128],[352,178],[349,225],[352,272],[360,322]];
-const KID=[[478,170,22,12],[478,280,22,12]];
+const KID=[[520,173,18,11],[520,277,18,11]];
+/* intestines-moved view: urinary and reproductive paths */
+const IX={ureT:[[522,184],[548,204],[568,222],[585,236]],ureB:[[522,266],[548,250],[568,242],[585,236]],rect:[[545,140],[560,186],[598,204],[640,207],[684,218]],
+  odT:[[544,184],[548,177],[558,175],[567,180],[568,188],[563,194]],hornT:[[563,194],[574,204],[584,214],[594,222]],hornB:[[563,256],[574,246],[584,234],[594,224]],
+  ubody:[[592,222],[614,222]],vag:[[612,222],[658,224]],fure:[[585,236],[620,239],[652,237],[662,230]],
+  tes:[[665,194],[668,256]],epT:[[651,184],[665,179],[679,184]],epB:[[654,265],[668,270],[682,265]],cordT:[[652,190],[628,183],[604,183]],cordB:[[655,260],[650,272],[646,280]],
+  vasT:[[604,183],[584,190],[574,204],[584,222],[598,234]],vasB:[[646,280],[622,272],[606,258],[600,246],[602,237]],mure:[[585,236],[660,236],[664,240]]};
+IX.odB=mir(IX.odT);
 const CUTP={throat:[[[190,225],[453,225]]],umbil:[[[453,225],[455,211],[468,207],[520,200],[578,168]],mir([[453,225],[455,211],[468,207],[520,200],[578,168]])],
   fore:[[[262,225],[262,142]],[[262,225],[262,308]]],hind:[[[578,168],[580,132]],[[578,282],[580,318]]],ribs:[[[352,225],[346,178],[352,124]],mir([[352,225],[346,178],[352,124]])],
   uvein:[[[444,215],[452,235]]],chest:[[[352,225],[258,225]]],peri:[[[305,206],[283,222],[290,248],[318,256]]],
@@ -280,23 +289,24 @@ const CUTP={throat:[[[190,225],[453,225]]],umbil:[[[453,225],[455,211],[468,207]
 /* the umbilical flap: local coords (0 = hinge at the pelvis, 105 = umbilical cord) */
 function flapF(view){const A=0.85,ca=Math.cos(A),sa=Math.sin(A);
   if(view==='open0')return (lx,ly)=>[575-lx,225+ly];
-  if(view==='intest')return (lx,ly)=>{const dx=0.9*lx;return [581+dx*ca-ly*sa,250+dx*sa+ly*ca];};
+  if(view==='intest'){const B=1.35,cb=Math.cos(B),sb=Math.sin(B);return (lx,ly)=>{const dx=0.75*lx;return [585+dx*cb-ly*sb,236+dx*sb+ly*cb];};}
   return (lx,ly)=>[575+0.9*lx,225+ly];}
 const FL_OUT=[[0,-14],[50,-26],[96,-22],[114,0],[96,22],[50,26],[0,14]];
-const FL_OUT2=[[0,-16],[50,-36],[96,-30],[114,0],[96,30],[50,36],[0,16]];
+const FL_OUT2=[[0,-12],[50,-28],[96,-24],[114,0],[96,24],[50,28],[0,12]];
 const FL_ART=[[100,-7],[78,-13],[40,-15],[8,-14],[-4,-18]];
 function flapItems(view,sex){const F=flapF(view),pull=view==='intest'?12:0,tr=a=>a.map(p=>F(p[0],p[1]));
   const art1=tr(FL_ART.map(p=>[p[0],p[1]+pull])),art2=tr(FL_ART.map(p=>[p[0],-p[1]+pull]));
   const o={outline:tr(view==='intest'?FL_OUT2:FL_OUT),cord:F(105,0),bl:tr([[8,pull],[24,pull-8],[56,pull-9],[72,pull],[56,pull+9],[24,pull+8]]),blc:F(40,pull),neck:F(4,pull),art1,art2};
-  if(view==='intest'&&sex==='m')o.penis=[[658,231],[632,243],[604,249]].concat(tr([[8,-14],[40,-16],[72,-17]]));
+  if(view==='intest'&&sex==='m')o.penis=[[664,240],[650,262]].concat(tr([[72,-17]]));
+  o.pins=view==='intest'?tr([[112,-18],[112,18]]):view==='open0'?[]:[[684,212],[684,238]];
   return o;}
-function intestOffset(view){return view==='intest'?85:0;}
-function colonC(view){return view==='intest'?[535,150,23]:[528,172,25];}
+function intestOffset(view){return view==='intest'?85:view==='liver'?14:0;}
+function colonC(view){return view==='intest'?[545,138,20]:[528,172,25];}
 const shift=(pts,dy)=>pts.map(p=>[p[0],p[1]+dy]);
 
 /* hit shapes for a view, top-most first */
 function pigShapes(view,sex){const L=[],add=(id,q)=>{if(lvOK(P[id].lvl)&&(!P[id].sex||P[id].sex===sex))L.push({id,q});};
-  const liverQ=(flip)=>LIVER.map(l=>({e:[flip?712-l[0]:l[0],l[1],l[2],l[3]]})),cc=colonC(view),dy=intestOffset(view);
+  const liverQ=(flip)=>[{b:flip?flipX(LIVER_OUT):LIVER_OUT,a:flip?[322,200]:[392,200]}],cc=colonC(view),dy=intestOffset(view);
   if(view==='ext'){if(sex==='f'){add('genpap',[{e:[653,225,9,7]}]);add('ugopen',[{e:[668,225,7,8]}]);add('anus',[{e:[689,225,7,7]}]);}
       else{add('ugopen',[{e:[503,225,8,7]}]);add('scrotum',[{e:[642,206,17,15]},{e:[642,244,17,15]}]);add('anus',[{e:[690,225,7,7]}]);}
       add('umbcord',[{e:[468,225,17,17]}]);add('nipples',NIP.map(x=>({e:[x,170,8,8]})).concat(NIP.map(x=>({e:[x,280,8,8]}))));return L;}
@@ -308,16 +318,12 @@ function pigShapes(view,sex){const L=[],add=(id,q)=>{if(lvOK(P[id].lvl)&&(!P[id]
   add('umbcord',[{e:[f.cord[0],f.cord[1],14,14]}]);add('bladder',[{b:f.bl,a:f.blc}]);add('umbart',[{p:f.art1,w:5},{p:f.art2,w:5}]);
   if(view==='open0')add('umbvein',[{p:[[456,225],[437,225]],w:6}]);else if(view!=='liver')add('umbvein',[{p:[[437,225],[452,225]],w:6}]);
   if(view==='intest'){
-    if(sex==='m'){add('epid',[{p:[[641,187],[655,182],[669,187]],w:4},{p:[[641,263],[655,268],[669,263]],w:4}]);add('testes',[{e:[655,197,15,10]},{e:[655,253,15,10]}]);
-      add('vasdef',[{p:[[594,184],[574,190],[566,204],[578,218],[594,226]],w:4},{p:[[594,266],[574,260],[566,246],[578,232],[594,224]],w:4}]);
-      add('spcord',[{p:[[641,193],[618,185],[594,184]],w:5},{p:[[641,257],[618,265],[594,266]],w:5}]);
-      add('urethra',[{p:[[584,229],[655,229]],w:5}]);}
-    else{add('oviduct',[{p:[[508,186],[512,179],[522,177],[531,182],[532,190]],w:4,a:[512,179]},{p:mir([[508,186],[512,179],[522,177],[531,182],[532,190]]),w:4,a:[512,271]}]);
-      add('ovaries',[{e:[519,191,8,5]},{e:[519,259,8,5]}]);
-      add('uterus',[{p:[[527,196],[548,206],[570,216],[590,222],[610,225]],w:6,a:[560,211]},{p:[[527,254],[548,244],[570,234],[590,228],[610,225]],w:6}]);
-      add('vagina',[{p:[[612,224],[656,226]],w:5}]);add('urethra',[{p:[[586,234],[620,238],[652,236]],w:4,a:[630,238]}]);}
-    add('ureter',[{p:[[486,180],[520,198],[556,213],[578,230]],w:4,a:[524,200]},{p:[[486,270],[520,256],[556,246],[f.neck[0],f.neck[1]]],w:4}]);
-    add('kidney',KID.map(k=>({e:k})));add('rectum',[{p:[[548,190],[575,205],[630,208],[684,220]],w:6,a:[640,209]}]);add('pancreas',[{b:PANC}]);}
+    if(sex==='m'){add('epid',[{p:IX.epT,w:4},{p:IX.epB,w:4}]);add('testes',IX.tes.map(t=>({e:[t[0],t[1],15,10]})));
+      add('vasdef',[{p:IX.vasT,w:4,a:[576,200]},{p:IX.vasB,w:4}]);add('spcord',[{p:IX.cordT,w:5},{p:IX.cordB,w:5}]);add('urethra',[{p:IX.mure,w:5,a:[630,236]}]);}
+    else{add('oviduct',[{p:IX.odT,w:4,a:[548,177]},{p:IX.odB,w:4,a:[548,273]}]);add('ovaries',[{e:[556,186,8,5]},{e:[556,264,8,5]}]);
+      add('uterus',[{p:IX.hornT,w:6,a:[570,211]},{p:IX.hornB,w:6},{p:IX.ubody,w:7}]);add('vagina',[{p:IX.vag,w:5,a:[640,223]}]);add('urethra',[{p:IX.fure,w:4,a:[630,239]}]);}
+    add('ureter',[{p:IX.ureT,w:4,a:[548,204]},{p:IX.ureB,w:4}]);
+    add('kidney',KID.map(k=>({e:k})));add('rectum',[{p:IX.rect.slice(1),w:6,a:[640,207]}]);add('pancreas',[{b:PANC}]);}
   if(view==='liver'){add('gall',[{e:[322,270,13,9]}]);add('liver',liverQ(true));add('pancreas',[{b:PANC}]);add('smint',[{p:[[458,206],[466,222],[474,240]],w:6}]);}
   else add('liver',liverQ(false));
   add('spleen',[{p:SPL,w:7}]);add('stomach',[{b:STOM,a:view==='liver'?[440,165]:[468,170]}]);
@@ -329,13 +335,16 @@ function legPoly(b,h,w0,w1){const dx=h[0]-b[0],dy=h[1]-b[1],L=Math.hypot(dx,dy),
   return [[b[0]+nx*w0,b[1]+ny*w0],[h[0]+nx*w1,h[1]+ny*w1],[h[0]-nx*w1,h[1]-ny*w1],[b[0]-nx*w0,b[1]-ny*w0]];}
 const LEGS=[[[255,160],[212,58]],[[255,290],[212,392]],[[580,158],[646,56]],[[580,292],[646,394]]];
 function drawTray(ctx){ctx.fillStyle=C.trayRim;rr(ctx,8,6,784,438,18);ctx.fill();ctx.fillStyle=C.tray;rr(ctx,18,15,764,420,12);ctx.fill();}
+function bodyParts(ctx,col,lw){const st=!!lw;ctx.save();if(st){ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineJoin='round';}else ctx.fillStyle=col;
+  const go=()=>{if(st)ctx.stroke();else ctx.fill();};
+  LEGS.forEach(([b,h])=>{ctx.beginPath();smooth(ctx,legPoly(b,h,22,13),true);go();});
+  ctx.beginPath();ctx.moveTo(150,168);ctx.quadraticCurveTo(200,150,262,140);ctx.lineTo(262,310);ctx.quadraticCurveTo(200,300,150,282);ctx.closePath();go();
+  ctx.beginPath();ctx.ellipse(430,225,265,115,0,0,6.2832);go();ctx.beginPath();ctx.ellipse(124,225,82,64,0,0,6.2832);go();ctx.restore();}
 function drawBody(ctx,strings){
-  LEGS.forEach(([b,h])=>{blob(ctx,legPoly(b,h,22,13),C.skin,C.skinEdge,1.2);const a=Math.atan2(h[1]-b[1],h[0]-b[0]);ell(ctx,h[0],h[1],15,11,C.hoof,null,0,a+Math.PI/2);
-    line(ctx,[[h[0]-Math.cos(a)*1,h[1]-Math.sin(a)*1],[h[0]+Math.cos(a)*10,h[1]+Math.sin(a)*10]],'#3e322c',1.5);});
   tube(ctx,[[675,225],[722,213],[748,227],[770,214]],11,C.skinEdge);tube(ctx,[[675,225],[722,213],[748,227],[770,214]],9,C.skin);
-  ctx.beginPath();ctx.moveTo(150,170);ctx.lineTo(262,142);ctx.lineTo(262,308);ctx.lineTo(150,280);ctx.closePath();ctx.fillStyle=C.skin;ctx.fill();
-  ell(ctx,430,225,265,115,C.skin,C.skinEdge,1.4);ell(ctx,124,225,82,64,C.skin,C.skinEdge,1.4);
-  ctx.fillStyle=C.skin;ctx.fillRect(170,176,110,98);
+  bodyParts(ctx,C.skinEdge,3);bodyParts(ctx,C.skin);
+  LEGS.forEach(([b,h])=>{const a=Math.atan2(h[1]-b[1],h[0]-b[0]);ell(ctx,h[0],h[1],15,11,C.hoof,null,0,a+Math.PI/2);
+    line(ctx,[[h[0]-Math.cos(a)*1,h[1]-Math.sin(a)*1],[h[0]+Math.cos(a)*10,h[1]+Math.sin(a)*10]],'#3e322c',1.5);});
   ell(ctx,46,225,13,25,'#d4b1a1',C.skinEdge,1.2);ell(ctx,44,214,3,4,'#7d5f52');ell(ctx,44,236,3,4,'#7d5f52');
   line(ctx,[[88,178],[100,200],[104,225],[100,250],[88,272]],'rgba(120,90,75,.45)',1.4);
   if(strings){ctx.save();LEGS.forEach(([b,h])=>{line(ctx,[[h[0],h[1]+(h[1]<225?-6:6)],[h[0]+(h[0]<400?-6:8),h[1]<225?15:435]],C.str,2.2);ell(ctx,h[0],h[1],16,4,null,C.str,2.2,Math.atan2(h[1]-b[1],h[0]-b[0])+Math.PI/2);});ctx.restore();}}
@@ -351,7 +360,8 @@ function drawIntestine(ctx,dy){blob(ctx,shift(SIB,dy),C.smint,C.smintE,1.2);ctx.
   for(let r=0;r<5;r++){const y0=228+r*22+dy,pts=[];for(let x=440;x<=580;x+=10)pts.push([x,y0+Math.sin(x/13+r*1.7)*8]);tube(ctx,pts,11,C.smintE);tube(ctx,pts,8.5,C.smint);}
   ctx.restore();}
 function drawColon(ctx,c){ell(ctx,c[0],c[1],c[2],c[2],C.colon,C.colonE,1.4);ctx.beginPath();for(let a=0;a<6*Math.PI;a+=0.2){const r=c[2]*(1-a/(6.6*Math.PI));const x=c[0]+Math.cos(a)*r,y=c[1]+Math.sin(a)*r;a?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.strokeStyle=C.colonE;ctx.lineWidth=1.6;ctx.stroke();}
-function drawLiver(ctx,flip){ctx.save();LIVER.forEach(l=>ell(ctx,flip?712-l[0]:l[0],l[1],l[2],l[3],flip?C.liverU:C.liver));LIVER.forEach(l=>ell(ctx,flip?712-l[0]:l[0],l[1],l[2],l[3],null,C.liverLine,1.4));ctx.restore();}
+function drawLiver(ctx,flip){const o=flip?flipX(LIVER_OUT):LIVER_OUT;blob(ctx,o,flip?C.liverU:C.liver,C.liverLine,1.6);
+  LIVER_FIS.forEach(l=>line(ctx,flip?flipX(l):l,C.liverLine,2));ell(ctx,flip?314:398,170,10,5,'rgba(255,255,255,.08)');}
 function drawFlap(ctx,view,sex){const f=flapItems(view,sex);blob(ctx,f.outline,C.skinIn,C.skinEdge,1.3);
   if(f.penis)edgeTube(ctx,f.penis,6,'#efe3d3','#a99478');
   blob(ctx,f.bl,C.bladder,C.bladE,1.3);[f.art1,f.art2].forEach(a=>edgeTube(ctx,a,4.5,C.art));
@@ -362,22 +372,18 @@ function drawAbdomen(ctx,view,sex){const dy=intestOffset(view),cc=colonC(view);
   blob(ctx,CAV,C.cavity,C.cavityEdge,1.4);
   [FLAPT,mir(FLAPT)].forEach(f=>{ctx.beginPath();ctx.moveTo(f[0][0],f[0][1]);f.slice(1).forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();ctx.fillStyle=C.skinIn;ctx.fill();ctx.strokeStyle=C.skinEdge;ctx.lineWidth=1.2;ctx.stroke();});
   if(view==='intest'){
-    KID.forEach(k=>{ell(ctx,k[0],k[1],k[2],k[3],C.kid,C.kidE,1.4);ell(ctx,k[0]+(k[1]<225?0:0),k[1]+(k[1]<225?8:-8),6,3,'#b98a7a');});
-    tube(ctx,[[528,170],[548,190],[575,205],[630,208],[684,220]],10,C.colonE);tube(ctx,[[528,170],[548,190],[575,205],[630,208],[684,220]],8,C.rect);
+    KID.forEach(k=>{ell(ctx,k[0],k[1],k[2],k[3],C.kid,C.kidE,1.4);ell(ctx,k[0]+4,k[1]+(k[1]<225?7:-7),6,3,'#b98a7a');});
+    tube(ctx,IX.rect,10,C.colonE);tube(ctx,IX.rect,8,C.rect);
     const f=flapItems(view,sex);
-    if(sex==='m'){[[[594,184],[574,190],[566,204],[578,218],[594,226]],[[594,266],[574,260],[566,246],[578,232],[594,224]]].forEach(v=>edgeTube(ctx,v,3,'#f4ecdc','#a99478'));}
-    else{[[[527,196],[548,206],[570,216],[590,222],[610,225]],mir([[527,196],[548,206],[570,216],[590,222],[610,225]])].forEach(h=>edgeTube(ctx,h,7,C.repro,C.reproE));
-      edgeTube(ctx,[[606,225],[656,227]],9,'#e0b8aa',C.reproE);edgeTube(ctx,[[588,225],[612,225]],13,C.repro,C.reproE);
-      edgeTube(ctx,[[f.neck[0],f.neck[1]],[586,234],[620,238],[652,236],[662,230]],4.5,'#f0d9c6','#a88a74');
-      [[[508,186],[512,179],[522,177],[531,182],[532,190],[527,196]],mir([[508,186],[512,179],[522,177],[531,182],[532,190],[527,196]])].forEach(o=>edgeTube(ctx,o,2.6,'#ecc9b8','#9f6e62'));
-      ell(ctx,519,191,8,5,'#efd9c8',C.reproE,1.2);ell(ctx,519,259,8,5,'#efd9c8',C.reproE,1.2);}
-    [[[486,180],[520,198],[556,213],[578,230],[f.neck[0],f.neck[1]]],[[486,270],[520,256],[556,246],[f.neck[0],f.neck[1]]]].forEach(u=>edgeTube(ctx,u,3.2,'#f2e6c8','#a89a72'));
-    if(sex==='m'){edgeTube(ctx,[[f.neck[0],f.neck[1]],[584,229],[655,229],[660,232]],5,'#f0d9c6','#a88a74');
-      [[655,197],[655,253]].forEach(c=>{ell(ctx,c[0],c[1],15,10,C.testis,C.testE,1.3);});
-      edgeTube(ctx,[[641,187],[655,182],[669,187]],4,'#d9b79e','#9c7a62');edgeTube(ctx,[[641,263],[655,268],[669,263]],4,'#d9b79e','#9c7a62');
-      edgeTube(ctx,[[641,193],[618,185],[594,184]],5,'#e8d8c4','#a99478');edgeTube(ctx,[[641,257],[618,265],[594,266]],5,'#e8d8c4','#a99478');
-      ell(ctx,594,184,4,4,null,C.cavityEdge,1.4);ell(ctx,594,266,4,4,null,C.cavityEdge,1.4);}}
-  if(view==='liver'||view==='intest'){blob(ctx,PANC,C.panc,C.pancE,1.2);for(let i=0;i<7;i++)ell(ctx,486+i*5,206+(i%2)*6,1.6,1.6,C.pancE);}
+    if(sex==='m'){[IX.vasT,IX.vasB].forEach(v=>edgeTube(ctx,v,3,'#f4ecdc','#a99478'));}
+    else{[IX.hornT,IX.hornB].forEach(h=>edgeTube(ctx,h,7,C.repro,C.reproE));edgeTube(ctx,IX.vag,9,'#e0b8aa',C.reproE);edgeTube(ctx,IX.ubody,13,C.repro,C.reproE);
+      edgeTube(ctx,IX.fure,4.5,'#f0d9c6','#a88a74');[IX.odT,IX.odB].forEach(o=>edgeTube(ctx,o,2.6,'#ecc9b8','#9f6e62'));
+      ell(ctx,556,186,8,5,'#efd9c8',C.reproE,1.2);ell(ctx,556,264,8,5,'#efd9c8',C.reproE,1.2);}
+    [IX.ureT,IX.ureB].forEach(u=>edgeTube(ctx,u,3.2,'#f2e6c8','#a89a72'));
+    if(sex==='m'){edgeTube(ctx,IX.mure,5,'#f0d9c6','#a88a74');IX.tes.forEach(c=>ell(ctx,c[0],c[1],15,10,C.testis,C.testE,1.3));
+      [IX.epT,IX.epB].forEach(e=>edgeTube(ctx,e,4,'#d9b79e','#9c7a62'));[IX.cordT,IX.cordB].forEach(c=>edgeTube(ctx,c,5,'#e8d8c4','#a99478'));
+      ell(ctx,604,183,4,4,null,C.cavityEdge,1.4);ell(ctx,646,280,4,4,null,C.cavityEdge,1.4);}}
+  if(view==='liver'||view==='intest'){blob(ctx,PANC,C.panc,C.pancE,1.2);for(let i=0;i<9;i++)ell(ctx,470+i*5.5,205+(i%2)*6,1.6,1.6,C.pancE);}
   blob(ctx,STOM,C.stom,C.stomE,1.4);line(ctx,[[392,192],[420,180],[455,190]],'rgba(120,100,80,.35)',1);
   if(view==='liver')edgeTube(ctx,[[458,206],[466,222],[474,240]],9,C.smint,C.smintE);
   tube(ctx,SPL,12,'#4e2a33');tube(ctx,SPL,10,C.spleen);
@@ -386,7 +392,7 @@ function drawAbdomen(ctx,view,sex){const dy=intestOffset(view),cc=colonC(view);
   else drawLiver(ctx,false);
   if(view==='open0'){edgeTube(ctx,[[458,225],[437,225]],5,C.vein);drawFlap(ctx,view,sex);}
   else{if(view!=='liver')edgeTube(ctx,[[437,225],[450,225]],5,C.vein);drawFlap(ctx,view,sex);}
-  drawPins(ctx,[[384,72],[554,74],[384,378],[554,376]].concat(view==='open0'?[]:view==='intest'?[[652,334],[620,350]]:[[684,212],[684,238]]));}
+  drawPins(ctx,[[384,72],[554,74],[384,378],[554,376]].concat(flapItems(view,sex).pins));}
 function drawThoraxOpen(ctx,open){if(!open)return;
   blob(ctx,NECK,C.cavity,C.cavityEdge,1.2);blob(ctx,CHEST,C.cavity,C.cavityEdge,1.2);
   [RIBT,mir(RIBT)].forEach(r=>{ctx.beginPath();ctx.moveTo(r[0][0],r[0][1]);r.slice(1).forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();ctx.fillStyle=C.skinIn;ctx.fill();ctx.strokeStyle=C.skinEdge;ctx.stroke();
@@ -399,19 +405,19 @@ function drawThoraxOpen(ctx,open){if(!open)return;
   tube(ctx,DIA,9,'#8f5a50');tube(ctx,DIA,7,C.dia);}
 function drawHeartSmall(ctx,peri){blob(ctx,[[280,228],[288,212],[308,207],[326,208],[336,214],[330,236],[316,252],[298,256],[284,246]],C.heart,C.heartE,1.4);
   line(ctx,[[300,210],[318,240]],'rgba(60,20,20,.4)',1.2);
-  if(peri){ell(ctx,307,232,34,29,C.peri,'rgba(255,255,255,.75)',1.5);}}
+  if(peri){ell(ctx,307,232,34,29,'rgba(240,235,225,.38)','rgba(255,255,255,.55)',1.2);}}
 /* the view the pig is in right now */
 function pigView(step,cuts){if(step==='ext'||step==='sex'||step==='tie'||step==='cut')return 'ext';
   if(step==='pin')return cuts>=6?'five':'open0';if(step==='thorax')return cuts>=7?'thorax':'five';if(step==='heart')return cuts>=8?'heart':'thorax';return step;}
 function drawPigScene(ctx,view,sex,o){o=o||{};
-  if(view==='heart'){drawHeartZoom(ctx,!!o.peri);return;}if(view==='brain'){drawBrain(ctx);return;}if(view==='circ'){drawCirc(ctx,o.t||0,o.k||1);return;}
+  if(view==='heart'){drawHeartZoom(ctx,!!o.peri);return;}if(view==='brain'){drawBrain(ctx);return;}if(view==='circ'){drawCirc(ctx,o.t||0,o.k||1,o.sel);return;}
   drawTray(ctx);drawBody(ctx,o.strings!==false);
   if(view==='ext'){drawExternal(ctx,sex);drawCutLines(ctx,o.cuts||0);return;}
   drawCutLines(ctx,1);line(ctx,[[262,142],[262,308]],'#6a3f36',1.4);
   drawAbdomen(ctx,view,sex);
   const thOpen=view==='thorax';
   if(thOpen){drawThoraxOpen(ctx,true);drawHeartSmall(ctx,o.peri!==false);drawPins(ctx,[[276,90],[340,80],[276,360],[340,370]]);}
-  else{for(let i=0;i<6;i++){const x=272+i*14;line(ctx,[[x,150+i*1.5],[x+4,300-i*1.5]],'rgba(150,120,105,.25)',3);}}}
+}
 
 /* ================= close-up of the heart (ventral view, head left, pig's left at the top) ================= */
 const HZ={
@@ -443,7 +449,7 @@ function drawHeartZoom(ctx,peri){ctx.fillStyle=C.cavity;ctx.fillRect(0,0,800,450
   blob(ctx,HZ.HV,C.heart,C.heartE,1.8);blob(ctx,HZ.LVR,'#a8655b',null);blob(ctx,HZ.HV,null,C.heartE,1.8);
   tube(ctx,[[425,170],[465,183],[510,205],[550,232]],5,'#e8d5b8');
   blob(ctx,HZ.RAU,'#8c4f50',C.heartE,1.6);blob(ctx,HZ.LAU,'#8c4f50',C.heartE,1.6);
-  edgeTube(ctx,HZ.RPA,12,'#5f74b4');edgeTube(ctx,HZ.PULM,20,'#5f74b4');edgeTube(ctx,HZ.LPA,12,'#5f74b4');
+  edgeTube(ctx,HZ.RPA,12,'#b0485a');edgeTube(ctx,HZ.PULM,20,'#b0485a');edgeTube(ctx,HZ.LPA,12,'#b0485a');
   if(atLeast('ap'))edgeTube(ctx,HZ.DA,9,'#8a5fa0');
   if(peri){blob(ctx,[[300,200],[350,130],[450,118],[560,130],[610,175],[590,240],[545,300],[470,350],[380,345],[300,320],[285,260]],'rgba(244,238,226,.72)','rgba(255,255,255,.9)',2);}
   else{ctx.setLineDash([5,4]);blob(ctx,[[300,200],[350,130],[450,118],[560,130],[610,175],[590,240],[545,300],[470,350],[380,345],[300,320],[285,260]],null,'rgba(250,245,235,.8)',2);ctx.setLineDash([]);}
@@ -470,26 +476,26 @@ function drawBrain(ctx){drawTray(ctx);ctx.save();
 
 /* ================= fetal circulation schematic (Deep dive) ================= */
 const OXC={rich:'#c8423a',mixR:'#a34a78',mixB:'#6a5aa8',poor:'#3f63b0'};
-const CB={placenta:[30,330,140,72],liver:[218,298,134,74],ra:[400,250,110,80],rv:[520,250,110,80],la:[400,160,110,80],lv:[520,160,110,80],lungs:[440,40,190,58],bodyt:[700,150,90,190]};
-const CV={umbvein:{p:[[170,360],[196,346],[218,338]],c:'rich'},ductven:{p:[[226,336],[344,336]],c:'rich'},caudvc:{p:[[352,336],[380,326],[402,306]],c:'mixR',p2:[[700,322],[668,392],[392,394],[372,350],[356,338]]},
-  foramen:{p:[[455,256],[455,236]],c:'mixR'},pulmart:{p:[[630,292],[655,292],[655,148],[632,98]],c:'mixB'},ductart:{p:[[655,150],[662,124]],c:'mixB'},
-  aorta:{p:[[575,160],[575,124],[686,124],[712,150]],c:'mixR'},umbart:{p:[[745,340],[745,428],[96,428],[96,402]],c:'poor'},pv:{p:[[478,98],[470,160]],c:'rich'}};
+const CB={placenta:[30,330,140,72],liver:[218,298,134,74],ra:[370,250,110,80],rv:[490,250,110,80],la:[370,160,110,80],lv:[490,160,110,80],lungs:[410,40,190,58],bodyt:[712,150,78,190]};
+const CV={umbvein:{p:[[170,362],[196,354],[218,352]],c:'rich'},ductven:{p:[[226,352],[344,352]],c:'rich'},caudvc:{p:[[352,352],[364,330],[374,314]],c:'mixR',p2:[[712,322],[680,394],[392,396],[366,370],[356,356]]},
+  foramen:{p:[[425,256],[425,236]],c:'mixR'},pulmart:{p:[[600,292],[628,292],[628,150],[600,98]],c:'mixB'},ductart:{p:[[628,152],[636,126]],c:'mixB'},
+  aorta:{p:[[545,160],[545,124],[690,124],[724,150]],c:'mixR'},umbart:{p:[[752,340],[752,428],[96,428],[96,402]],c:'poor'},pv:{p:[[450,98],[440,160]],c:'rich'}};
 function circShapes(){const L=[],add=(id,q)=>{if(P[id]&&lvOK(P[id].lvl))L.push({id,q});};
-  add('foramen',[{e:[455,246,11,9]}]);add('ductart',[{p:CV.ductart.p,w:7}]);
+  add('foramen',[{e:[425,246,11,9]}]);add('ductart',[{p:CV.ductart.p,w:7}]);
   ['umbvein','ductven','caudvc','pulmart','aorta','umbart'].forEach(id=>{const v=CV[id];add(id,[{p:v.p,w:7}].concat(v.p2?[{p:v.p2,w:6}]:[]));});
   Object.keys(CB).forEach(id=>{const b=CB[id];add(id,[{b:[[b[0],b[1]],[b[0]+b[2],b[1]],[b[0]+b[2],b[1]+b[3]],[b[0],b[1]+b[3]]]}]);});return L;}
 const CBN={placenta:['Placenta','Placenta'],liver:['Liver','Liver'],ra:['Right atrium','RA'],rv:['Right ventricle','RV'],la:['Left atrium','LA'],lv:['Left ventricle','LV'],lungs:['Lungs (not used yet)','Lungs'],bodyt:['Body','Body']};
 const CBC={placenta:'rich',liver:'rich',ra:'mixR',rv:'mixB',la:'mixR',lv:'mixR',lungs:'mixB',bodyt:'poor'};
-function drawCirc(ctx,t,k){ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);const sm=k>1.25;
+function drawCirc(ctx,t,k,sel){ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);const sm=k>1.25;
   Object.keys(CV).forEach(id=>{const v=CV[id];[v.p,v.p2].forEach(p=>{if(!p)return;line(ctx,p,OXC[v.c],id==='ductart'?7:6);
     const pl=BioLab.h.polyline(p);const n=Math.max(1,Math.round(pl.L/40));ctx.fillStyle='#fff';for(let i=0;i<n;i++){const q=pl.at(((t*30+i*40)%pl.L+pl.L)%pl.L);ctx.beginPath();ctx.arc(q[0],q[1],2.4,0,6.29);ctx.fill();}});});
-  line(ctx,[[510,290],[520,290]],OXC.mixR,6);line(ctx,[[510,200],[520,200]],OXC.mixR,6);
+  line(ctx,[[480,290],[490,290]],OXC.mixB,6);line(ctx,[[480,200],[490,200]],OXC.mixR,6);
   Object.keys(CB).forEach(id=>{const b=CB[id];ctx.fillStyle=OXC[CBC[id]];rr(ctx,b[0],b[1],b[2],b[3],10);ctx.fill();
     const nm=CBN[id][sm?1:0];txt(ctx,nm,b[0]+b[2]/2,b[1]+(id==='liver'?18*k:b[3]/2),{s:13*k,w:700,c:'#fff',a:'center',b:'middle'});});
   edgeTube(ctx,CV.ductven.p,6,OXC.rich,'#fff');
-  ell(ctx,455,246,9,7,'#f4e3e9','#7a2a50',1.5);
+  ell(ctx,425,246,9,7,'#f4e3e9','#7a2a50',1.5);
   const items=[['Oxygen-rich',OXC.rich],['Mixed',OXC.mixR],['Oxygen-poor',OXC.poor]];items.forEach((it,i)=>{const y=26+i*24*k;ctx.fillStyle=it[1];rr(ctx,18,y-7*k,22,14*k,4);ctx.fill();txt(ctx,it[0],48,y,{s:12.5*k,c:PAL['cv-ink'],b:'middle'});});
-  if(!sm){[['Umbilical vein',196,318],['Ductus venosus',285,388-28],['Foramen ovale',370,246],['Ductus arteriosus',590,142],['Aorta',600,110],['Umbilical arteries',420,428],['Pulmonary artery',700,372-8]].forEach(l=>{if(l[0]==='Ductus arteriosus'&&!atLeast('ap'))return;pill(ctx,l[0],l[1],l[2],PAL['card'],PAL['cv-ink'],12*k);});}}
+  if(!sm){[['Umbilical vein',118,312],['Ductus venosus',285,386],['Foramen ovale',318,246],['Ductus arteriosus',560,142],['Aorta',650,108],['Umbilical arteries',420,428],['Pulmonary artery',655,268]].forEach(l=>{if(l[0]==='Ductus arteriosus'&&!atLeast('ap'))return;if(sel&&P[sel]&&P[sel].n===l[0])return;pill(ctx,l[0],l[1],l[2],PAL['card'],PAL['cv-ink'],12*k);});}}
 
 /* ================= grasshopper (side view: head left, back up) ================= */
 const G={HEAD:[[118,215],[122,180],[140,158],[170,150],[200,160],[212,190],[210,235],[190,262],[150,268],[126,250]],
@@ -499,7 +505,7 @@ const G={HEAD:[[118,215],[122,180],[140,158],[170,150],[200,160],[212,190],[210,
  WING:[[285,160],[340,148],[460,150],[580,162],[640,178],[630,190],[560,184],[440,176],[330,178],[290,175]],
  FEM:[[338,240],[350,228],[470,182],[500,180],[506,195],[480,210],[360,258]],
  LEG1:[[235,250],[222,300],[230,340],[214,388]],LEG2:[[300,252],[300,300],[325,345],[318,392]],TIB:[[502,194],[470,282],[432,380]],TAR:[[432,380],[466,394]],
- ANT:[[155,160],[130,120],[100,85],[70,60],[44,44]],SP:[[290,230],[520,233],[553,229],[584,225],[612,220]]};
+ ANT:[[155,160],[136,122],[116,92],[94,70],[72,54]],SP:[[290,230],[520,233],[553,229],[584,225],[612,220]]};
 const HCUT={hdors:[[650,188],[480,172],[340,172],[300,163],[215,168]],hmid:[[650,183],[480,166],[340,165],[300,152],[230,153]],hacross:[[470,166],[470,248]]};
 const HG={crop:[[238,190],[275,180],[320,184],[338,196],[338,214],[320,226],[275,230],[240,220]],giz:[[336,197],[362,196],[366,216],[338,219]],
  mid:[[372,200],[480,198],[490,214],[480,230],[372,228]],ovar:[[420,180],[560,182],[606,190],[604,198],[560,196],[420,194]],sal:[[252,236],[300,236],[306,250],[256,253]]};
@@ -512,7 +518,8 @@ function hopperShapes(view,sex){const L=[],add=(id,q)=>{if(lvOK(H[id].lvl)&&(!H[
   if(view==='hext'){add('antenna',[{p:G.ANT,w:6,a:[100,85]}]);add('eye',[{e:[170,188,17,23]}]);add('mandible',[{e:[140,258,12,9]}]);add('spiracle',G.SP.map(p=>({e:[p[0],p[1],6,6]})));
     add('tympanum',[{e:[356,196,10,13]}]);add('wings',[{b:G.WING,a:[470,165]}]);add('legs',[{b:G.FEM,a:[420,215]},{p:G.TIB,w:6},{p:G.LEG1,w:6},{p:G.LEG2,w:6}]);if(sex==='f')add('ovipositor',[{b:G.OVI}]);}
   add('head',[{b:G.HEAD,a:[160,230]}]);add('thorax',[{b:G.PRO,a:[255,205]},{b:G.MESO}]);add('abdomen',[{b:G.ABD,a:[560,212]}]);return L;}
-function drawHopper(ctx,view,sex,o){o=o||{};drawTray(ctx);ctx.save();const ext=view==='hext',inside=view==='hint'||view==='hcomp';
+const HS=1.2,hfwd=p=>[400+(p[0]-400)*HS,210+(p[1]-210)*HS],hinv=(x,y)=>[400+(x-400)/HS,210+(y-210)/HS];
+function drawHopper(ctx,view,sex,o){o=o||{};ctx.save();const ext=view==='hext',inside=view==='hint'||view==='hcomp';
   if(ext){edgeTube(ctx,G.LEG1,6,HEX,HEXD);edgeTube(ctx,G.LEG2,6,HEX,HEXD);}
   else{[[235,250],[300,252],[345,244]].forEach(s=>ell(ctx,s[0],s[1]+6,6,5,HEXD));}
   tube(ctx,G.ANT,4,HEXD);tube(ctx,G.ANT,2.4,HEX);
@@ -539,7 +546,7 @@ function drawHopper(ctx,view,sex,o){o=o||{};drawTray(ctx);ctx.save();const ext=v
     if(sex==='f'){blob(ctx,HG.ovar,'#f1dc9a','#b39a4e',1.2);for(let x=430;x<600;x+=14)ell(ctx,x,188,6,3,'#e6c56a','#b39a4e',0.8,0.25);edgeTube(ctx,[[604,194],[640,200]],3,'#e6c56a','#b39a4e');}
     else{ell(ctx,500,188,32,7,'#f1e7cc','#b3a27a',1.2);}
     edgeTube(ctx,[[340,172],[400,170],[480,172],[560,178],[620,188]],3,'#d58a7a','#9a5a4a');[380,440,500,560].forEach(x=>ell(ctx,x,171+(x-340)*0.04,4,3,'#d58a7a','#9a5a4a',1));
-    drawPins(ctx,[[230,124],[330,118],[460,120],[600,150],[262,206]]);}
+    drawPins(ctx,[[230,124],[330,118],[460,120],[600,150],[262,206]]);if(view==='hcomp')G.SP.slice(1).forEach(p=>ell(ctx,p[0],p[1],4,4,'#3a3418','#f2ead0',1.2));}
   ctx.restore();}
 
 /* ================= tools of the trade ================= */
@@ -553,8 +560,8 @@ function drawTool(ctx,id,x,y,w,h){const cx=x+w/2,cy=y+h/2-10,steel='#b7bcc4',ste
     ctx.beginPath();ctx.moveTo(8,3);ctx.lineTo(-78,7);ctx.arc(-80,4,id==='osc'?3:5,1.5,4.7,false);ctx.lineTo(8,-4);ctx.closePath();ctx.fill();ctx.stroke();
     ell(ctx,0,0,3,3,steelD);ctx.lineWidth=5;ctx.strokeStyle=steel;line(ctx,[[8,0],[40,-14]],steel,5);line(ctx,[[8,0],[40,14]],steel,5);
     ell(ctx,55,-18,16,10,null,steel,5);ell(ctx,55,18,16,10,null,steel,5);}
-  else if(id==='forceps'){ctx.fillStyle=steel;ctx.strokeStyle=steelD;ctx.beginPath();ctx.moveTo(cx+80,cy-5);ctx.lineTo(cx-80,cy-2);ctx.lineTo(cx-80,cy);ctx.lineTo(cx+80,cy+1);ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx+80,cy+1);ctx.lineTo(cx-80,cy+4);ctx.lineTo(cx-80,cy+6);ctx.lineTo(cx+80,cy+8);ctx.closePath();ctx.fill();ctx.stroke();for(let i=0;i<4;i++)line(ctx,[[cx+20+i*10,cy-4],[cx+20+i*10,cy+7]],steelD,1);}
+  else if(id==='forceps'){[-1,1].forEach(sg=>{ctx.beginPath();ctx.moveTo(cx+85,cy);ctx.quadraticCurveTo(cx+10,cy+sg*16,cx-82,cy+sg*2);ctx.lineTo(cx-82,cy+sg*5);ctx.quadraticCurveTo(cx+10,cy+sg*21,cx+85,cy+sg*3);ctx.closePath();ctx.fillStyle=steel;ctx.fill();ctx.strokeStyle=steelD;ctx.lineWidth=1.2;ctx.stroke();});
+    for(let i=0;i<4;i++){line(ctx,[[cx+18+i*9,cy-13+i*1.2],[cx+18+i*9,cy-9]],steelD,1);line(ctx,[[cx+18+i*9,cy+13-i*1.2],[cx+18+i*9,cy+9]],steelD,1);}}
   else if(id==='probe'){rr(ctx,cx+10,cy-6,80,12,5);ctx.fillStyle=hand;ctx.fill();line(ctx,[[cx+10,cy],[cx-70,cy],[cx-84,cy-10]],steel,5);ell(ctx,cx-85,cy-11,4,4,steel);}
   else if(id==='needle'){rr(ctx,cx+10,cy-6,80,12,5);ctx.fillStyle='#8a5a2f';ctx.fill();line(ctx,[[cx+10,cy],[cx-85,cy]],steel,2);ctx.beginPath();ctx.moveTo(cx-85,cy-1);ctx.lineTo(cx-92,cy);ctx.lineTo(cx-85,cy+1);ctx.fillStyle=steel;ctx.fill();}
   else if(id==='pins'){for(let i=0;i<5;i++){const px=cx-60+i*30;line(ctx,[[px,cy-30],[px+10,cy+30]],steel,2);line(ctx,[[px-8,cy-31],[px+8,cy-29]],steel,4);}}
@@ -583,9 +590,11 @@ function viewsFor(id,sex){const S=P[id];if(!S.pv||(S.sex&&S.sex!==sex))return []
 function buildPractical(seed,lvl){const R=rng(seed),LV=LVN[lvl],pick=a=>a[Math.floor(R()*a.length)];IGNORE=true;
   const pool=Object.keys(P).filter(id=>P[id].plvl&&LVN[P[id].plvl]<=LV),used={},grp={},tags=[],stations=[];
   const free=id=>!used[id]&&!(P[id].grp&&grp[P[id].grp]);const take=id=>{used[id]=1;if(P[id].grp)grp[P[id].grp]=1;};
-  const size=[3,2,3,2,3,2,3,2];let owe=0;
+  const size=[3,2,3,2,3,2,3,2],vuse={};let owe=0;
   for(let i=0;i<8;i++){const sex=i%2?'m':'f',want=Math.min(4,size[i]+owe);let c=pool.filter(id=>free(id)&&viewsFor(id,sex).length);if(!c.length){owe=want;continue;}
-    const own=c.filter(id=>P[id].sex===sex);const first=own.length&&R()<0.55?pick(own):pick(c);const view=pick(viewsFor(first,sex));const S={sex,view,tags:[]};
+    const vs={};c.forEach(id=>viewsFor(id,sex).forEach(v=>{vs[v]=(vs[v]||0)+1;}));const vlist=Object.keys(vs);const sc=v=>Math.min(vs[v],want)/(1+2*(vuse[v]||0))+R()*0.3;
+    const view=vlist.reduce((m,v)=>sc(v)>sc(m)?v:m,vlist[0]);vuse[view]=(vuse[view]||0)+1;const inV=c.filter(id=>viewsFor(id,sex).includes(view)),own=inV.filter(id=>P[id].sex===sex);
+    const first=own.length&&R()<0.55?pick(own):pick(inV);const S={sex,view,tags:[]};
     const add=id=>{take(id);S.tags.push(tags.length);tags.push({id,st:i,n:String(tags.length+1)});};add(first);
     let more=c.filter(id=>id!==first&&free(id)&&viewsFor(id,sex).includes(view));while(S.tags.length<want&&more.length){const id=pick(more);add(id);more=more.filter(x=>x!==id&&free(x));}
     owe=want-S.tags.length;stations.push(S);}
@@ -596,11 +605,17 @@ function buildPractical(seed,lvl){const R=rng(seed),LV=LVN[lvl],pick=a=>a[Math.f
 function ensurePractical(sim){const lv=BioLab.level,s=sim.st;if(!s.prac||s.prac.lvl!==lv||s.prac.seed!==sim.pseed){s.prac=buildPractical(sim.pseed,lv);s.ans={};s.score=null;s.flash=-1;}return s.prac;}
 function station(sim){const pr=ensurePractical(sim);const v=sim.p.station;const i=v==='ec'?pr.stations.findIndex(x=>x.ec):(+v-1);return pr.stations[i]||pr.stations[0];}
 function tagShape(t,S){IGNORE=true;const L=pigShapes(S.view,S.sex);IGNORE=false;const e=L.find(x=>x.id===t.id);return e?e.q:null;}
-function tagLayout(sim,S){if(S._pos)return S._pos;const c=(S.view==='heart'||S.view==='brain')?[450,225]:[430,225],out=[];
-  S.tags.forEach(i=>{const q=tagShape(sim.st.prac.tags[i],S);const a=q?primCenter(q[0]):[400,225];let dx=a[0]-c[0],dy=a[1]-c[1];const L=Math.hypot(dx,dy)||1;dx/=L;dy/=L;
-    let lp=[clamp(a[0]+dx*40,30,770),clamp(a[1]+(Math.abs(dy)<0.25?(out.length%2?1:-1):Math.sign(dy))*62,24,426)];
-    for(let k=0;k<6;k++){if(out.every(o=>Math.hypot(o.lp[0]-lp[0],o.lp[1]-lp[1])>46))break;lp=[clamp(lp[0]+(k%2?-1:1)*70,30,770),lp[1]];}
-    out.push({i,a,lp,q});});return S._pos=out;}
+function tagLayout(sim,S){if(S._pos)return S._pos;IGNORE=true;const all=pigShapes(S.view,S.sex);IGNORE=false;
+  const c=S.view==='heart'?[470,235]:S.view==='brain'?[470,225]:S.view==='ext'?[430,225]:[470,225],out=[];
+  const inside=(x,y)=>all.some(e=>e.q.some(q=>hitPrim(q,x,y)));
+  S.tags.forEach(i=>{const q=tagShape(sim.st.prac.tags[i],S);const a=q?primCenter(q[0]):[400,225];let dx=a[0]-c[0],dy=a[1]-c[1];
+    if(Math.abs(dy)<20)dy=(out.length%2?1:-1)*30;const L=Math.hypot(dx,dy)||1;dx/=L;dy/=L;
+    let best=null;for(const turn of [0,0.35,-0.35,0.7,-0.7]){const ux=dx*Math.cos(turn)-dy*Math.sin(turn),uy=dx*Math.sin(turn)+dy*Math.cos(turn);
+      for(let d=34;d<=200;d+=8){const lp=[clamp(a[0]+ux*d,30,770),clamp(a[1]+uy*d,24,426)];
+        if(!inside(lp[0],lp[1])&&!inside(lp[0]+12,lp[1])&&!inside(lp[0]-12,lp[1])&&out.every(o=>Math.hypot(o.lp[0]-lp[0],o.lp[1]-lp[1])>44)){best=lp;break;}}
+      if(best)break;}
+    if(!best)best=[clamp(a[0]+dx*60,30,770),clamp(a[1]+dy*60,24,426)];
+    out.push({i,a,lp:best,q});});return S._pos=out;}
 function score(sim){const pr=ensurePractical(sim),res=[];let right=0,ec=false;pr.tags.forEach((t,i)=>{const j=judge(sim.st.ans[i],t.id);res.push(Object.assign({i},j));if(j.ok){if(t.ec)ec=true;else right++;}});
   sim.st.score={right,total:pr.main,ec,pct:pr.main?right/pr.main*100:0,res};}
 
@@ -666,7 +681,7 @@ function checklist(sim,view,sex){const p=sim.p;let ids=[];
    intest:['kidney','ureter','bladder','urethra','umbart','rectum'].concat(sex==='f'?['ovaries','oviduct','uterus','vagina']:['testes','epid','spcord','vasdef','penis']),
    thorax:['larynx','trachea','thyroid','esophagus','lungs','heart','diaphragm'],heart:atLeast('honors')?['ra','la','rv','lv','cranvc','caudvc','aorta','aarch','pulmart'].concat(atLeast('ap')?['ductart']:[]):['heart','lungs'],
    brain:['cerebrum','cerebellum'],circ:['umbvein','ductven','caudvc','ra','foramen','la','lv','aorta','pulmart','ductart','umbart','placenta']};
-  if(p.step==='five'||(p.step==='pin'&&view==='five'))ids=M.five;else if(view==='ext'&&p.step==='ext'||p.step==='sex')ids=M.ext;else ids=M[view]||[];
+  if(p.step==='tie'||p.step==='cut')return [];if(p.step==='five'||(p.step==='pin'&&view==='five'))ids=M.five;else if(view==='ext'&&p.step==='ext'||p.step==='sex')ids=M.ext;else ids=M[view]||[];
   if(p.step==='thorax'&&view!=='thorax')ids=[];if(p.step==='heart'&&view!=='heart')ids=[];return ids.filter(id=>P[id]&&lvOK(P[id].lvl));}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function structBlock(id,sex,isH){const S=isH?H[id]:P[id];if(!S)return '';const nm=isH?hName(id,sex):S.n;let h='<h3>'+nm+'</h3><p>'+sexTxt(S.fn,sex)+'</p>';
@@ -698,7 +713,7 @@ function infoPanel(sim){const p=sim.p,s=sim.st,sex=p.sex,view=curView(sim);let h
     if(p.hpart!=='none'&&H[p.hpart]){const vis=shapesFor(sim,view,sex).some(x=>x.id===p.hpart);h+='<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:8px">'+(vis?'':'<p class="pick"><b>Not visible in this view.</b> '+(H[p.hpart].six||['head','thorax','abdomen','tympanum','ovipositor'].includes(p.hpart)?'It is on the outside: go to step 1.':'It is inside: make the cut first.')+'</p>')+structBlock(p.hpart,sex,true)+'</div>';}
     return h+chips(sim,checklist(sim,view,sex),true,sex);}
   const st=STEPS.find(x=>x.v===p.step);h='<div class="p-head"><h3>Step '+(STEP_IX[p.step]+1)+' · '+st.t+'</h3></div><p>'+lvText(STEP_TXT[p.step])+'</p>';
-  if(cutPending(sim)){const c=CUTS[s.cuts];h+='<p><b>Your move: '+c.n+(NEEDS[p.step]-START[p.step]>1?' of '+NEEDS[p.step]:'')+'.</b> Choose the tool and where to cut under <b>Variables</b>, then press <b>Make the cut</b>.</p>';}
+  if(cutPending(sim)){const c=CUTS[s.cuts];h+='<p><b>Your move: '+c.n+(NEEDS[p.step]-START[p.step]>1?' of '+NEEDS[p.step]:'')+'.</b> Choose the tool and where to cut under <b>Lab bench</b>, then press <b>Make the cut</b>.</p>';}
   h+=msg;
   if(p.part!=='none'&&P[p.part]){const vis=pigShapes(view,sex).some(x=>x.id===p.part);let pre='';
     if(P[p.part].sex&&P[p.part].sex!==sex)pre='<p class="pick"><b>Only in a '+SEXN[P[p.part].sex]+' pig.</b> Switch the specimen to see it.</p>';
@@ -715,7 +730,9 @@ function bindInfo(sim,el){el.querySelectorAll('input[data-i]').forEach(inp=>{inp
 /* ---------- drawing ---------- */
 function labelAt(ctx,txt_,a,k,bg,fg,above){ctx.font='700 '+13*k+'px '+FONT;const w=ctx.measureText(txt_).width+14*k;const up=above!==undefined?above:a[1]>120;
   const lx=clamp(a[0],w/2+6,794-w/2),ly=clamp(a[1]+(up?-34:34)*Math.min(k,1.4),14*k,450-14*k);line(ctx,[a,[lx,ly]],bg,2);pill(ctx,txt_,lx,ly,bg,fg,13*k);}
-function drawSel(ctx,sim,list,id,name,k){const e=list.find(x=>x.id===id);if(!e)return;e.q.forEach(q=>outlinePrim(ctx,q,PAL['rj'],3));labelAt(ctx,name,primCenter(e.q[0]),k,PAL['rj'],'#fff');}
+function drawSel(ctx,sim,list,id,name,k){const e=list.find(x=>x.id===id);if(!e)return;e.q.forEach(q=>outlinePrim(ctx,q,PAL['rj'],3));const a=primCenter(e.q[0]);
+  if(id==='foramen'){ctx.font='700 '+13*k+'px '+FONT;const w=ctx.measureText(name).width+14*k;line(ctx,[a,[a[0]-w/2-14,a[1]]],PAL['rj'],2);pill(ctx,name,Math.max(w/2+6,a[0]-w/2-14),a[1],PAL['rj'],'#fff',13*k);return;}
+  labelAt(ctx,name,a,k,PAL['rj'],'#fff');}
 function drawTags(ctx,sim,S,k){const pr=sim.st.prac,sc=sim.st.score;tagLayout(sim,S).forEach(o=>{const t=pr.tags[o.i],r=sc&&sc.res[o.i];
   line(ctx,[o.a,o.lp],'#2b2b2b',3.4);line(ctx,[o.a,o.lp],'#f6f0dc',1.8);ell(ctx,o.a[0],o.a[1],4.5,4.5,C.tag,'#3b3010',1.4);
   let lab=t.n,bg=C.tag,fg=C.tagInk;if(r){bg=r.ok?'#2e7d4f':'#b3261e';fg='#fff';lab=t.n+(r.ok?' ✓':' ✗');}
@@ -724,15 +741,16 @@ function drawTags(ctx,sim,S,k){const pr=sim.st.prac,sc=sim.st.score;tagLayout(si
 function draw(sim,ctx,vdt,k,t){const p=sim.p,s=sim.st,sex=p.sex,view=curView(sim);ctx.fillStyle=PAL['card'];ctx.fillRect(0,0,800,450);
   const touring=sim.tour&&sim.tour.on;
   if(p.mode==='tools'){drawTools(ctx,p.tool,p.names,k);return;}
-  if(p.mode==='hopper'){drawHopper(ctx,view==='hcut'?'hcut':view,sex,{});
-    if(view==='hcut'&&p.hpath!=='none'&&HCUT[p.hpath])line(ctx,HCUT[p.hpath],PAL['rj'],3,[7,5]);
-    const list=shapesFor(sim,view,sex);
-    if(view==='hcomp'){COMPARE.forEach((c,i)=>{const e=list.find(x=>x.id===c.k);if(!e)return;const a=primCenter(e.q[0]);pill(ctx,String(i+1),a[0],a[1]+(c.k==='hheart'?-22:c.k==='ncord'?22:0),PAL['rj'],'#fff',14*k);});}
-    if(p.hpart!=='none'&&H[p.hpart])drawSel(ctx,sim,list,p.hpart,hName(p.hpart,sex),k);
+  if(p.mode==='hopper'){drawTray(ctx);const list=shapesFor(sim,view,sex),sel=p.hpart!=='none'&&H[p.hpart]?list.find(x=>x.id===p.hpart):null;
+    ctx.save();ctx.translate(400,210);ctx.scale(HS,HS);ctx.translate(-400,-210);drawHopper(ctx,view==='hcut'?'hcut':view,sex,{});
+    if(view==='hcut'&&p.hpath!=='none'&&HCUT[p.hpath])line(ctx,HCUT[p.hpath],PAL['rj'],2.5,[6,4]);
+    if(sel)sel.q.forEach(q=>outlinePrim(ctx,q,PAL['rj'],2.5));ctx.restore();
+    if(view==='hcomp'){COMPARE.forEach((c,i)=>{const e=list.find(x=>x.id===c.k);if(!e)return;const a=hfwd(primCenter(e.q[0]));pill(ctx,String(i+1),a[0],a[1]+(c.k==='hheart'?-24:c.k==='ncord'?24:c.k==='spiracle'?22:0),PAL['rj'],'#fff',14*k);});}
+    if(sel)labelAt(ctx,hName(p.hpart,sex),hfwd(primCenter(sel.q[0])),k,PAL['rj'],'#fff');
     pill(ctx,(sex==='f'?'Female':'Male')+' grasshopper',112*Math.min(k,1.3),22*k,PAL['card'],PAL['cv-ink'],12*k);return;}
   if(p.mode==='practical'){const S=station(sim);drawPigScene(ctx,S.view,S.sex,{cuts:0,peri:false,t,k});drawTags(ctx,sim,S,k);
     const pr=s.prac,si=pr.stations.indexOf(S);pill(ctx,S.ec?'Extra credit':'Station '+(si+1)+(S.view==='heart'||S.view==='brain'?'':' · '+(S.sex==='f'?'female':'male')),108*Math.min(k,1.3),20*k,PAL['card'],PAL['cv-ink'],13*k);return;}
-  drawPigScene(ctx,view,sex,{cuts:s.cuts,strings:p.step!=='ext'&&p.step!=='sex',peri:!(s.cuts>=8),t,k});
+  drawPigScene(ctx,view,sex,{cuts:s.cuts,strings:p.step!=='ext'&&p.step!=='sex',peri:!(s.cuts>=8),t,k,sel:p.part});
   if(cutPending(sim)&&p.path!=='none'&&!touring)drawPreview(ctx,p.path,PAL['rj']);
   if(touring&&p.step==='cut')for(let i=s.cuts;i<5;i++)drawPreview(ctx,CUTS[i].id,'#f2c94c');
   const list=pigShapes(view,sex);
@@ -745,11 +763,12 @@ function onClick(sim,x,y){const p=sim.p,view=curView(sim);
     if(o){const inp=document.getElementById('dsx-a-'+o.i);if(inp)inp.focus();}return;}
   const list=shapesFor(sim,view,p.sex),hit=list.find(e=>e.q.some(q=>hitPrim(q,x,y)));sim.found=sim.found||{};
   if(p.mode==='tools'){BioLab.setValues(sim,{tool:hit?hit.id:'none'});return;}
-  if(p.mode==='hopper'){if(hit)sim.found['h:'+hit.id]=1;BioLab.setValues(sim,{hpart:hit?hit.id:'none'});return;}
+  if(p.mode==='hopper'){const q=hinv(x,y),hh=list.find(e=>e.q.some(r=>hitPrim(r,q[0],q[1])));if(hh)sim.found['h:'+hh.id]=1;BioLab.setValues(sim,{hpart:hh?hh.id:'none'});return;}
+
   if(hit)sim.found[hit.id]=1;sim.st.msg=null;BioLab.setValues(sim,{part:hit?hit.id:'none'});}
 
 /* ================= definition ================= */
-const PIG_PARTS=Object.keys(P).filter(id=>!['foramen','ductven','placenta','bodyt'].includes(id));
+const PIG_PARTS=Object.keys(P);
 const DSX={
   id:'dissection',hash:'dissection',apUnit:9,order:5,kind:'Virtual lab',tab:'Fetal pig dissection',
   card:'Dissect a fetal pig and a grasshopper step by step: pick the right tool and cut, find every organ, then take a tagged practical.',
@@ -834,14 +853,16 @@ const DSX={
   narrate(sim){const p=sim.p,s=sim.st;
     if(p.mode==='tools'){const T=TOOLS[p.tool];return T?'<b>'+T.n+':</b> '+T.u:'These are the tools of the trade. Click each one to learn <b>what it is, what it is for and how to hold it</b>.';}
     if(p.mode==='practical'){const pr=ensurePractical(sim),S=station(sim);if(s.score)return 'You scored <b>'+s.score.right+' of '+s.score.total+'</b>. Each miss below shows where that structure is and what it does.';
-      return (S.ec?'The extra-credit tag. ':'Station '+(pr.stations.indexOf(S)+1)+': a '+SEXN[S.sex]+' pig. ')+'Name each <b>tagged</b> structure below. Spelling does not have to be perfect.';}
+      return (S.ec?'The extra-credit tag. ':'Station '+(pr.stations.indexOf(S)+1)+(S.view==='heart'||S.view==='brain'?'. ':': a '+SEXN[S.sex]+' pig. '))+'Name each <b>tagged</b> structure below. Spelling does not have to be perfect.';}
     if(p.mode==='hopper'){if(p.hpart!=='none'&&H[p.hpart])return '<b>'+hName(p.hpart,p.sex)+':</b> '+sexTxt(H[p.hpart].fn,p.sex);
       if(p.hstep==='hcut'&&!s.hcut)return 'An insect has no bones inside: its skeleton is the outside. <b>Cut the exoskeleton lengthwise</b> to open it like a book.';
       if(p.hstep==='hcomp')return 'Same jobs, different solutions: the grasshopper has an <b>open</b> circulatory system and a <b>ventral</b> nerve cord; the pig has a <b>closed</b> system and a <b>dorsal</b> spinal cord.';
       return p.hstep==='hext'?'A grasshopper has <b>three body regions</b>: head, thorax and abdomen. All six legs and four wings attach to the thorax.':'Food passes <b>crop → gizzard → stomach → intestine → rectum</b>. The tube along the top is the heart.';}
     if(s.msg&&!s.msg.ok)return '<b>Not that way.</b> '+s.msg.t;
     if(p.part!=='none'&&P[p.part])return '<b>'+P[p.part].n+':</b> '+sexTxt(P[p.part].fn,p.sex);
-    if(cutPending(sim)){const c=CUTS[s.cuts];return '<b>'+c.n+'.</b> Pick the tool and where to cut. Cut from head to tail and keep the tips up, so only the body wall is cut.';}
+    if(cutPending(sim)){const c=CUTS[s.cuts],H2={uvein:'Snip the umbilical vein, the blue vessel running from the cord to the liver, so the umbilical flap can fold back toward the tail.',
+        chest:'Cut through the middle of the rib cage, keeping the scissor tips up so you do not cut the heart and lungs underneath.',peri:'The heart is wrapped in a thin sac, the pericardium. Choose the tool that lifts it, then snip it open.'};
+      return '<b>'+c.n+'.</b> '+(H2[c.id]||'Pick the tool and where to cut. Cut from head to tail and keep the tips up, so only the body wall is cut.');}
     const N={ext:'Start outside. The <b>umbilical cord</b> connected this fetus to its mother’s placenta.',sex:sim.p.sex==='f'?'This is a <b>female</b>: the genital papilla and urogenital opening sit just below the anus.':'This is a <b>male</b>: his urogenital opening is just behind the umbilical cord.',
       tie:'Strings run under the tray from leg to leg, so the pig lies <b>ventral side up</b> and the belly stays open.',cut:'All five cuts are made. The belly wall is now loose flaps.',pin:'Flaps pinned and the umbilical flap folded back. The organs are in view.',
       five:'These organs sit in the <b>abdominal cavity</b>, behind the diaphragm. Click each one to learn its job.',liver:'With the liver lifted, the <b>gallbladder</b> on its underside and the <b>pancreas</b> come into view.',
@@ -883,8 +904,8 @@ const DSX={
   thumbSetup(s){BioLab.setValues(s,{mode:'pig',step:'five'});}
 };
 DSX.controls.forEach(c=>{if(['mode','sex','step','hstep'].includes(c.id))c.onChange=sim=>{if(!sim.st)return;
-  if(c.id==='step'){sim.st.cuts=START[sim.p.step]||0;sim.st.msg=null;sim.st.wrong=0;if(sim.p.part!=='none')BioLab.setValues(sim,{part:'none'});}
-  if(c.id==='hstep'){sim.st.hcut=sim.p.hstep!=='hext'&&sim.p.hstep!=='hcut';sim.st.msg=null;sim.st.wrong=0;}
+  if(c.id==='step'){sim.st.cuts=START[sim.p.step]||0;sim.st.msg=null;sim.st.wrong=0;const r={};if(sim.p.part!=='none')r.part='none';if(sim.p.cutwith!=='none')r.cutwith='none';if(sim.p.path!=='none')r.path='none';if(Object.keys(r).length)BioLab.setValues(sim,r);}
+  if(c.id==='hstep'){sim.st.hcut=sim.p.hstep!=='hext'&&sim.p.hstep!=='hcut';sim.st.msg=null;sim.st.wrong=0;const r={};if(sim.p.cutwith!=='none')r.cutwith='none';if(sim.p.hpath!=='none')r.hpath='none';if(Object.keys(r).length)BioLab.setValues(sim,r);}
   if(c.id==='mode'){sim.st.msg=null;}
   if(c.id==='sex'){const pt=P[sim.p.part];if(pt&&pt.sex&&pt.sex!==sim.p.sex)BioLab.setValues(sim,{part:'none'});}
   syncMode(sim);};});
