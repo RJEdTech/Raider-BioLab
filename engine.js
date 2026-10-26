@@ -403,7 +403,7 @@ function vlRender(sim){const V=sim.vlab,L=V.lab,u=sim.ui,sid=sim.def.id,labs=vlL
   if(L.steps&&L.steps.length)h+=S('proc','Procedure',`<p class="vl-help">The step you are on is marked. Tap any step you have reached to go back to it.</p><ol class="vl-proc">${L.steps.map((s,i)=>`<li data-i="${i}"><div class="vl-pt">${lvText(s.text)||''}</div></li>`).join('')}</ol>`);
   const obs=L.observations||[];
   if((L.tables&&L.tables.length)||obs.length)h+=S('data','Data',(L.tables||[]).map(table).join('')+(obs.length?`<p class="vl-cap">Observations</p><div class="vl-obs">${obs.map(o=>`<div class="vl-ob">${area('o:'+o.id,o.label,2)}${note('o:'+o.id)}</div>`).join('')}</div>`:''));
-  if(L.graph)h+=S('graph','Graph',`<div class="vl-graph"><canvas class="vl-cv" role="img" aria-label="${esc(stripTags(L.graph.title||'Graph'))}"></canvas><p class="vl-help">The graph draws from the numbers you type in your tables${(L.graph.series||[]).length>1?'. The key shows which line is which':''}.</p></div>`);
+  if(L.graph)h+=S('graph','Graph',`<div class="vl-graph"><canvas class="vl-cv" role="img" aria-label="${esc(stripTags(L.graph.title||'Graph'))}"></canvas><p class="vl-help">The graph draws from the numbers you type in your tables${(L.graph.series||[]).length>1?(L.graph.type==='bar'?'. The key shows which bar is which':'. The key shows which line is which'):''}.</p></div>`);
   if(L.calcs&&L.calcs.length)h+=S('calcs','Calculations',`<div class="vl-calc">${L.calcs.map(c=>{const k='k:'+c.id;return `<div class="vl-ck"><label class="vl-f" for="${fid(k)}"><span class="vl-l">${c.label}</span>${c.input==='text'?`<textarea class="vl-in vl-ta" id="${fid(k)}" data-k="${k}" rows="2">${val(k)}</textarea>`:`<span class="vl-cin"><input class="vl-in vl-num" type="text" inputmode="decimal" id="${fid(k)}" data-k="${k}" value="${val(k)}" autocomplete="off">${c.unit?`<span class="vl-u">${c.unit}</span>`:''}</span>`}</label>${note(k)}</div>`;}).join('')}</div>`);
   if(L.questions&&L.questions.length)h+=S('questions','Questions',L.questions.map((q,i)=>`<div class="vl-q"><div class="vl-qh"><span class="vl-qn">${esc(q.n!==undefined?q.n:i+1)}</span><div class="vl-qt">${q.q}</div></div>${q.fields?`<div class="vl-qf">${q.fields.map(f=>line('q:'+q.id+':'+f.id,f.label)).join('')}</div>`:area('q:'+q.id,'',4,'Your answer to question '+(q.n!==undefined?q.n:i+1))}</div>`).join(''));
   if(L.conclusion){const C=L.conclusion;h+=S('conclusion','Conclusion',`<div class="vl-prompt">${C.prompt||''}</div>`+(C.cer?`<div class="vl-cer">${area('cer:claim','Claim <small>One sentence that answers the question.</small>',2)}${area('cer:evidence','Evidence <small>Your own data that supports the claim.</small>',3)}${area('cer:reasoning','Reasoning <small>The biology that explains why the evidence supports the claim.</small>',4)}</div>`:area('concl','',5,'Your conclusion')));}
@@ -614,7 +614,8 @@ function applyLevel(sim){const ui=sim.ui,d=sim.def;
     const nc=trialCols(sim).filter(c=>c.num);const opts=nc.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');ui.gx.innerHTML=opts;ui.gy.innerHTML=opts;
     if(nc.length){if(!nc.find(c=>c.id===sim.gx))sim.gx=nc[0].id;if(!nc.find(c=>c.id===sim.gy))sim.gy=(nc.find(c=>c.id===d.defaultGraph)||nc[nc.length-1]).id;ui.gx.value=sim.gx;ui.gy.value=sim.gy;}}
   sim.ch={idx:0,phase:'ask',pick:null,changed:false};renderChallenge(sim);renderTable(sim);sim.infoDirty=true;
-  if(sim.mode)setMode(sim,sim.mode);}
+  if(sim.mode)setMode(sim,sim.mode);
+  if(sim.mode==='vlab'&&sim.vlab)vlabVis(sim);}
 
 /* ---------- predict-then-test challenges ---------- */
 function visibleCh(sim){const d=sim.def;const list=typeof d.challenges==='function'?d.challenges(sim):(d.challenges||[]);return list.filter(c=>atLeast(c.lvl));}
