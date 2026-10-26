@@ -839,7 +839,7 @@ humanpop: {
 },
 homeostasis: {
   hook: 'You skip a snack and run hard for 30 minutes at practice. Your leg muscles are pulling sugar out of your blood the whole time. Does your blood sugar crash, and if not, where does the extra sugar come from?',
-  answer: 'It barely moves. Blood glucose dips from about 90 to 86 mg/dL. The pancreas raises glucagon from about 60 to 80 pg/mL, and glucagon tells the liver to break down stored glycogen and release glucose to replace what the muscles take. About five minutes after you stop, glucose is back near 90.',
+  answer: 'It dips but does not crash. Blood glucose falls from about 90 to 81 mg/dL in the first 15 minutes and holds there. The pancreas raises glucagon from about 60 to 90 pg/mL, and glucagon tells the liver to break down stored glycogen and release glucose to replace what the muscles take. About 15 minutes after you stop, glucose is back near 88.',
   uses: [
     'Glucose monitors: many people with type 1 diabetes wear a small sensor that reads blood sugar every few minutes, standing in for the insulin feedback their pancreas no longer provides.',
     'Fever: an infection resets the brain’s thermostat higher, which is why you get chills and shiver while your temperature rises, and sweat when the fever breaks.',
