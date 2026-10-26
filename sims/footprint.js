@@ -44,7 +44,7 @@ const FOOT={
     {id:'miles',label:'Car miles per week',type:'range',min:0,max:400,step:10,def:DEF.miles,unit:' mi',lvl:'bio'},
     {id:'mpg',label:'Car fuel economy',type:'range',min:15,max:50,step:1,def:DEF.mpg,unit:' mpg',lvl:'bio'},
     {id:'car',label:'Car type',type:'seg',def:DEF.car,lvl:'honors',options:[{v:'gas',l:'Gas'},{v:'hybrid',l:'Hybrid'},{v:'ev',l:'Electric'}]},
-    {id:'flights',label:'Round-trip flights per year',type:'range',min:0,max:6,step:1,def:DEF.flights,unit:'',lvl:'bio',help:'Each one about 2,000 miles, like Denver to New York and back.'},
+    {id:'flights',label:'Round-trip flights per year',type:'range',min:0,max:6,step:1,def:DEF.flights,unit:'',lvl:'bio',help:'Each one about 2,000 miles, like Denver to Chicago and back.'},
     {id:'kwh',label:'Home electricity',type:'range',min:200,max:1500,step:50,def:DEF.kwh,unit:' kWh/mo',lvl:'bio',help:'For the whole household. A typical US home uses about 860 kWh a month.'},
     {id:'people',label:'People in your home',type:'range',min:1,max:6,step:1,def:DEF.people,unit:'',lvl:'honors'},
     {id:'grid',label:'Where your electricity comes from',type:'seg',def:DEF.grid,lvl:'bio',options:[{v:'colorado',l:'Colorado grid'},{v:'us',l:'US average',lvl:'honors'},{v:'renew',l:'100% renewable'}]},
@@ -84,7 +84,7 @@ const FOOT={
   tour:[
     {title:'Your total',text:'The bar on the right stacks up every ton of CO₂ from one year of your life. The lines mark the US average, the world average and the 2050 goal for limiting warming.',focus:[590,20,210,415]},
     {title:'Getting around',text:'Cars burn gasoline, and every gallon puts out about 8.9 kg of CO₂, roughly 20 pounds. Flights add more. Watch the bubbles from the car and plane.',focus:[[0,330,560,90],[40,30,200,90]]},
-    {title:'Electricity comes from a power plant',text:'Your lights make no smoke at home. The CO₂ comes from the power plant that makes the electricity. In Colorado, about half of it still comes from coal and gas.',focus:[[230,180,170,170],[420,40,140,160]]},
+    {title:'Electricity comes from a power plant',text:'Your lights make no smoke at home. The CO₂ comes from the power plant that makes the electricity. In Colorado, more than half of it still comes from coal and gas.',focus:[[230,180,170,170],[420,40,140,160]]},
     {title:'Heating your home',text:'A gas furnace burns natural gas right at your house; see the chimney. A heat pump uses electricity instead, so how clean it is depends on the grid.',focus:[230,170,170,170]},
     {title:'Food, stuff and services',text:'Growing food, especially beef, and making the things we buy also release greenhouse gases. Shared services like schools and roads add a slice everyone carries.',focus:[[20,200,200,120],[400,210,160,120]]},
     {lvl:'honors',title:'Try a change',text:'The panel below the graph ranks what-if changes by tons saved. We just switched this student to an electric car. Watch the transport slice shrink.',focus:[590,20,210,415],setup(sim){BioLab.setValues(sim,{car:'ev'});}}

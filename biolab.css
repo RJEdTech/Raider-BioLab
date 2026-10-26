@@ -239,6 +239,9 @@ dl.about-b dt{font-weight:700}dl.about-b dd{margin:2px 0 0;color:var(--muted)}
 .chip:hover{border-color:var(--rj)}
 .chip.adv{border-color:var(--rj);color:var(--rj-ink)}
 
+/* link card to a sister site */
+.ext-thumb{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2a2a2a,#3a1018);color:#fff;font-weight:700;font-size:20px;letter-spacing:.02em;text-align:center;padding:0 12px}
+
 /* Raider Labs switcher on the home page */
 .labs{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 20px}
 .labs-l{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:4px}
@@ -249,3 +252,69 @@ dl.about-b dt{font-weight:700}dl.about-b dd{margin:2px 0 0;color:var(--muted)}
 .labs a[aria-current=page]{background:var(--rj);border-color:var(--rj);color:#fff}
 .labs a[aria-current=page] small{color:rgba(255,255,255,.88)}
 @media(max-width:520px){.labs a small{display:none}}
+
+/* View modes: Guided (default), Challenge, Full lab */
+.modebar{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.modebar[hidden]{display:none}
+.modebar button{border:0;background:none;padding:7px 16px;border-radius:7px;font:600 14px var(--font);color:var(--muted);cursor:pointer}
+.modebar button:hover{color:var(--fg)}
+.modebar button[aria-pressed=true]{background:var(--rj);color:#fff}
+.modebar button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.sim.m-guided .trials,.sim.m-guided details.about,.sim.m-guided [data-act=tour],.sim.m-guided .controls,
+.sim.m-game .lower,.sim.m-game .trials,.sim.m-game details.about,.sim.m-game [data-act=tour],.sim.m-game .related{display:none}
+.sim.m-guided .bench{grid-template-columns:minmax(0,1fr)}
+.sim.m-guided:not(.g-try) .readouts,.sim.m-guided:not(.g-try) .lower,.sim.m-guided:not(.g-done) .related{display:none}
+.sim.m-guided .lower .info{display:none}
+.sim.m-guided .lower{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.sim.m-guided.g-try .lower .predict{border:2px solid var(--rj);order:-1}
+.sim.m-guided .tourbar{padding:16px 18px}
+.sim.m-guided .tourbar .tb-x{font-size:16px;line-height:1.5}
+.donecard,.gamecard{padding:14px 18px;border-top:3px solid var(--rj);background:var(--card2)}
+.donecard[hidden],.gamecard[hidden]{display:none}
+.dc-h{margin:0 0 4px;font-weight:700;font-size:17px}
+.dc-x,.gm-x,.gm-intro{margin:6px 0 10px;font-size:16px;line-height:1.5}
+.gm-intro{color:var(--muted)}
+.gm-top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.gm-t{font-size:17px}
+.gm-stats{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--muted)}
+.gm-stats b{color:var(--fg)}
+.gm-msg{margin:4px 0 10px;font-weight:700;font-size:16px}
+.gm-msg.ok{color:var(--good)}
+.gm-msg.no{color:var(--bad)}
+.badges{margin:0 0 10px}
+.badges span{display:inline-block;margin:0 6px 6px 0;padding:3px 11px;border-radius:999px;background:var(--rj);color:#fff;font-size:13px;font-weight:700}
+.sim.m-guided .stage canvas,.sim.m-game .stage canvas{display:block;width:100%;max-width:calc(min(58vh,560px) * var(--asp,1.78));margin:0 auto}
+/* guided side-by-side: on wide screens the step card sits beside the simulation */
+@media (min-width:900px){
+  .sim.m-guided .stage,.sim.m-game .stage{display:grid;grid-template-columns:minmax(0,1fr) 330px;align-items:stretch}
+  .sim.m-guided .stage>*,.sim.m-game .stage>*{grid-column:1/-1}
+  .sim.m-guided .stage>canvas,.sim.m-game .stage>canvas{grid-column:1;grid-row:2}
+  .sim.m-guided .stage>.tourbar,.sim.m-guided .stage>.donecard,.sim.m-game .stage>.gamecard{grid-column:2;grid-row:2;border-top:0;border-left:3px solid var(--rj);overflow:auto}
+  .sim.m-guided .stage>.cap,.sim.m-game .stage>.cap{grid-row:3}
+  .sim.m-guided .stage>.transport,.sim.m-game .stage>.transport{grid-row:4}
+}
+.gm-hint{display:block;margin-top:6px;font-size:14px;color:var(--muted)}
+/* in a game the controls move into the stage, under the problem */
+.sim.m-game .bench{grid-template-columns:minmax(0,1fr)}
+.controls.in-game{border:0;border-top:1px solid var(--line);border-radius:0;background:var(--card2);padding:10px 18px}
+.controls.in-game h3{display:none}
+@media (min-width:900px){.sim.m-game .stage>.gamecard{grid-row:2}.sim.m-game .stage>.controls.in-game{grid-column:2;grid-row:3;border-top:0;border-left:3px solid var(--rj)}.sim.m-game .stage>canvas{grid-row:2/4}.sim.m-game .stage>.cap{grid-row:4}.sim.m-game .stage>.transport{grid-row:5}}
+.gamebtns{padding:4px 18px 14px;background:var(--card2)}
+.gamebtns[hidden]{display:none}
+@media (min-width:900px){.sim.m-game .stage>.gamebtns{grid-column:2;grid-row:4;border-left:3px solid var(--rj)}.sim.m-game .stage>canvas{grid-row:2/5}.sim.m-game .stage>.cap{grid-row:5}.sim.m-game .stage>.transport{grid-row:6}}
+.sim.m-game .transport{display:none}
+/* Embedded in Canvas (?embed=1): just the tool */
+html.embed .rj-masthead,html.embed #back,html.embed #jump,html.embed .notes,html.embed .foot,html.embed .labs,html.embed .embed-box{display:none!important}
+html.embed body{background:var(--bg)}
+html.embed .wrap{padding-top:10px}
+/* the embed panel */
+.emb-opts{display:flex;flex-wrap:wrap;gap:10px 18px;margin:8px 0 12px}
+.emb-opts label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
+.emb-l{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.emb-code{width:100%;box-sizing:border-box;font:13px/1.4 ui-monospace,Consolas,monospace;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card2);color:var(--fg);resize:vertical}
+.emb-steps{margin:12px 0 6px;padding-left:22px;line-height:1.6}
+.sim.m-guided details.embed-box,.sim.m-game details.embed-box{display:block}
+.sim.m-game .stage>.cap{display:none}
+a.btn{text-decoration:none;display:inline-flex;align-items:center}
+.card.lesson .ext-thumb{background:linear-gradient(135deg,#0f3d3e,#1b5e5f);font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:19px;font-style:italic}
+.emb-steps li{margin-bottom:12px}.emb-steps img{display:block;width:100%;max-width:520px;height:auto;margin:8px 0 4px;border:1px solid var(--line);border-radius:8px}

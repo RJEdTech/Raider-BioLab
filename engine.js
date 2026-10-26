@@ -15,7 +15,13 @@ let FURTHER=11,UNIT_PREFIX='Unit';
 BL.setSections=function(o){if(o.units)UNITS=o.units;if(o.extra)XSEC=o.extra;if(o.order)SECTIONS=o.order;if(o.further!==undefined)FURTHER=o.further;if(o.unitPrefix!==undefined)UNIT_PREFIX=o.unitPrefix;BL.UNITS=UNITS;BL.XSEC=XSEC;};
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 const LAB_META=n=>{const m=document.querySelector('meta[name="'+n+'"]');return m?m.content:null;};const LAB_NAME=LAB_META('lab-name')||'Raider BioLab',LAB_KEY=LAB_META('lab-key')||'rjbiolab';
-let level=store.get(LAB_KEY+'-level');if(!(level in LV))level='honors';
+let level=store.get(LAB_KEY+'-level');if(!(level in LV))level='bio';
+/* Embedding (e.g. in a Canvas page): ?embed=1 hides the site chrome; ?mode=guided|game|lab picks the starting view;
+   ?level=bio|honors|ap picks the starting detail level for this visit only. */
+const QS=(()=>{try{return new URLSearchParams(location.search);}catch(e){return new URLSearchParams('');}})();
+const EMBED=QS.has('embed'),QMODE=QS.get('mode'),QLVL=QS.get('level');
+if(QLVL&&(QLVL in LV))level=QLVL;
+BL.embed=EMBED;
 const atLeast=l=>LV[level]>=LV[l||'bio'];
 const clamp=(x,a,b)=>x<a?a:x>b?b:x;
 const lerp=(a,b,t)=>a+(b-a)*t;
@@ -95,9 +101,9 @@ function el(tag,attrs,html){const e=document.createElement(tag);if(attrs)for(con
 function buildSim(sim){
   const d=sim.def,id=d.id,asp=d.aspect||16/9,sec=el('section',{class:'sim',id:'sim-'+id,'aria-labelledby':'h-'+id});
   const hasGraph=d.graph!==false,hasPredict=!!d.challenges;
-  sec.innerHTML=`<div class="sim-head"><p class="eyebrow">${secLabel(d.apUnit)}</p><h2 id="h-${id}">${d.title}</h2><p class="lede"></p></div>
+  sec.innerHTML=`<div class="sim-head"><p class="eyebrow">${secLabel(d.apUnit)}</p><h2 id="h-${id}">${d.title}</h2><p class="lede"></p><div class="modebar" role="group" aria-label="How do you want to use this tool?"></div></div>
   <div class="bench">
-    <div class="stage">${d.scale?`<p class="scale"></p>`:''}<canvas id="${id}-stage" style="aspect-ratio:${asp}" role="img" aria-label="${d.title} simulation"></canvas>
+    <div class="stage">${d.scale?`<p class="scale"></p>`:''}<canvas id="${id}-stage" style="aspect-ratio:${asp};--asp:${asp}" role="img" aria-label="${d.title} simulation"></canvas>
       <div class="tourbar" hidden><div class="tb-h"><span class="tb-n"></span><b class="tb-t"></b></div><p class="tb-x"></p>
         <div class="row"><button type="button" class="btn" data-tour="back">Back</button><button type="button" class="btn primary" data-tour="next">Next</button><button type="button" class="btn" data-tour="exit">Exit walkthrough</button></div></div>
       ${d.narrate?'<p class="cap"></p>':''}
@@ -131,12 +137,14 @@ function buildSim(sim){
   </div>`}
   ${d.terms?`<details class="about terms"><summary>Key terms</summary><dl class="about-b">${d.terms.map(t=>`<div data-lvl="${t.lvl||'bio'}"><dt>${t.t}</dt><dd>${t.d}</dd></div>`).join('')}</dl></details>`:''}
   ${d.about?`<details class="about"><summary>About this model</summary><div class="about-b">${d.about}</div></details>`:''}
-  <div class="related" hidden></div>`;
+  <div class="related" hidden></div>
+  <details class="about embed-box"><summary>Embed this tool in Canvas</summary><div class="about-b embed-b"></div></details>`;
   const ui=sim.ui;ui.sec=sec;ui.lede=sec.querySelector('.lede');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
   ui.clock=sec.querySelector('.clock');ui.play=sec.querySelector('[data-act=play]');ui.ctrls=sec.querySelector('.controls');ui.read=sec.querySelector('.readouts');
   ui.pred=sec.querySelector('.predict');ui.info=sec.querySelector('.info');ui.tbl=sec.querySelector('.tbl');ui.gm=sec.querySelector('#'+id+'-gm');ui.gx=sec.querySelector('#'+id+'-gx');ui.gy=sec.querySelector('#'+id+'-gy');
   ui.toast=sec.querySelector('.toast');ui.ctl={};ui.tiles={};ui.cap=sec.querySelector('.cap');ui.scale=sec.querySelector('.scale');ui.lab=sec.querySelector('.lab');
   ui.speedSel=sec.querySelector('#'+id+'-speed');ui.stepBtn=sec.querySelector('[data-act=step]');ui.tourbar=sec.querySelector('.tourbar');
+  ui.donecard=el('div',{class:'donecard','aria-live':'polite'});ui.donecard.hidden=true;ui.gamecard=el('div',{class:'gamecard','aria-live':'polite'});ui.gamecard.hidden=true;ui.gamebtns=el('div',{class:'gamebtns row'});ui.gamebtns.hidden=true;ui.tourbar.after(ui.donecard,ui.gamecard);
   if(d.timeless){ui.clock.hidden=true;sec.querySelector('[data-act=play]').hidden=!d.animated;sec.querySelector('label[for='+id+'-speed]').hidden=!d.animated;}
   // controls
   (d.controls||[]).forEach(c=>{const cid=id+'-'+c.id;let w;const changed=()=>{if(c.onChange)c.onChange(sim);sim.infoDirty=true;};
@@ -163,7 +171,7 @@ function buildSim(sim){
   if(d.tour){sec.querySelector('[data-act=tour]').addEventListener('click',()=>tourGo(sim,0));
     ui.tourbar.querySelector('[data-tour=back]').addEventListener('click',()=>tourGo(sim,sim.tour.i-1));
     ui.tourbar.querySelector('[data-tour=next]').addEventListener('click',()=>tourGo(sim,sim.tour.i+1));
-    ui.tourbar.querySelector('[data-tour=exit]').addEventListener('click',()=>tourExit(sim));}
+    ui.tourbar.querySelector('[data-tour=exit]').addEventListener('click',()=>tourExit(sim,'exit'));}
   sec.querySelector('[data-act=reset]').addEventListener('click',()=>{resetSim(sim);sim.ch.changed=false;if(sim.ch.phase==='running'){sim.ch.phase='ask';renderChallenge(sim);}updateReadouts(sim);drawGraph(sim);});
   ui.speedSel.addEventListener('change',e=>{sim.speed=parseFloat(e.target.value);});
   // stage clicks
@@ -175,8 +183,8 @@ function buildSim(sim){
     ui.gx.addEventListener('change',()=>{sim.gx=ui.gx.value;drawGraph(sim);});ui.gy.addEventListener('change',()=>{sim.gy=ui.gy.value;drawGraph(sim);});}
   // trials
   if(d.trials!==false){
-    sec.querySelector('[data-act=record]').addEventListener('click',()=>{const row={n:sim.trials.length+1};(d.controls||[]).forEach(c=>row[c.id]=sim.p[c.id]);allMetrics(sim).forEach(m=>row[m.id]=m.get(sim));
-      sim.trials.push(row);saveTrials(sim);renderTable(sim);flash(sim,'Trial '+row.n+' recorded');if(sim.gmode==='trials')drawGraph(sim);});
+    sec.querySelector('[data-act=record]').addEventListener('click',()=>{const row={_n:sim.trials.length+1};(d.controls||[]).forEach(c=>row[c.id]=sim.p[c.id]);allMetrics(sim).forEach(m=>row[m.id]=m.get(sim));
+      sim.trials.push(row);saveTrials(sim);renderTable(sim);flash(sim,'Trial '+row._n+' recorded');if(sim.gmode==='trials')drawGraph(sim);});
     sec.querySelector('[data-act=clear]').addEventListener('click',()=>{sim.trials=[];saveTrials(sim);renderTable(sim);drawGraph(sim);});
     sec.querySelector('[data-act=copy]').addEventListener('click',()=>{const csv=toCSV(sim);if(!csv){flash(sim,'Record a trial first');return;}
       const fallback=()=>{let ta=sec.querySelector('.csv-fallback');if(!ta){ta=el('textarea',{class:'csv-fallback',readonly:'',id:id+'-csv','aria-label':'CSV data'});ui.tbl.after(ta);}ta.value=csv;ta.focus();ta.select();flash(sim,'Selected. Press Ctrl+C to copy');};
@@ -192,12 +200,106 @@ function tourGo(sim,i){const st=tourSteps(sim);if(!st.length)return;if(i>=st.len
   sim.tour={on:true,i};const s=st[i];if(s.setup)s.setup(sim);setSpeed(sim,s.speed!==undefined?s.speed:0.25);setRunning(sim,!s.pause);
   const b=sim.ui.tourbar;b.hidden=false;if(sim.ui.cap)sim.ui.cap.hidden=true;b.querySelector('.tb-n').textContent='Step '+(i+1)+' of '+st.length;b.querySelector('.tb-t').textContent=lvText(s.title);
   b.querySelector('.tb-x').innerHTML=lvText(s.text);b.querySelector('[data-tour=back]').disabled=i===0;b.querySelector('[data-tour=next]').textContent=i===st.length-1?'Finish':'Next';}
-function tourExit(sim){sim.tour={on:false,i:0};sim.ui.tourbar.hidden=true;if(sim.ui.cap)sim.ui.cap.hidden=false;setSpeed(sim,1);setRunning(sim,true);if(sim.def.onTourExit)sim.def.onTourExit(sim);}
+function tourExit(sim,why){const wasOn=sim.tour&&sim.tour.on;sim.tour={on:false,i:0};sim.ui.tourbar.hidden=true;if(sim.ui.cap)sim.ui.cap.hidden=false;setSpeed(sim,1);setRunning(sim,true);if(sim.def.onTourExit)sim.def.onTourExit(sim);
+  if(wasOn&&sim.mode==='guided'&&sim.guide&&sim.guide.phase==='tour'&&why!=='level'&&why!=='mode'){if(why==='exit')setMode(sim,'lab',true);else guideTry(sim);}}
 function drawFocus(sim,ctx,LH){if(!sim.tour||!sim.tour.on)return;const s=tourSteps(sim)[sim.tour.i];if(!s||!s.focus)return;let f=typeof s.focus==='function'?s.focus(sim):s.focus;if(!f)return;
   const rects=Array.isArray(f[0])?f:[f];const sub=(x,y,w,h,r)=>{r=Math.min(r,w/2,h/2);ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
   ctx.save();ctx.beginPath();ctx.rect(0,0,800,LH);rects.forEach(r=>sub(r[0],r[1],r[2],r[3],10));ctx.fillStyle='rgba(10,10,14,.5)';ctx.fill('evenodd');
   ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;rects.forEach(r=>{rr(ctx,r[0],r[1],r[2],r[3],10);ctx.stroke();});ctx.restore();}
 BL.h.lvText=lvText;
+/* ---------- view modes: Guided (default), Challenge game, Full lab ----------
+   Guided runs the walkthrough one step at a time, then the predict-then-test questions one at a time,
+   with everything below the stage tucked away; Full lab is the whole bench. A sim opts into the
+   Challenge game with def.game = {label, title, intro, rounds, controls:[ids], metrics:[ids], fireLabel,
+   newRound(sim,i)->round {prompt}, fire(sim,round), poll(sim,round)->null|{ok,msg}, retry(sim,round),
+   solve(sim,round) (sets controls to a winning answer; used by tests), par (seconds)}.
+   While a game round is live, sim.gameRound holds the round so draw() can show the target. */
+const modeKey=sim=>LAB_KEY+'-mode-'+sim.def.id;
+function hasGuide(sim){return tourSteps(sim).length>0;}
+function buildModebar(sim){const bar=sim.ui.sec.querySelector('.modebar');if(!bar)return;const d=sim.def,opts=[];
+  if(d.tour)opts.push(['guided','Guided']);if(d.game)opts.push(['game',d.game.label||'Challenge']);opts.push(['lab','Full lab']);
+  if(opts.length<2){bar.hidden=true;return;}
+  bar.innerHTML=opts.map(([m,l])=>`<button type="button" data-mode="${m}">${l}</button>`).join('');
+  bar.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setMode(sim,b.dataset.mode,true)));}
+function restoreVisibility(sim){const d=sim.def;sim.ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl);});if(d.onLevel)d.onLevel(sim);}
+function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(sim))mode='lab';if(mode==='game'&&!d.game)mode='lab';if(!['guided','game','lab'].includes(mode))mode='lab';
+  if(sim.game&&mode!=='game')gameStop(sim);
+  if(sim.tour&&sim.tour.on)tourExit(sim,'mode');
+  sim.mode=mode;if(user)store.set(modeKey(sim),mode);
+  const sec=sim.ui.sec;['guided','game','lab'].forEach(m=>sec.classList.toggle('m-'+m,m===mode));sec.classList.remove('g-try','g-done');
+  sec.querySelectorAll('.modebar button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
+  sim.ui.donecard.hidden=true;sim.ui.gamecard.hidden=true;sim.guide=null;
+  const ex=sim.ui.tourbar&&sim.ui.tourbar.querySelector('[data-tour=exit]');if(ex)ex.textContent=mode==='guided'?'Skip to the full lab':'Exit walkthrough';
+  if(mode==='guided'){sim.guide={phase:'tour'};sim.ch={idx:0,phase:'ask',pick:null,changed:false};renderChallenge(sim);tourGo(sim,0);}
+  else if(mode==='game'){gameStart(sim);}
+  else restoreVisibility(sim);
+  if(user&&sim.ui.sec.scrollIntoView)window.scrollTo(0,0);
+  updateReadouts(sim);drawGraph(sim);}
+function guideTry(sim){const list=visibleCh(sim);if(!list.length){guideDone(sim);return;}sim.guide.phase='try';sim.ui.sec.classList.add('g-try');
+  sim.ch={idx:0,phase:'ask',pick:null,changed:false};if(sim.def.onChallenge)sim.def.onChallenge(sim,list[0],'ask');renderChallenge(sim);
+  const c=sim.ui.donecard;c.innerHTML=`<p class="dc-h">Your turn: ${list.length} quick prediction${list.length>1?'s':''}</p><p class="dc-x">Below the simulation, pick what you think will happen. Then watch the model test your prediction.</p>`;c.hidden=false;}
+function guideDone(sim){if(!sim.guide)sim.guide={};sim.guide.phase='done';const sec=sim.ui.sec,d=sim.def;sec.classList.remove('g-try');sec.classList.add('g-done');
+  const c=sim.ui.donecard;c.innerHTML=`<p class="dc-h">You finished the guide.</p><p class="dc-x">${d.game?'Test yourself in the challenge, or explore':'Now explore'} on your own: the full lab has every variable, the graph, the data table and an investigation to try.</p><div class="row">${d.game?`<button type="button" class="btn primary" data-dc="game">Play the ${d.game.label||'challenge'}</button>`:''}<button type="button" class="btn${d.game?'':' primary'}" data-dc="lab">Open the full lab</button><button type="button" class="btn" data-dc="again">Start the guide again</button></div>`;c.hidden=false;
+  c.querySelector('[data-dc=lab]').onclick=()=>setMode(sim,'lab',true);const g=c.querySelector('[data-dc=game]');if(g)g.onclick=()=>setMode(sim,'game',true);c.querySelector('[data-dc=again]').onclick=()=>setMode(sim,'guided',true);}
+function gameVis(sim,ctls,mets){restoreVisibility(sim);
+  if(ctls)(sim.def.controls||[]).forEach(c=>{const e=document.getElementById(sim.def.id+'-'+c.id)||document.getElementById(sim.def.id+'-'+c.id+'-l');const w=e&&e.closest('.ctl');if(w&&!ctls.includes(c.id))w.hidden=true;});
+  sim.ui.ctrls.querySelectorAll('.actions button').forEach(b=>b.hidden=true);
+  if(mets)(sim.def.metrics||[]).forEach(m=>{const t=sim.ui.tiles[m.id];const w=t&&t.num.closest('.tile');if(w&&!mets.includes(m.id))w.hidden=true;});
+  sim.ui.read.hidden=!!(mets&&!mets.length);}
+function gameStart(sim){const g=sim.def.game;if(!sim.ui.ctrlsHome){sim.ui.ctrlsHome=sim.ui.ctrls.parentNode;}sim.ui.gamecard.after(sim.ui.ctrls);sim.ui.ctrls.after(sim.ui.gamebtns);sim.ui.gamebtns.hidden=false;sim.ui.ctrls.classList.add('in-game');sim.game={i:0,score:0,misses:0,roundMiss:0,t0:null,elapsed:0,state:'aim',results:[]};setSpeed(sim,1);setRunning(sim,true);if(g.start)g.start(sim);gameRound(sim);}
+function gameRound(sim){const g=sim.def.game,G=sim.game;G.round=g.newRound(sim,G.i)||{};sim.gameRound=G.round;G.state='aim';G.roundMiss=0;G.last=null;
+  gameVis(sim,G.round.controls||g.controls,G.round.metrics||g.metrics);sim.infoDirty=true;renderGame(sim);}
+function gameFire(sim){const g=sim.def.game,G=sim.game;if(!G||G.state==='flying'||G.state==='over')return;if(G.state==='miss'){G.state='aim';if(g.retry)g.retry(sim,G.round);}
+  if(G.t0===null)G.t0=performance.now();G.state='flying';G.last=null;g.fire(sim,G.round);renderGame(sim);}
+function gameTick(sim){const G=sim.game;if(!G||G.state!=='flying')return;const r=sim.def.game.poll(sim,G.round);if(!r)return;G.last=r;
+  if(r.ok){G.state='hit';const pts=Math.max(1,3-G.roundMiss);G.score+=pts;G.results.push(pts);}else{G.state='miss';G.roundMiss++;G.misses++;}renderGame(sim);}
+function gameNext(sim){const g=sim.def.game,G=sim.game;if(!G)return;G.i++;
+  if(G.i>=g.rounds){G.state='over';G.elapsed=G.t0===null?0:(performance.now()-G.t0)/1000;sim.gameRound=null;
+    const k=LAB_KEY+'-best-'+sim.def.id;let best=null;try{best=JSON.parse(store.get(k)||'null');}catch(e){}
+    G.newBest=!best||G.score>best.score||(G.score===best.score&&G.elapsed<best.time);if(G.newBest)store.set(k,JSON.stringify({score:G.score,time:G.elapsed}));G.best=G.newBest?{score:G.score,time:G.elapsed}:best;renderGame(sim);return;}
+  gameRound(sim);}
+function gameStop(sim){sim.game=null;sim.gameRound=null;if(sim.ui.ctrlsHome&&sim.ui.ctrls.parentNode!==sim.ui.ctrlsHome){sim.ui.ctrlsHome.appendChild(sim.ui.ctrls);}sim.ui.ctrls.classList.remove('in-game');if(sim.ui.gamebtns){sim.ui.gamebtns.hidden=true;sim.ui.gamebtns.innerHTML='';}if(sim.ui.gamecard)sim.ui.gamecard.hidden=true;if(sim.ui.read)sim.ui.read.hidden=!(sim.def.metrics||[]).length;}
+const fmtTime=s=>{s=Math.max(0,s||0);const m=Math.floor(s/60),r=Math.floor(s%60);return m+':'+String(r).padStart(2,'0');};
+function gameClock(sim){const G=sim.game;if(!G)return;const t=sim.ui.gamecard.querySelector('.gm-time');if(!t)return;const s=G.state==='over'?G.elapsed:G.t0===null?0:(performance.now()-G.t0)/1000;t.textContent=fmtTime(s);}
+function renderGame(sim){const g=sim.def.game,G=sim.game,c=sim.ui.gamecard;if(!G){c.hidden=true;return;}c.hidden=false;const max=3*g.rounds;
+  const stats=`<span class="gm-stats"><span>Round <b>${Math.min(G.i+1,g.rounds)}</b> of ${g.rounds}</span><span>Score <b>${G.score}</b> / ${max}</span><span>Time <b class="gm-time">0:00</b></span></span>`;
+  if(G.state==='over'){if(sim.ui.gamebtns){sim.ui.gamebtns.innerHTML='';sim.ui.gamebtns.hidden=true;}const badges=[];if(G.score===max)badges.push('First try every time');if(g.par&&G.elapsed<=g.par)badges.push('Under par time');if(G.newBest)badges.push('New personal best');
+    c.innerHTML=`<div class="gm-top"><b class="gm-t">${lvText(g.title)||'Challenge'}: done!</b>${stats}</div><p class="gm-x">You scored <b>${G.score} of ${max}</b> in ${fmtTime(G.elapsed)}. ${G.best&&!G.newBest?`Your best is ${G.best.score} in ${fmtTime(G.best.time)}.`:''}</p>${badges.length?`<p class="badges">${badges.map(b=>`<span>${b}</span>`).join('')}</p>`:''}<div class="row"><button type="button" class="btn primary" data-g="again">Play again</button><button type="button" class="btn" data-g="lab">Open the full lab</button></div>`;
+    c.querySelector('[data-g=again]').onclick=()=>gameStart(sim);c.querySelector('[data-g=lab]').onclick=()=>setMode(sim,'lab',true);gameClock(sim);return;}
+  const r=G.round||{},msg=G.last?`<p class="gm-msg ${G.last.ok?'ok':'no'}">${G.last.msg||(G.last.ok?'Hit!':'Missed.')}</p>`:'';
+  const intro=G.i===0&&G.state==='aim'&&g.intro?`<p class="gm-intro">${lvText(g.intro)}</p>`:'';
+  const btn=G.state==='hit'?`<button type="button" class="btn primary" data-g="next">${G.i+1<g.rounds?'Next round':'See your score'}</button>`:`<button type="button" class="btn primary" data-g="fire"${G.state==='flying'?' disabled':''}>${G.state==='miss'?'Try again':(g.fireLabel||'Go')}</button>`;
+  c.innerHTML=`<div class="gm-top"><b class="gm-t">${lvText(g.title)||'Challenge'}</b>${stats}</div>${intro}<p class="gm-x">${lvText(r.prompt)||''}</p>${msg}`;
+  const B=sim.ui.gamebtns;B.hidden=false;B.innerHTML=btn;
+  const f=B.querySelector('[data-g=fire]');if(f)f.onclick=()=>gameFire(sim);const n=B.querySelector('[data-g=next]');if(n)n.onclick=()=>gameNext(sim);gameClock(sim);}
+
+/* ---------- "Embed this tool in Canvas" panel ---------- */
+function embedUrl(sim,o){let base=location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');const q=new URLSearchParams();q.set('embed','1');if(o.mode)q.set('mode',o.mode);if(o.level)q.set('level',o.level);return base+'?'+q.toString()+'#'+sim.def.hash;}
+function buildEmbed(sim){const box=sim.ui.sec.querySelector('.embed-b');if(!box||EMBED){const d=sim.ui.sec.querySelector('.embed-box');if(d&&EMBED)d.hidden=true;return;}const d=sim.def,id=d.id;
+  const modes=[d.tour?['guided','Guided (walkthrough, then predictions)']:null,d.game?['game',(d.game.label||'Challenge')+' game']:null,['lab','Full lab']].filter(Boolean);
+  box.innerHTML=`<p>Put this tool right inside a Canvas page, assignment or discussion. Students use it there with no login, and nothing they do leaves their device.</p>
+  <div class="emb-opts"><label>Start in <select class="sel" data-e="mode">${modes.map(m=>`<option value="${m[0]}">${m[1]}</option>`).join('')}</select></label>
+  <label>Detail <select class="sel" data-e="level"><option value="">Students choose (starts at Big picture)</option><option value="bio">Big picture</option><option value="honors">Closer look</option><option value="ap">Deep dive</option></select></label>
+  <label>Height <select class="sel" data-e="h"><option value="900">Standard (900 px)</option><option value="1150">Tall (1150 px)</option><option value="720">Short (720 px)</option></select></label></div>
+  <label class="emb-l" for="${id}-embcode">Embed code</label><textarea class="emb-code" id="${id}-embcode" readonly rows="3"></textarea>
+  <div class="row"><button type="button" class="btn primary" data-e="copy">Copy embed code</button><button type="button" class="btn" data-e="copylink">Copy link</button><a class="btn" data-e="open" target="_blank" rel="noopener">Preview the embed</a><span class="toast emb-toast" hidden></span></div>
+  <ol class="emb-steps">
+  <li><b>Copy the embed code</b> with the red button above.</li>
+  <li>In Canvas, open the page (or assignment or discussion) and click <b>Edit</b>.<img src="img/canvas-embed-1.jpg" alt="A Canvas page with the Edit button outlined" loading="lazy" width="800" height="300"></li>
+  <li>Click where you want the tool in the text, then open <b>Insert</b> and choose <b>Embed</b>.<img src="img/canvas-embed-2.jpg" alt="The Canvas editor's Insert menu with Embed outlined" loading="lazy" width="800" height="460"></li>
+  <li>Paste the code into the <b>Embed Code</b> box and click <b>Submit</b>.<img src="img/canvas-embed-3.jpg" alt="Canvas's Embed box with the code pasted in and Submit outlined" loading="lazy" width="800" height="430"></li>
+  <li>Scroll down and click <b>Save</b> (or <b>Save &amp; Publish</b>). Students now see the tool right in the page.<img src="img/canvas-embed-4.jpg" alt="The bottom of the Canvas editor with the Save button outlined" loading="lazy" width="800" height="220"></li></ol>
+  <p class="help">Prefer a link? In a module, add an <b>External URL</b> with the copied link and tick <b>Load in a new tab</b>.</p>`;
+  const get=k=>box.querySelector(`[data-e=${k}]`),code=get('mode')&&box.querySelector('.emb-code');
+  if(hasGuide(sim))get('mode').value='guided';else get('mode').value='lab';
+  const upd=()=>{const url=embedUrl(sim,{mode:get('mode').value,level:get('level').value});const t=(d.tab||d.title).replace(/"/g,'&quot;');
+    code.value=`<iframe src="${url}" title="${t} · ${LAB_NAME}" width="100%" height="${get('h').value}" style="border:0;max-width:1100px" allow="fullscreen" loading="lazy"></iframe>`;get('open').href=url;box._url=url;};
+  ['mode','level','h'].forEach(k=>get(k).addEventListener('change',upd));upd();
+  const toast=box.querySelector('.emb-toast'),say=m=>{toast.textContent=m;toast.hidden=false;clearTimeout(toast._h);toast._h=setTimeout(()=>{toast.hidden=true;},2400);};
+  const copy=(txt,ok)=>{const fb=()=>{code.focus();code.select();say('Selected. Press Ctrl+C to copy');};try{navigator.clipboard.writeText(txt).then(()=>say(ok),fb);}catch(e){fb();}};
+  get('copy').addEventListener('click',()=>copy(code.value,'Embed code copied'));get('copylink').addEventListener('click',()=>copy(box._url,'Link copied'));}
+BL.setMode=setMode;BL.gameFire=gameFire;BL.gameNext=gameNext;BL.guideDone=guideDone;
+
 function flash(sim,msg){const t=sim.ui.toast;if(!t)return;t.textContent=msg;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>{t.hidden=true;},2400);}
 function saveTrials(sim){store.set(LAB_KEY+'-trials-'+sim.def.id,JSON.stringify(sim.trials));}
 function trialCols(sim){return [...controlsVisible(sim).filter(c=>!c.noTrial).map(c=>({id:c.id,label:c.label+(c.unit&&c.type==='range'&&c.unit.trim()?' ('+c.unit.trim()+')':''),ctl:c,num:c.type==='range'})),
@@ -207,15 +309,15 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','
 function renderTable(sim){if(!sim.ui.tbl)return;const cols=trialCols(sim);
   if(!sim.trials.length){sim.ui.tbl.innerHTML='<p class="empty">No trials yet. Set the variables, let the readings settle, then press Record trial.</p>';return;}
   sim.ui.tbl.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>Trial</th>${cols.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead><tbody>${
-    sim.trials.map(r=>`<tr><td>${r.n}</td>${cols.map(c=>`<td>${esc(cellText(c,r[c.id]))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
+    sim.trials.map(r=>`<tr><td>${r._n!==undefined?r._n:r.n}</td>${cols.map(c=>`<td>${esc(cellText(c,r[c.id]))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
 function toCSV(sim){if(!sim.trials.length)return '';const cols=trialCols(sim),q=s=>/[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
-  return [['Trial',...cols.map(c=>c.label)].map(q).join(','),...sim.trials.map(r=>[r.n,...cols.map(c=>cellText(c,r[c.id]))].map(x=>q(String(x))).join(','))].join('\n');}
+  return [['Trial',...cols.map(c=>c.label)].map(q).join(','),...sim.trials.map(r=>[r._n!==undefined?r._n:r.n,...cols.map(c=>cellText(c,r[c.id]))].map(x=>q(String(x))).join(','))].join('\n');}
 
 /* ---------- level-dependent refresh ---------- */
 function applyLevel(sim){const ui=sim.ui,d=sim.def;
   ui.lede.textContent=lvText(d.lede);if(ui.scale)ui.scale.textContent=lvText(d.scale);
   if(ui.lab)ui.lab.innerHTML='<p class="lab-h">Investigation</p>'+lvText(d.lab);
-  if(sim.tour&&sim.tour.on)tourExit(sim);
+  if(sim.tour&&sim.tour.on)tourExit(sim,'level');
   ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl);if(e.tagName==='OPTION')e.disabled=!atLeast(e.dataset.lvl);});
   (d.controls||[]).forEach(c=>{let reset=!atLeast(c.lvl)&&sim.p[c.id]!==c.def;
     if(!reset&&c.options){const o=c.options.find(o=>o.v===sim.p[c.id]);if(o&&o.lvl&&!atLeast(o.lvl))reset=true;}
@@ -224,9 +326,11 @@ function applyLevel(sim){const ui=sim.ui,d=sim.def;
   if(ui.gm){const go=graphOptions(sim);ui.gm.innerHTML=go.map(g=>`<option value="${g.id}">${g.label}</option>`).join('');
     if(!go.find(g=>g.id===sim.gMetric))sim.gMetric=(go.find(g=>g.id===d.defaultGraph)||go[0]||{}).id;if(sim.gMetric)ui.gm.value=sim.gMetric;
     if(!go.length){sim.gmode='trials';const tb=ui.sec.querySelector('[data-g=trials]');tb.setAttribute('aria-checked','true');ui.sec.querySelector('[data-g=live]').hidden=true;ui.sec.querySelector('.g-live').hidden=true;ui.sec.querySelector('.g-trials').hidden=false;}
+    else{const lb=ui.sec.querySelector('[data-g=live]');if(lb.hidden){lb.hidden=false;sim.gmode='live';lb.setAttribute('aria-checked','true');ui.sec.querySelector('[data-g=trials]').setAttribute('aria-checked','false');ui.sec.querySelector('.g-live').hidden=false;ui.sec.querySelector('.g-trials').hidden=true;}}
     const nc=trialCols(sim).filter(c=>c.num);const opts=nc.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');ui.gx.innerHTML=opts;ui.gy.innerHTML=opts;
     if(nc.length){if(!nc.find(c=>c.id===sim.gx))sim.gx=nc[0].id;if(!nc.find(c=>c.id===sim.gy))sim.gy=(nc.find(c=>c.id===d.defaultGraph)||nc[nc.length-1]).id;ui.gx.value=sim.gx;ui.gy.value=sim.gy;}}
-  sim.ch={idx:0,phase:'ask',pick:null,changed:false};renderChallenge(sim);renderTable(sim);sim.infoDirty=true;}
+  sim.ch={idx:0,phase:'ask',pick:null,changed:false};renderChallenge(sim);renderTable(sim);sim.infoDirty=true;
+  if(sim.mode)setMode(sim,sim.mode);}
 
 /* ---------- predict-then-test challenges ---------- */
 function visibleCh(sim){const d=sim.def;const list=typeof d.challenges==='function'?d.challenges(sim):(d.challenges||[]);return list.filter(c=>atLeast(c.lvl));}
@@ -241,9 +345,10 @@ function renderChallenge(sim){const box=sim.ui.pred;if(!box)return;const list=vi
     box.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>startChallenge(sim,+b.dataset.i)));}
   else if(c.phase==='running'){box.innerHTML=head+`<p class="pick">Your prediction: <b>${ch.choices[c.pick]}</b></p><p class="status">${c.changed?(ch.changeText||'Changed')+'. Watch what happens.':'Holding steady first…'}</p><div class="prog"><i></i></div>`;}
   else{const ok=c.pick===ch.correct;box.innerHTML=head+`<p class="verdict ${ok?'ok':'no'}">${ok?(ch.instant?'Correct.':'Your prediction held up.'):(ch.instant?'Not quite.':'Not what you predicted.')}</p>${ok?'':`<p class="pick">${ch.instant?'Answer':'Result'}: <b>${ch.choices[ch.correct]}</b></p>`}<p class="explain">${explainFor(ch)}</p>
-    <div class="row"><button type="button" class="btn" data-a="again">${ch.instant?'Try again':'Run it again'}</button>${c.idx<list.length-1?'<button type="button" class="btn primary" data-a="next">Next</button>':'<button type="button" class="btn primary" data-a="first">Start over</button>'}</div>`;
+    <div class="row"><button type="button" class="btn" data-a="again">${ch.instant?'Try again':'Run it again'}</button>${c.idx<list.length-1?'<button type="button" class="btn primary" data-a="next">Next</button>':(sim.mode==='guided'?'<button type="button" class="btn primary" data-a="finish">Finish</button>':'<button type="button" class="btn primary" data-a="first">Start over</button>')}</div>`;
     box.querySelector('[data-a=again]').addEventListener('click',()=>{c.phase='ask';if(sim.def.onChallenge)sim.def.onChallenge(sim,list[c.idx],'ask');renderChallenge(sim);});
-    const nx=box.querySelector('[data-a=next],[data-a=first]');nx.addEventListener('click',()=>{c.idx=nx.dataset.a==='next'?c.idx+1:0;c.phase='ask';const nl=visibleCh(sim);if(sim.def.onChallenge)sim.def.onChallenge(sim,nl[c.idx],'ask');renderChallenge(sim);});}}
+    const fin=box.querySelector('[data-a=finish]');if(fin)fin.addEventListener('click',()=>guideDone(sim));
+    const nx=box.querySelector('[data-a=next],[data-a=first]');if(nx)nx.addEventListener('click',()=>{c.idx=nx.dataset.a==='next'?c.idx+1:0;c.phase='ask';const nl=visibleCh(sim);if(sim.def.onChallenge)sim.def.onChallenge(sim,nl[c.idx],'ask');renderChallenge(sim);});}}
 function startChallenge(sim,pick){const ch=visibleCh(sim)[sim.ch.idx];sim.ch.pick=pick;
   if(ch.instant){sim.ch.phase='done';if(sim.def.onChallenge)sim.def.onChallenge(sim,ch,'done');renderChallenge(sim);return;}
   const base={};(sim.def.controls||[]).forEach(c=>base[c.id]=c.def);
@@ -302,8 +407,9 @@ BL.gotoChallenge=function(sim,i){sim.ch={idx:i,phase:'ask',pick:null,changed:fal
 
 /* ---------- router, landing page, loop ---------- */
 let homeEl,simsEl,jumpEl,backEl;
-function ensureBuilt(id){const sim=sims[id];if(sim.ui.sec)return sim;simsEl.appendChild(buildSim(sim));resetSim(sim);applyLevel(sim);return sim;}
-function show(hash){const def=DEFS.find(d=>d.hash===hash);
+function ensureBuilt(id){const sim=sims[id];if(sim.ui.sec)return sim;simsEl.appendChild(buildSim(sim));resetSim(sim);applyLevel(sim);buildModebar(sim);setMode(sim,(QMODE&&['guided','game','lab'].includes(QMODE)?QMODE:null)||store.get(modeKey(sim))||(hasGuide(sim)?'guided':'lab'));buildEmbed(sim);return sim;}
+function show(hash){if(hash&&hash.indexOf('path-')===0){const id=hash.slice(5);if((BL.COURSES||[]).some(c=>c.id===id)||id==='topic'){browse=id;store.set(LAB_KEY+'-browse',browse);buildHome();}hash='';}
+  const def=DEFS.find(d=>d.hash===hash);
   if(!def){active=null;homeEl.hidden=false;backEl.hidden=true;jumpEl.value='';DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=true;});document.title=LAB_NAME;drawThumbs();return;}
   const sim=ensureBuilt(def.id);active=sim;homeEl.hidden=true;backEl.hidden=false;jumpEl.value=def.hash;renderRelated(sim);
   DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=d.id!==def.id;});document.title=def.tab+' · '+LAB_NAME;
@@ -333,15 +439,17 @@ const thumbCanvas=document.createElement('canvas');
 let browse=store.get(LAB_KEY+'-browse')||'topic';
 function sortSec(list,u){const ord=(BL.TOPIC_ORDER||{})[u]||[];const ix=d=>{const i=ord.indexOf(d.id);return i<0?1000+(d.order||0):i;};return list.slice().sort((a,b)=>ix(a)-ix(b));}
 function card(d){return `<a class="card${d.apUnit===FURTHER?' adv':''}" href="#${d.hash}"><canvas class="thumb" data-sim="${d.id}" aria-hidden="true"></canvas><span class="card-b"><span class="card-t">${d.tab}</span><span class="card-d">${d.card||''}</span>${d.kind?`<span class="kind">${d.kind}</span>`:''}</span></a>`;}
+/* A card that links to another site (e.g. a sister lab): {href,title,text,kind,label} */
+function extCard(x){return `<a class="card adv ext${x.lesson?' lesson':''}" href="${x.href}"${x.lesson?' target="_blank" rel="noopener"':''}><span class="thumb ext-thumb" aria-hidden="true"><span>${x.label||x.title}</span></span><span class="card-b"><span class="card-t">${x.title} ↗</span><span class="card-d">${x.text||''}</span>${x.kind?`<span class="kind">${x.kind}</span>`:''}</span></a>`;}
 function buildHome(){const units=document.getElementById('units');units.innerHTML='';const courses=BL.COURSES||[];
   const bw=document.getElementById('browse');
   if(bw){bw.innerHTML=['<button type="button" data-b="topic">By topic</button>'].concat(courses.map(c=>`<button type="button" data-b="${c.id}">${c.name}</button>`)).join('');
     bw.querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.b===browse));b.onclick=()=>{browse=b.dataset.b;store.set(LAB_KEY+'-browse',browse);buildHome();drawThumbs();};});}
   const course=courses.find(c=>c.id===browse);
   if(course){const intro=el('p',{class:'lede course-lede'},course.blurb||'');units.appendChild(intro);
-    course.units.forEach((u,i)=>{const list=linkList(u.ids);if(!list.length)return;const sec=el('section',{class:'unit'});
-      sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${u.n||('Step '+(i+1))}</span> ${u.t}</h3>${u.note?`<p class="unit-note">${u.note}</p>`:''}<div class="cards">${list.map(card).join('')}</div>`;units.appendChild(sec);});
-    const adv=linkList(course.further);if(adv.length){const sec=el('section',{class:'unit further'});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">Go further</span> For students who want more</h3><p class="unit-note">Optional tools that go past what class time allows.</p><div class="cards">${adv.map(card).join('')}</div>`;units.appendChild(sec);}}
+    course.units.forEach((u,i)=>{const list=linkList(u.ids),ext=u.links||[];if(!list.length&&!ext.length)return;const sec=el('section',{class:'unit'});
+      sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${u.n||('Step '+(i+1))}</span> ${u.t}</h3>${u.note?`<p class="unit-note">${u.note}</p>`:''}<div class="cards">${ext.map(extCard).join('')}${list.map(card).join('')}</div>`;units.appendChild(sec);});
+    const adv=linkList(course.further),ext=course.furtherLinks||[];if(adv.length||ext.length){const sec=el('section',{class:'unit further'});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">Go further</span> For students who want more</h3><p class="unit-note">Optional tools that go past what class time allows.</p><div class="cards">${adv.map(card).join('')}${ext.map(extCard).join('')}</div>`;units.appendChild(sec);}}
   else{const groups={};DEFS.forEach(d=>{(groups[d.apUnit]=groups[d.apUnit]||[]).push(d);});
     SECTIONS.forEach(u=>{const list=sortSec(groups[u]||[],u);if(!list.length)return;
       const sec=el('section',{class:'unit'+(u===FURTHER?' further':'')});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${UNITS[u]&&UNIT_PREFIX?UNIT_PREFIX+' '+u:''}</span> ${secName(u)}</h3>${u===FURTHER?'<p class="unit-note">Optional, advanced tools for students who want to go past what class time allows.</p>':''}<div class="cards">${list.map(card).join('')}</div>`;units.appendChild(sec);});}
@@ -349,6 +457,7 @@ function buildHome(){const units=document.getElementById('units');units.innerHTM
   jumpEl.innerHTML='<option value="">All simulations</option>'+SECTIONS.map(u=>{const list=sortSec(groups[u]||[],u);if(!list.length)return '';return `<optgroup label="${secLabel(u)}">${list.map(d=>`<option value="${d.hash}">${d.tab}</option>`).join('')}</optgroup>`;}).join('');}
 
 BL.start=function(){
+  if(EMBED)document.documentElement.classList.add('embed');
   homeEl=document.getElementById('home');simsEl=document.getElementById('sims');jumpEl=document.getElementById('jump');backEl=document.getElementById('back');
   DEFS.forEach(d=>{sims[d.id]=makeSim(d);});
   readPal();buildHome();
@@ -364,13 +473,14 @@ BL.start=function(){
   let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{if(!active)drawThumbs(true);else drawGraph(active);},150);});
   show(location.hash.slice(1));
   let last=performance.now(),acc=0;
-  function frame(now){const rdt=Math.min(0.05,(now-last)/1000);last=now;const sim=active;
+  function frame(now){const rdt=Math.max(0,Math.min(0.05,(now-last)/1000));last=now;const sim=active;
     if(sim){const d=sim.def;const stepping=sim.stepLeft>0;if(stepping)sim.stepLeft-=rdt;const runs=(sim.running||stepping)&&(!d.timeless||d.animated);
       if(runs&&!d.timeless){let dt=rdt*(d.timeScale||1)*sim.speed;while(dt>1e-12){const h=Math.min(dt,d.dtMax||0.01);d.step(sim,h);sim.t+=h;dt-=h;}challengeTick(sim);sample(sim);}
       else if(runs&&d.timeless&&d.step){d.step(sim,rdt*sim.speed);sim.t+=rdt*sim.speed;challengeTick(sim);}
       else if(d.timeless){sim.t+=rdt;challengeTick(sim);}
       const vdt=(sim.running||stepping||d.timeless)?rdt*sim.speed:0;sim.vt+=vdt;drawStageTo(sim,sim.ui.stage,vdt);
-      acc+=rdt;if(acc>0.1){acc=0;updateReadouts(sim);if(sim.gmode==='live'||d.timeless)drawGraph(sim);}}
+      if(sim.game){gameTick(sim);}
+      acc+=rdt;if(acc>0.1){acc=0;updateReadouts(sim);if(sim.gmode==='live'||d.timeless)drawGraph(sim);if(sim.game)gameClock(sim);}}
     requestAnimationFrame(frame);}
   requestAnimationFrame(frame);
 };
