@@ -318,3 +318,16 @@ html.embed .wrap{padding-top:10px}
 a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .card.lesson .ext-thumb{background:linear-gradient(135deg,#0f3d3e,#1b5e5f);font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:19px;font-style:italic}
 .emb-steps li{margin-bottom:12px}.emb-steps img{display:block;width:100%;max-width:520px;height:auto;margin:8px 0 4px;border:1px solid var(--line);border-radius:8px}
+/* Practical layer */
+.real-uses{margin:10px 0 4px;padding:8px 14px;border-left:3px solid var(--rj);background:var(--card2);border-radius:0 8px 8px 0;max-width:72ch}
+.real-uses[hidden]{display:none}
+.real-uses .ru-h{margin:0 0 4px;font-weight:700;font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.real-uses ul{margin:0;padding-left:1.1em}.real-uses li{margin:2px 0}
+.sim.m-guided .real-uses,.sim.m-game .real-uses{display:none}
+.donecard .dc-take{margin:6px 0 10px;padding:8px 12px;background:var(--card);border-radius:8px;border:1px solid var(--line)}
+.real-uses .ru-q{margin:0 0 8px;font-weight:600}
+.real-uses .ru-q{margin:0 0 8px;font-weight:600}
+.donecard .dc-ans{margin:6px 0}
+.real-uses .ru-q{margin:0}
+.real-uses .ru-d{margin-top:4px}.real-uses .ru-d summary{cursor:pointer;font-weight:700;font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.real-uses .ru-d ul{margin-top:4px}

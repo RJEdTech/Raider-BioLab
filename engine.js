@@ -71,6 +71,17 @@ Object.defineProperty(BL,'level',{get:()=>level});
 /* ---------------- registry ---------------- */
 const DEFS=[];BL.defs=DEFS;
 BL.register=function(def){if(!def||!def.id)return;DEFS.push(def);};
+/* Practical layer (practical*.js): a real situation to start from, where the idea shows up, a rule of thumb to keep,
+   and plainer Big picture wording for the lede and walkthrough. Merged into the tool definitions at start. */
+const PRACT={};BL.addPractical=o=>{Object.assign(PRACT,o||{});};
+const bioOver=(t,n)=>!n?t:(t&&typeof t==='object')?Object.assign({},t,{bio:n}):(t?{bio:n,honors:t}:n);
+function applyPractical(d){const P=PRACT[d.id];if(!P)return;d.practical=P;
+  if(P.lede)d.lede=bioOver(d.lede,P.lede);if(P.card)d.card=P.card;
+  if(P.tour&&d.tour){let k=0;d.tour.forEach(st=>{if(st.lvl&&st.lvl!=='bio')return;const n=P.tour[k++];if(n&&typeof n==='object'){if(n.text)st.text=bioOver(st.text,n.text);if(n.title)st.title=bioOver(st.title,n.title);}else if(n)st.text=bioOver(st.text,n);});}
+  if(P.hook&&d.tour&&d.tour.length){const h={title:P.hookTitle||'The question',text:P.hook,pause:true,hook:true};
+    /* hookSet: settings that make the opening scene match the question. The first original step then starts again from the defaults. */
+    if(P.hookSet){h.setup=sim=>{BL.setValues(sim,P.hookSet);BL.reset(sim);};const f=d.tour[0],o=f.setup;f.setup=sim=>{const base={};(d.controls||[]).forEach(c=>base[c.id]=c.def);BL.setValues(sim,base);BL.reset(sim);if(o)o(sim);};}
+    d.tour.unshift(h);}}
 const sims={};BL.sims=sims;
 let active=null;
 
@@ -101,7 +112,7 @@ function el(tag,attrs,html){const e=document.createElement(tag);if(attrs)for(con
 function buildSim(sim){
   const d=sim.def,id=d.id,asp=d.aspect||16/9,sec=el('section',{class:'sim',id:'sim-'+id,'aria-labelledby':'h-'+id});
   const hasGraph=d.graph!==false,hasPredict=!!d.challenges;
-  sec.innerHTML=`<div class="sim-head"><p class="eyebrow">${secLabel(d.apUnit)}</p><h2 id="h-${id}">${d.title}</h2><p class="lede"></p><div class="modebar" role="group" aria-label="How do you want to use this tool?"></div></div>
+  sec.innerHTML=`<div class="sim-head"><p class="eyebrow">${secLabel(d.apUnit)}</p><h2 id="h-${id}">${d.title}</h2><p class="lede"></p><div class="real-uses" hidden></div><div class="modebar" role="group" aria-label="How do you want to use this tool?"></div></div>
   <div class="bench">
     <div class="stage">${d.scale?`<p class="scale"></p>`:''}<canvas id="${id}-stage" style="aspect-ratio:${asp};--asp:${asp}" role="img" aria-label="${d.title} simulation"></canvas>
       <div class="tourbar" hidden><div class="tb-h"><span class="tb-n"></span><b class="tb-t"></b></div><p class="tb-x"></p>
@@ -139,7 +150,7 @@ function buildSim(sim){
   ${d.about?`<details class="about"><summary>About this model</summary><div class="about-b">${d.about}</div></details>`:''}
   <div class="related" hidden></div>
   <details class="about embed-box"><summary>Embed this tool in Canvas</summary><div class="about-b embed-b"></div></details>`;
-  const ui=sim.ui;ui.sec=sec;ui.lede=sec.querySelector('.lede');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
+  const ui=sim.ui;ui.sec=sec;ui.lede=sec.querySelector('.lede');ui.uses=sec.querySelector('.real-uses');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
   ui.clock=sec.querySelector('.clock');ui.play=sec.querySelector('[data-act=play]');ui.ctrls=sec.querySelector('.controls');ui.read=sec.querySelector('.readouts');
   ui.pred=sec.querySelector('.predict');ui.info=sec.querySelector('.info');ui.tbl=sec.querySelector('.tbl');ui.gm=sec.querySelector('#'+id+'-gm');ui.gx=sec.querySelector('#'+id+'-gx');ui.gy=sec.querySelector('#'+id+'-gy');
   ui.toast=sec.querySelector('.toast');ui.ctl={};ui.tiles={};ui.cap=sec.querySelector('.cap');ui.scale=sec.querySelector('.scale');ui.lab=sec.querySelector('.lab');
@@ -239,7 +250,7 @@ function guideTry(sim){const list=visibleCh(sim);if(!list.length){guideDone(sim)
   sim.ch={idx:0,phase:'ask',pick:null,changed:false};if(sim.def.onChallenge)sim.def.onChallenge(sim,list[0],'ask');renderChallenge(sim);
   const c=sim.ui.donecard;c.innerHTML=`<p class="dc-h">Your turn: ${list.length} quick prediction${list.length>1?'s':''}</p><p class="dc-x">Below the simulation, pick what you think will happen. Then watch the model test your prediction.</p>`;c.hidden=false;}
 function guideDone(sim){if(!sim.guide)sim.guide={};sim.guide.phase='done';const sec=sim.ui.sec,d=sim.def;sec.classList.remove('g-try');sec.classList.add('g-done');
-  const c=sim.ui.donecard;c.innerHTML=`<p class="dc-h">You finished the guide.</p><p class="dc-x">${d.game?'Test yourself in the challenge, or explore':'Now explore'} on your own: the full lab has every variable, the graph, the data table and an investigation to try.</p><div class="row">${d.game?`<button type="button" class="btn primary" data-dc="game">Play the ${d.game.label||'challenge'}</button>`:''}<button type="button" class="btn${d.game?'':' primary'}" data-dc="lab">Open the full lab</button><button type="button" class="btn" data-dc="again">Start the guide again</button></div>`;c.hidden=false;
+  const c=sim.ui.donecard;const tk=d.practical&&d.practical.takeaway?lvText(d.practical.takeaway):'';const an=d.practical&&d.practical.answer?lvText(d.practical.answer):'';c.innerHTML=`<p class="dc-h">You finished the guide.</p>${an?`<p class="dc-ans"><b>Back to the question:</b> ${an}</p>`:''}${tk?`<p class="dc-take"><b>Take this with you:</b> ${tk}</p>`:''}<p class="dc-x">${d.game?'Test yourself in the challenge, or explore':'Now explore'} on your own: the full lab has every variable, the graph, the data table and an investigation to try.</p><div class="row">${d.game?`<button type="button" class="btn primary" data-dc="game">Play the ${d.game.label||'challenge'}</button>`:''}<button type="button" class="btn${d.game?'':' primary'}" data-dc="lab">Open the full lab</button><button type="button" class="btn" data-dc="again">Start the guide again</button></div>`;c.hidden=false;
   c.querySelector('[data-dc=lab]').onclick=()=>setMode(sim,'lab',true);const g=c.querySelector('[data-dc=game]');if(g)g.onclick=()=>setMode(sim,'game',true);c.querySelector('[data-dc=again]').onclick=()=>setMode(sim,'guided',true);}
 function gameVis(sim,ctls,mets){restoreVisibility(sim);
   if(ctls)(sim.def.controls||[]).forEach(c=>{const e=document.getElementById(sim.def.id+'-'+c.id)||document.getElementById(sim.def.id+'-'+c.id+'-l');const w=e&&e.closest('.ctl');if(w&&!ctls.includes(c.id))w.hidden=true;});
@@ -288,7 +299,7 @@ function buildEmbed(sim){const box=sim.ui.sec.querySelector('.embed-b');if(!box|
   <li>In Canvas, open the page (or assignment or discussion) and click <b>Edit</b>.<img src="img/canvas-embed-1.jpg" alt="A Canvas page with the Edit button outlined" loading="lazy" width="800" height="300"></li>
   <li>Click where you want the tool in the text, then open <b>Insert</b> and choose <b>Embed</b>.<img src="img/canvas-embed-2.jpg" alt="The Canvas editor's Insert menu with Embed outlined" loading="lazy" width="800" height="460"></li>
   <li>Paste the code into the <b>Embed Code</b> box and click <b>Submit</b>.<img src="img/canvas-embed-3.jpg" alt="Canvas's Embed box with the code pasted in and Submit outlined" loading="lazy" width="800" height="430"></li>
-  <li>Scroll down and click <b>Save</b> (or <b>Save &amp; Publish</b>). Students now see the tool right in the page.<img src="img/canvas-embed-4.jpg" alt="The bottom of the Canvas editor with the Save button outlined" loading="lazy" width="800" height="220"></li></ol>
+  <li>Scroll down and click <b>Save</b> (or <b>Save &amp; Publish</b>). Students now see the tool right in the page.<img src="img/canvas-embed-4.jpg" alt="The bottom of the Canvas editor with the Save button outlined" loading="lazy" width="800" height="220"></li><li>Done. Students see the tool right on the page, without the site header, and can switch modes inside it.<img src="img/canvas-embed-5.jpg" alt="A published Canvas page with the projectile tool embedded" loading="lazy" width="800" height="701"></li></ol>
   <p class="help">Prefer a link? In a module, add an <b>External URL</b> with the copied link and tick <b>Load in a new tab</b>.</p>`;
   const get=k=>box.querySelector(`[data-e=${k}]`),code=get('mode')&&box.querySelector('.emb-code');
   if(hasGuide(sim))get('mode').value='guided';else get('mode').value='lab';
@@ -315,7 +326,7 @@ function toCSV(sim){if(!sim.trials.length)return '';const cols=trialCols(sim),q=
 
 /* ---------- level-dependent refresh ---------- */
 function applyLevel(sim){const ui=sim.ui,d=sim.def;
-  ui.lede.textContent=lvText(d.lede);if(ui.scale)ui.scale.textContent=lvText(d.scale);
+  ui.lede.textContent=lvText(d.lede);if(ui.uses){const P=d.practical,u=P&&P.uses?(Array.isArray(P.uses)?P.uses:lvText(P.uses)):null;const hk=P&&P.hook?lvText(P.hook):'';ui.uses.hidden=!(hk||(u&&u.length));ui.uses.innerHTML=(hk?'<p class="ru-q">'+hk+'</p>':'')+(u&&u.length?'<details class="ru-d"><summary>Where this shows up</summary><ul>'+u.map(x=>'<li>'+x+'</li>').join('')+'</ul></details>':'');}if(ui.scale)ui.scale.textContent=lvText(d.scale);
   if(ui.lab)ui.lab.innerHTML='<p class="lab-h">Investigation</p>'+lvText(d.lab);
   if(sim.tour&&sim.tour.on)tourExit(sim,'level');
   ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl);if(e.tagName==='OPTION')e.disabled=!atLeast(e.dataset.lvl);});
@@ -459,7 +470,7 @@ function buildHome(){const units=document.getElementById('units');units.innerHTM
 BL.start=function(){
   if(EMBED)document.documentElement.classList.add('embed');
   homeEl=document.getElementById('home');simsEl=document.getElementById('sims');jumpEl=document.getElementById('jump');backEl=document.getElementById('back');
-  DEFS.forEach(d=>{sims[d.id]=makeSim(d);});
+  DEFS.forEach(d=>{applyPractical(d);sims[d.id]=makeSim(d);});
   readPal();buildHome();
   const lvlBtns=[...document.querySelectorAll('#lvl button')];
   const setLevel=l=>{level=l;store.set(LAB_KEY+'-level',l);lvlBtns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.l===l)));DEFS.forEach(d=>{if(sims[d.id].ui.sec)applyLevel(sims[d.id]);});if(active){updateReadouts(active);drawGraph(active);}};
