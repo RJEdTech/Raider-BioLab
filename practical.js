@@ -221,6 +221,16 @@ potato: {
     'Somewhere between the beakers, a core would neither gain nor lose water. That concentration, the <b>isotonic point</b>, matches the inside of the potato cells.'
   ]
 },
+wpotential: {
+  hook: 'Lettuce wilts in salty dressing but crisps up in ice water. A lettuce cell’s sap is about 0.30 M. Put the cell in 0.10 M sucrose, then in 0.60 M sucrose. Which way does water move each time, and when does it stop?',
+  answer: 'In 0.10 M sucrose the solution’s Ψ is −2.45 bar, higher than the cell’s, so water moves in. The cell swells to about 110% of its size until wall pressure reaches +4.2 bar and the cell’s Ψ is also −2.45 bar. In 0.60 M sucrose the solution’s Ψ is −14.7 bar, so water leaves. Ψp falls to 0, the membrane pulls away from the wall, and the cell shrinks to about half its size before the two match.',
+  uses: [
+    'Crisping celery: soaking limp stalks in ice water lets water move in until the cell walls push back, so the stalks snap again.',
+    'Fertilizer burn: too much fertilizer around roots drops the soil water’s Ψ below the roots’, so water leaves the plant and the leaves brown.',
+    'Pickling: cucumbers in strong brine lose water to the lower-Ψ salt solution, which is why pickles shrink and wrinkle.'
+  ],
+  takeaway: 'Ψ = Ψp + Ψs and Ψs = −iCRT. More dissolved particles make Ψ more negative, wall pressure makes it higher, and water always moves toward the lower Ψ until both sides match.'
+},
 resp: {
   hook: 'Sprinting up the stairs, your muscle cells burn fuel faster and you start breathing hard. Raise the fuel supply from 40% to 100%. What happens to the ATP made and the oxygen used each second?',
   hookSet: { fuel: 40 },

@@ -41,7 +41,7 @@ BioLab.COURSES = [
     units: [
       { n: 'Summer', t: 'Ecology (AP Unit 8) and science practices', ids: ['pillbug', 'popgrowth', 'wolfmoose', 'predprey', 'biodiversity', 'energy', 'carboncycle'], note: 'Chi-square, population growth, communities and ecosystems.' },
       { n: 'Unit 1', t: 'Chemistry of life', ids: ['waterprops', 'water', 'macromolecules', 'protein', 'foodtests'] },
-      { n: 'Unit 2', t: 'Cells, membranes and water potential', ids: ['cellexplorer', 'sav', 'transport', 'potato'] },
+      { n: 'Unit 2', t: 'Cells, membranes and water potential', ids: ['cellexplorer', 'sav', 'transport', 'potato', 'wpotential'] },
       { n: 'Unit 4', t: 'Cell communication and neurons', ids: ['signaling', 'neuron'] },
       { n: 'Unit 3', t: 'Enzymes, respiration and photosynthesis', ids: ['enzymes', 'glycolysis', 'respiration', 'chloroplast', 'photosynthesis'] },
       { n: 'Unit 4', t: 'Cell cycle', ids: ['cellcycle', 'division', 'roottip'] },
@@ -81,7 +81,7 @@ BioLab.COURSES = [
 BioLab.TOPIC_ORDER = {
   0: ['expdesign', 'pillbug'],
   1: ['waterprops', 'water', 'macromolecules', 'protein', 'foodtests'],
-  2: ['cellexplorer', 'microscope', 'sav', 'transport', 'potato'],
+  2: ['cellexplorer', 'microscope', 'sav', 'transport', 'potato', 'wpotential'],
   3: ['enzymes', 'glycolysis', 'respiration', 'chloroplast', 'photosynthesis'],
   4: ['signaling', 'neuron', 'cellcycle', 'division', 'roottip'],
   5: ['karyotype', 'crosses', 'bloodtype', 'pedigree'],
