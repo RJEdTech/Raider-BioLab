@@ -331,3 +331,4 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .real-uses .ru-q{margin:0}
 .real-uses .ru-d{margin-top:4px}.real-uses .ru-d summary{cursor:pointer;font-weight:700;font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .real-uses .ru-d ul{margin-top:4px}
+@media (min-width:900px){.sim.m-guided .stage>canvas,.sim.m-game .stage>canvas{align-self:start}}

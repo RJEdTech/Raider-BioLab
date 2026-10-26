@@ -100,7 +100,7 @@ function sample(sim,force){if(sim.def.timeless&&!force)return;if(!force&&sim.t-s
   const row={t:sim.t,v:{}};allMetrics(sim).forEach(m=>{if(!m.text)row.v[m.id]=m.get(sim);});sim.hist.push(row);
   const cut=sim.t-(sim.def.window||30)*1.05;while(sim.hist.length&&sim.hist[0].t<cut)sim.hist.shift();}
 function fmtCtl(c,v){if(c.type==='toggle')return v?'on':'off';if(c.type==='seg'||c.type==='select'){const o=c.options.find(o=>o.v===v);return o?o.l:String(v);}
-  const d=c.d!==undefined?c.d:(c.step<1?(c.step<0.1?(c.step<0.01?3:2):1):0);return Number(v).toFixed(d)+(c.unit||'');}
+  const d=c.d!==undefined?c.d:(c.step<1?(c.step<0.1?(c.step<0.01?3:2):1):0);const n=Number(v);return (Math.abs(n)>=10000?n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}):n.toFixed(d))+(c.unit||'');}
 function clockText(sim){const d=sim.def;if(d.clock)return d.clock(sim);if(d.unit==='s')return 't = '+sim.t.toFixed(1)+' s';
   if(d.unit==='min'){const m=Math.floor(sim.t),sec=Math.floor((sim.t-m)*60);return 'Elapsed '+m+':'+String(sec).padStart(2,'0')+' min';}
   return (d.timeLabel||'Time')+' '+(d.unitD!==undefined?sim.t.toFixed(d.unitD):Math.floor(sim.t))+(d.unit?' '+d.unit:'');}
@@ -260,7 +260,9 @@ function gameVis(sim,ctls,mets){restoreVisibility(sim);
 function gameStart(sim){const g=sim.def.game;if(!sim.ui.ctrlsHome){sim.ui.ctrlsHome=sim.ui.ctrls.parentNode;}sim.ui.gamecard.after(sim.ui.ctrls);sim.ui.ctrls.after(sim.ui.gamebtns);sim.ui.gamebtns.hidden=false;sim.ui.ctrls.classList.add('in-game');sim.game={i:0,score:0,misses:0,roundMiss:0,t0:null,elapsed:0,state:'aim',results:[]};setSpeed(sim,1);setRunning(sim,true);if(g.start)g.start(sim);gameRound(sim);}
 function gameRound(sim){const g=sim.def.game,G=sim.game;G.round=g.newRound(sim,G.i)||{};sim.gameRound=G.round;G.state='aim';G.roundMiss=0;G.last=null;
   gameVis(sim,G.round.controls||g.controls,G.round.metrics||g.metrics);sim.infoDirty=true;renderGame(sim);}
-function gameFire(sim){const g=sim.def.game,G=sim.game;if(!G||G.state==='flying'||G.state==='over')return;if(G.state==='miss'){G.state='aim';if(g.retry)g.retry(sim,G.round);}
+function gameFire(sim){const g=sim.def.game,G=sim.game;if(!G||G.state==='flying'||G.state==='over')return;
+  /* After a miss, Try again resets the scene and hands control back, so the student can adjust before the next go. */
+  if(G.state==='miss'){G.state='aim';if(g.retry)g.retry(sim,G.round);renderGame(sim);return;}
   if(G.t0===null)G.t0=performance.now();G.state='flying';G.last=null;g.fire(sim,G.round);renderGame(sim);}
 function gameTick(sim){const G=sim.game;if(!G||G.state!=='flying')return;const r=sim.def.game.poll(sim,G.round);if(!r)return;G.last=r;
   if(r.ok){G.state='hit';const pts=Math.max(1,3-G.roundMiss);G.score+=pts;G.results.push(pts);}else{G.state='miss';G.roundMiss++;G.misses++;}renderGame(sim);}
@@ -269,11 +271,12 @@ function gameNext(sim){const g=sim.def.game,G=sim.game;if(!G)return;G.i++;
     const k=LAB_KEY+'-best-'+sim.def.id;let best=null;try{best=JSON.parse(store.get(k)||'null');}catch(e){}
     G.newBest=!best||G.score>best.score||(G.score===best.score&&G.elapsed<best.time);if(G.newBest)store.set(k,JSON.stringify({score:G.score,time:G.elapsed}));G.best=G.newBest?{score:G.score,time:G.elapsed}:best;renderGame(sim);return;}
   gameRound(sim);}
-function gameStop(sim){sim.game=null;sim.gameRound=null;if(sim.ui.ctrlsHome&&sim.ui.ctrls.parentNode!==sim.ui.ctrlsHome){sim.ui.ctrlsHome.appendChild(sim.ui.ctrls);}sim.ui.ctrls.classList.remove('in-game');if(sim.ui.gamebtns){sim.ui.gamebtns.hidden=true;sim.ui.gamebtns.innerHTML='';}if(sim.ui.gamecard)sim.ui.gamecard.hidden=true;if(sim.ui.read)sim.ui.read.hidden=!(sim.def.metrics||[]).length;}
+function gameStop(sim){sim.game=null;sim.gameRound=null;sim.ui.ctrls.hidden=false;if(sim.ui.ctrlsHome&&sim.ui.ctrls.parentNode!==sim.ui.ctrlsHome){sim.ui.ctrlsHome.appendChild(sim.ui.ctrls);}sim.ui.ctrls.classList.remove('in-game');if(sim.ui.gamebtns){sim.ui.gamebtns.hidden=true;sim.ui.gamebtns.innerHTML='';}if(sim.ui.gamecard)sim.ui.gamecard.hidden=true;if(sim.ui.read)sim.ui.read.hidden=!(sim.def.metrics||[]).length;}
 const fmtTime=s=>{s=Math.max(0,s||0);const m=Math.floor(s/60),r=Math.floor(s%60);return m+':'+String(r).padStart(2,'0');};
 function gameClock(sim){const G=sim.game;if(!G)return;const t=sim.ui.gamecard.querySelector('.gm-time');if(!t)return;const s=G.state==='over'?G.elapsed:G.t0===null?0:(performance.now()-G.t0)/1000;t.textContent=fmtTime(s);}
 function renderGame(sim){const g=sim.def.game,G=sim.game,c=sim.ui.gamecard;if(!G){c.hidden=true;return;}c.hidden=false;const max=3*g.rounds;
   const stats=`<span class="gm-stats"><span>Round <b>${Math.min(G.i+1,g.rounds)}</b> of ${g.rounds}</span><span>Score <b>${G.score}</b> / ${max}</span><span>Time <b class="gm-time">0:00</b></span></span>`;
+  sim.ui.ctrls.hidden=G.state==='over';
   if(G.state==='over'){if(sim.ui.gamebtns){sim.ui.gamebtns.innerHTML='';sim.ui.gamebtns.hidden=true;}const badges=[];if(G.score===max)badges.push('First try every time');if(g.par&&G.elapsed<=g.par)badges.push('Under par time');if(G.newBest)badges.push('New personal best');
     c.innerHTML=`<div class="gm-top"><b class="gm-t">${lvText(g.title)||'Challenge'}: done!</b>${stats}</div><p class="gm-x">You scored <b>${G.score} of ${max}</b> in ${fmtTime(G.elapsed)}. ${G.best&&!G.newBest?`Your best is ${G.best.score} in ${fmtTime(G.best.time)}.`:''}</p>${badges.length?`<p class="badges">${badges.map(b=>`<span>${b}</span>`).join('')}</p>`:''}<div class="row"><button type="button" class="btn primary" data-g="again">Play again</button><button type="button" class="btn" data-g="lab">Open the full lab</button></div>`;
     c.querySelector('[data-g=again]').onclick=()=>gameStart(sim);c.querySelector('[data-g=lab]').onclick=()=>setMode(sim,'lab',true);gameClock(sim);return;}

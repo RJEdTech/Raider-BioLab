@@ -117,7 +117,7 @@ const XL_T=[{x:{mom:'XRXr',dad:'XRY'},t:'every daughter red-eyed, but <b>half of
   {x:{mom:'XrXr',dad:'XrY'},t:'<b>every fly white-eyed</b>, daughters and sons'}];
 const DI_C=[{p1d:'YyRr',p2d:'YyRr'},{p1d:'YyRr',p2d:'yyrr'},{p1d:'YyRr',p2d:'Yyrr'},{p1d:'YyRr',p2d:'yyRr'},{p1d:'YyRR',p2d:'Yyrr'},{p1d:'YYRr',p2d:'yyRr'}];
 const XL_TIP='Daughters get one X from each parent. Sons get their only X from their mother and a Y from their father.';
-const DI_TIP='Treat each gene on its own, then multiply. For example, 3 : 1 for color times 1 : 1 for shape gives 3 : 3 : 1 : 1.';
+const DI_TIP='Treat each gene on its own, then multiply: 3 : 1 for color × 1 : 1 for shape gives 3 : 3 : 1 : 1.';
 const LINK_CLS={'gray-vestigial':'gray with vestigial wings','black-normal':'black with normal wings'};
 function rLinkCounts(n,rf){const R=rf*n/100,P=n-R,a=clamp(Math.round(R/2+(Math.random()-.5)*R*.24),0,R),b=clamp(Math.round(P/2+(Math.random()-.5)*P*.08),0,P);
   return {'gray-normal':b,'black-vestigial':P-b,'gray-vestigial':a,'black-normal':R-a};}
@@ -164,7 +164,7 @@ const GAME_ROUNDS={
       r.prompt=`<b>Round 6: Parents only.</b> Of ${n} testcross offspring, <b>${r.parental}</b> look like one of the parents (gray with normal wings, or black with vestigial wings). The rest are recombinant. Set the distance between the genes.`;return r;}]
 };
 function gJudge(sim,r){const p=sim.p,got=distP(p),cr=crossText(sim),note=` Your ${sim.st.n} offspring came out ${obsText(sim)}. Breeding is random, so the score checks the ${r.mode==='linked'?'expected percentage':'parents’ expected ratio'}, not this one sample.`,
-    small=' (The score checks the expected result, not this random sample.)';
+    small=' (Scored on the expected result, not the random sample.)';
   if(r.mode==='linked'){const ok=p.rf===r.rf;
     if(r.kind==='class'){const g=got[r.cls];return ok?{ok,msg:`Right: at ${p.rf} map units, ${p.rf}% of offspring are recombinant, and half of them, ${r.X}%, are ${LINK_CLS[r.cls]}.`+note}
       :{ok,msg:`At ${p.rf} map units, ${pct(g)} of offspring are ${LINK_CLS[r.cls]}. You need ${r.X}%, so ${p.rf<r.rf?'move the genes farther apart':'move them closer together'}. Each recombinant class is half of all recombinants.`+small};}
