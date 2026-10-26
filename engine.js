@@ -13,13 +13,14 @@ BL.UNITS=UNITS;BL.XSEC=XSEC;
 /* Another site can reuse the engine with its own sections: BioLab.setSections({units:{1:'Kinematics',...}, extra:{0:'Science skills',...}, order:[0,1,2,...], further:13, unitPrefix:'Unit'}) */
 let FURTHER=11,UNIT_PREFIX='Unit';
 BL.setSections=function(o){if(o.units)UNITS=o.units;if(o.extra)XSEC=o.extra;if(o.order)SECTIONS=o.order;if(o.further!==undefined)FURTHER=o.further;if(o.unitPrefix!==undefined)UNIT_PREFIX=o.unitPrefix;BL.UNITS=UNITS;BL.XSEC=XSEC;};
-const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const LAB_META=n=>{const m=document.querySelector('meta[name="'+n+'"]');return m?m.content:null;};const LAB_NAME=LAB_META('lab-name')||'Raider BioLab',LAB_KEY=LAB_META('lab-key')||'rjbiolab';
 let level=store.get(LAB_KEY+'-level');if(!(level in LV))level='bio';
-/* Embedding (e.g. in a Canvas page): ?embed=1 hides the site chrome; ?mode=guided|game|lab picks the starting view;
+/* Embedding (e.g. in a Canvas page): ?embed=1 hides the site chrome; ?mode=guided|game|lab|vlab picks the starting view (&lab=<id> picks the virtual lab);
    ?level=bio|honors|ap picks the starting detail level for this visit only. */
 const QS=(()=>{try{return new URLSearchParams(location.search);}catch(e){return new URLSearchParams('');}})();
-const EMBED=QS.has('embed'),QMODE=QS.get('mode'),QLVL=QS.get('level');
+const EMBED=QS.has('embed'),QMODE=QS.get('mode'),QLVL=QS.get('level'),QLAB=QS.get('lab');
+const MODES=['guided','game','lab','vlab'];
 if(QLVL&&(QLVL in LV))level=QLVL;
 BL.embed=EMBED;
 const atLeast=l=>LV[level]>=LV[l||'bio'];
@@ -100,7 +101,7 @@ function sample(sim,force){if(sim.def.timeless&&!force)return;if(!force&&sim.t-s
   const row={t:sim.t,v:{}};allMetrics(sim).forEach(m=>{if(!m.text)row.v[m.id]=m.get(sim);});sim.hist.push(row);
   const cut=sim.t-(sim.def.window||30)*1.05;while(sim.hist.length&&sim.hist[0].t<cut)sim.hist.shift();}
 function fmtCtl(c,v){if(c.type==='toggle')return v?'on':'off';if(c.type==='seg'||c.type==='select'){const o=c.options.find(o=>o.v===v);return o?o.l:String(v);}
-  const d=c.d!==undefined?c.d:(c.step<1?(c.step<0.1?(c.step<0.01?3:2):1):0);return Number(v).toFixed(d)+(c.unit||'');}
+  const d=c.d!==undefined?c.d:(c.step<1?(c.step<0.1?(c.step<0.01?3:2):1):0);const n=Number(v);return (Math.abs(n)>=10000?n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}):n.toFixed(d))+(c.unit||'');}
 function clockText(sim){const d=sim.def;if(d.clock)return d.clock(sim);if(d.unit==='s')return 't = '+sim.t.toFixed(1)+' s';
   if(d.unit==='min'){const m=Math.floor(sim.t),sec=Math.floor((sim.t-m)*60);return 'Elapsed '+m+':'+String(sec).padStart(2,'0')+' min';}
   return (d.timeLabel||'Time')+' '+(d.unitD!==undefined?sim.t.toFixed(d.unitD):Math.floor(sim.t))+(d.unit?' '+d.unit:'');}
@@ -153,9 +154,11 @@ function buildSim(sim){
   const ui=sim.ui;ui.sec=sec;ui.lede=sec.querySelector('.lede');ui.uses=sec.querySelector('.real-uses');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
   ui.clock=sec.querySelector('.clock');ui.play=sec.querySelector('[data-act=play]');ui.ctrls=sec.querySelector('.controls');ui.read=sec.querySelector('.readouts');
   ui.pred=sec.querySelector('.predict');ui.info=sec.querySelector('.info');ui.tbl=sec.querySelector('.tbl');ui.gm=sec.querySelector('#'+id+'-gm');ui.gx=sec.querySelector('#'+id+'-gx');ui.gy=sec.querySelector('#'+id+'-gy');
-  ui.toast=sec.querySelector('.toast');ui.ctl={};ui.tiles={};ui.cap=sec.querySelector('.cap');ui.scale=sec.querySelector('.scale');ui.lab=sec.querySelector('.lab');
+  ui.toast=sec.querySelector('.toast');ui.ctl={};ui.ctlW={};ui.actB={};ui.tiles={};ui.cap=sec.querySelector('.cap');ui.scale=sec.querySelector('.scale');ui.lab=sec.querySelector('.lab');
   ui.speedSel=sec.querySelector('#'+id+'-speed');ui.stepBtn=sec.querySelector('[data-act=step]');ui.tourbar=sec.querySelector('.tourbar');
   ui.donecard=el('div',{class:'donecard','aria-live':'polite'});ui.donecard.hidden=true;ui.gamecard=el('div',{class:'gamecard','aria-live':'polite'});ui.gamecard.hidden=true;ui.gamebtns=el('div',{class:'gamebtns row'});ui.gamebtns.hidden=true;ui.tourbar.after(ui.donecard,ui.gamecard);
+  ui.vstep=el('div',{class:'vstep','aria-live':'polite'});ui.vstep.hidden=true;ui.gamecard.after(ui.vstep);
+  ui.nb=el('div',{class:'vlab-nb'});ui.nb.hidden=true;sec.querySelector('.bench').after(ui.nb);ui.resetBtn=sec.querySelector('[data-act=reset]');ui.ctrlsHome=ui.ctrls.parentNode;
   if(d.timeless){ui.clock.hidden=true;sec.querySelector('[data-act=play]').hidden=!d.animated;sec.querySelector('label[for='+id+'-speed]').hidden=!d.animated;}
   // controls
   (d.controls||[]).forEach(c=>{const cid=id+'-'+c.id;let w;const changed=()=>{if(c.onChange)c.onChange(sim);sim.infoDirty=true;};
@@ -169,9 +172,10 @@ function buildSim(sim){
     else{w=el('div',{class:'ctl','data-lvl':c.lvl||'bio'});w.innerHTML=`<div class="ctl-top"><span class="lbl" id="${cid}-l">${c.label}</span></div><div class="seg" role="radiogroup" aria-labelledby="${cid}-l">${c.options.map(o=>`<button type="button" role="radio" data-v="${o.v}"${o.lvl?` data-lvl="${o.lvl}"`:''}>${o.l}</button>`).join('')}</div>${c.help?`<p class="help">${c.help}</p>`:''}`;
       const btns=[...w.querySelectorAll('button')];const set=v=>btns.forEach(b=>b.setAttribute('aria-checked',String(b.dataset.v===String(v))));
       btns.forEach(b=>b.addEventListener('click',()=>{const o=c.options.find(o=>String(o.v)===b.dataset.v);sim.p[c.id]=o?o.v:b.dataset.v;set(b.dataset.v);changed();}));ui.ctl[c.id]={set};}
-    ui.ctrls.appendChild(w);ui.ctl[c.id].set(sim.p[c.id]);});
+    if(c.vlab)w.dataset.vlab='1';ui.ctlW[c.id]=w;ui.ctrls.appendChild(w);ui.ctl[c.id].set(sim.p[c.id]);});
   if(d.actions&&d.actions.length){const row=el('div',{class:'actions'});d.actions.forEach(a=>{const b=el('button',{type:'button',class:'btn'+(a.primary?' primary':''),'data-lvl':a.lvl||'bio'},a.label);
-    b.addEventListener('click',()=>{a.run(sim);sim.infoDirty=true;updateReadouts(sim);drawGraph(sim);});row.appendChild(b);});ui.ctrls.appendChild(row);}
+    if(a.vlab)b.dataset.vlab='1';if(a.id)ui.actB[a.id]=b;
+    b.addEventListener('click',()=>{a.run(sim);sim.infoDirty=true;if(sim.vlab)vlSave(sim);updateReadouts(sim);drawGraph(sim);});row.appendChild(b);});ui.ctrls.appendChild(row);}
   // readout tiles
   allMetrics(sim).forEach(m=>{const t=el('div',{class:'tile'+(m.text?' txt':''),'data-lvl':m.lvl||'bio'});t.innerHTML=`<div class="t-l">${m.label}</div><div class="t-v"><span class="num">—</span> <span class="u">${m.unit||''}</span></div>${(!m.text&&m.max!==null&&m.max!==undefined)?'<div class="t-bar"><i></i></div>':''}`;
     ui.read.appendChild(t);ui.tiles[m.id]={num:t.querySelector('.num'),bar:t.querySelector('.t-bar i')};});
@@ -183,7 +187,7 @@ function buildSim(sim){
     ui.tourbar.querySelector('[data-tour=back]').addEventListener('click',()=>tourGo(sim,sim.tour.i-1));
     ui.tourbar.querySelector('[data-tour=next]').addEventListener('click',()=>tourGo(sim,sim.tour.i+1));
     ui.tourbar.querySelector('[data-tour=exit]').addEventListener('click',()=>tourExit(sim,'exit'));}
-  sec.querySelector('[data-act=reset]').addEventListener('click',()=>{resetSim(sim);sim.ch.changed=false;if(sim.ch.phase==='running'){sim.ch.phase='ask';renderChallenge(sim);}updateReadouts(sim);drawGraph(sim);});
+  sec.querySelector('[data-act=reset]').addEventListener('click',()=>{resetSim(sim);sim.ch.changed=false;if(sim.vlab&&sim.mode==='vlab')vlBenchReset(sim);if(sim.ch.phase==='running'){sim.ch.phase='ask';renderChallenge(sim);}updateReadouts(sim);drawGraph(sim);});
   ui.speedSel.addEventListener('change',e=>{sim.speed=parseFloat(e.target.value);});
   // stage clicks
   if(d.onClick){ui.stage.style.cursor='pointer';ui.stage.addEventListener('click',e=>{const r=ui.stage.getBoundingClientRect(),W=800,H=800/asp;d.onClick(sim,(e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H);sim.infoDirty=true;updateReadouts(sim);});}
@@ -228,21 +232,24 @@ BL.h.lvText=lvText;
 const modeKey=sim=>LAB_KEY+'-mode-'+sim.def.id;
 function hasGuide(sim){return tourSteps(sim).length>0;}
 function buildModebar(sim){const bar=sim.ui.sec.querySelector('.modebar');if(!bar)return;const d=sim.def,opts=[];
-  if(d.tour)opts.push(['guided','Guided']);if(d.game)opts.push(['game',d.game.label||'Challenge']);opts.push(['lab','Full lab']);
+  if(d.tour)opts.push(['guided','Guided']);if(d.game)opts.push(['game',d.game.label||'Challenge']);opts.push(['lab','Full lab']);if(d.labs&&d.labs.length)opts.push(['vlab','Virtual lab']);
   if(opts.length<2){bar.hidden=true;return;}
   bar.innerHTML=opts.map(([m,l])=>`<button type="button" data-mode="${m}">${l}</button>`).join('');
   bar.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setMode(sim,b.dataset.mode,true)));}
-function restoreVisibility(sim){const d=sim.def;sim.ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl);});if(d.onLevel)d.onLevel(sim);}
-function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(sim))mode='lab';if(mode==='game'&&!d.game)mode='lab';if(!['guided','game','lab'].includes(mode))mode='lab';
+function restoreVisibility(sim){const d=sim.def;sim.ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl)||(!!e.dataset.vlab&&sim.mode!=='vlab');});if(d.onLevel)d.onLevel(sim);}
+function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(sim))mode='lab';if(mode==='game'&&!d.game)mode='lab';if(mode==='vlab'&&!(d.labs&&d.labs.length))mode='lab';if(!MODES.includes(mode))mode='lab';
+  const was=sim.mode;
   if(sim.game&&mode!=='game')gameStop(sim);
   if(sim.tour&&sim.tour.on)tourExit(sim,'mode');
+  if(was==='vlab'&&mode!=='vlab')vlabExit(sim);
   sim.mode=mode;if(user)store.set(modeKey(sim),mode);
-  const sec=sim.ui.sec;['guided','game','lab'].forEach(m=>sec.classList.toggle('m-'+m,m===mode));sec.classList.remove('g-try','g-done');
+  const sec=sim.ui.sec;MODES.forEach(m=>sec.classList.toggle('m-'+m,m===mode));sec.classList.remove('g-try','g-done');
   sec.querySelectorAll('.modebar button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
   sim.ui.donecard.hidden=true;sim.ui.gamecard.hidden=true;sim.guide=null;
   const ex=sim.ui.tourbar&&sim.ui.tourbar.querySelector('[data-tour=exit]');if(ex)ex.textContent=mode==='guided'?'Skip to the full lab':'Exit walkthrough';
   if(mode==='guided'){sim.guide={phase:'tour'};sim.ch={idx:0,phase:'ask',pick:null,changed:false};renderChallenge(sim);tourGo(sim,0);}
   else if(mode==='game'){gameStart(sim);}
+  else if(mode==='vlab'){restoreVisibility(sim);vlabEnter(sim,was==='vlab');}
   else restoreVisibility(sim);
   if(user&&sim.ui.sec.scrollIntoView)window.scrollTo(0,0);
   updateReadouts(sim);drawGraph(sim);}
@@ -260,7 +267,9 @@ function gameVis(sim,ctls,mets){restoreVisibility(sim);
 function gameStart(sim){const g=sim.def.game;if(!sim.ui.ctrlsHome){sim.ui.ctrlsHome=sim.ui.ctrls.parentNode;}sim.ui.gamecard.after(sim.ui.ctrls);sim.ui.ctrls.after(sim.ui.gamebtns);sim.ui.gamebtns.hidden=false;sim.ui.ctrls.classList.add('in-game');sim.game={i:0,score:0,misses:0,roundMiss:0,t0:null,elapsed:0,state:'aim',results:[]};setSpeed(sim,1);setRunning(sim,true);if(g.start)g.start(sim);gameRound(sim);}
 function gameRound(sim){const g=sim.def.game,G=sim.game;G.round=g.newRound(sim,G.i)||{};sim.gameRound=G.round;G.state='aim';G.roundMiss=0;G.last=null;
   gameVis(sim,G.round.controls||g.controls,G.round.metrics||g.metrics);sim.infoDirty=true;renderGame(sim);}
-function gameFire(sim){const g=sim.def.game,G=sim.game;if(!G||G.state==='flying'||G.state==='over')return;if(G.state==='miss'){G.state='aim';if(g.retry)g.retry(sim,G.round);}
+function gameFire(sim){const g=sim.def.game,G=sim.game;if(!G||G.state==='flying'||G.state==='over')return;
+  /* After a miss, Try again resets the scene and hands control back, so the student can adjust before the next go. */
+  if(G.state==='miss'){G.state='aim';if(g.retry)g.retry(sim,G.round);renderGame(sim);return;}
   if(G.t0===null)G.t0=performance.now();G.state='flying';G.last=null;g.fire(sim,G.round);renderGame(sim);}
 function gameTick(sim){const G=sim.game;if(!G||G.state!=='flying')return;const r=sim.def.game.poll(sim,G.round);if(!r)return;G.last=r;
   if(r.ok){G.state='hit';const pts=Math.max(1,3-G.roundMiss);G.score+=pts;G.results.push(pts);}else{G.state='miss';G.roundMiss++;G.misses++;}renderGame(sim);}
@@ -269,11 +278,12 @@ function gameNext(sim){const g=sim.def.game,G=sim.game;if(!G)return;G.i++;
     const k=LAB_KEY+'-best-'+sim.def.id;let best=null;try{best=JSON.parse(store.get(k)||'null');}catch(e){}
     G.newBest=!best||G.score>best.score||(G.score===best.score&&G.elapsed<best.time);if(G.newBest)store.set(k,JSON.stringify({score:G.score,time:G.elapsed}));G.best=G.newBest?{score:G.score,time:G.elapsed}:best;renderGame(sim);return;}
   gameRound(sim);}
-function gameStop(sim){sim.game=null;sim.gameRound=null;if(sim.ui.ctrlsHome&&sim.ui.ctrls.parentNode!==sim.ui.ctrlsHome){sim.ui.ctrlsHome.appendChild(sim.ui.ctrls);}sim.ui.ctrls.classList.remove('in-game');if(sim.ui.gamebtns){sim.ui.gamebtns.hidden=true;sim.ui.gamebtns.innerHTML='';}if(sim.ui.gamecard)sim.ui.gamecard.hidden=true;if(sim.ui.read)sim.ui.read.hidden=!(sim.def.metrics||[]).length;}
+function gameStop(sim){sim.game=null;sim.gameRound=null;sim.ui.ctrls.hidden=false;if(sim.ui.ctrlsHome&&sim.ui.ctrls.parentNode!==sim.ui.ctrlsHome){sim.ui.ctrlsHome.appendChild(sim.ui.ctrls);}sim.ui.ctrls.classList.remove('in-game');if(sim.ui.gamebtns){sim.ui.gamebtns.hidden=true;sim.ui.gamebtns.innerHTML='';}if(sim.ui.gamecard)sim.ui.gamecard.hidden=true;if(sim.ui.read)sim.ui.read.hidden=!(sim.def.metrics||[]).length;}
 const fmtTime=s=>{s=Math.max(0,s||0);const m=Math.floor(s/60),r=Math.floor(s%60);return m+':'+String(r).padStart(2,'0');};
 function gameClock(sim){const G=sim.game;if(!G)return;const t=sim.ui.gamecard.querySelector('.gm-time');if(!t)return;const s=G.state==='over'?G.elapsed:G.t0===null?0:(performance.now()-G.t0)/1000;t.textContent=fmtTime(s);}
 function renderGame(sim){const g=sim.def.game,G=sim.game,c=sim.ui.gamecard;if(!G){c.hidden=true;return;}c.hidden=false;const max=3*g.rounds;
   const stats=`<span class="gm-stats"><span>Round <b>${Math.min(G.i+1,g.rounds)}</b> of ${g.rounds}</span><span>Score <b>${G.score}</b> / ${max}</span><span>Time <b class="gm-time">0:00</b></span></span>`;
+  sim.ui.ctrls.hidden=G.state==='over';
   if(G.state==='over'){if(sim.ui.gamebtns){sim.ui.gamebtns.innerHTML='';sim.ui.gamebtns.hidden=true;}const badges=[];if(G.score===max)badges.push('First try every time');if(g.par&&G.elapsed<=g.par)badges.push('Under par time');if(G.newBest)badges.push('New personal best');
     c.innerHTML=`<div class="gm-top"><b class="gm-t">${lvText(g.title)||'Challenge'}: done!</b>${stats}</div><p class="gm-x">You scored <b>${G.score} of ${max}</b> in ${fmtTime(G.elapsed)}. ${G.best&&!G.newBest?`Your best is ${G.best.score} in ${fmtTime(G.best.time)}.`:''}</p>${badges.length?`<p class="badges">${badges.map(b=>`<span>${b}</span>`).join('')}</p>`:''}<div class="row"><button type="button" class="btn primary" data-g="again">Play again</button><button type="button" class="btn" data-g="lab">Open the full lab</button></div>`;
     c.querySelector('[data-g=again]').onclick=()=>gameStart(sim);c.querySelector('[data-g=lab]').onclick=()=>setMode(sim,'lab',true);gameClock(sim);return;}
@@ -284,12 +294,274 @@ function renderGame(sim){const g=sim.def.game,G=sim.game,c=sim.ui.gamecard;if(!G
   const B=sim.ui.gamebtns;B.hidden=false;B.innerHTML=btn;
   const f=B.querySelector('[data-g=fire]');if(f)f.onclick=()=>gameFire(sim);const n=B.querySelector('[data-g=next]');if(n)n.onclick=()=>gameNext(sim);gameClock(sim);}
 
+/* ---------- Virtual lab (def.labs): a teacher's handout, run on the bench ----------
+   The mode bar gets "Virtual lab". The procedure stepper sits beside the stage and the lab notebook below it.
+   Everything the student types autosaves under LAB_KEY+'-vlab-'+toolId+'-'+labId. Contract: VLAB.md.
+   While a lab is open, sim.vlab = {lab, seed, bench, rng(k), raw(key), val(table,col,row), col(table,col), step}.
+   sim.vlab.bench is a plain object the sim keeps its bench state in; the engine saves it with the notebook. */
+let setLevelFn=null;
+const vlKey=(sim,lab)=>LAB_KEY+'-vlab-'+sim.def.id+'-'+lab.id,vlCurKey=sim=>LAB_KEY+'-vlab-'+sim.def.id;
+const vlLabs=sim=>sim.def.labs||[];
+const stripTags=s=>String(s===undefined||s===null?'':s).replace(/<[^>]+>/g,'');
+function vlNum(s){if(s===undefined||s===null)return NaN;s=String(s).trim().replace(/\u2212/g,'-').replace(/^([-+]?\d*),(\d+)$/,'$1.$2');if(!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s))return NaN;return parseFloat(s);}
+function vlSafe(f,dflt){try{return f();}catch(e){console.error(e);return dflt;}}
+function vlFixed(tb){return (tb.cols||[]).find(c=>c.rows);}
+function vlRows(tb){const fx=vlFixed(tb);return fx?fx.rows:Array.from({length:tb.rows||1},(_,i)=>i+1);}
+function vlRowLabel(fx,r){return fx.rowLabels?fx.rowLabels[r]:fx.rows[r];}
+/* "Time (s)" row 60 reads "Time 60 s"; "pH" row 7.0 reads "pH 7.0" */
+function vlWhere(fx,r){const l=stripTags(fx.label).trim(),m=l.match(/^(.*\S)\s*\(([^)]+)\)$/);return m?m[1]+' '+fx.rows[r]+' '+m[2]:l+' '+fx.rows[r];}
+function vlFresh(){let d='';try{d=new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});}catch(e){}
+  return {v:1,seed:Math.floor(Math.random()*2147483646)+1,step:0,max:0,f:{date:d},bench:{}};}
+function makeVlab(sim,lab,data){if(!data.bench||typeof data.bench!=='object')data.bench={};if(!Number.isFinite(data.seed))data.seed=vlFresh().seed;
+  const V={lab,data,seed:data.seed,bench:data.bench,notes:{},
+    rng:k=>rng((data.seed^Math.imul((k|0)+1,0x9E3779B1))|0),
+    raw:k=>{const v=data.f[k];return v===undefined||v===null?'':String(v);},
+    val:(t,c,r)=>vlNum(data.f['c:'+t+':'+c+':'+r]),
+    col:(t,c)=>{const tb=(lab.tables||[]).find(x=>x.id===t);return tb?vlRows(tb).map((_,r)=>V.val(t,c,r)):[];}};
+  Object.defineProperty(V,'step',{get:()=>data.step||0});return V;}
+function vlSave(sim){const V=sim.vlab;if(!V)return;V.data.bench=V.bench;let s;try{s=JSON.stringify(V.data);}catch(e){return;}if(s===V._last)return;V._last=s;store.set(vlKey(sim,V.lab),s);
+  const n=sim.ui.nb.querySelector('.vl-saved');if(n)n.textContent='Saved on this device';}
+function vlSaveSoon(sim){const V=sim.vlab;if(!V)return;clearTimeout(V._t);V._t=setTimeout(()=>vlSave(sim),250);}
+function vlDefaults(sim){const base={};(sim.def.controls||[]).forEach(c=>base[c.id]=c.def);applyValues(sim,base);resetSim(sim);}
+function vlCtrlsIn(sim){const u=sim.ui;u.vstep.after(u.ctrls);u.ctrls.classList.add('in-vlab');}
+function vlCtrlsOut(sim){const u=sim.ui;if(u.ctrlsHome&&u.ctrls.parentNode!==u.ctrlsHome)u.ctrlsHome.appendChild(u.ctrls);u.ctrls.classList.remove('in-vlab');u.ctrls.hidden=false;}
+function vlabEnter(sim,again){const u=sim.ui;u.donecard.hidden=true;u.gamecard.hidden=true;
+  if(again&&(sim.vlab||sim.vlPick)){if(sim.vlab)vlabVis(sim);return;}
+  const labs=vlLabs(sim);let id=null;
+  if(!sim.vlQ){sim.vlQ=true;if(QLAB&&labs.some(l=>l.id===QLAB))id=QLAB;}
+  if(!id){const c=store.get(vlCurKey(sim));if(c&&labs.some(l=>l.id===c))id=c;}
+  if(!id&&labs.length===1)id=labs[0].id;
+  if(id)openLab(sim,id);else vlPicker(sim);}
+function vlClose(sim){const V=sim.vlab;if(!V)return;clearTimeout(V._t);vlSave(sim);if(V.lab.teardown)vlSafe(()=>V.lab.teardown(sim));sim.vlab=null;vlDefaults(sim);}
+function vlabExit(sim){vlClose(sim);const u=sim.ui;sim.vlPick=false;u.sec.classList.remove('vl-picking');u.vstep.hidden=true;u.vstep.innerHTML='';u.nb.hidden=true;u.nb.innerHTML='';
+  vlCtrlsOut(sim);if(u.resetBtn)u.resetBtn.textContent='Reset';setRunning(sim,true);}
+function vlPicker(sim){vlClose(sim);store.set(vlCurKey(sim),'');sim.vlPick=true;const u=sim.ui,labs=vlLabs(sim);u.sec.classList.add('vl-picking');u.vstep.hidden=true;vlCtrlsOut(sim);u.nb.hidden=false;
+  u.nb.innerHTML=`<div class="vl-pick"><h3 class="vl-title">Choose a virtual lab</h3><p class="vl-lede">Each virtual lab is your teacher’s handout, run on the virtual bench. You read the instruments, record your own data, graph it and answer the questions. Your work saves on this device as you go.</p>
+  <div class="vl-cards">${labs.map(l=>`<button type="button" class="vl-card" data-lab="${esc(l.id)}"><span class="vl-ct">${l.title}</span><span class="vl-cm">${esc(l.course||'')}${l.teachers?' · '+esc(l.teachers):''}</span>${store.get(vlKey(sim,l))?'<span class="kind">In progress</span>':''}</button>`).join('')}</div></div>`;
+  u.nb.querySelectorAll('[data-lab]').forEach(b=>b.addEventListener('click',()=>{openLab(sim,b.dataset.lab);window.scrollTo(0,0);}));}
+function openLab(sim,id){const lab=vlLabs(sim).find(l=>l.id===id);if(!lab){vlPicker(sim);return;}
+  if(sim.vlab)vlClose(sim);
+  store.set(vlCurKey(sim),id);
+  let data=null;try{data=JSON.parse(store.get(vlKey(sim,lab))||'null');}catch(e){data=null;}
+  if(!data||typeof data!=='object'||!data.f||typeof data.f!=='object')data=vlFresh();
+  const u=sim.ui;sim.vlPick=false;u.sec.classList.remove('vl-picking');
+  sim.vlab=makeVlab(sim,lab,data);
+  if(lab.level&&(lab.level in LV)&&lab.level!==level&&setLevelFn)setLevelFn(lab.level);
+  vlCtrlsIn(sim);u.vstep.hidden=false;u.nb.hidden=false;if(u.resetBtn)u.resetBtn.textContent='Reset bench';
+  vlBench(sim);vlRender(sim);
+  vlGo(sim,Math.min(data.step||0,Math.max(0,(lab.steps||[]).length-1)));}
+function vlBench(sim){const V=sim.vlab;vlDefaults(sim);if(V.lab.setup)vlSafe(()=>V.lab.setup(sim));setRunning(sim,true);}
+/* the transport's Reset (labelled "Reset bench" in a lab): the sim has just been reset; put the bench scene back */
+function vlBenchReset(sim){const V=sim.vlab;if(V.lab.setup)vlSafe(()=>V.lab.setup(sim));const s=(V.lab.steps||[])[V.data.step||0];if(s&&s.setup)vlSafe(()=>s.setup(sim));vlSave(sim);}
+function vlResetLab(sim){const V=sim.vlab;if(!V)return;const lab=V.lab;clearTimeout(V._t);store.del(vlKey(sim,lab));if(lab.teardown)vlSafe(()=>lab.teardown(sim));
+  sim.vlab=makeVlab(sim,lab,vlFresh());vlBench(sim);vlRender(sim);vlGo(sim,0);vlToast(sim,'Lab reset. You have a fresh notebook.');window.scrollTo(0,0);}
+function vlabVis(sim){const V=sim.vlab,d=sim.def,u=sim.ui;if(!V)return;const s=(V.lab.steps||[])[V.data.step||0]||{};const list=s.controls||V.lab.controls||[];let any=false;
+  (d.controls||[]).forEach(c=>{const w=u.ctlW[c.id];if(!w)return;const on=atLeast(c.lvl)&&list.includes(c.id);w.hidden=!on;if(on)any=true;});
+  (d.actions||[]).forEach(a=>{const b=a.id&&u.actB[a.id];if(!b)return;const on=atLeast(a.lvl)&&list.includes(a.id);b.hidden=!on;if(on)any=true;});
+  u.ctrls.hidden=!any;}
+function vlGo(sim,i){const V=sim.vlab;if(!V)return;const st=V.lab.steps||[];if(!st.length){sim.ui.vstep.hidden=true;vlabVis(sim);return;}
+  i=clamp(i|0,0,st.length-1);V.data.step=i;V.data.max=Math.max(V.data.max||0,i);const s=st[i];if(s.setup)vlSafe(()=>s.setup(sim));
+  vlStepRender(sim);vlabVis(sim);vlProcMark(sim);vlRecheck(sim);vlSave(sim);updateReadouts(sim);}
+/* re-run every check: the bench may have changed since an entry was made */
+function vlRecheck(sim){const V=sim.vlab;if(!V)return;Object.keys(V.data.f).forEach(k=>{if(V.raw(k).trim()!==''||V.notes[k])vlCheck(sim,k);});}
+function vlStepRender(sim){const V=sim.vlab,st=V.lab.steps,i=V.data.step||0,s=st[i],b=sim.ui.vstep,last=i===st.length-1;
+  b.innerHTML=`<div class="tb-h"><span class="tb-n">Step ${i+1} of ${st.length}</span>${s.title?`<b class="tb-t">${lvText(s.title)}</b>`:''}</div><div class="vs-x">${lvText(s.text)||''}</div><p class="vs-hint" hidden></p>
+  <div class="row"><button type="button" class="btn" data-vs="back"${i?'':' disabled'}>Back</button><button type="button" class="btn primary" data-vs="next">${last?'Go to your data':'Next'}</button><button type="button" class="btn" data-vs="all">All steps</button></div>`;
+  b.querySelector('[data-vs=back]').onclick=()=>vlGo(sim,i-1);
+  b.querySelector('[data-vs=next]').onclick=()=>{if(last)vlScroll(sim,'data');else vlGo(sim,i+1);};
+  b.querySelector('[data-vs=all]').onclick=()=>vlScroll(sim,'proc');
+  vlTick(sim);}
+function vlScroll(sim,k){const e=sim.ui.nb.querySelector('[data-sec="'+k+'"]');if(e&&e.scrollIntoView)e.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});}
+function vlTick(sim){const V=sim.vlab;if(!V||sim.mode!=='vlab')return;const b=sim.ui.vstep,s=(V.lab.steps||[])[V.data.step||0];
+  if(s&&!b.hidden){const ok=!s.done||!!vlSafe(()=>s.done(sim),true);const nx=b.querySelector('[data-vs=next]');if(nx&&nx.disabled===ok)nx.disabled=!ok;
+    const h=b.querySelector('.vs-hint');if(h){const t=ok?'':(typeof s.doneHint==='function'?(vlSafe(()=>s.doneHint(sim),'')||''):(s.doneHint||''));if(h._t!==t){h._t=t;h.innerHTML=t;h.hidden=!t;}}}
+  const now=performance.now();if(!V._lt||now-V._lt>1000){V._lt=now;vlSave(sim);}}
+function vlProcMark(sim){const V=sim.vlab;if(!V)return;sim.ui.nb.querySelectorAll('.vl-proc li').forEach(li=>{const i=+li.dataset.i,ok=i<=(V.data.max||0);li.classList.toggle('cur',i===(V.data.step||0));li.classList.toggle('reach',ok);
+  li.tabIndex=ok?0:-1;if(i===(V.data.step||0))li.setAttribute('aria-current','step');else li.removeAttribute('aria-current');});}
+function vlToast(sim,m){const t=sim.ui.nb.querySelector('.vl-toast');if(!t)return;t.textContent=m;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>{t.hidden=true;},3200);}
+/* the notebook */
+function vlRender(sim){const V=sim.vlab,L=V.lab,u=sim.ui,sid=sim.def.id,labs=vlLabs(sim);
+  const fid=k=>sid+'-vl-'+k.replace(/[^A-Za-z0-9]+/g,'-'),val=k=>esc(V.raw(k));
+  const note=k=>`<p class="vl-note" data-n="${k}" id="${fid(k)}-n" hidden></p>`;
+  const line=(k,label,ph)=>`<label class="vl-f" for="${fid(k)}"><span class="vl-l">${label}</span><input class="vl-in" type="text" id="${fid(k)}" data-k="${k}" value="${val(k)}"${ph?` placeholder="${esc(ph)}"`:''} autocomplete="off"></label>`;
+  const area=(k,label,rows,aria)=>`<label class="vl-f" for="${fid(k)}">${label?`<span class="vl-l">${label}</span>`:''}<textarea class="vl-in vl-ta" id="${fid(k)}" data-k="${k}" rows="${rows||3}"${aria?` aria-label="${esc(aria)}"`:''}>${val(k)}</textarea></label>`;
+  const S=(k,t,b)=>`<section class="vl-sec" data-sec="${k}"><h4 class="vl-h">${t}</h4>${b}</section>`;
+  const cell=(tb,c,r)=>{const k='c:'+tb.id+':'+c.id+':'+r,fx=vlFixed(tb),aria=`${stripTags(tb.title||'')}: ${stripTags(c.label)}${fx?', '+stripTags(fx.label)+' '+stripTags(vlRowLabel(fx,r)):''}`;
+    if(c.input==='select'){const v=V.raw(k);return `<select class="vl-in vl-cell" data-k="${k}" id="${fid(k)}" aria-label="${esc(aria)}"><option value="">Choose</option>${(c.options||[]).map(o=>{const ov=typeof o==='object'?o.v:o,ol=typeof o==='object'?o.l:o;return `<option value="${esc(ov)}"${String(ov)===v?' selected':''}>${esc(ol)}</option>`;}).join('')}</select>`;}
+    if(c.input==='text')return `<input class="vl-in vl-cell vl-wide" type="text" data-k="${k}" id="${fid(k)}" value="${val(k)}" aria-label="${esc(aria)}" autocomplete="off">`;
+    return `<input class="vl-in vl-cell vl-num" type="text" inputmode="decimal" data-k="${k}" id="${fid(k)}" value="${val(k)}" aria-label="${esc(aria)}" autocomplete="off">`;};
+  const table=tb=>{const rows=vlRows(tb);return `<div class="vl-tb" data-t="${tb.id}">${tb.title?`<p class="vl-cap">${tb.title}</p>`:''}<div class="tbl-wrap"><table class="vl-table"><thead><tr>${tb.cols.map(c=>`<th scope="col">${c.label}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map((rv,r)=>`<tr>${tb.cols.map(c=>c.rows?`<th scope="row">${esc(vlRowLabel(c,r))}</th>`:`<td>${cell(tb,c,r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div><ul class="vl-notes" data-nt="${tb.id}" hidden></ul></div>`;};
+  let h=`<header class="vl-head"><p class="eyebrow">Virtual lab${L.course?' · '+esc(L.course):''}</p><h3 class="vl-title">${L.title}</h3>
+    <p class="vl-src">${L.teachers?'Teachers: '+esc(L.teachers):''}${L.source?(L.teachers?' · ':'')+'Handout: '+(L.source.href?`<a href="${esc(L.source.href)}" target="_blank" rel="noopener">${esc(L.source.label||'on Canvas')}</a>`:esc(L.source.label||'')):''}</p>
+    <div class="vl-who">${line('name','Name')}${line('period','Class period')}${line('date','Date')}</div>
+    <div class="vl-tools row">${labs.length>1?'<button type="button" class="btn" data-vl="pick">Choose another lab</button>':''}<span class="vl-reset"><button type="button" class="btn" data-vl="reset">Reset lab</button></span><span class="vl-saved" aria-live="polite"></span></div></header>`;
+  if(L.purpose)h+=S('purpose','Purpose',`<div class="vl-txt">${L.purpose}</div>`);
+  if(L.background)h+=S('background','Background',`<div class="vl-txt">${L.background}</div>`);
+  if(L.materials&&L.materials.length)h+=S('materials','Materials',`<ul class="vl-mat">${L.materials.map(m=>`<li>${m}</li>`).join('')}</ul>`);
+  if(L.hypothesis)h+=S('hypothesis','Hypothesis',`<div class="vl-prompt">${L.hypothesis.prompt||''}</div>${area('hyp','',3,'Your hypothesis')}`);
+  if(L.steps&&L.steps.length)h+=S('proc','Procedure',`<p class="vl-help">The step you are on is marked. Tap any step you have reached to go back to it.</p><ol class="vl-proc">${L.steps.map((s,i)=>`<li data-i="${i}"><div class="vl-pt">${lvText(s.text)||''}</div></li>`).join('')}</ol>`);
+  const obs=L.observations||[];
+  if((L.tables&&L.tables.length)||obs.length)h+=S('data','Data',(L.tables||[]).map(table).join('')+(obs.length?`<p class="vl-cap">Observations</p><div class="vl-obs">${obs.map(o=>`<div class="vl-ob">${area('o:'+o.id,o.label,2)}${note('o:'+o.id)}</div>`).join('')}</div>`:''));
+  if(L.graph)h+=S('graph','Graph',`<div class="vl-graph"><canvas class="vl-cv" role="img" aria-label="${esc(stripTags(L.graph.title||'Graph'))}"></canvas><p class="vl-help">The graph draws from the numbers you type in your tables${(L.graph.series||[]).length>1?'. The key shows which line is which':''}.</p></div>`);
+  if(L.calcs&&L.calcs.length)h+=S('calcs','Calculations',`<div class="vl-calc">${L.calcs.map(c=>{const k='k:'+c.id;return `<div class="vl-ck"><label class="vl-f" for="${fid(k)}"><span class="vl-l">${c.label}</span>${c.input==='text'?`<textarea class="vl-in vl-ta" id="${fid(k)}" data-k="${k}" rows="2">${val(k)}</textarea>`:`<span class="vl-cin"><input class="vl-in vl-num" type="text" inputmode="decimal" id="${fid(k)}" data-k="${k}" value="${val(k)}" autocomplete="off">${c.unit?`<span class="vl-u">${c.unit}</span>`:''}</span>`}</label>${note(k)}</div>`;}).join('')}</div>`);
+  if(L.questions&&L.questions.length)h+=S('questions','Questions',L.questions.map((q,i)=>`<div class="vl-q"><div class="vl-qh"><span class="vl-qn">${esc(q.n!==undefined?q.n:i+1)}</span><div class="vl-qt">${q.q}</div></div>${q.fields?`<div class="vl-qf">${q.fields.map(f=>line('q:'+q.id+':'+f.id,f.label)).join('')}</div>`:area('q:'+q.id,'',4,'Your answer to question '+(q.n!==undefined?q.n:i+1))}</div>`).join(''));
+  if(L.conclusion){const C=L.conclusion;h+=S('conclusion','Conclusion',`<div class="vl-prompt">${C.prompt||''}</div>`+(C.cer?`<div class="vl-cer">${area('cer:claim','Claim <small>One sentence that answers the question.</small>',2)}${area('cer:evidence','Evidence <small>Your own data that supports the claim.</small>',3)}${area('cer:reasoning','Reasoning <small>The biology that explains why the evidence supports the claim.</small>',4)}</div>`:area('concl','',5,'Your conclusion')));}
+  h+=S('export','Turn it in',`<p class="vl-help">Build a clean report of everything above, then upload it to the Canvas assignment. For a PDF, choose <b>Save as PDF</b> as the printer.</p><div class="row vl-exp"><button type="button" class="btn primary" data-vl="pdf">Save as PDF</button><button type="button" class="btn" data-vl="doc">Download Word file</button><button type="button" class="btn" data-vl="txt">Copy as text</button><span class="toast vl-toast" hidden></span></div><div class="vl-fallback"></div>`);
+  u.nb.innerHTML=h;vlBind(sim);V.notes={};
+  vlRecheck(sim);vlProcMark(sim);requestAnimationFrame(()=>vlGraph(sim));}
+function vlBind(sim){const nb=sim.ui.nb;if(nb._bound)return;nb._bound=true;
+  const put=e=>{const t=e.target,k=t&&t.dataset&&t.dataset.k,V=sim.vlab;if(!k||!V)return;V.data.f[k]=t.value;vlSaveSoon(sim);if(k.indexOf('c:')===0)vlGraph(sim);if(V.notes[k]&&!t.value.trim())vlSetNote(sim,k,null);};
+  nb.addEventListener('input',put);
+  nb.addEventListener('change',e=>{put(e);const k=e.target.dataset&&e.target.dataset.k;if(k&&sim.vlab&&e.target.tagName==='SELECT')vlCheck(sim,k);});
+  nb.addEventListener('focusout',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k&&sim.vlab)vlCheck(sim,k);});
+  nb.addEventListener('click',e=>{const V=sim.vlab;if(!V)return;const b=e.target.closest('[data-vl]');
+    if(b){const a=b.dataset.vl,box=nb.querySelector('.vl-reset');
+      if(a==='pick'){vlPicker(sim);window.scrollTo(0,0);}
+      else if(a==='reset'){box.innerHTML='<span class="vl-confirm" role="alert">Erase everything you typed in this lab and start over? <button type="button" class="btn primary" data-vl="reset-yes">Erase and start over</button> <button type="button" class="btn" data-vl="reset-no">Keep my work</button></span>';box.querySelector('[data-vl=reset-no]').focus();}
+      else if(a==='reset-no'){box.innerHTML='<button type="button" class="btn" data-vl="reset">Reset lab</button>';box.querySelector('button').focus();}
+      else if(a==='reset-yes')vlResetLab(sim);
+      else if(a==='pdf')vlExportPdf(sim);else if(a==='doc')vlExportDoc(sim);else if(a==='txt')vlExportTxt(sim);
+      return;}
+    const li=e.target.closest('.vl-proc li.reach');if(li){vlGo(sim,+li.dataset.i);const st=sim.ui.stage;if(st&&st.scrollIntoView)st.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});}});
+  nb.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const li=e.target.closest&&e.target.closest('.vl-proc li.reach');if(li&&e.target===li){e.preventDefault();li.click();}});}
+function vlCheck(sim,k){const V=sim.vlab;if(!V)return;const L=V.lab,v=V.raw(k).trim(),p=k.split(':');let msg=null;const NUM='Enter a number, using digits and a decimal point.';
+  if(v!==''){
+    if(p[0]==='c'){const tb=(L.tables||[]).find(t=>t.id===p[1]),c=tb&&tb.cols.find(x=>x.id===p[2]);if(c&&!c.rows){const rv=vlRows(tb)[+p[3]];
+      if(c.input==='text'||c.input==='select'){if(c.check)msg=vlSafe(()=>c.check(sim,rv,v),null);}
+      else{const n=vlNum(v);if(!Number.isFinite(n))msg=NUM;else if(c.check)msg=vlSafe(()=>c.check(sim,rv,n),null);}}}
+    else if(p[0]==='k'){const c=(L.calcs||[]).find(x=>x.id===p[1]);if(c){if(c.input==='text'){if(c.check)msg=vlSafe(()=>c.check(sim,v,V),null);}
+      else{const n=vlNum(v);if(!Number.isFinite(n))msg=NUM;else if(c.check)msg=vlSafe(()=>c.check(sim,n,V),null);}}}
+    else if(p[0]==='o'){const o=(L.observations||[]).find(x=>x.id===p[1]);if(o&&o.check)msg=vlSafe(()=>o.check(sim,v,V),null);}}
+  vlSetNote(sim,k,msg||null);}
+function vlSetNote(sim,k,msg){const V=sim.vlab,nb=sim.ui.nb;if(!V)return;if(msg)V.notes[k]=String(msg);else delete V.notes[k];
+  const inp=nb.querySelector('[data-k="'+k+'"]');if(inp){inp.classList.toggle('vl-warn',!!msg);if(msg)inp.setAttribute('aria-invalid','true');else inp.removeAttribute('aria-invalid');}
+  if(k.indexOf('c:')===0){const t=k.split(':')[1],ul=nb.querySelector('[data-nt="'+t+'"]'),tb=(V.lab.tables||[]).find(x=>x.id===t);if(!ul||!tb)return;const fx=vlFixed(tb),multi=tb.cols.filter(c=>!c.rows).length>1;
+    const items=Object.keys(V.notes).filter(x=>x.indexOf('c:'+t+':')===0).sort((a,b)=>(+a.split(':')[3])-(+b.split(':')[3]));
+    ul.innerHTML=items.map(x=>{const q=x.split(':'),r=+q[3],c=tb.cols.find(cc=>cc.id===q[2]);return `<li><b>${fx?esc(vlWhere(fx,r)):'Row '+(r+1)}${multi&&c?', '+esc(stripTags(c.label)):''}:</b> ${esc(V.notes[x])}</li>`;}).join('');ul.hidden=!items.length;}
+  else{const n=nb.querySelector('[data-n="'+k+'"]');if(n){n.textContent=msg||'';n.hidden=!msg;}if(inp){if(msg)inp.setAttribute('aria-describedby',n?n.id:'');else inp.removeAttribute('aria-describedby');}}}
+/* the graph, drawn from the student's own entries */
+const VL_MARK=['circle','square','triangle','diamond'];
+function vlMarker(ctx,shape,x,y,r){ctx.beginPath();if(shape==='square')ctx.rect(x-r,y-r,2*r,2*r);else if(shape==='triangle'){ctx.moveTo(x,y-r*1.25);ctx.lineTo(x+r*1.15,y+r*.85);ctx.lineTo(x-r*1.15,y+r*.85);ctx.closePath();}
+  else if(shape==='diamond'){ctx.moveTo(x,y-r*1.3);ctx.lineTo(x+r*1.1,y);ctx.lineTo(x,y+r*1.3);ctx.lineTo(x-r*1.1,y);ctx.closePath();}else ctx.arc(x,y,r,0,6.2832);ctx.fill();}
+function vlSeries(V){const G=V.lab.graph;return (G.series||[]).map((s,i)=>{const tb=(V.lab.tables||[]).find(t=>t.id===s.table);if(!tb)return null;const xc=tb.cols.find(c=>c.id===s.x);
+  const pts=vlRows(tb).map((rv,r)=>({x:xc&&xc.rows?vlNum(xc.rows[r]):V.val(s.table,s.x,r),y:V.val(s.table,s.y,r),cat:xc&&xc.rows?stripTags(vlRowLabel(xc,r)):(V.raw('c:'+s.table+':'+s.x+':'+r)||String(r+1))}));
+  return {label:s.label||'',pts,color:serColor(i),shape:VL_MARK[i%VL_MARK.length]};}).filter(Boolean);}
+function vlLegend(ctx,S,x0,y,maxX){ctx.font='13px '+FONT;let x=x0;S.forEach(s=>{const w=ctx.measureText(s.label).width+52;if(x>x0&&x+w>maxX){x=x0;y+=20;}
+  ctx.strokeStyle=s.color;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+24,y);ctx.stroke();ctx.fillStyle=s.color;vlMarker(ctx,s.shape,x+12,y,4.5);txt(ctx,s.label,x+30,y,{s:13,c:PAL['muted'],b:'middle'});x+=w;});return y;}
+const vlFmt=v=>String(Math.round(v*100)/100);
+function vlPlot(ctx,W,H,V){const G=V.lab.graph,S=vlSeries(V),bar=G.type==='bar';
+  txt(ctx,stripTags(G.title||''),W/2,20,{s:15,w:700,a:'center'});
+  let top=34;if(S.length>1)top=vlLegend(ctx,S,66,44,W-16)+14;
+  const box={L:66,T:top,W:W-66-18,H:H-top-46,cw:W,ch:H};
+  const ys=[].concat(...S.map(s=>s.pts.map(p=>p.y))).filter(Number.isFinite);let has=false;
+  if(bar){const cats=S.length?S[0].pts.map(p=>p.cat):[];has=ys.length>0;
+    const ymin=G.ymin!==undefined?G.ymin:Math.min(0,...ys),ymax=(G.ymax!==undefined?Math.max(G.ymax,...ys):Math.max(1,...ys))*1.12;
+    const ax=axes(ctx,box,{xmin:0,xmax:Math.max(1,cats.length),ymin,ymax,xl:G.xl,yl:G.yl,xcats:cats});const n=S.length||1,gw=.7,bw=gw/n;
+    S.forEach((s,si)=>s.pts.forEach((p,i)=>{if(!Number.isFinite(p.y))return;const x0=ax.X(i+.5-gw/2+si*bw),x1=ax.X(i+.5-gw/2+(si+1)*bw),y0=ax.Y(Math.max(ymin,0)),y1=ax.Y(clamp(p.y,ymin,ymax));
+      ctx.fillStyle=s.color;ctx.fillRect(x0+1,Math.min(y0,y1),Math.max(1,x1-x0-2),Math.abs(y0-y1));txt(ctx,vlFmt(p.y),(x0+x1)/2,Math.min(y0,y1)-6,{s:12,w:600,c:PAL['fg'],a:'center'});}));}
+  else{const xs=[].concat(...S.map(s=>s.pts.map(p=>p.x))).filter(Number.isFinite);const ok=S.map(s=>s.pts.filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));has=ok.some(a=>a.length);
+    const xmin=G.xmin!==undefined?G.xmin:(xs.length?Math.min(...xs):0),xmax=G.xmax!==undefined?G.xmax:(xs.length?Math.max(...xs):1);
+    let ymin=0,ymax=1;const fy=ok.length?[].concat(...ok).map(p=>p.y):[];if(fy.length){const lo=Math.min(...fy),hi=Math.max(...fy),pad=Math.max((hi-lo)*.12,.3);ymin=Math.floor((lo-pad)*2)/2;ymax=Math.ceil((hi+pad)*2)/2;}
+    if(G.ymin!==undefined)ymin=G.ymin;if(G.ymax!==undefined)ymax=Math.max(G.ymax,fy.length?Math.max(...fy):G.ymax);
+    const ax=axes(ctx,box,{xmin,xmax,ymin,ymax,xl:G.xl,yl:G.yl});ctx.save();ctx.beginPath();ctx.rect(box.L-6,box.T-6,box.W+12,box.H+12);ctx.clip();
+    S.forEach(s=>{ctx.strokeStyle=s.color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.beginPath();let pen=false;
+      s.pts.forEach(p=>{if(Number.isFinite(p.x)&&Number.isFinite(p.y)){const X=ax.X(p.x),Y=ax.Y(p.y);pen?ctx.lineTo(X,Y):ctx.moveTo(X,Y);pen=true;}else pen=false;});ctx.stroke();
+      ctx.fillStyle=s.color;s.pts.forEach(p=>{if(Number.isFinite(p.x)&&Number.isFinite(p.y))vlMarker(ctx,s.shape,ax.X(p.x),ax.Y(p.y),4.8);});});ctx.restore();}
+  if(!has)txt(ctx,'Your graph draws here as you type your data.',box.L+box.W/2,box.T+box.H/2,{s:14,c:PAL['muted'],a:'center',b:'middle'});}
+function vlGraph(sim){const V=sim.vlab;if(!V||!V.lab.graph)return;const cv=sim.ui.nb.querySelector('.vl-cv');if(!cv)return;const W=cv.clientWidth,H=cv.clientHeight;if(!W||!H)return;
+  const dpr=fit(cv,W,H),ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);vlPlot(ctx,W,H,V);}
+function vlLight(fn){const de=document.documentElement,prev=de.getAttribute('data-theme');de.setAttribute('data-theme','light');readPal();try{fn();}finally{if(prev===null)de.removeAttribute('data-theme');else de.setAttribute('data-theme',prev);readPal();}}
+function vlPng(V){if(!V.lab.graph)return '';const W=700,H=380,cv=document.createElement('canvas');cv.width=W*2;cv.height=H*2;const ctx=cv.getContext('2d');let url='';
+  vlLight(()=>{ctx.setTransform(2,0,0,2,0,0);ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);vlPlot(ctx,W,H,V);try{url=cv.toDataURL('image/png');}catch(e){url='';}});return url;}
+/* the report: the same content as a printable page, a Word file and plain text */
+function vlCellText(c,v){if(c.input==='select'&&v!==''){const o=(c.options||[]).find(o=>String(typeof o==='object'?o.v:o)===v);if(o)return typeof o==='object'?String(o.l):String(o);}return v;}
+const vlUnP=s=>String(s||'').replace(/^\s*<p>/i,'').replace(/<\/p>\s*$/i,'');
+function vlReportHTML(sim,img,word){const V=sim.vlab,L=V.lab,G=L.graph;const A=k=>{const v=V.raw(k).trim();return v?esc(v).replace(/\n/g,'<br>'):'<span class="none">(blank)</span>';};
+  const S=(t,b)=>`<section><h2>${t}</h2>${b}</section>`;let h='';
+  h+=`<header><p class="kicker">${esc(LAB_NAME)} · Virtual lab${L.course?' · '+esc(L.course):''}</p><h1>${L.title}</h1>
+    <table class="who"><tr><td><b>Name:</b> ${A('name')}</td><td><b>Class period:</b> ${A('period')}</td><td><b>Date:</b> ${A('date')}</td></tr></table>
+    <p class="src">${L.source?'Handout: '+esc(L.source.label||''):''}${L.teachers?(L.source?' · ':'')+'Teachers: '+esc(L.teachers):''}${L.source&&L.source.href?`<br><a href="${esc(L.source.href)}">${esc(L.source.href)}</a>`:''}</p></header>`;
+  if(L.purpose)h+=S('Purpose',L.purpose);
+  if(L.background)h+=S('Background',L.background);
+  if(L.materials&&L.materials.length)h+=S('Materials','<ul>'+L.materials.map(m=>'<li>'+m+'</li>').join('')+'</ul>');
+  if(L.hypothesis)h+=S('Hypothesis',`<div class="prompt">${L.hypothesis.prompt||''}</div><p class="ans">${A('hyp')}</p>`);
+  if(L.steps&&L.steps.length)h+=S('Procedure','<ol class="proc">'+L.steps.map(s=>'<li>'+vlUnP(lvText(s.text))+'</li>').join('')+'</ol>');
+  const obs=L.observations||[];
+  if((L.tables&&L.tables.length)||obs.length){let b='';(L.tables||[]).forEach(tb=>{const rows=vlRows(tb);b+=`${tb.title?`<h3>${tb.title}</h3>`:''}<table class="data"><thead><tr>${tb.cols.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead><tbody>${rows.map((rv,r)=>`<tr>${tb.cols.map(c=>c.rows?`<th>${esc(vlRowLabel(c,r))}</th>`:`<td>${esc(vlCellText(c,V.raw('c:'+tb.id+':'+c.id+':'+r).trim()))}</td>`).join('')}</tr>`).join('')}</tbody></table>`;});
+    if(obs.length)b+=`<h3>Observations</h3><table class="data kv"><tbody>${obs.map(o=>`<tr><th>${o.label}</th><td>${A('o:'+o.id)}</td></tr>`).join('')}</tbody></table>`;h+=S('Data',b);}
+  if(G)h+=S('Graph',img?`<p class="fig"><img src="${img}" width="620" height="337" alt="${esc(stripTags(G.title||'Graph'))}"></p>`:'<p class="none">(The graph could not be drawn in this browser.)</p>');
+  if(L.calcs&&L.calcs.length)h+=S('Calculations',`<table class="data kv"><tbody>${L.calcs.map(c=>{const v=V.raw('k:'+c.id).trim();return `<tr><th>${c.label}</th><td>${v?esc(v).replace(/\n/g,'<br>')+(c.unit&&c.input!=='text'?' '+c.unit:''):'<span class="none">(blank)</span>'}</td></tr>`;}).join('')}</tbody></table>`);
+  if(L.questions&&L.questions.length)h+=S('Questions',L.questions.map((q,i)=>`<div class="q"><div class="qq"><b>${esc(q.n!==undefined?q.n:i+1)}.</b> ${vlUnP(q.q)}</div>${q.fields?`<table class="data kv"><tbody>${q.fields.map(f=>`<tr><th>${f.label}</th><td>${A('q:'+q.id+':'+f.id)}</td></tr>`).join('')}</tbody></table>`:`<p class="ans">${A('q:'+q.id)}</p>`}</div>`).join(''));
+  if(L.conclusion){const C=L.conclusion;h+=S('Conclusion',`<div class="prompt">${C.prompt||''}</div>`+(C.cer?`<p><b>Claim:</b></p><p class="ans">${A('cer:claim')}</p><p><b>Evidence:</b></p><p class="ans">${A('cer:evidence')}</p><p><b>Reasoning:</b></p><p class="ans">${A('cer:reasoning')}</p>`:`<p class="ans">${A('concl')}</p>`));}
+  let when='';try{when=new Date().toLocaleString();}catch(e){}
+  h+=`<p class="foot">Completed in ${esc(LAB_NAME)}, a Regis Jesuit virtual lab. Report made ${esc(when)}. The data were read from the virtual bench by the student.</p>`;
+  const css=`body{font:15px/1.5 "Segoe UI",Calibri,Arial,sans-serif;color:#111;background:#fff;max-width:780px;margin:24px auto;padding:0 20px}
+h1{font-size:22px;line-height:1.25;margin:4px 0 10px}h2{font-size:15px;color:#a8102a;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #C11430;padding-bottom:3px;margin:22px 0 8px}h3{font-size:15px;margin:14px 0 6px}
+p{margin:0 0 8px}.kicker{color:#a8102a;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:0}
+table{border-collapse:collapse}.who td{padding:2px 22px 2px 0}.src{color:#444;font-size:13px}.src a{color:#a8102a;word-break:break-all}
+table.data{width:auto;min-width:55%;margin:4px 0 12px}table.kv{width:100%}.data th,.data td{border:1px solid #888;padding:4px 8px;text-align:left;vertical-align:top}.data thead th{background:#ececec}.data tbody th{background:#f6f6f6;font-weight:600}.kv th{width:42%}
+.prompt{color:#333;font-style:italic;margin:0 0 6px}.prompt p{margin:0}.ans{border-left:3px solid #bbb;padding:2px 10px;margin:4px 0 12px}.none{color:#888;font-style:italic}
+.qq{margin:10px 0 4px}.qq p{display:inline;margin:0}.proc li{margin-bottom:4px}.proc p{margin:0 0 4px}.fig img{max-width:100%;height:auto;border:1px solid #ccc}
+.foot{margin-top:28px;color:#666;font-size:12px;border-top:1px solid #ccc;padding-top:6px}
+.bar{position:sticky;top:0;background:#2a2a2a;color:#fff;margin:-24px -20px 16px;padding:10px 20px;display:flex;gap:12px;align-items:center;justify-content:space-between;border-bottom:4px solid #C11430}
+.bar button{font:600 14px "Segoe UI",Arial,sans-serif;background:#C11430;color:#fff;border:0;border-radius:6px;padding:7px 14px;cursor:pointer}
+h2,h3{break-after:avoid;page-break-after:avoid}table,.fig,.q{break-inside:avoid;page-break-inside:avoid}
+@media print{.bar{display:none}body{margin:0 auto}}@page{margin:16mm}`;
+  const title=esc(stripTags(L.title)+(V.raw('name').trim()?' · '+V.raw('name').trim():''));
+  if(word)return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${title}</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>${css}</style></head><body>${h}</body></html>`;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><style>${css}</style></head><body><div class="bar"><b>Your lab report</b><button type="button" onclick="window.print()">Print or save as PDF</button></div>${h}</body></html>`;}
+function vlHtmlText(s){s=String(s||'').replace(/<br\s*\/?>/gi,'\n').replace(/<li[^>]*>/gi,'\n- ').replace(/<\/(p|div|h\d|li|tr|ul|ol)>/gi,'\n').replace(/<[^>]+>/g,'');
+  const t=document.createElement('textarea');t.innerHTML=s;return t.value.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();}
+function vlTextTable(head,rows){const all=[head,...rows],w=head.map((_,i)=>Math.max(...all.map(r=>String(r[i]||'').length)));return all.map((r,j)=>r.map((c,i)=>String(c||'').padEnd(w[i])).join(' | ').trimEnd()+(j===0?'\n'+w.map(x=>'-'.repeat(x)).join('-+-'):'')).join('\n');}
+function vlReportText(sim){const V=sim.vlab,L=V.lab,R=k=>V.raw(k).trim()||'(blank)',out=[];const H=t=>{out.push('');out.push(t.toUpperCase());};
+  out.push(stripTags(L.title));out.push(LAB_NAME+' virtual lab'+(L.course?' · '+L.course:''));out.push('Name: '+R('name')+'    Class period: '+R('period')+'    Date: '+R('date'));
+  if(L.source||L.teachers)out.push((L.source?'Handout: '+(L.source.label||'')+' ':'')+(L.teachers?'· Teachers: '+L.teachers:'')+(L.source&&L.source.href?'\n'+L.source.href:''));
+  if(L.purpose){H('Purpose');out.push(vlHtmlText(L.purpose));}
+  if(L.background){H('Background');out.push(vlHtmlText(L.background));}
+  if(L.materials&&L.materials.length){H('Materials');L.materials.forEach(m=>out.push('- '+vlHtmlText(m)));}
+  if(L.hypothesis){H('Hypothesis');out.push(vlHtmlText(L.hypothesis.prompt));out.push(R('hyp'));}
+  if(L.steps&&L.steps.length){H('Procedure');L.steps.forEach((s,i)=>out.push((i+1)+'. '+vlHtmlText(lvText(s.text)).replace(/\n+/g,' ')));}
+  if((L.tables&&L.tables.length)||(L.observations||[]).length){H('Data');(L.tables||[]).forEach(tb=>{out.push('');if(tb.title)out.push(vlHtmlText(tb.title));
+      out.push(vlTextTable(tb.cols.map(c=>vlHtmlText(c.label)),vlRows(tb).map((rv,r)=>tb.cols.map(c=>c.rows?String(vlRowLabel(c,r)):vlCellText(c,V.raw('c:'+tb.id+':'+c.id+':'+r).trim())))));});
+    if((L.observations||[]).length){out.push('');out.push('Observations');L.observations.forEach(o=>out.push('- '+vlHtmlText(o.label)+': '+R('o:'+o.id)));}}
+  if(L.graph){H('Graph');out.push(vlHtmlText(L.graph.title)+' (see the PDF or Word report for the graph).');}
+  if(L.calcs&&L.calcs.length){H('Calculations');L.calcs.forEach(c=>out.push('- '+vlHtmlText(c.label)+': '+R('k:'+c.id)+(c.unit&&c.input!=='text'&&V.raw('k:'+c.id).trim()?' '+c.unit:'')));}
+  if(L.questions&&L.questions.length){H('Questions');L.questions.forEach((q,i)=>{out.push('');out.push((q.n!==undefined?q.n:i+1)+'. '+vlHtmlText(q.q).replace(/\n+/g,' '));if(q.fields)q.fields.forEach(f=>out.push('- '+vlHtmlText(f.label)+': '+R('q:'+q.id+':'+f.id)));else out.push(R('q:'+q.id));});}
+  if(L.conclusion){H('Conclusion');out.push(vlHtmlText(L.conclusion.prompt));if(L.conclusion.cer){out.push('Claim: '+R('cer:claim'));out.push('Evidence: '+R('cer:evidence'));out.push('Reasoning: '+R('cer:reasoning'));}else out.push(R('concl'));}
+  return out.join('\n').replace(/\n{3,}/g,'\n\n')+'\n';}
+function vlFileName(sim){const V=sim.vlab,n=V.raw('name').trim();return (stripTags(V.lab.title)+(n?' - '+n:'')).replace(/[\\/:*?"<>|]+/g,'').replace(/\s+/g,' ').trim().slice(0,100)||'Virtual lab';}
+function vlExportPdf(sim){const V=sim.vlab;if(!V)return;vlSave(sim);const html=vlReportHTML(sim,vlPng(V),false);let w=null;try{w=window.open('','_blank');}catch(e){w=null;}
+  if(w){try{w.document.open();w.document.write(html);w.document.close();let done=false;const go=()=>{if(done)return;done=true;try{w.focus();w.print();}catch(e){}};
+      if(w.document.readyState==='complete')setTimeout(go,300);else{w.addEventListener('load',()=>setTimeout(go,150));setTimeout(go,1500);}
+      vlToast(sim,'Your report opened in a new tab. Choose Save as PDF as the printer.');return;}catch(e){try{w.close();}catch(e2){}}}
+  vlOverlay(sim,html);}
+function vlOverlay(sim,html){let o=document.querySelector('.vl-overlay');if(o)o.remove();o=el('div',{class:'vl-overlay',role:'dialog','aria-modal':'true','aria-label':'Your lab report'});
+  o.innerHTML=`<div class="vl-ov-bar"><b>Your lab report</b><span class="row"><button type="button" class="btn primary" data-ov="print">Print or save as PDF</button><button type="button" class="btn" data-ov="close">Close</button></span></div><iframe class="vl-ov-frame" title="Your lab report"></iframe><p class="vl-ov-help">If printing does not open here, close this and use Download Word file.</p>`;
+  document.body.appendChild(o);const fr=o.querySelector('iframe');fr.srcdoc=html;const close=()=>{o.remove();const b=sim.ui.nb.querySelector('[data-vl=pdf]');if(b)b.focus();};
+  o.querySelector('[data-ov=print]').onclick=()=>{try{fr.contentWindow.focus();fr.contentWindow.print();}catch(e){o.querySelector('.vl-ov-help').textContent='Printing is blocked here. Close this and use Download Word file instead.';}};
+  o.querySelector('[data-ov=close]').onclick=close;o.addEventListener('keydown',e=>{if(e.key==='Escape')close();});o.querySelector('[data-ov=print]').focus();return o;}
+/* Word opens an HTML file saved as .doc; non-ASCII characters go in as entities so any import charset reads them */
+function vlWordDoc(sim,png){return vlReportHTML(sim,png,true).replace(/<table class="who"/g,'<table width="100%" class="who"').replace(/<table class="data kv/g,'<table width="100%" border="1" cellspacing="0" cellpadding="5" class="data kv').replace(/<table class="data/g,'<table border="1" cellspacing="0" cellpadding="5" class="data').replace(/[^\x00-\x7f]/gu,c=>'&#'+c.codePointAt(0)+';');}
+function vlExportDoc(sim){const V=sim.vlab;if(!V)return;vlSave(sim);const doc=vlWordDoc(sim,vlPng(V));
+  try{const blob=new Blob([doc],{type:'application/msword'}),url=URL.createObjectURL(blob),a=el('a',{href:url,download:vlFileName(sim)+'.doc'});a.style.display='none';document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},4000);vlToast(sim,'Word file saved to your downloads. If nothing downloaded, use Copy as text.');}
+  catch(e){vlToast(sim,'This page cannot download files here. Use Save as PDF or Copy as text.');}
+  return doc;}
+function vlExportTxt(sim){const V=sim.vlab;if(!V)return;const t=vlReportText(sim);
+  const fb=()=>{const box=sim.ui.nb.querySelector('.vl-fallback');if(!box)return;const id=sim.def.id+'-vl-text';box.innerHTML=`<label class="vl-l" for="${id}">Your report as text. It is selected: press Ctrl+C (or ⌘C on a Mac) to copy it.</label><textarea class="vl-in vl-ta" id="${id}" rows="10" readonly></textarea>`;
+    const ta=box.querySelector('textarea');ta.value=t;ta.focus();ta.select();vlToast(sim,'Selected. Press Ctrl+C to copy');};
+  try{navigator.clipboard.writeText(t).then(()=>vlToast(sim,'Copied. Paste it into your Canvas submission.'),fb);}catch(e){fb();}return t;}
+BL.openLab=openLab;BL.vlab={save:vlSave,report:sim=>sim.vlab?{html:vlReportHTML(sim,vlPng(sim.vlab),false),text:vlReportText(sim),png:vlPng(sim.vlab)}:null,overlay:sim=>sim.vlab?vlOverlay(sim,vlReportHTML(sim,vlPng(sim.vlab),false)):null,
+  word:sim=>sim.vlab?vlWordDoc(sim,vlPng(sim.vlab)):null,check:vlCheck,go:vlGo,num:vlNum};
+
 /* ---------- "Embed this tool in Canvas" panel ---------- */
-function embedUrl(sim,o){let base=location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');const q=new URLSearchParams();q.set('embed','1');if(o.mode)q.set('mode',o.mode);if(o.level)q.set('level',o.level);return base+'?'+q.toString()+'#'+sim.def.hash;}
+function embedUrl(sim,o){let base=location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');const q=new URLSearchParams();q.set('embed','1');if(o.mode)q.set('mode',o.mode);if(o.mode==='vlab'&&o.lab)q.set('lab',o.lab);if(o.level)q.set('level',o.level);return base+'?'+q.toString()+'#'+sim.def.hash;}
 function buildEmbed(sim){const box=sim.ui.sec.querySelector('.embed-b');if(!box||EMBED){const d=sim.ui.sec.querySelector('.embed-box');if(d&&EMBED)d.hidden=true;return;}const d=sim.def,id=d.id;
-  const modes=[d.tour?['guided','Guided (walkthrough, then predictions)']:null,d.game?['game',(d.game.label||'Challenge')+' game']:null,['lab','Full lab']].filter(Boolean);
+  const modes=[d.tour?['guided','Guided (walkthrough, then predictions)']:null,d.game?['game',(d.game.label||'Challenge')+' game']:null,['lab','Full lab'],d.labs&&d.labs.length?['vlab','Virtual lab (a teacher’s handout on the bench)']:null].filter(Boolean),labs=d.labs||[];
   box.innerHTML=`<p>Put this tool right inside a Canvas page, assignment or discussion. Students use it there with no login, and nothing they do leaves their device.</p>
   <div class="emb-opts"><label>Start in <select class="sel" data-e="mode">${modes.map(m=>`<option value="${m[0]}">${m[1]}</option>`).join('')}</select></label>
+  ${labs.length>1?`<label data-e-lab hidden>Lab <select class="sel" data-e="lab"><option value="">Students choose</option>${labs.map(l=>`<option value="${esc(l.id)}">${esc(l.title)}</option>`).join('')}</select></label>`:''}
   <label>Detail <select class="sel" data-e="level"><option value="">Students choose (starts at Big picture)</option><option value="bio">Big picture</option><option value="honors">Closer look</option><option value="ap">Deep dive</option></select></label>
   <label>Height <select class="sel" data-e="h"><option value="900">Standard (900 px)</option><option value="1150">Tall (1150 px)</option><option value="720">Short (720 px)</option></select></label></div>
   <label class="emb-l" for="${id}-embcode">Embed code</label><textarea class="emb-code" id="${id}-embcode" readonly rows="3"></textarea>
@@ -303,13 +575,14 @@ function buildEmbed(sim){const box=sim.ui.sec.querySelector('.embed-b');if(!box|
   <p class="help">Prefer a link? In a module, add an <b>External URL</b> with the copied link and tick <b>Load in a new tab</b>.</p>`;
   const get=k=>box.querySelector(`[data-e=${k}]`),code=get('mode')&&box.querySelector('.emb-code');
   if(hasGuide(sim))get('mode').value='guided';else get('mode').value='lab';
-  const upd=()=>{const url=embedUrl(sim,{mode:get('mode').value,level:get('level').value});const t=(d.tab||d.title).replace(/"/g,'&quot;');
+  const upd=()=>{const lb=box.querySelector('[data-e-lab]');if(lb)lb.hidden=get('mode').value!=='vlab';const url=embedUrl(sim,{mode:get('mode').value,level:get('level').value,lab:get('lab')?get('lab').value:(labs.length===1?labs[0].id:'')});const t=(d.tab||d.title).replace(/"/g,'&quot;');
     code.value=`<iframe src="${url}" title="${t} · ${LAB_NAME}" width="100%" height="${get('h').value}" style="border:0;max-width:1100px" allow="fullscreen" loading="lazy"></iframe>`;get('open').href=url;box._url=url;};
-  ['mode','level','h'].forEach(k=>get(k).addEventListener('change',upd));upd();
+  ['mode','level','h','lab'].forEach(k=>{const e=get(k);if(e)e.addEventListener('change',upd);});upd();
   const toast=box.querySelector('.emb-toast'),say=m=>{toast.textContent=m;toast.hidden=false;clearTimeout(toast._h);toast._h=setTimeout(()=>{toast.hidden=true;},2400);};
   const copy=(txt,ok)=>{const fb=()=>{code.focus();code.select();say('Selected. Press Ctrl+C to copy');};try{navigator.clipboard.writeText(txt).then(()=>say(ok),fb);}catch(e){fb();}};
   get('copy').addEventListener('click',()=>copy(code.value,'Embed code copied'));get('copylink').addEventListener('click',()=>copy(box._url,'Link copied'));}
 BL.setMode=setMode;BL.gameFire=gameFire;BL.gameNext=gameNext;BL.guideDone=guideDone;
+BL.pause=sim=>setRunning(sim,false);BL.play=sim=>setRunning(sim,true);
 
 function flash(sim,msg){const t=sim.ui.toast;if(!t)return;t.textContent=msg;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>{t.hidden=true;},2400);}
 function saveTrials(sim){store.set(LAB_KEY+'-trials-'+sim.def.id,JSON.stringify(sim.trials));}
@@ -329,7 +602,7 @@ function applyLevel(sim){const ui=sim.ui,d=sim.def;
   ui.lede.textContent=lvText(d.lede);if(ui.uses){const P=d.practical,u=P&&P.uses?(Array.isArray(P.uses)?P.uses:lvText(P.uses)):null;const hk=P&&P.hook?lvText(P.hook):'';ui.uses.hidden=!(hk||(u&&u.length));ui.uses.innerHTML=(hk?'<p class="ru-q">'+hk+'</p>':'')+(u&&u.length?'<details class="ru-d"><summary>Where this shows up</summary><ul>'+u.map(x=>'<li>'+x+'</li>').join('')+'</ul></details>':'');}if(ui.scale)ui.scale.textContent=lvText(d.scale);
   if(ui.lab)ui.lab.innerHTML='<p class="lab-h">Investigation</p>'+lvText(d.lab);
   if(sim.tour&&sim.tour.on)tourExit(sim,'level');
-  ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl);if(e.tagName==='OPTION')e.disabled=!atLeast(e.dataset.lvl);});
+  ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl)||(!!e.dataset.vlab&&sim.mode!=='vlab');if(e.tagName==='OPTION')e.disabled=!atLeast(e.dataset.lvl);});
   (d.controls||[]).forEach(c=>{let reset=!atLeast(c.lvl)&&sim.p[c.id]!==c.def;
     if(!reset&&c.options){const o=c.options.find(o=>o.v===sim.p[c.id]);if(o&&o.lvl&&!atLeast(o.lvl))reset=true;}
     if(reset){sim.p[c.id]=c.def;ui.ctl[c.id].set(c.def);if(c.onChange)c.onChange(sim);}});
@@ -376,7 +649,7 @@ function challengeTick(sim){const c=sim.ch;if(c.phase!=='running')return;const d
 function fit(cv,w,h){const dpr=Math.min(2,window.devicePixelRatio||1),W=Math.round(w*dpr),H=Math.round(h*dpr);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}return dpr;}
 function drawStageTo(sim,cv,vdt,kOverride){const w=cv.clientWidth;if(!w)return;const asp=sim.def.aspect||16/9,LH=800/asp,h=w/asp;fit(cv,w,h);const ctx=cv.getContext('2d'),sc=cv.width/800;
   ctx.setTransform(sc,0,0,sc,0,0);ctx.clearRect(0,0,800,LH);const k=kOverride||clamp(720/w,1,1.8);ctx.save();sim.def.draw(sim,ctx,vdt,k,sim.vt);ctx.restore();drawFocus(sim,ctx,LH);}
-function drawGraph(sim){const cv=sim.ui.graph;if(!cv)return;const W=cv.clientWidth,H=cv.clientHeight;if(!W)return;const dpr=fit(cv,W,H),ctx=cv.getContext('2d');
+function drawGraph(sim){if(sim.vlab&&sim.mode==='vlab')vlGraph(sim);const cv=sim.ui.graph;if(!cv)return;const W=cv.clientWidth,H=cv.clientHeight;if(!W)return;const dpr=fit(cv,W,H),ctx=cv.getContext('2d');
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);const box={L:66,T:12,W:W-66-14,H:H-12-40,cw:W,ch:H};
   if(sim.gmode==='live'){const o=graphOptions(sim).find(g=>g.id===sim.gMetric);if(!o){txt(ctx,'No graph for this level.',W/2,H/2,{s:15,c:PAL['muted'],a:'center',b:'middle'});return;}
     if(o.custom){ctx.save();sim.def.plot(sim,ctx,box,o.id);ctx.restore();return;}
@@ -410,7 +683,9 @@ function updateReadouts(sim){allMetrics(sim).forEach(m=>{const v=m.get(sim),t=si
   if(t.bar)t.bar.style.width=(Number.isFinite(v)?clamp((v-(m.min||0))/(m.max-(m.min||0)),0,1)*100:0)+'%';});
   if(sim.ui.clock&&!sim.def.timeless)sim.ui.clock.textContent=clockText(sim);
   if(sim.ui.cap&&!sim.ui.cap.hidden){const n=sim.def.narrate(sim)||'';if(sim.ui.cap._t!==n){sim.ui.cap._t=n;sim.ui.cap.innerHTML=n;}}
-  if(sim.ui.info&&sim.infoDirty){sim.infoDirty=false;sim.ui.info.innerHTML=sim.def.infoPanel(sim)||'';if(sim.def.bindInfo)sim.def.bindInfo(sim,sim.ui.info);}}
+  if(sim.ui.info&&sim.infoDirty){sim.infoDirty=false;sim.ui.info.innerHTML=sim.def.infoPanel(sim)||'';if(sim.def.bindInfo)sim.def.bindInfo(sim,sim.ui.info);}
+  (sim.def.actions||[]).forEach(a=>{if(!a.enabled||!sim.ui.actB)return;const b=sim.ui.actB[a.id];if(!b)return;let on=true;try{on=!!a.enabled(sim);}catch(e){}if(b.disabled===on)b.disabled=!on;});
+  if(sim.vlab)vlTick(sim);}
 BL.refresh=function(sim){sim.infoDirty=true;updateReadouts(sim);drawGraph(sim);};
 BL.setValues=applyValues;
 BL.reset=function(sim){resetSim(sim);sim.ch.changed=false;};
@@ -418,7 +693,7 @@ BL.gotoChallenge=function(sim,i){sim.ch={idx:i,phase:'ask',pick:null,changed:fal
 
 /* ---------- router, landing page, loop ---------- */
 let homeEl,simsEl,jumpEl,backEl;
-function ensureBuilt(id){const sim=sims[id];if(sim.ui.sec)return sim;simsEl.appendChild(buildSim(sim));resetSim(sim);applyLevel(sim);buildModebar(sim);setMode(sim,(QMODE&&['guided','game','lab'].includes(QMODE)?QMODE:null)||store.get(modeKey(sim))||(hasGuide(sim)?'guided':'lab'));buildEmbed(sim);return sim;}
+function ensureBuilt(id){const sim=sims[id];if(sim.ui.sec)return sim;simsEl.appendChild(buildSim(sim));resetSim(sim);applyLevel(sim);buildModebar(sim);setMode(sim,(QMODE&&MODES.includes(QMODE)?QMODE:null)||store.get(modeKey(sim))||(hasGuide(sim)?'guided':'lab'));buildEmbed(sim);return sim;}
 function show(hash){if(hash&&hash.indexOf('path-')===0){const id=hash.slice(5);if((BL.COURSES||[]).some(c=>c.id===id)||id==='topic'){browse=id;store.set(LAB_KEY+'-browse',browse);buildHome();}hash='';}
   const def=DEFS.find(d=>d.hash===hash);
   if(!def){active=null;homeEl.hidden=false;backEl.hidden=true;jumpEl.value='';DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=true;});document.title=LAB_NAME;drawThumbs();return;}
@@ -474,7 +749,9 @@ BL.start=function(){
   readPal();buildHome();
   const lvlBtns=[...document.querySelectorAll('#lvl button')];
   const setLevel=l=>{level=l;store.set(LAB_KEY+'-level',l);lvlBtns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.l===l)));DEFS.forEach(d=>{if(sims[d.id].ui.sec)applyLevel(sims[d.id]);});if(active){updateReadouts(active);drawGraph(active);}};
+  setLevelFn=setLevel;BL.setLevel=setLevel;
   lvlBtns.forEach(b=>b.addEventListener('click',()=>setLevel(b.dataset.l)));setLevel(level);
+  const vlFlush=()=>{DEFS.forEach(d=>{const s=sims[d.id];if(s&&s.vlab)vlSave(s);});};window.addEventListener('pagehide',vlFlush);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')vlFlush();});
   jumpEl.addEventListener('change',()=>{location.hash=jumpEl.value?'#'+jumpEl.value:'#home';});
   backEl.addEventListener('click',e=>{e.preventDefault();location.hash='#home';});
   window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
@@ -491,7 +768,7 @@ BL.start=function(){
       else if(d.timeless){sim.t+=rdt;challengeTick(sim);}
       const vdt=(sim.running||stepping||d.timeless)?rdt*sim.speed:0;sim.vt+=vdt;drawStageTo(sim,sim.ui.stage,vdt);
       if(sim.game){gameTick(sim);}
-      acc+=rdt;if(acc>0.1){acc=0;updateReadouts(sim);if(sim.gmode==='live'||d.timeless)drawGraph(sim);if(sim.game)gameClock(sim);}}
+      acc+=rdt;if(acc>0.1){acc=0;updateReadouts(sim);if(sim.mode!=='vlab'&&(sim.gmode==='live'||d.timeless))drawGraph(sim);if(sim.game)gameClock(sim);}}
     requestAnimationFrame(frame);}
   requestAnimationFrame(frame);
 };

@@ -33,7 +33,7 @@ BioLab.COURSES = [
       { n: 'Spring 3', t: 'Mendel and inheritance', ids: ['crosses', 'bloodtype', 'pedigree'] },
       { n: 'Spring 4', t: 'DNA and protein synthesis', ids: ['replication', 'expression'] },
       { n: 'Spring 5', t: 'Evolution', ids: ['evolution', 'beaks', 'hardyweinberg', 'cladogram'] },
-      { n: 'Spring 6', t: 'Anatomy and homeostasis', ids: ['homeostasis'] }
+      { n: 'Spring 6', t: 'Anatomy, dissection and homeostasis', ids: ['dissection', 'homeostasis'] }
     ],
     further: ['sanger', 'crispr', 'synthbio', 'epidemic', 'antibiotic', 'molclock'] },
   { id: 'ap', name: 'AP Biology',
@@ -88,7 +88,7 @@ BioLab.TOPIC_ORDER = {
   6: ['replication', 'expression', 'lacoperon', 'virus'],
   7: ['evolution', 'beaks', 'hardyweinberg', 'cladogram'],
   8: ['productivity', 'energy', 'carboncycle', 'biomes', 'biodiversity', 'islandbio', 'succession', 'popgrowth', 'wolfmoose', 'predprey', 'humanpop'],
-  9: ['homeostasis'],
+  9: ['dissection', 'homeostasis'],
   10: ['pipette', 'gel', 'plasmid', 'pcr', 'blast', 'transformation'],
   12: ['soil', 'seasons', 'enso', 'climate'],
   13: ['commons', 'footprint', 'energycalc', 'gridmix'],
