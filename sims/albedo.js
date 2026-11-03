@@ -37,7 +37,7 @@ function dayLen(lat,dec){const x=clamp(-Math.tan(rad(lat))*Math.tan(rad(dec)),-1
 const AMP=13,AMPI=3;
 function airAt(h,high,amp){return F2K(high-amp+amp*Math.cos(2*Math.PI*(h-15)/24));}
 /* one surface's energy budget right now (W/m²) */
-function flux(S,L,env){const Q=(1-S.a)*(env.shade?env.tr*env.dir+0.6*env.dif:env.dir+env.dif),Lsky=0.74*SIG*Math.pow(env.Ta,4),Ld=env.shade?0.5*Lsky+0.5*EPS*SIG*Math.pow(env.Ta,4):Lsky;
+function flux(S,L,env){const Q=(1-S.a)*(env.shade?env.tr*env.dir+0.6*env.dif:env.dir+env.dif),Lsky=0.74*SIG*Math.pow(env.Ta,4),Ld=env.shade?0.4*Lsky+0.6*EPS*SIG*Math.pow(env.Ta,4):Lsky;
   const em=EPS*SIG*Math.pow(L.T1,4),Rn=Q+EPS*Ld-em,G=S.g12*(L.T1-L.T2),ef=env.ef!==undefined?env.ef:S.ef[env.mi],LE=ef*Math.max(0,Rn-G),H=env.hc*(L.T1-env.Ta);
   return {S:env.shade?env.tr*env.dir+0.6*env.dif:env.dir+env.dif,Q,ir:em-EPS*Ld,H,LE,G,net:Rn-H-LE-G};}
 function stepLayer(S,L,env,dts){const f=flux(S,L,env);L.T1+=f.net*dts/S.C1;
@@ -54,7 +54,7 @@ function envOf(sim,h){const p=sim.p,se=SEAS[p.season]||SEAS.sep,ice=curSet(sim)=
   return {h,el:sn.el,dir:sn.dir,dif:sn.dif,Ta:airAt(h,p.airT,ice?AMPI:AMP),hc:4+3*u,shade:p.shade==='shade',tr:0.1,mi:atLeast('honors')?MI[p.moist]:1};}
 function integrate(sim,t0,hours){const st=sim.st,n=Math.max(1,Math.ceil(hours/0.01-1e-9)),h=hours/n,dts=h*3600;
   for(let i=0;i<n;i++){const env=envOf(sim,hourOf(sim,t0+(i+0.5)*h));ALL.forEach(s=>stepLayer(SF[s],st.L[s],env,dts));}}
-function freshLayers(sim){const L={},Tm=F2K(sim.p.airT-AMP);ALL.forEach(s=>{const S=SF[s];const T=S.cap!==undefined?Math.min(S.cap,Tm):Tm;L[s]={T1:T,T2:T,Td:S.inside||(S.base!==undefined?S.base:Tm+4),melt:0};});return L;}
+function freshLayers(sim){const L={},Tm=F2K(sim.p.airT-AMP);ALL.forEach(s=>{const S=SF[s];const T=S.cap!==undefined?Math.min(S.cap,Tm):S.base!==undefined?S.base:Tm;L[s]={T1:T,T2:T,Td:S.inside||(S.base!==undefined?S.base:Tm+4),melt:0};});return L;}
 /* jump the clock to a time of day; the surfaces spin up over the two days before it */
 function jumpTo(sim,H){const st=sim.st;if(!st||st.B)return;st.h0=((H-sim.t)%24+24)%24;st.L=freshLayers(sim);integrate(sim,sim.t-48,48);st.H=[];st.lastH=-1e9;sim.hist.length=0;sim.lastSample=-1e9;}
 function cur(sim){const s=SETS[curSet(sim)].includes(sim.p.surf)?sim.p.surf:SETS[curSet(sim)][0];const env=envOf(sim,hourOf(sim));const L=sim.st.L[s];return {s,S:SF[s],L,env,f:flux(SF[s],L,env)};}
@@ -67,7 +67,7 @@ const dayMJ=(sim,s)=>{const p=sim.p,se=SEAS[p.season]||SEAS.sep,S=SF[s],sh=p.sha
    The infrared thermometer reads the surface it points at to 0.1 °F, with about ±0.6 °F of spot-to-spot and reading noise. */
 function hr(seed,a,b){let h=(seed^Math.imul(a+1,0x9E3779B1)^Math.imul(b+7,0x85EBCA77))|0;h=Math.imul(h^h>>>16,0x7feb352d);h=Math.imul(h^h>>>15,0x846ca68b);h^=h>>>16;return (h>>>0)/4294967296;}
 function hn(seed,a,b){const u=Math.max(1e-9,hr(seed,a,b)),w=hr(seed,a,b+100003);return Math.sqrt(-2*Math.log(u))*Math.cos(6.2831853*w);}
-const ROWS=['sidewalk','blacktop','brick','grass'],ROWL=['Cement sidewalk','Blacktop','Brick','Grassy area'];
+const ROWS=['sidewalk','blacktop','brick','grass'],ROWL=['Sidewalk','Blacktop','Brick','Grassy area'];
 const SPOT=[
   {s:'concrete',sun:true, n:'Sidewalk by the main doors',sh:'Sidewalk, sun',x:300,y:168},
   {s:'concrete',sun:false,n:'Sidewalk on the north side of the gym',sh:'Sidewalk, shade',x:150,y:66,kind:'wall'},
@@ -84,7 +84,7 @@ function weather(seed){if(WXC[seed])return WXC[seed];const S=seed|0,u=k=>hr(S,70
     W={seed:S,day,dec,noon:12.92,high:72+Math.round(u(2)*14),wind:3+Math.round(u(3)*6),start:12.9+u(4)*0.5,sky:u(5)<0.5?'Sunny, clear sky':'Sunny, a few small clouds'};
   W.sp=SPOT.map((o,i)=>{const v=k=>hr(S,800+i,k);const a=o.s==='blacktop'?0.08+0.06*v(1):o.s==='concrete'?0.27+0.10*v(1):o.s==='brick'?0.22+0.08*v(1):0.20+0.05*v(1);
     const ts=o.sun?99:o.kind==='tree'?(o.s==='blacktop'?12.05+0.35*v(2):10.2+0.6*v(2)):0;
-    return {a,ef:o.s==='grass'?0.85+0.08*v(3):undefined,tr:o.kind==='tree'?0.06+0.08*v(4):0,ts};});
+    return {a,ef:o.s==='grass'?0.85+0.08*v(3):undefined,tr:o.kind==='tree'?0.06+0.08*v(4):0.14+0.06*v(4),ts};});
   /* run each spot through the two days before the lab, then record it from 11:00 to 17:00 */
   W.T=W.sp.map((q,i)=>{const S0=SF[SPOT[i].s],S1=Object.assign({},S0,{a:q.a}),L={T1:F2K(W.high-AMP),T2:F2K(W.high-AMP),Td:F2K(W.high-AMP)+4,melt:0},out=[];
     for(let j=-4800;j<=1700;j++){const h=((j/100)%24+24)%24,sn=sunAt(h,LAT,W.dec,W.noon),shade=h>=q.ts;
@@ -147,7 +147,7 @@ function drawSite(sim,ctx,k,t){const b=albB(sim),W=weather(sim.vlab.seed),i=spot
   else if(o.s==='concrete'){ctx.strokeStyle='rgba(90,90,90,.45)';ctx.lineWidth=2;for(let x=120;x<800;x+=200){ctx.beginPath();ctx.moveTo(x,G);ctx.lineTo(x-60,450);ctx.stroke();}ctx.fillStyle='rgba(0,0,0,.06)';for(let j=0;j<300;j++)ctx.fillRect(g()*800,G+g()*240,2,2);}
   else{ctx.fillStyle='rgba(255,255,255,.10)';for(let j=0;j<500;j++)ctx.fillRect(g()*800,G+g()*240,2,2);ctx.fillStyle='#e8d25a';ctx.fillRect(120,G+40,10,200);}
   // the shade source
-  if(!o.sun){ctx.fillStyle='rgba(0,0,0,.34)';ctx.fillRect(0,G,560,240);
+  if(!o.sun){ctx.fillStyle='rgba(0,0,0,.34)';ctx.fillRect(0,G,800,240);
     if(o.kind==='wall'){ctx.fillStyle='#8d9196';ctx.fillRect(0,40,560,G-40);ctx.fillStyle='#7a7e83';for(let y=56;y<G;y+=30)ctx.fillRect(0,y,560,3);txt(ctx,'Gym wall (north side)',280,120,{s:fs,w:700,c:'#ffffff',a:'center'});}
     else if(o.kind==='roof'){ctx.fillStyle='#6d7176';ctx.fillRect(0,34,560,22);[60,240,420].forEach(x=>{ctx.fillStyle='#8d9196';ctx.fillRect(x,56,22,G-56);});txt(ctx,'Covered walkway roof',280,50,{s:Math.min(12*k,18),w:700,c:'#ffffff',a:'center',b:'middle'});}
     else{ctx.fillStyle='#5b3f26';ctx.fillRect(250,80,30,G-60);ctx.fillStyle='#2f6b2a';[[150,70,80],[265,40,95],[400,72,80]].forEach(c=>{ctx.beginPath();ctx.arc(c[0],c[1],c[2],0,6.283);ctx.fill();});}}
@@ -169,7 +169,7 @@ function drawBench(sim,ctx,vdt,k,t){const b=albB(sim);if(!b)return;if(b.at==='ma
 /* ---------------- the lab, from the APES teachers' handout ---------------- */
 const albCells=(sim,r)=>['sun','shade'].every(c=>sim.vlab.raw('c:t1:'+c+':'+r).trim()!=='');
 const surfStep=(r,title,txt1)=>({title,text:txt1,controls:['walk','ir'],done:sim=>albCells(sim,r),
-  doneHint:'Record both the Sunny and the Shade reading for '+ROWL[r].toLowerCase()+' in the data table.'});
+  doneHint:'Record both the Sunny and the Shade reading for '+['cement sidewalk','blacktop','brick','grassy area'][r]+' in the data table.'});
 const LAB={id:'albedo-campus',title:'Albedo Lab',course:'AP Environmental Science',teachers:'Brown, Robertson, Overly',
   source:{label:'Lab Albedo Effect.pdf',href:'https://rjhs.instructure.com/courses/16473/assignments/588422'},level:'honors',
   purpose:'<p>Move around campus to collect the data below: the surface temperature of four surfaces, each in the sun and in the shade. Then use the data to answer the analysis questions. Complete the lab with your lab group.</p>',
@@ -221,7 +221,8 @@ const ALBEDO={
     {id:'moist',label:'Moisture',type:'seg',def:'normal',lvl:'honors',options:[{v:'dry',l:'Drought'},{v:'normal',l:'Normal'},{v:'wet',l:'After rain'}],help:'Normal: a watered lawn and dry pavement. After rain, the pavement is wet too.'},
     {id:'set',label:'Compare',type:'seg',def:'campus',lvl:'ap',options:[{v:'campus',l:'Campus'},{v:'roofs',l:'Roofs and heat island'},{v:'ice',l:'Ice and ocean'}],
      onChange(sim){const s=sim.p.set,was=sim.st&&sim.st.lastSet;if(sim.st)sim.st.lastSet=s;if(!SETS[s].includes(sim.p.surf))BioLab.setValues(sim,{surf:SETS[s][s==='ice'?3:0]});
-       if(s==='ice'&&was!=='ice')BioLab.setValues(sim,{airT:34,season:'jun'});else if(s!=='ice'&&was==='ice')BioLab.setValues(sim,{airT:78,season:'sep'});}},
+       if(s==='ice'&&was!=='ice')BioLab.setValues(sim,{airT:34,season:'jun'});else if(s!=='ice'&&was==='ice')BioLab.setValues(sim,{airT:78,season:'sep'});
+       if(sim.st&&sim.st.L&&!sim.st.B&&(s==='ice')!==(was==='ice'))jumpTo(sim,hourOf(sim));}},
     // virtual lab bench only
     {id:'walk',label:'Walk to',type:'select',def:'map',vlab:true,noTrial:true,options:[{v:'map',l:'Campus map'}].concat(SPOT.map((o,i)=>({v:'s'+i,l:(i+1)+' · '+o.sh}))),onChange:walkTo}
   ],
@@ -298,16 +299,16 @@ function drawFull(sim,ctx,vdt,k,t){const p=sim.p,setK=curSet(sim),set=SETS[setK]
   ctx.fillStyle='#ffd22e';ctx.strokeStyle='rgba(120,80,0,.6)';ctx.lineWidth=1;v.ph.forEach(q=>{if(q.cx===undefined)return;ctx.beginPath();ctx.arc(q.cx,q.cy,4,0,6.283);ctx.fill();ctx.stroke();});
   v.ir.forEach(q=>{q.y-=vdt*30;q.a-=vdt*0.9;});v.ir=v.ir.filter(q=>q.a>0);ctx.strokeStyle='#ff4a2a';ctx.lineWidth=2;v.ir.forEach(q=>{ctx.globalAlpha=clamp(q.a,0,1);ctx.beginPath();for(let j=0;j<=6;j++){const yy=q.y-j*3,xx=q.x+Math.sin(j*1.6)*3;j?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);}ctx.stroke();});ctx.globalAlpha=1;
   drawPanel(sim,ctx,k,c);}
-function drawPanel(sim,ctx,k,c){const X=552,Y=10,W=236,H=432,hon=atLeast('honors'),ap=atLeast('ap'),fs=Math.min(12*k,19),setK=curSet(sim);
+function drawPanel(sim,ctx,k,c){const X=552,Y=10,W=236,H=432,hon=atLeast('honors'),ap=atLeast('ap'),fs=Math.min(12*k,19),setK=curSet(sim),nw=k>1.3;
   ctx.fillStyle=PAL['card'];rr(ctx,X,Y,W,H,10);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;rr(ctx,X,Y,W,H,10);ctx.stroke();
   let y=Y+10+Math.min(15*k,23);txt(ctx,labelOf(setK,c.s),X+12,y,{s:Math.min(15*k,23),w:700});y+=fs*1.45;txt(ctx,'Albedo '+c.S.a.toFixed(2),X+12,y,{s:fs,c:PAL['cv-soft']});
   const bar=(label,frac,col,val)=>{y+=fs*1.5;txt(ctx,label,X+12,y,{s:fs});if(val!==undefined&&ap)txt(ctx,val,X+W-12,y,{s:fs,w:700,a:'right'});y+=7;ctx.fillStyle=PAL['line'];ctx.fillRect(X+12,y,W-24,9);ctx.fillStyle=col;ctx.fillRect(X+12,y,(W-24)*clamp(frac,0,1),9);y+=9;};
   const f=c.f,Sx=Math.max(1,f.S);
   if(f.S<1){y+=fs*1.5;txt(ctx,'No sunlight now.',X+12,y,{s:fs});y+=fs*1.4;txt(ctx,'It loses the heat it stored.',X+12,y,{s:fs,c:PAL['cv-soft']});}
-  else{bar('Sunlight hitting it',f.S/1000,'#f2c230',Math.round(f.S)+' W/m²');bar('Reflected: '+Math.round(100*c.S.a)+'%',c.S.a*f.S/1000,'#f7e08a',Math.round(c.S.a*f.S));bar('Absorbed: '+Math.round(100*(1-c.S.a))+'%',f.Q/1000,'#e8772e',Math.round(f.Q));}
-  if(hon){y+=fs*1.9;txt(ctx,'Heat leaving the surface',X+12,y,{s:fs,w:700});
-    const out=[[ 'Infrared glow',f.ir,'#d9472b'],['Warms the air',f.H,'#5b8fd9'],['Evaporation',f.LE,'#3aa58f'],[f.G>=0?'Into the ground':'Out of the ground',Math.abs(f.G),'#9a7b4f']],tot=Math.max(50,...out.map(o=>Math.abs(o[1])));
-    out.forEach(o=>bar(o[0],Math.abs(o[1])/tot,o[2],Math.round(o[1])+(ap?' W/m²':'')));}
+  else{bar(nw?'Sunlight':'Sunlight hitting it',f.S/1000,'#f2c230',Math.round(f.S)+(nw?'':' W/m²'));bar('Reflected: '+Math.round(100*c.S.a)+'%',c.S.a*f.S/1000,'#f7e08a',Math.round(c.S.a*f.S));bar('Absorbed: '+Math.round(100*(1-c.S.a))+'%',f.Q/1000,'#e8772e',Math.round(f.Q));}
+  if(hon){y+=fs*1.9;txt(ctx,nw?'Heat out':'Heat leaving the surface',X+12,y,{s:fs,w:700});
+    const out=[[nw?'Infrared':'Infrared glow',f.ir,'#d9472b'],[nw?'Air':'Warms the air',f.H,'#5b8fd9'],['Evaporation',f.LE,'#3aa58f'],[nw?'Ground':f.G>=0?'Into the ground':'Out of the ground',f.G,'#9a7b4f']],tot=Math.max(50,...out.map(o=>Math.abs(o[1])));
+    out.forEach(o=>bar(o[0],Math.abs(o[1])/tot,o[2],Math.round(o[1])+(ap&&!nw?' W/m²':'')));}
   if(ap&&setK==='ice'){y+=fs*1.8;if(y<Y+H-fs*2.6){txt(ctx,'Warmer → ice melts → darker',X+12,y,{s:fs,w:600,c:PAL['rj']});y+=fs*1.35;txt(ctx,'water absorbs more → warmer',X+12,y,{s:fs,w:600,c:PAL['rj']});}}}
 Object.assign(ALBEDO,{
   narrate(sim){if(albB(sim))return benchNarrate(sim);const c=cur(sim),p=sim.p,T=K2F(c.L.T1),Ta=K2F(c.env.Ta),dT=T-Ta,nm=labelOf(curSet(sim),c.s).toLowerCase(),setK=curSet(sim),pct=Math.round(100*c.S.a),hon=atLeast('honors');

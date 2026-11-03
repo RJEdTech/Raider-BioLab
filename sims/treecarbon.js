@@ -169,7 +169,7 @@ function drawDBH(sim,ctx,k){const D=tcD(sim),b=tcB(sim),T=D.T,fs=Math.min(12.5*k
   txt(ctx,'Tape wrapped at '+z+' m · reads in cm',X+W/2,Yt+H-12,{s:Math.min(12*k,17),c:PAL['cv-soft'],a:'center'});
   txt(ctx,'Tree '+T.n+' · '+SP[T.sk].l,16,30,{s:Math.min(15*k,23),w:700});}
 function drawHeight(sim,ctx,k){const D=tcD(sim),b=tcB(sim),T=D.T,s=SP[T.sk],fs=Math.min(12.5*k,20),pos=b.pos;ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
-  ctx.fillStyle='rgba(120,175,230,.20)';ctx.fillRect(0,0,548,400);const G=400,tx=110,sc=Math.min(330/T.h,380/(pos+1.2)),ox=tx+pos*sc,eyeY=G-D.eye*sc;
+  ctx.fillStyle='rgba(120,175,230,.20)';ctx.fillRect(0,0,548,400);const G=400,tx=150,sc=Math.min(330/T.h,350/(pos+1.2)),ox=tx+pos*sc,eyeY=G-D.eye*sc;
   ctx.fillStyle='#5f9f42';ctx.fillRect(0,G,548,50);
   treeShape(ctx,s,tx,G,T.h*sc,Math.max(4,T.d/100*sc),k,sc);
   // the tape on the ground
@@ -217,7 +217,7 @@ function drawTCBench(sim,ctx,k){const v=sim.p.tcView;if(v==='dbh')drawDBH(sim,ct
 
 /* ---------------- the lab, from the APES teacher's handout ---------------- */
 const tagRow=()=>{const D=tcCur();return ['Tree '+(D?D.T.n:'')];};
-const fixedN={id:'n',label:'Tree #',get rows(){const D=tcCur();return [D?D.T.n:1];},get rowLabels(){return tagRow();}};
+const fixedN={id:'n',label:'Tree',get rows(){const D=tcCur();return [D?D.T.n:1];},get rowLabels(){return tagRow();}};
 const filled=(sim,t,cols)=>cols.every(c=>sim.vlab.raw('c:'+t+':'+c+':0').trim()!=='');
 const setView=(sim,v)=>{if(sim.p.tcView!==v)BioLab.setValues(sim,{tcView:v});};
 const LAB={id:'treecarbon-campus',title:'Tree Carbon Storage and Sequestration Lab',course:'AP Environmental Science',teachers:'Weed',
@@ -229,7 +229,7 @@ const LAB={id:'treecarbon-campus',title:'Tree Carbon Storage and Sequestration L
     '<p><b>About the virtual campus.</b> The campus and its trees are fictional. Each tree’s size comes from growth curves for that species in Colorado, with natural variation, and your group’s tree is your own. The tape, your paces and each clinometer sighting have small errors like the real ones, so your numbers will differ a little from your classmates’.</p>',
   materials:['Measuring tape (or a string and a meter stick)','Clinometer: a protractor with a straw and a weighted string','A partner to read the clinometer','Calculator','Your tree’s tag (species and approximate age, from your teacher)','The class sheet'],
   hypothesis:{prompt:'<p>Predict which tree on campus stores the most carbon. Will it be the tallest tree, the widest tree or the oldest tree? Explain your reasoning.</p>'},
-  setup(sim){TCUR=sim;const b=tcB(sim);if(b){const o={};if(b.view&&sim.p.tcView!==b.view)o.tcView=b.view;if(sim.p.tapeAt!==b.tape)o.tapeAt=b.tape;if(Object.keys(o).length)BioLab.setValues(sim,o);}BioLab.refresh(sim);},
+  setup(sim){TCUR=sim;const b=tcB(sim);if(b){const v=b.view;if(sim.p.tapeAt!==b.tape)BioLab.setValues(sim,{tapeAt:b.tape});if(v&&sim.p.tcView!==v)BioLab.setValues(sim,{tcView:v});}BioLab.refresh(sim);},
   teardown(){TCUR=null;},
   controls:['tcView'],
   steps:[
@@ -366,8 +366,8 @@ function drawTree(sim,ctx,vdt,k,t){const n=now(sim),s=n.s,p=sim.p,hon=atLeast('h
     if(n.h>1.4){ctx.fillStyle='#f2c230';ctx.fillRect(tx-Math.max(4,n.d/100*sc*3)/2-3,G-1.4*sc-3,Math.max(4,n.d/100*sc*3)+6,6);}
     txt(ctx,'Trunk width drawn 3× wider',tx,G+22,{s:Math.min(11*k,16),c:'#ffffff',a:'center'});
     // CO2 entering the leaves, at the rate this tree takes in carbon
-    if(vdt>0&&n.seq>0){let m=Math.min(4,0.5+n.seq/8)*vdt*8*(RM?.5:1);while(m>0){if(R()<m&&v.co.length<90)v.co.push({x:tx+(R()<.5?-1:1)*(120+R()*120),y:G-n.h*sc*(0.4+R()*0.6),tx:tx+(R()-.5)*n.h*sc*0.4,ty:G-n.h*sc*(0.55+R()*0.35),f:0});m--;}}
-    v.co.forEach(q=>{q.f+=vdt*0.6;});v.co=v.co.filter(q=>q.f<1);ctx.font='700 '+Math.min(11*k,15)+'px '+FONT;v.co.forEach(q=>{const x=lerp(q.x,q.tx,q.f),y=lerp(q.y,q.ty,q.f);ctx.globalAlpha=1-q.f*0.7;pill(ctx,'CO₂',x,y,'rgba(70,110,170,.85)','#ffffff',Math.min(10*k,14));});ctx.globalAlpha=1;
+    if(vdt>0&&n.seq>0){let m=Math.min(3,0.4+n.seq/10)*vdt*(RM?.5:1);while(m>0){if(R()<m&&v.co.length<18){const side=R()<.5?-1:1,cw=n.h*sc*0.45;v.co.push({x:clamp(tx+side*(cw+40+R()*80),110,530),y:G-n.h*sc*(0.5+R()*0.45),tx:tx+(R()-.5)*cw,ty:G-n.h*sc*(0.6+R()*0.3),f:0});}m--;}}
+    v.co.forEach(q=>{q.f+=vdt*0.35;});v.co=v.co.filter(q=>q.f<1);ctx.font='700 '+Math.min(11*k,15)+'px '+FONT;v.co.forEach(q=>{const x=lerp(q.x,q.tx,q.f),y=lerp(q.y,q.ty,q.f);ctx.globalAlpha=1-q.f*0.7;pill(ctx,'CO₂',x,y,'rgba(70,110,170,.85)','#ffffff',Math.min(10*k,14));});ctx.globalAlpha=1;
     txt(ctx,SP[p.species].l+', '+Math.round(n.a)+' years',16,26,{s:Math.min(14*k,22),w:700});}
   else{const N=dens(sim),icons=100,per=N/icons;txt(ctx,'1 hectare: '+N+' trees, '+Math.round(n.a)+' years old',16,26,{s:Math.min(14*k,22),w:700});txt(ctx,'Each tree drawn here stands for '+fmtNum(per,per<10?1:0)+' trees',16,26+Math.min(14*k,22)*1.35,{s:fs,c:PAL['cv-soft']});
     ctx.fillStyle='rgba(98,150,80,.35)';ctx.beginPath();ctx.moveTo(40,G+30);ctx.lineTo(508,G+30);ctx.lineTo(430,150);ctx.lineTo(118,150);ctx.closePath();ctx.fill();
@@ -381,8 +381,8 @@ function drawTree(sim,ctx,vdt,k,t){const n=now(sim),s=n.s,p=sim.p,hon=atLeast('h
   if(stand){line('Carbon stored',fmtNum(n.c*dens(sim)/1000,1)+' t');line('Added this year',fmtNum(n.seq*dens(sim)/1000,2)+' t');}
   else{line('Diameter',n.d.toFixed(1)+' cm');line('Height',n.h.toFixed(1)+' m');line('Carbon stored',Math.round(n.c)+' kg');line('Added this year',n.seq.toFixed(1)+' kg');}
   // carbon column: how much of the tree's dry wood is carbon
-  y+=fs*0.4;const cw=W-24,chh=Math.min(120,H-(y-Y)-fs*5.5);if(chh>40){const full=Math.max(10,CS(s,150,roots(sim))),fr=clamp(CS(s,n.a,roots(sim))/full,0,1);ctx.fillStyle=PAL['line'];ctx.fillRect(X+12,y,cw,chh);ctx.fillStyle='#3a3a3a';ctx.fillRect(X+12,y+chh*(1-fr),cw,chh*fr);
-    txt(ctx,'Carbon stored, vs the same tree at 150 years',X+12,y+chh+fs*1.2,{s:Math.min(11*k,15),c:PAL['cv-soft']});y+=chh+fs*2.2;}
+  y+=fs*0.3;const cw=W-24,cs=Math.min(11*k,15),chh=Math.min(100,H-(y-Y)-fs*4-cs*3.2);if(chh>30){const full=Math.max(10,CS(s,150,roots(sim))),fr=clamp(CS(s,n.a,roots(sim))/full,0,1);ctx.fillStyle=PAL['line'];ctx.fillRect(X+12,y,cw,chh);ctx.fillStyle=PAL['s3'];ctx.fillRect(X+12,y+chh*(1-fr),cw,chh*fr);
+    txt(ctx,'Green: carbon stored now',X+12,y+chh+cs*1.3,{s:cs,c:PAL['cv-soft']});txt(ctx,'Full bar: this tree at 150 years',X+12,y+chh+cs*2.6,{s:cs,c:PAL['cv-soft']});y+=chh+cs*2.6+fs*1.3;}
   if(hon&&!stand&&y<Y+H-fs*3){line('d '+(n.d<28?'< 28':'≥ 28')+' cm: GW = '+(n.d<28?'0.0577':'0.0346')+' d²h',undefined,{s:Math.min(11*k,15),c:PAL['cv-soft']});}
   if(ap&&y<Y+H-fs*1.5)line('CO₂ = C × 44 ÷ 12',fmtNum(n.c*CO2*(stand?dens(sim)/1000:1),stand?1:0)+(stand?' t':' kg'),{s:Math.min(11.5*k,16)});}
 Object.assign(TREE,{

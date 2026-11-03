@@ -137,10 +137,12 @@ function farCrumb(sim){const b=bn(sim),G=ckB(sim).G;let best=null,bd=-1;b.cr.for
 function nextSpot(sim){const B=ckB(sim),G=B.G;let best=null,bs=0;G.spots.forEach(s=>{const i=Math.floor((s[0]-G.ox)/CW),j=Math.floor((s[1]-G.oy)/CW);let sum=0;
   for(let dj=-2;dj<=2;dj++)for(let di=-2;di<=2;di++){const ii=i+di,jj=j+dj;if(ii>=0&&jj>=0&&ii<CN&&jj<CN)sum+=B.H[jj*CN+ii];}if(sum>bs){bs=sum;best=s;}});return best;}
 function bestChip(sim){const B=ckB(sim),b=bn(sim);let best=-1,be=0.35-1e-9;B.G.chips.forEach((c,i)=>{if(!chipIn(b,i)||!chipVis(B,i))return;const e=chipExp(B,i);if(e>be){be=e;best=i;}});return best;}
-function circlesFor(sim){const b=bn(sim),pts=b.cr;if(!pts.length)return [];const n=pts.length,par=pts.map((_,i)=>i),f=i=>{while(par[i]!==i){par[i]=par[par[i]];i=par[i];}return i;};
-  for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)if(Math.abs(pts[i][0]-pts[j][0])<22&&Math.hypot(pts[i][0]-pts[j][0],pts[i][1]-pts[j][1])<22){const a=f(i),c=f(j);if(a!==c)par[a]=c;}
-  const grp={};pts.forEach((q,i)=>{const r=f(i);(grp[r]=grp[r]||[]).push(q);});
-  return Object.values(grp).map(g=>{const mx=g.reduce((s,q)=>s+q[0],0)/g.length,my=g.reduce((s,q)=>s+q[1],0)/g.length,r=Math.max(11,Math.max(...g.map(q=>Math.hypot(q[0]-mx,q[1]-my)))+8);return [Math.round(mx),Math.round(my),Math.round(r)];});}
+/* pencil circles: start at the crumb farthest from the cookie, circle every loose crumb within 24 px of it, repeat */
+function circlesFor(sim){const b=bn(sim),G=ckB(sim).G,left=b.cr.slice().sort((p,q)=>Math.hypot(q[0]-G.cx,q[1]-G.cy)-Math.hypot(p[0]-G.cx,p[1]-G.cy)),out=[];
+  while(left.length){const s0=left[0],grp=[],rest=[];left.forEach(q=>(Math.hypot(q[0]-s0[0],q[1]-s0[1])<24?grp:rest).push(q));
+    const mx=grp.reduce((a,q)=>a+q[0],0)/grp.length,my=grp.reduce((a,q)=>a+q[1],0)/grp.length,r=Math.max(10,Math.max(...grp.map(q=>Math.hypot(q[0]-mx,q[1]-my)))+7);
+    out.push([Math.round(mx),Math.round(my),Math.round(r)]);left.length=0;left.push(...rest);}
+  return out;}
 function chipCounts(b){const o={w:0,d:0,p:0};for(const ch of b.cs)if(o[ch]!==undefined)o[ch]++;return o;}
 const cellAt=(x,y)=>{const c=Math.floor((x-GX)/GS),r=Math.floor((y-GY)/GS);return c>=0&&c<GC&&r>=0&&r<GRW?r*GC+c:-1;};
 const curStep=sim=>sim.vlab&&(sim.vlab.lab.steps||[])[sim.vlab.step]||{};
@@ -199,7 +201,7 @@ function drawBench(sim,ctx,vdt,k,t){tickTimer(sim);const B=sim.st.B,b=bn(sim),G=
   if(b.traced){ctx.strokeStyle='#4a4a4f';ctx.lineWidth=1.6;ctx.beginPath();G.poly.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();ctx.stroke();}
   // loose crumbs outside the line
   b.cr.forEach((q,i)=>{const r=1.7+((i*37)%10)/10;ctx.fillStyle=DOUGH[4+(i%4)];ctx.beginPath();ctx.arc(q[0],q[1],r,0,6.29);ctx.fill();ctx.strokeStyle='rgba(110,70,30,.55)';ctx.lineWidth=0.8;ctx.stroke();});
-  if(b.circ){ctx.strokeStyle='#4a4a4f';ctx.lineWidth=1.4;b.circ.forEach(q=>{ctx.beginPath();ctx.arc(q[0],q[1],q[2],0,6.29);ctx.stroke();});}
+  if(b.circ){ctx.save();ctx.beginPath();ctx.rect(GX,GY,PW,PH);ctx.clip();ctx.strokeStyle='#4a4a4f';ctx.lineWidth=1.4;b.circ.forEach(q=>{ctx.beginPath();ctx.arc(q[0],q[1],q[2],0,6.29);ctx.stroke();});ctx.restore();}
   // pencil dots for counting
   const dk=curStep(sim).dots,dots=dk?b[dk]||[]:[];ctx.fillStyle='#2a2a2e';dots.forEach(kk=>{ctx.beginPath();ctx.arc(GX+(kk%GC+.5)*GS,GY+(Math.floor(kk/GC)+.5)*GS,4.5,0,6.29);ctx.fill();});
   if(!b.land&&onPaper)pill(ctx,'For sale: '+money(LAND),G.cx,G.cy+G.R+22,PAL['rj'],'#fff',fs(13));
@@ -211,16 +213,19 @@ function drawBench(sim,ctx,vdt,k,t){tickTimer(sim);const B=sim.st.B,b=bn(sim),G=
   ctx.fillStyle=PAL['card'];rr(ctx,X0,136,W0,62,10);ctx.fill();
   txt(ctx,'Tools',X0+12,156,{s:fs(12),w:700,c:PAL['cv-soft']});
   if(!b.tools.length)txt(ctx,'none yet',X0+12,184,{s:fs(12),c:PAL['cv-soft']});
-  const sel=toolIdx(sim);b.tools.slice(0,6).forEach((o,i)=>toolIcon(ctx,o.t,X0+84+i*44,167,!!o.b,i===sel&&!!stageMode(sim)&&stageMode(sim)!=='mark'));
+  ctx.font='700 '+fs(12)+'px '+FONT;const ix=X0+12+ctx.measureText('Tools').width+32;
+  const sel=toolIdx(sim);b.tools.slice(0,6).forEach((o,i)=>toolIcon(ctx,o.t,ix+i*44,167,!!o.b,i===sel&&!!stageMode(sim)&&stageMode(sim)!=='mark'));
   if(b.tools.length>6)txt(ctx,'+'+(b.tools.length-6),X0+W0-8,190,{s:fs(12),w:700,c:PAL['cv-soft'],a:'right'});
-  ctx.fillStyle=PAL['card'];rr(ctx,X0,208,W0,228,10);ctx.fill();
-  txt(ctx,'Sale tray',X0+12,229,{s:fs(12),w:700,c:PAL['cv-soft']});
+  ctx.fillStyle=dark?'#d6cfbf':'#f4efe3';rr(ctx,X0,208,W0,228,10);ctx.fill();ctx.strokeStyle='#b9ad94';ctx.lineWidth=1.5;ctx.stroke();
+  txt(ctx,'Sale tray',X0+12,229,{s:fs(12),w:700,c:'#5a5346'});
   const mined=b.ord.map(i=>({i,q:b.cs.charAt(i)}));
-  if(!mined.length)txt(ctx,'Chips you mine go here.',X0+W0/2,330,{s:fs(12),c:PAL['cv-soft'],a:'center'});
-  else if(!b.stopped){mined.forEach((m,n)=>{const c=G.chips[m.i],col=n%12,row=Math.floor(n/12);chipShape(ctx,X0+24+col*29,256+row*30,8.5,c.ang*0.3,m.q);});}
-  else{let y=250;[['w','Whole, clean'],['d','Dirty'],['p','Partial']].forEach(([q,l])=>{txt(ctx,l,X0+12,y,{s:fs(12),w:700,c:PAL['cv-ink']});y+=fs(12)*0.5+14;
-      const list=mined.filter(m=>m.q===q);if(!list.length){txt(ctx,'none',X0+24,y+5,{s:fs(12),c:PAL['cv-soft']});y+=22;}
-      list.forEach((m,n)=>{const col=n%12;if(n&&!col)y+=26;chipShape(ctx,X0+24+col*29,y,8.5,0,q);});if(list.length)y+=24;y+=8;});}
+  if(!mined.length)txt(ctx,'Chips you mine go here.',X0+W0/2,330,{s:fs(12),c:'#5a5346',a:'center'});
+  const cr=8.5+3*clamp(k-1,0,0.8);ctx.save();rr(ctx,X0,208,W0,228,10);ctx.clip();
+  if(mined.length&&!b.stopped){mined.forEach((m,n)=>{const c=G.chips[m.i],col=n%12,row=Math.floor(n/12);chipShape(ctx,X0+24+col*29,236+fs(12)+row*30,cr,c.ang*0.3,m.q);});}
+  else if(mined.length){let y=236+fs(12)*1.6;[['w','Whole, clean'],['d','Dirty'],['p','Partial']].forEach(([q,l])=>{txt(ctx,l,X0+12,y,{s:fs(12),w:700,c:'#2f2b24'});y+=fs(12)*0.5+14;
+      const list=mined.filter(m=>m.q===q);if(!list.length){txt(ctx,'none',X0+24,y+5,{s:fs(12),c:'#5a5346'});y+=22;}
+      list.forEach((m,n)=>{const col=n%12;if(n&&!col)y+=cr*2+6;chipShape(ctx,X0+24+col*29,y,cr,0,q);});if(list.length)y+=cr+16;y+=8;});}
+  ctx.restore();
   // event message
   if(B.ev&&sim.vt<B.evT){const z=fs(13);ctx.font='700 '+z+'px '+FONT;const L=wrapLines(ctx,B.ev,PW-40),w=Math.min(PW-10,Math.max(...L.map(l=>ctx.measureText(l).width))+24),h=L.length*z*1.25+12;
     ctx.fillStyle='rgba(30,30,34,.9)';rr(ctx,GX+PW/2-w/2,GY+8,w,h,8);ctx.fill();L.forEach((l,i)=>txt(ctx,l,GX+PW/2,GY+14+z*0.62+i*z*1.25,{s:z,w:700,c:'#fff',a:'center',b:'middle'}));}
@@ -230,6 +235,7 @@ function benchNarrate(sim){const B=ckB(sim),b=bn(sim),G=B.G,s=sim.vlab.step,cc=c
   if(!b.land)return 'The bank lends you the money to buy your land: one chocolate chip cookie for <b>$2,000</b>. Everything you spend is on credit, so the bank wants it back from what you sell.';
   if(b.tools.length<2)return 'Buy at least two mining tools on credit. Each tool digs at a different speed, breaks at a different rate and is gentler or rougher on the chips.';
   if(!b.traced)return 'Trace the cookie’s outline in pencil so you know the original size of your land.';
+  if(b.lifted&&!b.back&&curStep(sim).mode!=='mark')return 'Put the cookie back inside its circle on the paper. Wait to start mining until you are ready.';
   if(b.lifted&&!b.back)return 'Count every square inside the pencil line. A square the line cuts through counts as a whole square. Tap a square to put a pencil dot on it if that helps you keep track.';
   if(!b.back)return 'Lift the cookie off the paper so you can see the squares under it.';
   if(!b.started)return 'Your cookie sits back in its circle. Only tools may touch it: no fingers, no flipping it over and no blowing the crumbs. Start the timer when you are ready.';
@@ -259,15 +265,15 @@ function drawMine(sim,ctx,vdt,k,t){const p=sim.p,s=sim.st,e=econ(p),surf=e.surf,
   if(!v.specks){const g=rng(17);v.specks=[];for(let i=0;i<240;i++)v.specks.push([g()*2-1,g()*2-1,g()]);}
   const nS=clamp(Math.round(p.grade*44),6,240);ctx.fillStyle='#e2bf4c';for(let i=0;i<nS;i++){const q=v.specks[i],x=OREX+q[0]*OREW*0.92,y=oy+oh/2+q[1]*oh/2*0.8;if(Math.hypot(q[0],q[1])>0.95)continue;ctx.fillRect(x-1.5,y-1.5,3,3);}
   // waste dump and tailings pond grow with the totals
-  const dumpH=clamp(8+3.2*Math.sqrt(s.Wc),8,surf?82:40),dumpW=surf?Math.min(140,OREX-G.half-14):110;
+  const dumpH=clamp(8+2.4*Math.sqrt(s.Wc),8,surf?40:26),dumpW=surf?Math.min(140,OREX-G.half-14):110;
   ctx.fillStyle='#9a8f80';ctx.beginPath();ctx.moveTo(6,GY0);ctx.lineTo(6+dumpH*0.6,GY0-dumpH);ctx.lineTo(6+dumpW-dumpH*0.6,GY0-dumpH);ctx.lineTo(6+dumpW,GY0);ctx.closePath();ctx.fill();ctx.strokeStyle='#6d6458';ctx.lineWidth=1.5;ctx.stroke();
-  const pondW=clamp(40+6*Math.sqrt(s.Tc),40,108),px0=652;
+  const pondW=clamp(36+4*Math.sqrt(s.Tc),36,66),px0=648;
   ctx.fillStyle='#8f8a7a';ctx.beginPath();ctx.moveTo(px0+pondW,GY0);ctx.lineTo(px0+pondW+10,GY0-18);ctx.lineTo(px0+pondW+18,GY0-18);ctx.lineTo(px0+pondW+30,GY0);ctx.closePath();ctx.fill();
   ctx.fillStyle='#b9b2a0';ctx.fillRect(px0,GY0-14,pondW+12,14);ctx.fillStyle='rgba(110,140,150,.55)';ctx.fillRect(px0,GY0-14,pondW+12,4);
   // mill
   ctx.fillStyle='#5b6470';ctx.fillRect(600,GY0-34,40,34);ctx.fillRect(608,GY0-50,8,16);
   // stream: blue when clean, orange with iron when acidic
-  const ph=phOf(s.A),acid=clamp((6.5-ph)/3,0,1);ctx.fillStyle=PAL['cv-water'];ctx.beginPath();ctx.moveTo(768,GY0-2);ctx.lineTo(774,GY0+10);ctx.lineTo(794,GY0+10);ctx.lineTo(800,GY0-2);ctx.closePath();ctx.fill();
+  const ph=phOf(s.A),acid=clamp((6.5-ph)/3,0,1);ctx.fillStyle=PAL['cv-water'];ctx.beginPath();ctx.moveTo(752,GY0-1);ctx.lineTo(762,GY0+16);ctx.lineTo(800,GY0+16);ctx.lineTo(800,GY0-1);ctx.closePath();ctx.fill();
   if(acid>0){ctx.globalAlpha=acid*0.9;ctx.fillStyle='#c8701f';ctx.fill();ctx.globalAlpha=1;}
   if(surf){// the pit, with benches
     const L=OREX-G.half,Rr=OREX+G.half,fl=OREX-G.floor,fr=OREX+G.floor,steps=Math.max(3,Math.round((G.yF-GY0)/18));
@@ -291,7 +297,7 @@ function drawMine(sim,ctx,vdt,k,t){const p=sim.p,s=sim.st,e=econ(p),surf=e.surf,
   tag(ctx,'Waste rock',6+dumpW/2,GY0+fsz*0.5+8,k);
   if(k<1.5)tag(ctx,'Mill',620,GY0-50-fsz*0.8,k);
   tag(ctx,'Tailings',px0+pondW/2+6,GY0+fsz*0.5+8,k);
-  tag(ctx,hon?'Stream pH '+ph.toFixed(1):'Stream',800-4,GY0-30-fsz*0.3,k,{a:'right',c:acid>0.4?PAL['s1']:PAL['cv-ink']});
+  tag(ctx,hon?'Stream pH '+ph.toFixed(1):'Stream: '+(ph>=6?'clean':ph>=4.5?'acidic':'very acidic'),800-4,GY0-30-fsz*0.3,k,{a:'right',c:acid>0.4?PAL['s1']:PAL['cv-ink']});
   // depth scale
   ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1;const sx=30;[0,200,400,600].forEach(m=>{const y=GY0+m*PXM;ctx.beginPath();ctx.moveTo(sx,y);ctx.lineTo(sx+8,y);ctx.stroke();});ctx.beginPath();ctx.moveTo(sx,GY0);ctx.lineTo(sx,GY0+600*PXM);ctx.stroke();
   [200,400,600].forEach(m=>{const y=GY0+m*PXM;if(k>1.5&&m===400)return;tag(ctx,m+' m',sx+12,y,k,{a:'left',s:12,w:400});});}
@@ -310,7 +316,7 @@ function plotPerTon(sim,ctx,box){const p=sim.p,base=Object.assign({},p);const f=
 /* ===================== the virtual lab notebook ===================== */
 const TOOLS=['clip','round','flat'];
 /* the fixed-column values read well in the check notes ("Tool paper clip"); checks map them back to keys */
-const RK={'initial size':'init','final size':'final','paper clip':'clip','round toothpick':'round','flat toothpick':'flat','total':'tot','whole, clean':'w','dirty':'d','partial':'p','operations':'ops','reclamation':'recl','revenue':'rev','bottom line':'net','mining time':'t'};
+const RK={'initial size':'init','final size':'final','paper clip':'clip','round toothpick':'round','flat toothpick':'flat','total':'tot','whole, clean':'w','dirty':'d','partial':'p','operations':'ops','fine':'recl','revenue':'rev','bottom line':'net','mining time':'t'};
 const rk=f=>(sim,rv,v)=>f(sim,RK[rv]||rv,v);
 const num=(V,t,c,r)=>V.val(t,c,r);
 function landCheck(sim,rv,v){const b=bn(sim),G=geoFor(sim.vlab.seed);
@@ -385,8 +391,8 @@ const LAB_COOKIE={id:'cookie-mining',title:'Cookie Mining Lab',course:'AP Enviro
     {id:'time',title:'Costs: operating time at $200 per minute',cols:[{id:'x',label:'Operating cost',rows:['mining time'],rowLabels:['Mining time']},{id:'min',label:'Minutes on the timer',input:'number',dp:2,check:minCheck},{id:'cost',label:'Time cost = minutes × $200 ($)',input:'number',dp:0,check:timeCostCheck}]},
     {id:'chips',title:'Revenue: chips sold to the bank',cols:[{id:'type',label:'Kind of chip',rows:['whole, clean','dirty','partial','total'],rowLabels:['Whole, clean chips ($500 each)','Dirty chips ($200 each)','Partial chips ($100 each)','Total']},
       {id:'n',label:'Number of chips',input:'number',dp:0,check:rk(chipNCheck)},{id:'rev',label:'Revenue ($)',input:'number',dp:0,check:rk(chipRevCheck)}]},
-    {id:'ledger',title:'Bottom line. Cost of operations = cookie ($2,000) + equipment total + time cost. Reclamation cost = (final − initial squares) × $100. Bottom line = total revenue − cost of operations − reclamation cost.',
-      cols:[{id:'line',label:'Ledger line',rows:['operations','reclamation','revenue','bottom line'],rowLabels:['Operations','Reclamation','Revenue','Bottom line']},{id:'amt',label:'Amount ($)',input:'number',dp:0,check:rk(ledCheck)}]}],
+    {id:'ledger',title:'Bottom line. Cost of operations = cookie ($2,000) + equipment total + time cost. Fine (reclamation cost) = (final − initial squares) × $100. Bottom line = total revenue − cost of operations − fine.',
+      cols:[{id:'line',label:'Ledger line',rows:['operations','fine','revenue','bottom line'],rowLabels:['Operations','Fine','Revenue','Bottom line']},{id:'amt',label:'Amount ($)',input:'number',dp:0,check:rk(ledCheck)}]}],
   graph:{type:'bar',title:'Your cookie mine’s ledger',xl:'Ledger line',yl:'Amount ($)',series:[{table:'ledger',x:'line',y:'amt',label:'Amount ($)'}]},
   questions:[
     {id:'q1',n:'1',q:'<p>Were the minerals (chips) evenly distributed in your cookie mine? Is this a good model of a real mine? Explain.</p>'},
@@ -417,7 +423,7 @@ const SIM={
     {id:'depth',label:'Depth to the top of the ore',type:'range',min:20,max:600,step:10,def:150,unit:' m',lvl:'bio',help:'The rock above the ore is the overburden.'},
     {id:'method',label:'Mining method',type:'seg',def:'surface',lvl:'bio',options:[{v:'surface',l:'Open pit'},{v:'under',l:'Underground'}]},
     {id:'recl',label:'Reclamation',type:'seg',def:'basic',lvl:'bio',options:[{v:'none',l:'None'},{v:'basic',l:'Regrade and replant'},{v:'full',l:'Full, with water treatment'}],help:'What the company does with the waste rock and tailings it leaves behind.'},
-    {id:'price',label:'Copper price',type:'range',min:4000,max:14000,step:500,def:9000,unit:' $/t',d:0,lvl:'honors',help:'Copper has sold for about $8,000 to $10,000 per tonne in recent years.'},
+    {id:'price',label:'Copper price ($ per tonne)',type:'range',min:4000,max:14000,step:500,def:9000,unit:'',d:0,lvl:'honors',help:'Copper has sold for about $8,000 to $10,000 per tonne in recent years.'},
     {id:'pyrite',label:'Pyrite in the waste rock',type:'range',min:0,max:5,step:0.5,def:2,unit:'%',lvl:'ap',help:'Pyrite (FeS₂) is the sulfide mineral that makes acid mine drainage.'},
     // virtual lab bench only
     {id:'mTool',label:'Tool in your hand',type:'seg',def:'clip',vlab:true,noTrial:true,options:[{v:'clip',l:'Paper clip'},{v:'round',l:'Round toothpick'},{v:'flat',l:'Flat toothpick'}]},

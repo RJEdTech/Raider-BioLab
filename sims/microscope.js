@@ -82,7 +82,7 @@ function eachCell(x0,x1,y0,y1,RH,CL,jit,cb){const j0=Math.floor(y0/RH)-1,j1=Math
 const cellType=(j,k)=>Math.floor(H(j,k,77)*NT);
 function osmPsi(A,V){return -A.n*(1-OVB)/Math.max(V-OVB,0.02)*ORT+A.E*Math.max(0,V-1);}
 function osmTypes(seed,P){const T=[];for(let a=0;a<NT;a++){const A={n:P.n*Math.exp(0.13*ohn(seed,1,a)),E:P.E,k:P.k*Math.exp(0.3*ohn(seed,2,a)),
-    d:P.d[0]+(P.d[1]-P.d[0])*ohr(seed,3,a),tau:P.tau*Math.exp(0.4*ohn(seed,4,a)),d2:P.d2[0]+(P.d2[1]-P.d2[0])*ohr(seed,5,a),tau2:P.tau2*Math.exp(0.4*ohn(seed,6,a)),slow:ohr(seed,7,a)<0.06};
+    d:P.d[0]+(P.d[1]-P.d[0])*ohr(seed,3,a),tau:P.tau*Math.exp(0.4*ohn(seed,4,a)),d2:P.d2[0]+(P.d2[1]-P.d2[0])*ohr(seed,5,a),tau2:P.tau2*Math.exp(0.4*ohn(seed,6,a)),slow:ohr(seed,7,a)<0.04};
     let lo=1,hi=1.6;for(let i=0;i<50;i++){const m=(lo+hi)/2;if(osmPsi(A,m)>-OTAP*ORT)hi=m;else lo=m;}A.V0=(lo+hi)/2;T.push(A);}return T;}
 /* outside concentration (mOsm/L) around cells of type a right now */
 function osmCo(L,b,a){if(b.ph!=='salt'&&b.ph!=='dw')return OTAP;const A=L.T[a],sal=b.ph==='salt',d=sal?A.d:A.d2,tau=sal?A.tau:A.tau2,tg=sal?L.P.salt*OPCT:ODW,c0=b.C0[a];
@@ -283,7 +283,7 @@ const LAB_ONION={id:'onion-osmosis',title:'Red Onion Osmosis Lab',course:'CP Bio
     osmCountStep('salt',false),
     {title:'Onion cells in salt water',setup:osmGo,controls:SCOPE,text:'<p>Observe the effects of the salt solution. After 2 minutes, sketch or photograph the cells in salt water. Label cell wall, cell membrane, cytoplasm.</p><p><b>Virtual lab:</b> describe the cells in the <b>Salt water</b> row of the data chart, and label each part in words.</p>',
      done:osmFilled('c:chart:desc:1'),doneHint:'Describe the cells in the Salt water row of the data chart.'},
-    osmDrawStep('dw','Add the distilled water','<p>Repeat step 4 with distilled water: add several drops of distilled water to one side of the cover slip (NOT on top), then place a small piece of paper towel along the opposite edge to draw it across the sample.</p>'),
+    osmDrawStep('dw','Add the distilled water','<p>Repeat step 6 with distilled water: add several drops of distilled water to one side of the cover slip (NOT on top), then place a small piece of paper towel along the opposite edge to draw it across the sample.</p>'),
     osmCountStep('dw',false),
     {title:'Onion cells in distilled water',setup:osmGo,controls:SCOPE,text:'<p>Complete the data section for the cells in distilled water. Label cell wall, cell membrane, cytoplasm.</p><p><b>Virtual lab:</b> describe the cells in the <b>Distilled water</b> row of the data chart, and label each part in words.</p>',
      done:osmFilled('c:chart:desc:2'),doneHint:'Describe the cells in the Distilled water row of the data chart.'},
