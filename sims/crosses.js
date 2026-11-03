@@ -748,5 +748,6 @@ const CROSS={
      explain:'These genes really do sort independently, so χ² is usually well below 7.81. About 1 time in 20 it will land above 7.81 by chance alone. That is exactly what p = 0.05 means.'}
   ]
 };
+delete CROSS.game; /* the Breed the target game is held back until it is approved for students */
 BioLab.register(CROSS);
 })();

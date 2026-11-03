@@ -221,6 +221,16 @@ potato: {
     'Somewhere between the beakers, a core would neither gain nor lose water. That concentration, the <b>isotonic point</b>, matches the inside of the potato cells.'
   ]
 },
+wpotential: {
+  hook: 'Lettuce wilts in salty dressing but crisps up in ice water. A lettuce cell’s sap is about 0.30 M. Put the cell in 0.10 M sucrose, then in 0.60 M sucrose. Which way does water move each time, and when does it stop?',
+  answer: 'In 0.10 M sucrose the solution’s Ψ is −2.45 bar, higher than the cell’s, so water moves in. The cell swells to about 110% of its size until wall pressure reaches +4.2 bar and the cell’s Ψ is also −2.45 bar. In 0.60 M sucrose the solution’s Ψ is −14.7 bar, so water leaves. Ψp falls to 0, the membrane pulls away from the wall, and the cell shrinks to about half its size before the two match.',
+  uses: [
+    'Crisping celery: soaking limp stalks in ice water lets water move in until the cell walls push back, so the stalks snap again.',
+    'Fertilizer burn: too much fertilizer around roots drops the soil water’s Ψ below the roots’, so water leaves the plant and the leaves brown.',
+    'Pickling: cucumbers in strong brine lose water to the lower-Ψ salt solution, which is why pickles shrink and wrinkle.'
+  ],
+  takeaway: 'Ψ = Ψp + Ψs and Ψs = −iCRT. More dissolved particles make Ψ more negative, wall pressure makes it higher, and water always moves toward the lower Ψ until both sides match.'
+},
 resp: {
   hook: 'Sprinting up the stairs, your muscle cells burn fuel faster and you start breathing hard. Raise the fuel supply from 40% to 100%. What happens to the ATP made and the oxygen used each second?',
   hookSet: { fuel: 40 },
@@ -325,12 +335,12 @@ signaling: {
   lede: 'Adrenaline reaches a liver cell but never goes inside. Follow how the cell passes the message along and multiplies it until sugar pours into your blood.',
   tour: [
     'Epinephrine (orange diamonds) is adrenaline, the hormone behind a racing heart after a scare. It travels in the blood but cannot cross the cell membrane, so the message has to be passed in from outside.',
-    'When epinephrine fits into the receptor on the outside, the receptor changes shape on the inside, like a key turning a lock from one side of a door. That shape change is the message.',
-    'The receptor switches on a relay protein (a G protein), which slides over and switches on an enzyme in the membrane. Each step is a hand-off, like runners passing a baton.',
-    'That enzyme pumps out many small messenger molecules (green, called cAMP), which spread through the cell. One switched-on enzyme makes many messengers, so the signal is already bigger.',
-    'Each messenger switches on relay kinases, and each kinase switches on many more. Count the rows: 4, then 8, then 16. In a real cell the rows run to many thousands, which is how a few hormone molecules move millions of sugars.',
-    'The last enzyme snips glucose off glycogen, the cell’s stored sugar. The glucose leaves through a transporter and enters your blood as fuel for your muscles, ready for a sprint.',
-    'Now the hormone is removed. Every relay protein switches itself off within seconds, so the sugar release stops. A signal that could not switch off would keep dumping sugar into your blood.'
+    'Step 1: when epinephrine fits into the receptor on the outside, the receptor changes shape on the inside, like a key turning a lock from one side of a door. That shape change is the message.',
+    'Step 2: the receptor switches on the G protein. The G protein trades GDP for GTP, which turns it on, then slides over and switches on adenylyl cyclase, an enzyme in the membrane. Each step is a hand-off, like runners passing a baton.',
+    'Step 3: adenylyl cyclase turns ATP into cAMP, the green second messenger, which spreads through the cell. One switched-on enzyme makes many cAMP, so the signal is already bigger.',
+    'Step 4: cAMP switches on protein kinase A, which starts the kinase cascade: phosphorylase kinase, then glycogen phosphorylase. Each kinase adds phosphates (yellow P) to switch on many more. Count the rows: 4, then 8, then 16. In a real cell the rows run to many thousands, which is how a few hormone molecules move millions of sugars.',
+    'Step 5: glycogen phosphorylase snips glucose off glycogen, the cell’s stored sugar. The glucose leaves through a transporter and enters your blood as fuel for your muscles, ready for a sprint.',
+    'Now the hormone is removed. The G protein, cAMP and the kinases all switch off within seconds, so the sugar release stops. A signal that could not switch off would keep dumping sugar into your blood.'
   ]
 },
 cellcycle: {
