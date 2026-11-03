@@ -459,8 +459,11 @@ function vlPlot(ctx,W,H,V,G){G=G||vlGs(V.lab)[0];const S=vlSeries(V,G),bar=G.typ
   if(bar){const cats=S.length?S[0].pts.map(p=>p.cat):[];has=ys.length>0;
     const ymin=G.ymin!==undefined?G.ymin:Math.min(0,...ys),ymax=(G.ymax!==undefined?Math.max(G.ymax,...ys):Math.max(1,...ys))*1.12;
     const ax=axes(ctx,box,{xmin:0,xmax:Math.max(1,cats.length),ymin,ymax,xl:G.xl,yl:G.yl,xcats:cats});const n=S.length||1,gw=.7,bw=gw/n;
-    S.forEach((s,si)=>s.pts.forEach((p,i)=>{if(!Number.isFinite(p.y))return;const x0=ax.X(i+.5-gw/2+si*bw),x1=ax.X(i+.5-gw/2+(si+1)*bw),y0=ax.Y(Math.max(ymin,0)),y1=ax.Y(clamp(p.y,ymin,ymax));
-      ctx.fillStyle=s.color;ctx.fillRect(x0+1,Math.min(y0,y1),Math.max(1,x1-x0-2),Math.abs(y0-y1));txt(ctx,vlFmt(p.y),(x0+x1)/2,Math.min(y0,y1)-6,{s:12,w:600,c:PAL['fg'],a:'center'});}));}
+    const lab=[];S.forEach((s,si)=>s.pts.forEach((p,i)=>{if(!Number.isFinite(p.y))return;const x0=ax.X(i+.5-gw/2+si*bw),x1=ax.X(i+.5-gw/2+(si+1)*bw),y0=ax.Y(Math.max(ymin,0)),y1=ax.Y(clamp(p.y,ymin,ymax));
+      ctx.fillStyle=s.color;ctx.fillRect(x0+1,Math.min(y0,y1),Math.max(1,x1-x0-2),Math.abs(y0-y1));
+      const t=vlFmt(p.y),fs=x1-x0<26?11:12;ctx.font='600 '+fs+'px '+FONT;const tw=ctx.measureText(t).width,cx=(x0+x1)/2;let ly=Math.min(y0,y1)-6;
+      for(let k=0;k<6;k++){const hit=lab.find(r=>Math.abs(r.x-cx)<(r.w+tw)/2+2&&Math.abs(r.y-ly)<fs+2);if(!hit)break;ly=hit.y-fs-2;}
+      lab.push({x:cx,y:ly,w:tw});txt(ctx,t,cx,ly,{s:fs,w:600,c:PAL['fg'],a:'center'});}));}
   else{const xs=[].concat(...S.map(s=>s.pts.map(p=>p.x))).filter(Number.isFinite);const ok=S.map(s=>s.pts.filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));has=ok.some(a=>a.length);
     const xmin=G.xmin!==undefined?G.xmin:(xs.length?Math.min(...xs):0),xmax=G.xmax!==undefined?G.xmax:(xs.length?Math.max(...xs):1);
     let ymin=0,ymax=1;const fy=ok.length?[].concat(...ok).map(p=>p.y):[];if(fy.length){const lo=Math.min(...fy),hi=Math.max(...fy),pad=Math.max((hi-lo)*.12,.3);ymin=Math.floor((lo-pad)*2)/2;ymax=Math.ceil((hi+pad)*2)/2;}

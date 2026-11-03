@@ -635,8 +635,7 @@ const SKULLS={
      choices:['Yes, it is the step between Australopithecus and Homo','No, it is a side branch that lived alongside early Homo and died out','Yes, because any later species is more advanced'],correct:1,
      explain:'P. boisei and early Homo both lived around 2 million years ago, on separate branches. Its huge jaws and teeth were specialized for chewing, a different path, and it left no descendants. Later does not mean more advanced.'}],
   tour:[
-    {title:'Two views of one skull',text:'This is a modern human skull, <i>Homo sapiens</i>, from the side (lateral view) and the front (anterior view). The rounded upper part, the braincase or cranial vault, holds the brain.',focus:[0,40,800,410],pause:true,setup(sim){BioLab.setValues(sim,{scene:'skull',species:'sapiens',labels:true,compare:false,ladder:false});}},
-    {title:'Brain size',text:'Cranial capacity is the volume inside the braincase, in cubic centimeters (1 cc = 1 mL). Yours is about 1,350 cc. Lucy’s species, <i>Australopithecus afarensis</i>, had about 450 cc, close to a chimpanzee.',focus:[0,40,800,410],pause:true,setup(sim){BioLab.setValues(sim,{species:'afarensis'});}},
+    {title:'Two views of one skull',text:'This is a modern human skull, <i>Homo sapiens</i>, from the side (lateral view) and the front (anterior view). The rounded upper part, the braincase or cranial vault, holds the brain. The volume inside it, the cranial capacity, is about 1,350 cc (1 cc = 1 mL).',focus:[0,40,800,410],pause:true,setup(sim){BioLab.setValues(sim,{scene:'skull',species:'sapiens',labels:true,compare:false,ladder:false});}},
     {title:'Brow ridge and forehead',text:'<i>Homo erectus</i> has a thick bar of bone above the eyes, the brow ridge, and a flat forehead that slopes back. Your forehead rises nearly straight up and your brow ridge is small.',focus:[0,40,480,410],pause:true,setup(sim){BioLab.setValues(sim,{species:'erectus'});}},
     {title:'Face and jaw',text:'<i>Paranthropus boisei</i> has a wide, flat face, a massive jaw with huge molars and a sagittal crest on top for its chewing muscles. A face that juts forward like this is called prognathic.',focus:[0,40,800,410],pause:true,setup(sim){BioLab.setValues(sim,{species:'boisei'});}},
     {title:'When they lived',text:'Each bar shows when a species lived, from Proconsul about 20 million years ago to today. Several species often lived at the same time.',focus:[0,40,800,410],pause:true,setup(sim){BioLab.setValues(sim,{scene:'time',species:'habilis'});}},
@@ -670,11 +669,10 @@ BioLab.addPractical({hominids:{
     'Childbirth: a big-brained baby must pass through a pelvis shaped for upright walking. That tight fit is one reason human births are harder than chimpanzee births.'],
   takeaway:'Upright walking came millions of years before big brains, and human evolution is a branching bush: several hominid species often lived at the same time, and many branches, like Paranthropus and the Neanderthals, ended.',
   lede:'Compare the skulls of eight hominid species, from an early ape 20 million years ago to us. See how brain size, the face and the brow ridge changed, and when each species lived.',
-  tour:['This is a skull like yours, drawn from the side and from the front. The rounded top part, the braincase, holds your brain, the way a helmet holds your head.',
-    'Brain size is measured as the space inside the braincase, in cubic centimeters. Yours is about 1,350 cc, almost a 1.5 L bottle. Lucy’s species had about 450 cc, about a can and a half of soda.',
+  tour:['This is a skull like yours, drawn from the side and from the front. The rounded top part, the braincase, holds your brain, the way a helmet holds your head. The space inside is about 1,350 cc, almost a 1.5 L bottle.',
     '<i>Homo erectus</i> has a thick bar of bone above the eyes, the brow ridge, and a forehead that slopes back like a ramp. Your forehead goes nearly straight up.',
     'This species, <i>Paranthropus boisei</i>, has a huge jaw and a ridge of bone on top of the skull, like a mohawk made of bone. Big chewing muscles attached there for chewing tough plants.',
     'Each bar shows when a species lived, from about 20 million years ago to today. Several species often lived at the same time, like neighbors, not one after another.',
-    'Each box shows when a species lived and how big its brain was. Brains stayed small for a long time after hominids started walking upright, then grew quickly in our genus, Homo.']}});
+    'Each box shows when a species lived and how big its brain was. Lucy’s species had about 450 cc, about a can and a half of soda. Brains stayed small for a long time after hominids started walking upright, then grew quickly in our genus, Homo.']}});
 BioLab.register(SKULLS);
 })();
