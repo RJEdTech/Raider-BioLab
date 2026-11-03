@@ -309,7 +309,7 @@ function vlFixed(tb){return (tb.cols||[]).find(c=>c.rows);}
 function vlRows(tb){const fx=vlFixed(tb);return fx?fx.rows:Array.from({length:tb.rows||1},(_,i)=>i+1);}
 function vlRowLabel(fx,r){return fx.rowLabels?fx.rowLabels[r]:fx.rows[r];}
 /* "Time (s)" row 60 reads "Time 60 s"; "pH" row 7.0 reads "pH 7.0" */
-function vlWhere(fx,r){const l=stripTags(fx.label).trim(),m=l.match(/^(.*\S)\s*\(([^)]+)\)$/);return m?m[1]+' '+fx.rows[r]+' '+m[2]:l+' '+fx.rows[r];}
+function vlWhere(fx,r){if(fx.rowLabels&&fx.rowLabels[r]!==undefined)return stripTags(String(fx.rowLabels[r])).trim();if(typeof fx.rows[r]==='string'&&!/^[-+]?[\d.]/.test(fx.rows[r].trim()))return fx.rows[r];const l=stripTags(fx.label).trim(),m=l.match(/^(.*\S)\s*\(([^)]+)\)$/);return m?m[1]+' '+fx.rows[r]+' '+m[2]:l+' '+fx.rows[r];}
 function vlFresh(){let d='';try{d=new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});}catch(e){}
   return {v:1,seed:Math.floor(Math.random()*2147483646)+1,step:0,max:0,f:{date:d},bench:{}};}
 function makeVlab(sim,lab,data){if(!data.bench||typeof data.bench!=='object')data.bench={};if(!Number.isFinite(data.seed))data.seed=vlFresh().seed;
