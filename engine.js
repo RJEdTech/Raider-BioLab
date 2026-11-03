@@ -317,7 +317,7 @@ function vlFixed(tb){return (tb.cols||[]).find(c=>c.rows);}
 function vlRows(tb){const fx=vlFixed(tb);return fx?fx.rows:Array.from({length:tb.rows||1},(_,i)=>i+1);}
 function vlRowLabel(fx,r){return fx.rowLabels?fx.rowLabels[r]:fx.rows[r];}
 /* "Time (s)" row 60 reads "Time 60 s"; "pH" row 7.0 reads "pH 7.0" */
-function vlWhere(fx,r){const l=stripTags(fx.label).trim(),m=l.match(/^(.*\S)\s*\(([^)]+)\)$/);return m?m[1]+' '+fx.rows[r]+' '+m[2]:l+' '+fx.rows[r];}
+function vlWhere(fx,r){if(fx.rowLabels&&fx.rowLabels[r]!==undefined)return stripTags(String(fx.rowLabels[r])).trim();if(typeof fx.rows[r]==='string'&&!/^[-+]?[\d.]/.test(fx.rows[r].trim()))return fx.rows[r];const l=stripTags(fx.label).trim(),m=l.match(/^(.*\S)\s*\(([^)]+)\)$/);return m?m[1]+' '+fx.rows[r]+' '+m[2]:l+' '+fx.rows[r];}
 function vlFresh(){let d='';try{d=new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});}catch(e){}
   return {v:1,seed:Math.floor(Math.random()*2147483646)+1,step:0,max:0,f:{date:d},bench:{}};}
 function makeVlab(sim,lab,data){if(!data.bench||typeof data.bench!=='object')data.bench={};if(!Number.isFinite(data.seed))data.seed=vlFresh().seed;
@@ -411,10 +411,10 @@ function vlRender(sim){const V=sim.vlab,L=V.lab,u=sim.ui,sid=sim.def.id,labs=vlL
   if(L.steps&&L.steps.length)h+=S('proc','Procedure',`<p class="vl-help">The step you are on is marked. Tap any step you have reached to go back to it.</p><ol class="vl-proc">${L.steps.map((s,i)=>`<li data-i="${i}"><div class="vl-pt">${lvText(s.text)||''}</div></li>`).join('')}</ol>`);
   const obs=L.observations||[];
   if((L.tables&&L.tables.length)||obs.length)h+=S('data','Data',(L.tables||[]).map(table).join('')+(obs.length?`<p class="vl-cap">Observations</p><div class="vl-obs">${obs.map(o=>`<div class="vl-ob">${area('o:'+o.id,o.label,2)}${note('o:'+o.id)}</div>`).join('')}</div>`:''));
-  if(L.graph)h+=S('graph','Graph',`<div class="vl-graph"><canvas class="vl-cv" role="img" aria-label="${esc(stripTags(L.graph.title||'Graph'))}"></canvas><p class="vl-help">The graph draws from the numbers you type in your tables${(L.graph.series||[]).length>1?(L.graph.type==='bar'?'. The key shows which bar is which':'. The key shows which line is which'):''}.</p></div>`);
+  {const GS=vlGs(L);if(GS.length)h+=S('graph',GS.length>1?'Graphs':'Graph',GS.map((G,gi)=>`<div class="vl-graph"><canvas class="vl-cv" data-gi="${gi}" role="img" aria-label="${esc(stripTags(G.title||'Graph'))}"></canvas>${gi===GS.length-1?`<p class="vl-help">The graph${GS.length>1?'s draw':' draws'} from the numbers you type in your tables${GS.some(G=>(G.series||[]).length>1)?(GS.every(G=>G.type==='bar')?'. The key shows which bar is which':'. The key shows which line or bar is which'):''}.</p>`:''}</div>`).join(''));}
   if(L.calcs&&L.calcs.length)h+=S('calcs','Calculations',`<div class="vl-calc">${L.calcs.map(c=>{const k='k:'+c.id;return `<div class="vl-ck"><label class="vl-f" for="${fid(k)}"><span class="vl-l">${c.label}</span>${c.input==='text'?`<textarea class="vl-in vl-ta" id="${fid(k)}" data-k="${k}" rows="2">${val(k)}</textarea>`:`<span class="vl-cin"><input class="vl-in vl-num" type="text" inputmode="decimal" id="${fid(k)}" data-k="${k}" value="${val(k)}" autocomplete="off">${c.unit?`<span class="vl-u">${c.unit}</span>`:''}</span>`}</label>${note(k)}</div>`;}).join('')}</div>`);
   if(L.questions&&L.questions.length)h+=S('questions','Questions',L.questions.map((q,i)=>`<div class="vl-q"><div class="vl-qh"><span class="vl-qn">${esc(q.n!==undefined?q.n:i+1)}</span><div class="vl-qt">${q.q}</div></div>${q.fields?`<div class="vl-qf">${q.fields.map(f=>line('q:'+q.id+':'+f.id,f.label)).join('')}</div>`:area('q:'+q.id,'',4,'Your answer to question '+(q.n!==undefined?q.n:i+1))}</div>`).join(''));
-  if(L.conclusion){const C=L.conclusion;h+=S('conclusion','Conclusion',`<div class="vl-prompt">${C.prompt||''}</div>`+(C.cer?`<div class="vl-cer">${area('cer:claim','Claim <small>One sentence that answers the question.</small>',2)}${area('cer:evidence','Evidence <small>Your own data that supports the claim.</small>',3)}${area('cer:reasoning','Reasoning <small>The biology that explains why the evidence supports the claim.</small>',4)}</div>`:area('concl','',5,'Your conclusion')));}
+  if(L.conclusion){const C=L.conclusion;h+=S('conclusion','Conclusion',`<div class="vl-prompt">${C.prompt||''}</div>`+(C.cer?`<div class="vl-cer">${area('cer:claim','Claim <small>One sentence that answers the question.</small>',2)}${area('cer:evidence','Evidence <small>Your own data that supports the claim.</small>',3)}${area('cer:reasoning','Reasoning <small>'+(C.reasonHint||'The science that explains why the evidence supports the claim.')+'</small>',4)}</div>`:area('concl','',5,'Your conclusion')));}
   h+=S('export','Turn it in',`<p class="vl-help">Build a clean report of everything above, then upload it to the Canvas assignment. For a PDF, choose <b>Save as PDF</b> as the printer.</p><div class="row vl-exp"><button type="button" class="btn primary" data-vl="pdf">Save as PDF</button><button type="button" class="btn" data-vl="doc">Download Word file</button><button type="button" class="btn" data-vl="txt">Copy as text</button><span class="toast vl-toast" hidden></span></div><div class="vl-fallback"></div>`);
   u.nb.innerHTML=h;vlBind(sim);V.notes={};
   vlRecheck(sim);vlProcMark(sim);requestAnimationFrame(()=>vlGraph(sim));}
@@ -452,13 +452,14 @@ function vlSetNote(sim,k,msg){const V=sim.vlab,nb=sim.ui.nb;if(!V)return;if(msg)
 const VL_MARK=['circle','square','triangle','diamond'];
 function vlMarker(ctx,shape,x,y,r){ctx.beginPath();if(shape==='square')ctx.rect(x-r,y-r,2*r,2*r);else if(shape==='triangle'){ctx.moveTo(x,y-r*1.25);ctx.lineTo(x+r*1.15,y+r*.85);ctx.lineTo(x-r*1.15,y+r*.85);ctx.closePath();}
   else if(shape==='diamond'){ctx.moveTo(x,y-r*1.3);ctx.lineTo(x+r*1.1,y);ctx.lineTo(x,y+r*1.3);ctx.lineTo(x-r*1.1,y);ctx.closePath();}else ctx.arc(x,y,r,0,6.2832);ctx.fill();}
-function vlSeries(V){const G=V.lab.graph;return (G.series||[]).map((s,i)=>{const tb=(V.lab.tables||[]).find(t=>t.id===s.table);if(!tb)return null;const xc=tb.cols.find(c=>c.id===s.x);
+const vlGs=L=>L.graphs&&L.graphs.length?L.graphs:(L.graph?[L.graph]:[]);
+function vlSeries(V,G){G=G||vlGs(V.lab)[0];return (G.series||[]).map((s,i)=>{const tb=(V.lab.tables||[]).find(t=>t.id===s.table);if(!tb)return null;const xc=tb.cols.find(c=>c.id===s.x);
   const pts=vlRows(tb).map((rv,r)=>({x:xc&&xc.rows?vlNum(xc.rows[r]):V.val(s.table,s.x,r),y:V.val(s.table,s.y,r),cat:xc&&xc.rows?stripTags(vlRowLabel(xc,r)):(V.raw('c:'+s.table+':'+s.x+':'+r)||String(r+1))}));
   return {label:s.label||'',pts,color:serColor(i),shape:VL_MARK[i%VL_MARK.length]};}).filter(Boolean);}
 function vlLegend(ctx,S,x0,y,maxX){ctx.font='13px '+FONT;let x=x0;S.forEach(s=>{const w=ctx.measureText(s.label).width+52;if(x>x0&&x+w>maxX){x=x0;y+=20;}
   ctx.strokeStyle=s.color;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+24,y);ctx.stroke();ctx.fillStyle=s.color;vlMarker(ctx,s.shape,x+12,y,4.5);txt(ctx,s.label,x+30,y,{s:13,c:PAL['muted'],b:'middle'});x+=w;});return y;}
 const vlFmt=v=>String(Math.round(v*100)/100);
-function vlPlot(ctx,W,H,V){const G=V.lab.graph,S=vlSeries(V),bar=G.type==='bar';
+function vlPlot(ctx,W,H,V,G){G=G||vlGs(V.lab)[0];const S=vlSeries(V,G),bar=G.type==='bar';
   txt(ctx,stripTags(G.title||''),W/2,20,{s:15,w:700,a:'center'});
   let top=34;if(S.length>1)top=vlLegend(ctx,S,66,44,W-16)+14;
   const box={L:66,T:top,W:W-66-18,H:H-top-46,cw:W,ch:H};
@@ -466,8 +467,11 @@ function vlPlot(ctx,W,H,V){const G=V.lab.graph,S=vlSeries(V),bar=G.type==='bar';
   if(bar){const cats=S.length?S[0].pts.map(p=>p.cat):[];has=ys.length>0;
     const ymin=G.ymin!==undefined?G.ymin:Math.min(0,...ys),ymax=(G.ymax!==undefined?Math.max(G.ymax,...ys):Math.max(1,...ys))*1.12;
     const ax=axes(ctx,box,{xmin:0,xmax:Math.max(1,cats.length),ymin,ymax,xl:G.xl,yl:G.yl,xcats:cats});const n=S.length||1,gw=.7,bw=gw/n;
-    S.forEach((s,si)=>s.pts.forEach((p,i)=>{if(!Number.isFinite(p.y))return;const x0=ax.X(i+.5-gw/2+si*bw),x1=ax.X(i+.5-gw/2+(si+1)*bw),y0=ax.Y(Math.max(ymin,0)),y1=ax.Y(clamp(p.y,ymin,ymax));
-      ctx.fillStyle=s.color;ctx.fillRect(x0+1,Math.min(y0,y1),Math.max(1,x1-x0-2),Math.abs(y0-y1));txt(ctx,vlFmt(p.y),(x0+x1)/2,Math.min(y0,y1)-6,{s:12,w:600,c:PAL['fg'],a:'center'});}));}
+    const lab=[];S.forEach((s,si)=>s.pts.forEach((p,i)=>{if(!Number.isFinite(p.y))return;const x0=ax.X(i+.5-gw/2+si*bw),x1=ax.X(i+.5-gw/2+(si+1)*bw),y0=ax.Y(Math.max(ymin,0)),y1=ax.Y(clamp(p.y,ymin,ymax));
+      ctx.fillStyle=s.color;ctx.fillRect(x0+1,Math.min(y0,y1),Math.max(1,x1-x0-2),Math.abs(y0-y1));
+      const t=vlFmt(p.y),fs=x1-x0<26?11:12;ctx.font='600 '+fs+'px '+FONT;const tw=ctx.measureText(t).width,cx=(x0+x1)/2;let ly=Math.min(y0,y1)-6;
+      for(let k=0;k<6;k++){const hit=lab.find(r=>Math.abs(r.x-cx)<(r.w+tw)/2+2&&Math.abs(r.y-ly)<fs+2);if(!hit)break;ly=hit.y-fs-2;}
+      lab.push({x:cx,y:ly,w:tw});txt(ctx,t,cx,ly,{s:fs,w:600,c:PAL['fg'],a:'center'});}));}
   else{const xs=[].concat(...S.map(s=>s.pts.map(p=>p.x))).filter(Number.isFinite);const ok=S.map(s=>s.pts.filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));has=ok.some(a=>a.length);
     const xmin=G.xmin!==undefined?G.xmin:(xs.length?Math.min(...xs):0),xmax=G.xmax!==undefined?G.xmax:(xs.length?Math.max(...xs):1);
     let ymin=0,ymax=1;const fy=ok.length?[].concat(...ok).map(p=>p.y):[];if(fy.length){const lo=Math.min(...fy),hi=Math.max(...fy),pad=Math.max((hi-lo)*.12,.3);ymin=Math.floor((lo-pad)*2)/2;ymax=Math.ceil((hi+pad)*2)/2;}
@@ -477,15 +481,16 @@ function vlPlot(ctx,W,H,V){const G=V.lab.graph,S=vlSeries(V),bar=G.type==='bar';
       s.pts.forEach(p=>{if(Number.isFinite(p.x)&&Number.isFinite(p.y)){const X=ax.X(p.x),Y=ax.Y(p.y);pen?ctx.lineTo(X,Y):ctx.moveTo(X,Y);pen=true;}else pen=false;});ctx.stroke();
       ctx.fillStyle=s.color;s.pts.forEach(p=>{if(Number.isFinite(p.x)&&Number.isFinite(p.y))vlMarker(ctx,s.shape,ax.X(p.x),ax.Y(p.y),4.8);});});ctx.restore();}
   if(!has)txt(ctx,'Your graph draws here as you type your data.',box.L+box.W/2,box.T+box.H/2,{s:14,c:PAL['muted'],a:'center',b:'middle'});}
-function vlGraph(sim){const V=sim.vlab;if(!V||!V.lab.graph)return;const cv=sim.ui.nb.querySelector('.vl-cv');if(!cv)return;const W=cv.clientWidth,H=cv.clientHeight;if(!W||!H)return;
-  const dpr=fit(cv,W,H),ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);vlPlot(ctx,W,H,V);}
+function vlGraph(sim){const V=sim.vlab;if(!V)return;const GS=vlGs(V.lab);if(!GS.length)return;sim.ui.nb.querySelectorAll('.vl-cv').forEach(cv=>{const G=GS[+cv.dataset.gi||0];if(!G)return;const W=cv.clientWidth,H=cv.clientHeight;if(!W||!H)return;
+  const dpr=fit(cv,W,H),ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);vlPlot(ctx,W,H,V,G);});}
 function vlLight(fn){const de=document.documentElement,prev=de.getAttribute('data-theme');de.setAttribute('data-theme','light');readPal();try{fn();}finally{if(prev===null)de.removeAttribute('data-theme');else de.setAttribute('data-theme',prev);readPal();}}
-function vlPng(V){if(!V.lab.graph)return '';const W=700,H=380,cv=document.createElement('canvas');cv.width=W*2;cv.height=H*2;const ctx=cv.getContext('2d');let url='';
-  vlLight(()=>{ctx.setTransform(2,0,0,2,0,0);ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);vlPlot(ctx,W,H,V);try{url=cv.toDataURL('image/png');}catch(e){url='';}});return url;}
+function vlPngs(V){return vlGs(V.lab).map(G=>{const W=700,H=380,cv=document.createElement('canvas');cv.width=W*2;cv.height=H*2;const ctx=cv.getContext('2d');let url='';
+  vlLight(()=>{ctx.setTransform(2,0,0,2,0,0);ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);vlPlot(ctx,W,H,V,G);try{url=cv.toDataURL('image/png');}catch(e){url='';}});return url;});}
+function vlPng(V){const a=vlPngs(V);return a.length?(a.length>1?a:a[0]):'';}
 /* the report: the same content as a printable page, a Word file and plain text */
 function vlCellText(c,v){if(c.input==='select'&&v!==''){const o=(c.options||[]).find(o=>String(typeof o==='object'?o.v:o)===v);if(o)return typeof o==='object'?String(o.l):String(o);}return v;}
 const vlUnP=s=>String(s||'').replace(/^\s*<p>/i,'').replace(/<\/p>\s*$/i,'');
-function vlReportHTML(sim,img,word){const V=sim.vlab,L=V.lab,G=L.graph;const A=k=>{const v=V.raw(k).trim();return v?esc(v).replace(/\n/g,'<br>'):'<span class="none">(blank)</span>';};
+function vlReportHTML(sim,img,word){const V=sim.vlab,L=V.lab,GS=vlGs(L),G=GS[0];const IM=Array.isArray(img)?img:[img];const A=k=>{const v=V.raw(k).trim();return v?esc(v).replace(/\n/g,'<br>'):'<span class="none">(blank)</span>';};
   const S=(t,b)=>`<section><h2>${t}</h2>${b}</section>`;let h='';
   h+=`<header><p class="kicker">${esc(LAB_NAME)} · Virtual lab${L.course?' · '+esc(L.course):''}</p><h1>${L.title}</h1>
     <table class="who"><tr><td><b>Name:</b> ${A('name')}</td><td><b>Class period:</b> ${A('period')}</td><td><b>Date:</b> ${A('date')}</td></tr></table>
@@ -498,7 +503,7 @@ function vlReportHTML(sim,img,word){const V=sim.vlab,L=V.lab,G=L.graph;const A=k
   const obs=L.observations||[];
   if((L.tables&&L.tables.length)||obs.length){let b='';(L.tables||[]).forEach(tb=>{const rows=vlRows(tb);b+=`${tb.title?`<h3>${tb.title}</h3>`:''}<table class="data"><thead><tr>${tb.cols.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead><tbody>${rows.map((rv,r)=>`<tr>${tb.cols.map(c=>c.rows?`<th>${esc(vlRowLabel(c,r))}</th>`:`<td>${esc(vlCellText(c,V.raw('c:'+tb.id+':'+c.id+':'+r).trim()))}</td>`).join('')}</tr>`).join('')}</tbody></table>`;});
     if(obs.length)b+=`<h3>Observations</h3><table class="data kv"><tbody>${obs.map(o=>`<tr><th>${o.label}</th><td>${A('o:'+o.id)}</td></tr>`).join('')}</tbody></table>`;h+=S('Data',b);}
-  if(G)h+=S('Graph',img?`<p class="fig"><img src="${img}" width="620" height="337" alt="${esc(stripTags(G.title||'Graph'))}"></p>`:'<p class="none">(The graph could not be drawn in this browser.)</p>');
+  if(G)h+=S(GS.length>1?'Graphs':'Graph',GS.map((g,gi)=>IM[gi]?`<p class="fig"><img src="${IM[gi]}" width="620" height="337" alt="${esc(stripTags(g.title||'Graph'))}"></p>`:'<p class="none">(The graph could not be drawn in this browser.)</p>').join(''));
   if(L.calcs&&L.calcs.length)h+=S('Calculations',`<table class="data kv"><tbody>${L.calcs.map(c=>{const v=V.raw('k:'+c.id).trim();return `<tr><th>${c.label}</th><td>${v?esc(v).replace(/\n/g,'<br>')+(c.unit&&c.input!=='text'?' '+c.unit:''):'<span class="none">(blank)</span>'}</td></tr>`;}).join('')}</tbody></table>`);
   if(L.questions&&L.questions.length)h+=S('Questions',L.questions.map((q,i)=>`<div class="q"><div class="qq"><b>${esc(q.n!==undefined?q.n:i+1)}.</b> ${vlUnP(q.q)}</div>${q.fields?`<table class="data kv"><tbody>${q.fields.map(f=>`<tr><th>${f.label}</th><td>${A('q:'+q.id+':'+f.id)}</td></tr>`).join('')}</tbody></table>`:`<p class="ans">${A('q:'+q.id)}</p>`}</div>`).join(''));
   if(L.conclusion){const C=L.conclusion;h+=S('Conclusion',`<div class="prompt">${C.prompt||''}</div>`+(C.cer?`<p><b>Claim:</b></p><p class="ans">${A('cer:claim')}</p><p><b>Evidence:</b></p><p class="ans">${A('cer:evidence')}</p><p><b>Reasoning:</b></p><p class="ans">${A('cer:reasoning')}</p>`:`<p class="ans">${A('concl')}</p>`));}
@@ -533,7 +538,7 @@ function vlReportText(sim){const V=sim.vlab,L=V.lab,R=k=>V.raw(k).trim()||'(blan
   if((L.tables&&L.tables.length)||(L.observations||[]).length){H('Data');(L.tables||[]).forEach(tb=>{out.push('');if(tb.title)out.push(vlHtmlText(tb.title));
       out.push(vlTextTable(tb.cols.map(c=>vlHtmlText(c.label)),vlRows(tb).map((rv,r)=>tb.cols.map(c=>c.rows?String(vlRowLabel(c,r)):vlCellText(c,V.raw('c:'+tb.id+':'+c.id+':'+r).trim())))));});
     if((L.observations||[]).length){out.push('');out.push('Observations');L.observations.forEach(o=>out.push('- '+vlHtmlText(o.label)+': '+R('o:'+o.id)));}}
-  if(L.graph){H('Graph');out.push(vlHtmlText(L.graph.title)+' (see the PDF or Word report for the graph).');}
+  {const GS=vlGs(L);if(GS.length){H(GS.length>1?'Graphs':'Graph');GS.forEach(G=>out.push(vlHtmlText(G.title)+' (see the PDF or Word report for the graph).'));}}
   if(L.calcs&&L.calcs.length){H('Calculations');L.calcs.forEach(c=>out.push('- '+vlHtmlText(c.label)+': '+R('k:'+c.id)+(c.unit&&c.input!=='text'&&V.raw('k:'+c.id).trim()?' '+c.unit:'')));}
   if(L.questions&&L.questions.length){H('Questions');L.questions.forEach((q,i)=>{out.push('');out.push((q.n!==undefined?q.n:i+1)+'. '+vlHtmlText(q.q).replace(/\n+/g,' '));if(q.fields)q.fields.forEach(f=>out.push('- '+vlHtmlText(f.label)+': '+R('q:'+q.id+':'+f.id)));else out.push(R('q:'+q.id));});}
   if(L.conclusion){H('Conclusion');out.push(vlHtmlText(L.conclusion.prompt));if(L.conclusion.cer){out.push('Claim: '+R('cer:claim'));out.push('Evidence: '+R('cer:evidence'));out.push('Reasoning: '+R('cer:reasoning'));}else out.push(R('concl'));}
@@ -560,7 +565,7 @@ function vlExportTxt(sim){const V=sim.vlab;if(!V)return;const t=vlReportText(sim
   const fb=()=>{const box=sim.ui.nb.querySelector('.vl-fallback');if(!box)return;const id=sim.def.id+'-vl-text';box.innerHTML=`<label class="vl-l" for="${id}">Your report as text. It is selected: press Ctrl+C (or ⌘C on a Mac) to copy it.</label><textarea class="vl-in vl-ta" id="${id}" rows="10" readonly></textarea>`;
     const ta=box.querySelector('textarea');ta.value=t;ta.focus();ta.select();vlToast(sim,'Selected. Press Ctrl+C to copy');};
   try{navigator.clipboard.writeText(t).then(()=>vlToast(sim,'Copied. Paste it into your Canvas submission.'),fb);}catch(e){fb();}return t;}
-BL.openLab=openLab;BL.vlab={save:vlSave,report:sim=>sim.vlab?{html:vlReportHTML(sim,vlPng(sim.vlab),false),text:vlReportText(sim),png:vlPng(sim.vlab)}:null,overlay:sim=>sim.vlab?vlOverlay(sim,vlReportHTML(sim,vlPng(sim.vlab),false)):null,
+BL.openLab=openLab;BL.vlab={save:vlSave,report:sim=>sim.vlab?{html:vlReportHTML(sim,vlPng(sim.vlab),false),text:vlReportText(sim),png:vlPngs(sim.vlab)[0]||'',pngs:vlPngs(sim.vlab)}:null,overlay:sim=>sim.vlab?vlOverlay(sim,vlReportHTML(sim,vlPng(sim.vlab),false)):null,
   word:sim=>sim.vlab?vlWordDoc(sim,vlPng(sim.vlab)):null,check:vlCheck,go:vlGo,num:vlNum};
 
 /* ---------- "Embed this tool in Canvas" panel ---------- */

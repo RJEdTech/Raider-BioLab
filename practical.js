@@ -1320,3 +1320,17 @@ ld50: {
   ]
 }
 });
+
+/* dissection (added Nov 3) */
+BioLab.addPractical({
+dissection: {
+  hook: 'A fetal pig is about 30 cm long, yet its heart is smaller than a grape and its liver is the biggest organ in its body. Open the abdomen: which organ do you see first, and where is the heart hiding?',
+  answer: 'The dark brown liver covers most of the upper abdomen, so you see it first, with the stomach, small intestine and large intestine around it. The heart sits higher, in the chest above the diaphragm, wrapped in its pericardium between the two lungs.',
+  uses: [
+    'Surgery: surgeons open the abdomen along the midline, the same first cut you make, because few nerves and vessels cross it there.',
+    'Pig models in medicine: pig hearts and valves are close to human size, and pig heart valves are used in valve replacements for thousands of patients each year.',
+    'Newborn care: a baby\u2019s first breaths close the shortcuts the fetus used to skip its lungs. When one stays open, doctors can hear a murmur and may treat it.'
+  ],
+  takeaway: 'Organs sit in a fixed, logical layout: the diaphragm splits chest from abdomen, the digestive organs fill the front of the abdomen, and the kidneys lie behind them against the back wall. Knowing the layout lets you find any organ, in a pig or a person.'
+}
+});
