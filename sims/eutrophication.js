@@ -48,7 +48,7 @@ const wqName=id=>WQT[id].n+(WQT[id].sh?' ('+WQT[id].sh+')':'');
 const wqLabel=id=>WQT[id].n+(WQT[id].u?' ('+WQT[id].u+')':'');
 /* reference values for the graph: the reading as a percent of each one (DO's is a minimum) */
 const WQREF=[{t:'no3',l:'NO₃⁻',ref:10,rl:'10 ppm (drinking-water limit)'},{t:'po4',l:'PO₄³⁻',ref:0.5,rl:'0.5 ppm (drinking-water limit)'},{t:'nh3',l:'NH₃',ref:1.9,rl:'1.9 ppm (EPA limit for freshwater life)'},
-  {t:'hard',l:'Hardness',ref:200,rl:'200 ppm (drinking water)'},{t:'tds',l:'TDS',ref:500,rl:'500 ppm (EPA secondary standard)'},{t:'do',l:'DO',ref:7,rl:'7 ppm (minimum that organisms need)'}];
+  {t:'tds',l:'TDS',ref:500,rl:'500 ppm (EPA secondary standard)'},{t:'do',l:'DO',ref:7,rl:'7 ppm (minimum that organisms need)'},{t:'hard',l:'Hardness',ref:200,rl:'200 ppm (drinking water)'}];
 const WQ_SRC={tap:'Tap water',turtle:'Turtle-tank water',pond:'Pond or stream water'};
 const WQ_LOOK={tap:[206,228,240],turtle:[176,170,118],pond:[158,164,112]};
 const WQ_HAZE={tap:0,turtle:0.55,pond:0.4};
@@ -107,7 +107,7 @@ function wqShade(u){if(u.test==='do'){if(u.D>=u.E)return 0;return u.starch?clamp
 function wqTubeRGB(sim,u){const D=wqD(sim),look=WQ_LOOK[D.src[u.s]],T=WQT[u.test],b=sim.vlab.bench;
   if(T.kind==='card'){if(u.st==='filled')return look;const f=u.st==='reagent'?(u.test==='ph'?0.7:0.12):u.st==='timing'?0.12+0.88*(1-Math.exp(-3*(b.t-u.t0)/T.wait)):1;return mixRGB(look,wqCardRGB(u.test,u.pos),f);}
   if(T.kind==='pa'){if(u.st==='filled')return look;if(u.st==='ready'&&u.present)return [228,196,58];return [168,62,112];}
-  if(u.test==='do'){if(u.st==='filled')return look;if(u.st==='reagent')return [196,150,96];const sh=wqShade(u);if(sh<=0)return mixRGB(look,[236,240,242],0.5);
+  if(u.test==='do'){if(u.st==='filled')return look;if(u.st==='reagent')return [196,150,96];const sh=wqShade(u);if(sh<=0)return mixRGB(look,[238,242,244],0.85);
     return u.starch?mixRGB([236,240,242],[38,52,128],sh):mixRGB([240,238,214],[176,112,40],sh);}
   if(u.test==='hard'){if(u.st==='filled')return look;return mixRGB([46,96,182],[160,44,86],wqShade(u));}
   return look;}
@@ -122,7 +122,7 @@ function wqCtl(sim){const b=wqB(sim),L=['wqView'];if(!b)return L.concat(['wqTest
   else if(T.kind==='pa'&&u.st==='mixed')L.push('wq-incub');
   else if(T.kind==='titr'&&u.st==='titrate'){if(!(u.test==='do'&&u.starch))L.push('wq-d10');L.push('wq-d1');if(u.test==='do'&&!u.starch)L.push('wq-starch');}
   L.push('wq-rinse');return L;}
-function wqRefresh(sim){if(sim.vlab&&sim.mode==='vlab'&&BioLab.vlab&&BioLab.vlab.go)BioLab.vlab.go(sim,sim.vlab.step);}
+function wqRefresh(sim){if(sim.p.wqView==='sheet')BioLab.setValues(sim,{wqView:'bench'});if(sim.vlab&&sim.mode==='vlab'&&BioLab.vlab&&BioLab.vlab.go)BioLab.vlab.go(sim,sim.vlab.step);}
 const wqTube=sim=>{const b=wqB(sim);return b&&b.tube?b.tube:null;};
 const wqKind=sim=>{const u=wqTube(sim);return u?WQT[u.test].kind:null;};
 const WQ_ACTIONS=[
@@ -138,12 +138,13 @@ const WQ_ACTIONS=[
   {id:'wq-incub',label:'Incubate 24 hours',primary:true,vlab:true,enabled:s=>{const u=wqTube(s);return !!u&&u.st==='mixed';},
    run(s){const u=wqTube(s);if(!u||u.st!=='mixed')return;u.st='ready';wqRec(s,u,{present:u.present});wqRefresh(s);}},
   {id:'wq-d10',label:'Add 10 drops',vlab:true,enabled:s=>{const u=wqTube(s);return !!u&&u.st==='titrate'&&!(u.test==='do'&&u.starch);},run(s){wqDrops(s,10);wqRefresh(s);}},
-  {id:'wq-d1',label:'Add 1 drop',primary:true,vlab:true,enabled:s=>{const u=wqTube(s);return !!u&&u.st==='titrate';},run(s){wqDrops(s,1);}},
+  {id:'wq-d1',label:'Add 1 drop',primary:true,vlab:true,enabled:s=>{const u=wqTube(s);return !!u&&u.st==='titrate';},run(s){wqDrops(s,1);if(s.p.wqView==='sheet')wqRefresh(s);}},
   {id:'wq-starch',label:'Add starch indicator',vlab:true,enabled:s=>{const u=wqTube(s);return !!u&&u.st==='titrate'&&u.test==='do'&&!u.starch;},
    run(s){const u=wqTube(s);if(!u||u.test!=='do'||u.starch)return;u.starch=true;u.starchAt=u.D;wqRefresh(s);}},
   {id:'wq-rinse',label:'Empty and rinse',vlab:true,enabled:s=>!!wqTube(s),run(s){const b=wqB(s);if(!b||!b.tube)return;b.tube=null;wqRefresh(s);}}];
 /* ---------- checks ---------- */
 const WQ_RD=WQ_ORDER.filter(t=>t!=='coli');
+const wqRowId=rv=>WQT[rv]?rv:(WQ_RD.find(t=>wqLabel(t)===rv)||(WQREF.find(r=>r.l===rv)||{}).t||rv);
 const fmtV=(t,v)=>typeof v==='number'?(WQT[t].kind==='card'&&t!=='ph'?String(v):v.toFixed(WQT[t].dp)):String(v);
 /* is a reading within one step of what this run showed? */
 function wqMatch(t,run,v){const T=WQT[t];
@@ -151,10 +152,10 @@ function wqMatch(t,run,v){const T=WQT[t];
   if(T.kind==='titr')return Math.abs(v-run.E*T.per)<=T.per*1.01+1e-9||Math.abs(v-run.D*T.per)<=1e-9&&run.D<=run.E+1;
   if(t==='temp')return Math.abs(v-run.val)<=0.2001;
   return Math.abs(v-run.val)<=Math.max(4,0.02*run.val);}
-function wqRdCheck(S){return (sim,rv,v)=>{const V=wqV(sim);if(!V)return null;const t=rv,T=WQT[t],runs=((V.bench.done||{})[t+':'+S]||[]);
+function wqRdCheck(S){return (sim,rv,v)=>{const V=wqV(sim);if(!V)return null;const t=wqRowId(rv),T=WQT[t],runs=((V.bench.done||{})[t+':'+S]||[]);
   if(!runs.length)return 'Run the '+T.n.toLowerCase()+' test on Sample '+S+' on the bench first, then record what you read.';
   if(runs.some(r=>wqMatch(t,r,v)))return null;const r=runs[runs.length-1];
-  if(T.kind==='card'){const k=clamp(Math.round(r.pos),0,T.steps.length-1);return 'Your Sample '+S+' tube was closest to the '+fmtV(t,T.steps[k])+(T.u?' '+T.u:'')+' color on the card. Check your reading.';}
+  if(T.kind==='card'){const k=clamp(Math.round(r.pos),0,T.steps.length-1);return 'Your Sample '+S+' tube was closest to the '+(t==='ph'?'pH '+T.steps[k]:T.steps[k]+' '+T.u)+' color on the card. Check your reading.';}
   if(T.kind==='titr'){if(runs.some(x=>Math.abs(v-x.D)<1e-9||Math.abs(v-x.E)<1e-9))return 'That looks like your drop count. Each drop is '+T.per+' ppm, so multiply the number of drops by '+T.per+'.';
     if(r.D>r.E+1)return 'You added '+r.D+' drops, but the color had already changed at drop '+r.E+'. Empty and rinse, then run the test again and add the last drops one at a time.';
     return 'You counted '+r.E+' drops to the end point. Check your reading: each drop is '+T.per+' ppm.';}
@@ -178,11 +179,13 @@ function wqEvCheck(S){return (sim,rv,v)=>{const V=wqV(sim);if(!V)return null;con
   if(hit.length&&hit.every(c=>c.sloppy)){if(t==='do')return 'No water sample holds that much oxygen at room temperature. In Denver, water at 20 °C can hold only about 7.5 ppm. Check that group’s data, or run the test yourself.';
     return 'Neither sample could be that warm in the lab. Check the units in that group’s data, or run the test yourself.';}
   return hit.length?null:'This does not match your readings table or the class spreadsheet for '+WQT[t].n.toLowerCase()+', Sample '+S+'.';};}
-function wqPctCheck(S){return (sim,rv,v)=>{const R=WQREF.find(x=>x.t===rv);if(!R||!wqV(sim))return null;const C=wqCands(sim,rv,S).filter(c=>typeof c.v==='number');
+function wqPctCheck(S){return (sim,rv,v)=>{rv=wqRowId(rv);const R=WQREF.find(x=>x.t===rv);if(!R||!wqV(sim))return null;const C=wqCands(sim,rv,S).filter(c=>typeof c.v==='number');
   if(C.some(c=>{const e=100*c.v/R.ref;return Math.abs(v-e)<=Math.max(1,0.03*e);}))return null;
   if(C.some(c=>Math.abs(v-c.v/R.ref)<=Math.max(0.01,0.03*c.v/R.ref)))return 'That is a fraction. Multiply by 100 to make it a percent.';
   return 'Percent of the reference = your Sample '+S+' '+WQT[rv].n.toLowerCase()+' value ÷ '+R.ref+' ppm × 100. Use your own reading, or the class spreadsheet if you did not run this test.';};}
+function wqRowRecheck(tb,cols){return (sim,rv)=>{const V=wqV(sim),r=+rv-1;if(V&&BioLab.vlab&&BioLab.vlab.check)cols.forEach(c=>{const k='c:'+tb+':'+c+':'+r;if(V.raw(k).trim()!==''||V.notes[k])BioLab.vlab.check(sim,k);});return null;};}
 function wqPlanCheck(sim,rv,v){const D=wqD(sim),V=wqV(sim);if(!D)return null;
+  if(+rv===1&&V.raw('c:plan:test:1')&&BioLab.vlab&&BioLab.vlab.check)setTimeout(()=>{if(sim.vlab)BioLab.vlab.check(sim,'c:plan:test:1');},0);
   if(+rv===1&&v!==D.asg)return 'Your group was assigned the '+WQT[D.asg].n.toLowerCase()+' test. Choose it as Test 1.';
   if(+rv===2&&v===V.raw('c:plan:test:0'))return 'Choose a different test for Test 2.';return null;}
 /* ---------- bench drawing ---------- */
@@ -201,14 +204,14 @@ function wBottle(ctx,cx,top,lab,look,haze,sel,k){const w=46,h=118,x=cx-w/2;
   ctx.fillStyle='#fbfaf4';rr(ctx,x+7,top+50,w-14,34,4);ctx.fill();txt(ctx,lab,cx,top+75,{s:Math.min(20*k,26),w:800,c:'#222',a:'center'});
   if(sel){ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;rr(ctx,x-7,top-7,w+14,h+14,10);ctx.stroke();}}
 /* the color card: printed swatches on white, with your tube held in the slot at the top */
-function wCard(ctx,sim,t,u,k){const T=WQT[t],X=566,Y=46,W=226,H=340,fs=Math.min(12.5*k,17);ctx.fillStyle='#fbfaf6';rr(ctx,X,Y,W,H,10);ctx.fill();ctx.strokeStyle='#b9b4a6';ctx.lineWidth=1.5;rr(ctx,X,Y,W,H,10);ctx.stroke();
-  txt(ctx,(T.n==='pH'?'pH':T.n)+' color card'+(T.u?' ('+T.u+')':''),X+W/2,Y+24,{s:Math.min(14*k,18),w:700,c:'#222',a:'center'});
+function wCard(ctx,sim,t,u,k){const T=WQT[t],X=566,Y=46,W=226,H=340,narrow=k>1.35,fs=Math.min(12.5*k,narrow?21:17);ctx.fillStyle='#fbfaf6';rr(ctx,X,Y,W,H,10);ctx.fill();ctx.strokeStyle='#b9b4a6';ctx.lineWidth=1.5;rr(ctx,X,Y,W,H,10);ctx.stroke();
+  txt(ctx,(narrow?T.n:T.n+' color card')+(T.u?' ('+T.u+')':''),X+W/2,Y+24,{s:Math.min(14*k,20),w:700,c:'#222',a:'center'});
   let y0=Y+42;if(u&&u.test===t&&u.st!=='filled'){const c=wqTubeRGB(sim,u);txt(ctx,'Your tube',X+14,y0+14,{s:fs,w:600,c:'#444'});ctx.fillStyle=css(c);rr(ctx,X+14,y0+20,W-28,38,6);ctx.fill();ctx.strokeStyle='#9a9588';ctx.lineWidth=1;rr(ctx,X+14,y0+20,W-28,38,6);ctx.stroke();y0+=72;}
   const n=T.steps.length,rows=Math.ceil(n/2),pitch=(Y+H-10-y0)/rows,sw=(W-42)/2,shh=Math.max(18,Math.min(36,pitch-fs-10));
   T.steps.forEach((v,i)=>{const c=i%2,r=Math.floor(i/2),x=X+14+c*(sw+14),y=y0+r*pitch;ctx.fillStyle=T.cols[i];rr(ctx,x,y,sw,shh,5);ctx.fill();ctx.strokeStyle='#bdb8aa';ctx.lineWidth=1;rr(ctx,x,y,sw,shh,5);ctx.stroke();
     txt(ctx,t==='ph'?'pH '+v:v+' ppm',x+sw/2,y+shh+fs+1,{s:fs,w:600,c:'#222',a:'center'});});}
-function wGuide(ctx,lines,title,k){const X=566,Y=46,W=226,H=340,fs=Math.min(13*k,18);ctx.fillStyle='#fbfaf6';rr(ctx,X,Y,W,H,10);ctx.fill();ctx.strokeStyle='#b9b4a6';ctx.lineWidth=1.5;rr(ctx,X,Y,W,H,10);ctx.stroke();
-  txt(ctx,title,X+W/2,Y+24,{s:Math.min(14*k,18),w:700,c:'#222',a:'center'});let y=Y+52;
+function wGuide(ctx,lines,title,k){const X=566,Y=46,W=226,H=340,narrow=k>1.35,fs=Math.min(13*k,narrow?20:18);lines=lines.filter(L=>!(narrow&&L.wide)).map(L=>narrow&&L.n?Object.assign({},L,{t:L.n}):L);ctx.fillStyle='#fbfaf6';rr(ctx,X,Y,W,H,10);ctx.fill();ctx.strokeStyle='#b9b4a6';ctx.lineWidth=1.5;rr(ctx,X,Y,W,H,10);ctx.stroke();
+  txt(ctx,title,X+W/2,Y+24,{s:Math.min(14*k,20),w:700,c:'#222',a:'center'});let y=Y+(narrow?48:52);
   lines.forEach(L=>{if(L.sw){ctx.fillStyle=L.sw;rr(ctx,X+14,y-fs+2,30,fs+6,4);ctx.fill();ctx.strokeStyle='#9a9588';ctx.lineWidth=1;rr(ctx,X+14,y-fs+2,30,fs+6,4);ctx.stroke();y=wWrap(ctx,L.t,X+52,y+2,W-64,fs,{c:'#222',w:L.b?700:400})+6;}
     else y=wWrap(ctx,L.t,X+14,y,W-28,fs,{c:'#222',w:L.b?700:400})+6;});}
 function drawWQ(sim,ctx,vdt,k,t){const D=wqD(sim),b=sim.vlab.bench,p=sim.p,u=b.tube;ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);if(!D)return;
@@ -242,17 +245,17 @@ function drawWQ(sim,ctx,vdt,k,t){const D=wqD(sim),b=sim.vlab.bench,p=sim.p,u=b.t
     if(T.kind==='titr'&&u.st==='titrate')wLcd(ctx,LX,52,LW,104,'DROPS ADDED',String(u.D),k,44);
     if(T.kind==='meter'&&u.st==='probe')wLcd(ctx,LX,52,LW,104,u.test==='temp'?'THERMOMETER':'TDS METER',u.test==='temp'?wqMeter(sim,u).toFixed(1)+' °C':wqMeter(sim,u)+' ppm',k,38);
     if(T.kind==='pa'&&(u.st==='mixed'||u.st==='ready'))wLcd(ctx,LX,52,LW,104,'INCUBATOR 35 °C',u.st==='ready'?'24 h':'0 h',k,40);
-    if(u.st==='ready'&&T.kind==='card')pill(ctx,'Compare with the card',LX+LW/2,186,PAL['rj'],'#fff',Math.min(13*k,19));
+    if(u.st==='ready'&&T.kind==='card')pill(ctx,k>1.35?'Read the card':'Compare with the card',LX+LW/2,186,PAL['rj'],'#fff',Math.min(13*k,19));
     if(u.st==='ready'&&T.kind==='pa')pill(ctx,'24 hours later',LX+LW/2,186,PAL['rj'],'#fff',Math.min(13*k,19));
     if(T.kind==='titr'&&u.st==='titrate'&&wqShade(u)<=0)pill(ctx,'Color change',LX+LW/2,186,PAL['rj'],'#fff',Math.min(13*k,19));
     if(T.kind==='meter'&&u.rec)pill(ctx,'Reading settled',LX+LW/2,186,PAL['rj'],'#fff',Math.min(13*k,19));}
   // the right-hand card for the test in the tube (or the one you have chosen)
   const tt=u?u.test:p.wqTest,T=WQT[tt];
   if(T.kind==='card')wCard(ctx,sim,tt,u,k);
-  else if(tt==='do')wGuide(ctx,[{t:'Titration guide',b:true},{sw:'#b0702a',t:'Yellow-brown: add titrant, counting drops'},{sw:'#f0eed6',t:'Pale yellow: add the starch'},{sw:'#26347f',t:'Blue: add 1 drop at a time'},{sw:'#eef1f3',t:'Clear: end point'},{t:'Each drop = 0.2 ppm',b:true}],'Dissolved oxygen kit',k);
-  else if(tt==='hard')wGuide(ctx,[{t:'Titration guide',b:true},{sw:'#a02c56',t:'Wine red: calcium and magnesium still free'},{sw:'#6a4a9c',t:'Purple: almost there'},{sw:'#2e60b6',t:'Blue: end point'},{t:'Each drop = 10 ppm as CaCO₃',b:true}],'Hardness kit',k);
-  else if(tt==='coli')wGuide(ctx,[{t:'After 24 hours at 35 °C:',b:true},{sw:'#a83e70',t:'Red-purple: no coliform found'},{sw:'#e4c43a',t:'Yellow, often with gas bubbles: coliform present'}],'Coliform vial',k);
-  else wGuide(ctx,tt==='temp'?[{t:'Digital thermometer',b:true},{t:'Reads to 0.1 °C.'},{t:'Wait about 30 s for the number to stop changing, then read it.'}]:[{t:'TDS meter',b:true},{t:'Reads total dissolved solids in ppm (mg/L).'},{t:'Wait for the number to stop changing, then read it.'}],tt==='temp'?'Temperature':'TDS',k);}
+  else if(tt==='do')wGuide(ctx,[{t:'Titration guide',b:true,wide:1},{sw:'#b0702a',t:'Yellow-brown: add titrant, counting drops',n:'Yellow-brown: titrate'},{sw:'#f0eed6',t:'Pale yellow: add the starch',n:'Pale yellow: add starch'},{sw:'#26347f',t:'Blue: add 1 drop at a time',n:'Blue: 1 drop at a time'},{sw:'#eef1f3',t:'Clear: end point'},{t:'Each drop = 0.2 ppm',b:true}],k>1.35?'DO kit':'Dissolved oxygen kit',k);
+  else if(tt==='hard')wGuide(ctx,[{t:'Titration guide',b:true,wide:1},{sw:'#a02c56',t:'Wine red: calcium and magnesium still free',n:'Red: keep adding'},{sw:'#6a4a9c',t:'Purple: almost there'},{sw:'#2e60b6',t:'Blue: end point'},{t:'Each drop = 10 ppm as CaCO₃',b:true,n:'1 drop = 10 ppm'}],'Hardness kit',k);
+  else if(tt==='coli')wGuide(ctx,[{t:'After 24 hours at 35 °C:',b:true},{sw:'#a83e70',t:'Red-purple: no coliform found',n:'Red-purple: none found'},{sw:'#e4c43a',t:'Yellow, often with gas bubbles: coliform present',n:'Yellow: coliform present'}],'Coliform vial',k);
+  else wGuide(ctx,tt==='temp'?[{t:'Digital thermometer',b:true},{t:'Reads to 0.1 °C.'},{t:'Wait about 30 s for the number to stop changing, then read it.',n:'Wait for the number to settle.'}]:[{t:'TDS meter',b:true},{t:'Reads total dissolved solids in ppm (mg/L).',n:'Reads ppm (mg/L).'},{t:'Wait for the number to stop changing, then read it.',n:'Wait for the number to settle.'}],tt==='temp'?'Temperature':'TDS',k);}
 function drawSheet(sim,ctx,k){const D=wqD(sim),V=sim.vlab,narrow=k>1.35,z=Math.min((narrow?12.5:12.5)*k,21);
   txt(ctx,'Class spreadsheet · water quality',16,26,{s:Math.min(15*k,22),w:700});txt(ctx,'Samples may differ by class',784,26,{s:Math.min(12*k,17),c:PAL['cv-soft'],a:'right'});
   const top=40,hh=32,rh=narrow?34:33,cs=narrow?[[8,84],[92,326],[418,124],[542,124],[666,126]]:[[16,100],[116,300],[416,124],[540,124],[664,120]];
@@ -304,7 +307,7 @@ function wqOnce(sim,i,o){const b=sim.vlab&&sim.vlab.bench;if(!b)return;b.entered
 function wqKitStep(o){Object.defineProperty(o,'controls',{get(){return wqCtl(WQCUR);},enumerable:true});return o;}
 const WQ_TESTOPTS=WQ_ORDER.map(t=>({v:t,l:wqName(t)}));
 const wqSel=id=>sim=>{if(sim.vlab&&sim.st&&sim.st.W&&sim.vlab.lab.id==='waterquality'){const b=sim.vlab.bench;b.sel=b.sel||{};b.sel[id]=sim.p[id];}};
-const wqRefTable='<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:.92em;min-width:520px"><thead><tr>'+['Test','What it tells you','Reference values'].map(h=>'<th style="text-align:left;border:1px solid rgba(128,128,128,.55);padding:4px 6px">'+h+'</th>').join('')+'</tr></thead><tbody>'+
+const wqRefTable='<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:.92em;min-width:520px"><thead><tr>'+['Test','What it tells you','Reference values'].map(h=>'<th style="text-align:left;white-space:normal;border:1px solid rgba(128,128,128,.55);padding:4px 6px">'+h+'</th>').join('')+'</tr></thead><tbody>'+
   [['pH','How acidic or basic the water is.','Aquatic life: best at 6.5 to 8.2. Drinking water: 6.5 to 8.5.'],
    ['Temperature','Warmer water holds less dissolved oxygen.','The tolerance depends on the organism.'],
    ['Dissolved oxygen (DO)','Oxygen gas dissolved in the water. BOD is the oxygen demanded by microbes as they decompose organic matter.','Organisms need at least 7 ppm.'],
@@ -314,7 +317,7 @@ const wqRefTable='<div style="overflow-x:auto"><table style="border-collapse:col
    ['Alkalinity and hardness (as CaCO₃)','Dissolved calcium and magnesium.','Drinking water: under 200 ppm. 0 to 60 soft, 60 to 120 medium, 120 to 180 hard, over 180 very hard.'],
    ['Turbidity and TDS (ppm)','Clarity and dissolved solids. Cloudy water blocks sunlight.','EPA’s secondary drinking-water standard for TDS: 500 ppm.'],
    ['Fecal coliform (E. coli)','Bacteria from animal waste.','Drinking water: under 4 colonies per 100 mL. Shellfish: under 70. Recreation: under 100.']]
-  .map(r=>'<tr>'+r.map((c,i)=>'<td style="border:1px solid rgba(128,128,128,.55);padding:4px 6px;vertical-align:top">'+(i?c:'<b>'+c+'</b>')+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+  .map(r=>'<tr>'+r.map((c,i)=>'<td style="text-align:left;white-space:normal;border:1px solid rgba(128,128,128,.55);padding:4px 6px;vertical-align:top">'+(i?c:'<b>'+c+'</b>')+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
 const LAB_WQ={id:'waterquality',title:'Water Quality Lab: Which Sample Is from the Turtle Tank?',course:'AP Environmental Science',teachers:'Weed, Brown',
   source:{label:'Water Quality Lab.docx',href:'https://rjhs.instructure.com/courses/14902/assignments/578961'},level:'ap',
   purpose:'<p>Learn about and perform various water quality tests to determine which water sample is from the turtle tank. Practice using evidence to justify a claim.</p>',
@@ -338,25 +341,25 @@ const LAB_WQ={id:'waterquality',title:'Water Quality Lab: Which Sample Is from t
       setup(sim){const D=wqD(sim);if(D)wqOnce(sim,2+j,{wqTest:D.asg,wqSample:S,wqView:'bench'});},
       done:sim=>{const D=wqD(sim),V=sim.vlab;return !!D&&wqRan(V,D.asg,S)&&wqHas(V,D.asg,S);},
       doneHint:sim=>{const D=wqD(sim),V=sim.vlab;if(!D)return '';return !wqRan(V,D.asg,S)?'Run the '+WQT[D.asg].n.toLowerCase()+' test on Sample '+S+' all the way through.':'Record your Sample '+S+' result in your notebook table.';}})),
-    {title:'Record on the class spreadsheet',text:'<p>Record your data on the class spreadsheet. Choose <b>Look at: Class spreadsheet</b>. Your group’s row fills in from your readings table, and the other groups’ results are already there.</p><p>Look over every group’s numbers. Do they make sense for water? If a group’s data look impossible, run that test yourself.</p>',
-     controls:['wqView'],setup(sim){wqOnce(sim,4,{wqView:'sheet'});}},
+    wqKitStep({title:'Record on the class spreadsheet',text:'<p>Record your data on the class spreadsheet. Choose <b>Look at: Class spreadsheet</b>. Your group’s row fills in from your readings table, and the other groups’ results are already there.</p><p>Look over every group’s numbers. Do they make sense for water? If a group’s data look impossible, run that test yourself.</p>',
+     setup(sim){wqOnce(sim,4,{wqView:'sheet'});}}),
     wqKitStep({title:'Run Test 2',text:'<p>Run your <b>Test 2</b> on Samples A and B, and record both results. You may run more tests too: the kit has every test, and you can repeat a test you doubt.</p><p>The kit instructions for every test are listed under <b>How each kit test works</b> in the Background.</p>',
       setup(sim){const t=sim.vlab.raw('c:plan:test:1'),D=wqD(sim);wqOnce(sim,5,{wqTest:WQT[t]?t:WQ_ORDER.find(x=>D&&x!==D.asg),wqSample:'A',wqView:'bench'});},
       done:sim=>{const D=wqD(sim),V=sim.vlab;return !!D&&WQ_ORDER.some(t=>t!==D.asg&&['A','B'].every(S=>wqRan(V,t,S)&&wqHas(V,t,S)));},doneHint:'Run one more test on both Sample A and Sample B, and record both results.'}),
     wqKitStep({title:'Extension: Sample C',text:'<p><b>Optional.</b> Ms. Brown’s classes test three samples. Run your tests on <b>Sample C</b>, water from a pond or stream, and record the results in the Sample C column. The class spreadsheet has Sample C too.</p>',
       setup(sim){wqOnce(sim,6,{wqSample:'C',wqView:'bench'});}}),
-    {title:'Day 2: evidence',text:'<p>Complete the <b>evidence table</b> with <b>at least two</b> pieces of evidence. For each, choose the water quality test, write the Sample A and Sample B values (your own, or from the class spreadsheet), and say how each compares with the EPA standard in the reference values.</p>',
-     controls:['wqView'],setup(sim){wqOnce(sim,7,{wqView:'sheet'});},
-     done:sim=>[0,1,2,3].filter(r=>['test','a','b','epa'].every(c=>sim.vlab.raw('c:ev:'+c+':'+r).trim()!=='')).length>=2,doneHint:'Fill in every column of at least two rows of the evidence table.'},
-    {title:'Day 2: graph',text:'<p>Fill in the <b>graph table</b>: each test as a percent of its reference value.</p><p><b>Percent of the reference = reading ÷ reference value × 100.</b> Use your own readings, or the class spreadsheet for a test you did not run.</p><p>The scale puts every test on one graph, even though the units differ. A bar at 100% is right at the reference. For nitrate, phosphate, ammonia, hardness and TDS the reference is an upper limit, so a bar over 100% is over the limit. For DO the reference is a minimum, so a bar under 100% means too little oxygen for most organisms. pH, temperature and coliform are not on the graph: pH has a range, temperature has no single limit, and the coliform test reads present or absent.</p>',controls:['wqView']},
-    {title:'Analysis and conclusion',text:'<p>Answer the <b>analysis questions</b>. Then write your conclusion: a <b>claim</b> (one sentence indicating which sample is from the turtle tank), your <b>evidence</b> (point to your evidence table), and your <b>reasoning</b> (a paragraph explaining how your evidence supports your claim, using relevant concepts and vocabulary).</p>',controls:['wqView']}],
+    wqKitStep({title:'Day 2: evidence',text:'<p>Complete the <b>evidence table</b> with <b>at least two</b> pieces of evidence. For each, choose the water quality test, write the Sample A and Sample B values (your own, or from the class spreadsheet), and say how each compares with the EPA standard in the reference values.</p>',
+     setup(sim){wqOnce(sim,7,{wqView:'sheet'});},
+     done:sim=>[0,1,2,3].filter(r=>['test','a','b','epa'].every(c=>sim.vlab.raw('c:ev:'+c+':'+r).trim()!=='')).length>=2,doneHint:'Fill in every column of at least two rows of the evidence table.'}),
+    wqKitStep({title:'Day 2: graph',text:'<p>Fill in the <b>graph table</b>: each test as a percent of its reference value.</p><p><b>Percent of the reference = reading ÷ reference value × 100.</b> Use your own readings, or the class spreadsheet for a test you did not run.</p><p>The scale puts every test on one graph, even though the units differ. A bar at 100% is right at the reference. For nitrate, phosphate, ammonia, hardness and TDS the reference is an upper limit, so a bar over 100% is over the limit. For DO the reference is a minimum, so a bar under 100% means too little oxygen for most organisms. pH, temperature and coliform are not on the graph: pH has a range, temperature has no single limit, and the coliform test reads present or absent.</p>'}),
+    wqKitStep({title:'Analysis and conclusion',text:'<p>Answer the <b>analysis questions</b>. Then write your conclusion: a <b>claim</b> (one sentence indicating which sample is from the turtle tank), your <b>evidence</b> (point to your evidence table), and your <b>reasoning</b> (a paragraph explaining how your evidence supports your claim, using relevant concepts and vocabulary).</p>'})],
   tables:[
     {id:'plan',title:'Initial tests',cols:[{id:'n',label:'Test',rows:[1,2],rowLabels:['Test 1 (your group’s test)','Test 2 (your choice)']},{id:'test',label:'Water quality test',input:'select',options:WQ_TESTOPTS,check:wqPlanCheck},{id:'why',label:'Purpose: what it tells you about the water',input:'text'}]},
-    {id:'rd',title:'Your readings: record each test you ran',cols:[{id:'t',label:'Test',rows:WQ_RD,rowLabels:WQ_RD.map(wqLabel)},{id:'a',label:'Sample A',input:'number',check:wqRdCheck('A')},{id:'b',label:'Sample B',input:'number',check:wqRdCheck('B')},{id:'c',label:'Sample C (extension)',input:'number',check:wqRdCheck('C')}]},
-    {id:'col',title:'Coliform: 24-hour presence/absence vial',cols:[{id:'t',label:'Test',rows:['coli'],rowLabels:['Coliform bacteria']},...['A','B','C'].map(S=>({id:S.toLowerCase(),label:S==='C'?'Sample C (extension)':'Sample '+S,input:'select',options:[{v:'P',l:'Present'},{v:'A',l:'Absent'}],check:wqPaCheck(S)}))]},
-    {id:'ev',title:'Evidence: at least two water quality tests',cols:[{id:'n',label:'Evidence',rows:[1,2,3,4],rowLabels:['1','2','3 (optional)','4 (optional)']},{id:'test',label:'Water quality test',input:'select',options:WQ_TESTOPTS},
+    {id:'rd',title:'Your readings: record each test you ran',cols:[{id:'t',label:'Test',rows:WQ_RD.map(wqLabel)},{id:'a',label:'Sample A',input:'number',check:wqRdCheck('A')},{id:'b',label:'Sample B',input:'number',check:wqRdCheck('B')},{id:'c',label:'Sample C (extension)',input:'number',check:wqRdCheck('C')}]},
+    {id:'col',title:'Coliform: 24-hour presence/absence vial',cols:[{id:'t',label:'Test',rows:['Coliform bacteria']},...['A','B','C'].map(S=>({id:S.toLowerCase(),label:S==='C'?'Sample C (extension)':'Sample '+S,input:'select',options:[{v:'P',l:'Present'},{v:'A',l:'Absent'}],check:wqPaCheck(S)}))]},
+    {id:'ev',title:'Evidence: at least two water quality tests',cols:[{id:'n',label:'Evidence',rows:[1,2,3,4],rowLabels:['1','2','3 (optional)','4 (optional)']},{id:'test',label:'Water quality test',input:'select',options:WQ_TESTOPTS,check:wqRowRecheck('ev',['a','b'])},
       {id:'a',label:'Sample A value',input:'text',check:wqEvCheck('A')},{id:'b',label:'Sample B value',input:'text',check:wqEvCheck('B')},{id:'epa',label:'How it compares to the EPA standard',input:'text'}]},
-    {id:'pct',title:'Graph table: each test as a percent of its reference value',cols:[{id:'t',label:'Test',rows:WQREF.map(r=>r.t),rowLabels:WQREF.map(r=>r.l)},{id:'ref',label:'Reference value',rows:WQREF.map(r=>r.rl),rowLabels:WQREF.map(r=>r.rl)},
+    {id:'pct',title:'Graph table: each test as a percent of its reference value',cols:[{id:'t',label:'Test',rows:WQREF.map(r=>r.l)},{id:'ref',label:'Reference value',rows:WQREF.map(r=>r.rl)},
       ...['A','B','C'].map(S=>({id:S.toLowerCase(),label:'Sample '+S+(S==='C'?' (extension)':'')+': % of reference',input:'number',check:wqPctCheck(S)}))]}],
   observations:['A','B','C'].map(S=>({id:'look'+S,label:'Sample '+S+(S==='C'?' (extension)':'')+': color and clarity'})),
   graph:{type:'bar',title:'Each test as a percent of its reference value',xl:'Water quality test',yl:'Percent of the reference (%)',ymin:0,

@@ -120,11 +120,12 @@ function osmStep(sim,ds){const L=sim.st.L,b=sim.vlab.bench;if(L.hold){if(!sim.ru
 /* a reload mid-reading puts the clock back on hold */
 function osmResume(sim){const L=osmL(sim);if(!L)return;const b=sim.vlab.bench;if(b.ph!=='tap'&&sim.p.pauseRead&&OSTOPS.includes(b.clk)&&!L.hold&&b.hist[b.ph].length===b.clk+1){L.hold=true;L.holdAt=b.clk;BioLab.pause(sim);}}
 function osmSetup(sim){const b=sim.vlab.bench,L=osmL(sim);sim.vlab._live=true;if(!L)return;
-  BioLab.setValues(sim,Object.assign({slide:L.kind==='elodea'?'elodea':'onion',sx:b.view.sx,sy:b.view.sy,obj:4,coarse:38,fine:0,light:70},b.ctl||{},{sx:b.view.sx,sy:b.view.sy}));
-  sim.st.crashed=false;BioLab.refresh(sim);}
+  BioLab.setValues(sim,Object.assign({slide:L.kind==='elodea'?'elodea':'onion',sx:b.view.sx,sy:b.view.sy,obj:4,coarse:38,fine:0,light:90},b.ctl||{},{sx:b.view.sx,sy:b.view.sy}));
+  sim.st.crashed=false;sim.st.warnAt=-99;BioLab.refresh(sim);}
 function osmExtraBlur(sim){const b=sim.vlab.bench;return b.prep===1?3.2:b.prep===2?1.6:0;}
 /* ---- drawing the living specimens, in world micrometers ---- */
-function rrPath(P,x,y,w,h,r){if(w<=0||h<=0)return;r=Math.max(0,Math.min(r,w/2,h/2));P.moveTo(x+r,y);P.arcTo(x+w,y,x+w,y+h,r);P.arcTo(x+w,y+h,x,y+h,r);P.arcTo(x,y+h,x,y,r);P.arcTo(x,y,x+w,y,r);P.closePath();}
+let RR_MIN=0;   // corner radii below this (µm) are drawn square: far cheaper at low power, where they are under a pixel
+function rrPath(P,x,y,w,h,r){if(w<=0||h<=0)return;r=Math.max(0,Math.min(r,w/2,h/2));if(r<RR_MIN){P.rect(x,y,w,h);return;}P.moveTo(x+r,y);P.arcTo(x+w,y,x+w,y+h,r);P.arcTo(x+w,y+h,x,y+h,r);P.arcTo(x,y+h,x,y,r);P.arcTo(x,y,x+w,y,r);P.closePath();}
 /* the protoplast inside a cell's wall: it fills the wall at V ≥ 1 and shrinks into a rounded mass below that */
 function protoBox(x,y,w,h,V,j,k,ex,ey){const f=clamp(V,0.22,1);if(f>=0.999)return {x,y,w,h,r:Math.min(w,h)*0.08,f:1};
   const pw=w*Math.pow(f,ex),ph=h*Math.pow(f,ey),ox=(H(j,k,79)-.5)*(w-pw)*0.9,oy=(H(j,k,81)-.5)*(h-ph)*0.6;
@@ -140,7 +141,7 @@ function drawBubblesAndFlow(ctx,sim,S,lw){const L=sim.st.L,b=sim.vlab.bench;
     ctx.strokeStyle='rgba(28,28,32,0.9)';ctx.lineWidth=Math.max(q.r*0.2,2*lw);ctx.stroke();
     ctx.fillStyle='rgba(255,255,255,0.85)';ctx.beginPath();ctx.arc(q.x-q.r*.3,q.y-q.r*.3,q.r*.18,0,6.29);ctx.fill();});}
 const ONV=[[214,132,188],[198,108,172],[182,86,156],[164,66,140],[146,48,124],[128,34,108],[112,24,94]].map(c=>'rgb('+c.join(',')+')');
-function drawOnionLab(ctx,x0,x1,y0,y1,S,t,lw,sim){const b=sim.vlab.bench,P=OSP.onion;if(b.prep<1){drawEmptySlide(ctx,x0,x1,y0,y1);return;}
+function drawOnionLab(ctx,x0,x1,y0,y1,S,t,lw,sim){RR_MIN=1.2/S;const b=sim.vlab.bench,P=OSP.onion;if(b.prep<1){drawEmptySlide(ctx,x0,x1,y0,y1);return;}
   ctx.fillStyle='#f3eaf0';ctx.fillRect(x0,y0,x1-x0,y1-y0);   // the solution that fills the space a shrunken protoplast leaves inside its wall
   const NB=ONV.length,vac=ONV.map(()=>new Path2D()),cyt=new Path2D(),walls=new Path2D(),nuc=new Path2D(),wt=2.2,cy=1.8,detail=S>=0.4;
   eachCell(x0,x1,y0,y1,P.RH,P.CL,P.jit,(x,y,w,h,j,k)=>{const V=b.V[cellType(j,k)];walls.rect(x,y,w,h);
@@ -150,10 +151,10 @@ function drawOnionLab(ctx,x0,x1,y0,y1,S,t,lw,sim){const b=sim.vlab.bench,P=OSP.o
     if(detail){const nx=B.x+B.w*(0.18+0.64*H(j,k,80)),ny=B.y+B.h*(0.35+0.3*H(j,k,82)),rx=Math.min(11,B.w*0.3),ry=Math.min(8,B.h*0.32);nuc.moveTo(nx+rx,ny);nuc.ellipse(nx,ny,rx,ry,0,0,6.29);}});
   ctx.fillStyle='#ecdde8';ctx.fill(cyt);                       // cytoplasm: a thin, nearly clear layer just inside the membrane
   for(let i=0;i<NB;i++){ctx.fillStyle=ONV[i];ctx.fill(vac[i]);}  // central vacuole, purple with anthocyanin
-  if(detail){ctx.fillStyle='rgba(126,104,124,0.5)';ctx.fill(nuc);ctx.strokeStyle='rgba(92,34,78,0.8)';ctx.lineWidth=0.9*lw;ctx.stroke(cyt);}
+  if(detail){ctx.fillStyle='rgba(120,92,120,0.32)';ctx.fill(nuc);ctx.strokeStyle='rgba(92,34,78,0.8)';ctx.lineWidth=0.9*lw;ctx.stroke(cyt);}
   ctx.strokeStyle='#73405f';ctx.lineWidth=Math.max(1.6,1.0*lw);ctx.stroke(walls);
   drawBubblesAndFlow(ctx,sim,S,lw);}
-function drawElodeaLab(ctx,x0,x1,y0,y1,S,t,lw,sim){const b=sim.vlab.bench,L=sim.st.L,P=OSP.elodea;if(b.prep<1){drawEmptySlide(ctx,x0,x1,y0,y1);return;}
+function drawElodeaLab(ctx,x0,x1,y0,y1,S,t,lw,sim){RR_MIN=1.2/S;const b=sim.vlab.bench,L=sim.st.L,P=OSP.elodea;if(b.prep<1){drawEmptySlide(ctx,x0,x1,y0,y1);return;}
   ctx.fillStyle='#e8f1df';ctx.fillRect(x0,y0,x1-x0,y1-y0);
   const cyt=[new Path2D(),new Path2D(),new Path2D()],walls=new Path2D(),chl=new Path2D(),detail=S>=0.5,sp=[];
   eachCell(x0,x1,y0,y1,P.RH,P.CL,P.jit,(x,y,w,h,j,k)=>{const a=cellType(j,k),V=b.V[a];walls.rect(x,y,w,h);
@@ -170,8 +171,8 @@ function drawElodeaLab(ctx,x0,x1,y0,y1,S,t,lw,sim){const b=sim.vlab.bench,L=sim.
 /* cytoplasmic streaming slows, then stops, as a protoplast shrinks */
 function osmStream(sim,vdt){const L=sim.st.L,b=sim.vlab.bench;if(!(vdt>0))return;const sp=RM?2:6;for(let a=0;a<NT;a++)L.sph[a]+=vdt*sp*clamp((b.V[a]-0.6)/0.35,0,1);}
 /* the bench beside the eyepiece: the slide from above, what is under the cover slip, and the lab clock */
-function osmPanel(sim,ctx,k){const b=sim.vlab.bench,L=sim.st.L,el=L.kind==='elodea',X=486,W=304,fs=Math.min(13*k,19),fb=Math.min(14*k,20);
-  txt(ctx,'Your slide, seen from above',X,26,{s:fs,w:700});
+function osmPanel(sim,ctx,k){const b=sim.vlab.bench,L=sim.st.L,el=L.kind==='elodea',X=486,W=304,fs=Math.min(13*k,22),fb=Math.min(14*k,24),fm=Math.min(12*k,19);
+  txt(ctx,'Your slide, from above',X,26,{s:fs,w:700});
   const sy=40,sh=128,cx=X+W/2+18,cy=sy+sh/2,cs=sh-18;
   ctx.fillStyle='rgba(206,228,238,0.6)';rr(ctx,X,sy,W,sh,6);ctx.fill();ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2;rr(ctx,X,sy,W,sh,6);ctx.stroke();
   ctx.fillStyle='rgba(232,229,220,0.95)';rr(ctx,X+5,sy+5,46,sh-10,4);ctx.fill();
@@ -189,13 +190,13 @@ function osmPanel(sim,ctx,k){const b=sim.vlab.bench,L=sim.st.L,el=L.kind==='elod
   // what surrounds the cells
   const under=b.prep<2?'Nothing yet':b.ph==='salt'?'Salt water ('+L.P.salt+'% NaCl)':b.ph==='dw'?'Distilled water':'Tap water';
   txt(ctx,b.prep>=3?'Under the cover slip':'On the slide',X,196,{s:fs,c:PAL['cv-soft']});txt(ctx,under,X,220,{s:fb,w:700});
-  if(b.drop)txt(ctx,'Drop at the edge: '+OSOL[b.drop],X,244,{s:fs,c:PAL['cv-soft']});
-  else if(el&&b.ph==='tap')txt(ctx,b.mix?'10 mL of salt water: ready':'Salt water: not made yet',X,244,{s:fs,c:PAL['cv-soft']});
-  lcdBox(ctx,X+20,258,W-40,112,'LAB CLOCK',mmss(b.ph==='tap'?0:b.clk),k,46);
+  if(b.drop)txt(ctx,'Drop at edge: '+OSOL[b.drop],X,246,{s:fm,c:PAL['cv-soft']});
+  else if(el&&b.ph==='tap')txt(ctx,b.mix?'Salt water: ready':'Salt water: not made yet',X,246,{s:fm,c:PAL['cv-soft']});
+  lcdBox(ctx,X+20,262,W-40,108,'LAB CLOCK',mmss(b.ph==='tap'?0:b.clk),k,46);
   if(L.hold)pill(ctx,'Reading time: '+mmss(L.holdAt),X+W/2,396,PAL['rj'],'#fff',Math.min(14*k,20));
-  else if(b.ph!=='tap'&&b.clk<180&&sim.p.pauseRead)txt(ctx,'Stops at '+mmss(OSTOPS.find(x=>x>b.clk+1e-9)),X+W/2,400,{s:fs,c:PAL['cv-soft'],a:'center'});
-  else if(b.ph==='tap')txt(ctx,'Starts when the towel draws a solution across',X+W/2,400,{s:Math.min(12*k,15),c:PAL['cv-soft'],a:'center'});
-  txt(ctx,(el?'Counting square at 40×: '+OSQ+' µm across':'Field of view at 40×: 450 µm'),X+W/2,432,{s:Math.min(12*k,15),c:PAL['cv-soft'],a:'center'});}
+  else if(b.ph!=='tap'&&b.clk<180&&sim.p.pauseRead)txt(ctx,'Stops at '+mmss(OSTOPS.find(x=>x>b.clk+1e-9)),X+W/2,400,{s:fm,c:PAL['cv-soft'],a:'center'});
+  else if(b.ph==='tap')txt(ctx,'Starts with the paper towel',X+W/2,400,{s:fm,c:PAL['cv-soft'],a:'center'});
+  txt(ctx,(el?'Counting square: '+OSQ+' µm at 40×':'40× field of view: 450 µm'),X+W/2,434,{s:fm,c:PAL['cv-soft'],a:'center'});}
 function osmNarrate(sim){const L=sim.st.L,b=sim.vlab.bench,p=sim.p,s=sim.st,o=optics(sim),el=L.kind==='elodea',mag=10*p.obj;
   if(s.crashed)return '<b>Cracked slide!</b> At '+p.obj+'× the objective sits only '+o.o.wd+' mm above the slide, and the coarse knob raised the stage into it. Press “Replace cracked slide”, and use only fine focus at high power.';
   if(b.prep===0)return el?'A clean slide sits on the stage. Place one Elodea leaf flat on it.':'A clean slide sits on the stage. Peel a very thin piece of epidermis from the purple side of a red onion layer and lay it flat on the slide.';
@@ -456,11 +457,11 @@ const MIC={
   terms:[{t:'Eyepiece (ocular)',d:'The lens you look through. It magnifies 10×.'},{t:'Objective',d:'The lens just above the slide: 4×, 10× or 40× (100× with oil).'},{t:'Total magnification',d:'Eyepiece × objective, e.g. 10 × 40 = 400×.'},{t:'Field of view',d:'The width of the circle you see. It shrinks as magnification grows.'},{t:'Coarse / fine focus',d:'Knobs that move the stage a lot or a little.'},
     {lvl:'honors',t:'Parfocal',d:'Objectives stay nearly in focus when you switch between them.'},{lvl:'honors',t:'Working distance',d:'The gap between the objective and the slide. Only 0.6 mm at 40×.'},{lvl:'honors',t:'Diaphragm',d:'Controls how much light reaches the slide.'},
     {lvl:'ap',t:'Resolution',d:'The smallest distance between two points that you can still see as separate.'},{lvl:'ap',t:'Numerical aperture (NA)',d:'How wide a cone of light the objective collects. Higher NA gives better resolution.'},{lvl:'ap',t:'Immersion oil',d:'Oil matched to glass, so the 100× lens collects more light.'}],
-  about:'<p>Field of view = 18 mm ÷ objective (field number 18 with a 10× eyepiece). Specimens are drawn at real size: onion cells about 250 × 60 µm, cheek cells about 60 µm, Elodea cells about 75 × 28 µm with 5 µm chloroplasts streaming at 6 µm/s, and red blood cells 7.5 µm. The image is drawn rotated 180°, as a compound microscope shows it.</p><p>Focus: the coarse knob moves the stage 20 µm per click, and fine focus moves it up to ±25 µm. Objectives are parfocal, within 4–15 µm of each other. Depth of field is about 50, 8, 1.5 and 0.6 µm, and blur grows with distance from the focal plane. The slide cracks if the stage rises more than 0.4 mm past focus at 40× or 100×.</p><p>Resolution = 0.61 × 0.55 µm ÷ NA, with NA 0.10, 0.25, 0.65 and 1.25 (0.95 at 100× without oil). Brightness falls with magnification. Simplification: real slides vary much more, and phase effects and staining artifacts are ignored.</p>',
+  about:'<p>Field of view = 18 mm ÷ objective (field number 18 with a 10× eyepiece). Specimens are drawn at real size: onion cells about 250 × 60 µm, cheek cells about 60 µm, Elodea cells about 75 × 28 µm with 5 µm chloroplasts streaming at 6 µm/s, and red blood cells 7.5 µm. The image is drawn rotated 180°, as a compound microscope shows it.</p><p>Focus: the coarse knob moves the stage 20 µm per click, and fine focus moves it up to ±25 µm. Objectives are parfocal, within 4–15 µm of each other. Depth of field is about 50, 8, 1.5 and 0.6 µm, and blur grows with distance from the focal plane. The slide cracks if the stage rises more than 0.4 mm past focus at 40× or 100×.</p><p>Resolution = 0.61 × 0.55 µm ÷ NA, with NA 0.10, 0.25, 0.65 and 1.25 (0.95 at 100× without oil). Brightness falls with magnification. Simplification: real slides vary much more, and phase effects and staining artifacts are ignored.</p><p><b>The virtual lab benches (osmosis).</b> Each living cell follows a water-potential model: water flows at a rate in proportion to ψ<sub>outside</sub> − ψ<sub>inside</sub>, with ψ<sub>s</sub> = −iCRT and turgor pressure from the wall (elastic modulus 12–15 MPa). The solutes stay inside while the water volume changes, so the protoplast shrinks away from the wall in 5% NaCl and refills it in distilled water. The wall does not move. A new solution reaches each cell after a delay of a few seconds to about 2 minutes and mixes in gradually, and cells differ a little in solute content and water permeability, so they change at different times and by different amounts.</p>',
   onClick(sim,x,y){if(osmL(sim))return;if(x>615&&x<725&&y>140&&y<260){const list=[4,10,40].concat(atLeast('ap')?[100]:[]);const i=list.indexOf(sim.p.obj);BioLab.setValues(sim,{obj:list[(i+1)%list.length]});}},
   initVis(sim){sim.vis.oc=null;},
   draw(sim,ctx,vdt,k,t){
-    const p=sim.p,s=sim.st,v=sim.vis,o=optics(sim),S=o.S,hon=atLeast('honors'),L=osmL(sim),blur=o.blur+(L?osmExtraBlur(sim):0);
+    const p=sim.p,s=sim.st,v=sim.vis,o=optics(sim),S=o.S,hon=atLeast('honors'),OL=osmL(sim),blur=o.blur+(OL?osmExtraBlur(sim):0);
     ctx.fillStyle=PAL['card'];ctx.fillRect(0,0,800,450);
     // ---- eyepiece view
     ctx.fillStyle='#0d0d10';ctx.beginPath();ctx.arc(VX,VY,VR+12,0,6.29);ctx.fill();
@@ -468,7 +469,7 @@ const MIC={
     if(!v.oc)v.oc=document.createElement('canvas');if(v.oc.width!==N){v.oc.width=N;v.oc.height=N;}
     const oc=v.oc.getContext('2d');oc.setTransform(1,0,0,1,0,0);oc.clearRect(0,0,N,N);oc.setTransform(N/400,0,0,N/400,0,0);
     oc.save();oc.translate(200,200);oc.scale(-S,-S);oc.translate(p.sx,p.sy);const lw=1/S,hw=200/S;
-    if(L){osmStream(sim,vdt);(L.kind==='elodea'?drawElodeaLab:drawOnionLab)(oc,-p.sx-hw,-p.sx+hw,-p.sy-hw,-p.sy+hw,S,t,lw,sim);}
+    if(OL){osmStream(sim,vdt);(OL.kind==='elodea'?drawElodeaLab:drawOnionLab)(oc,-p.sx-hw,-p.sx+hw,-p.sy-hw,-p.sy+hw,S,t,lw,sim);}
     else DRAW[p.slide](oc,-p.sx-hw,-p.sx+hw,-p.sy-hw,-p.sy+hw,S,t,lw);oc.restore();
     ctx.save();ctx.beginPath();ctx.arc(VX,VY,VR,0,6.29);ctx.clip();
     const canFilter='filter' in ctx;if(canFilter&&blur>0.3)ctx.filter='blur('+(blur*sc).toFixed(2)+'px)';
@@ -481,11 +482,13 @@ const MIC={
       for(let i=0;i<7;i++){let x=cx,y=cy,a=i/7*6.283+0.3;ctx.moveTo(x,y);for(let m=0;m<6;m++){a+=Math.sin(i*3.1+m*1.7)*0.5;x+=Math.cos(a)*34;y+=Math.sin(a)*34;ctx.lineTo(x,y);}}ctx.stroke();}
     // scale bar
     let L=niceStep(o.fov/4,1);if(L*S>160)L/=2;const bpx=L*S;ctx.fillStyle='#fff';ctx.strokeStyle='#000';ctx.lineWidth=1.5;ctx.fillRect(VX-bpx/2,VY+150,bpx,5);ctx.strokeRect(VX-bpx/2,VY+150,bpx,5);
+    if(OL&&OL.kind==='elodea'){const q=OSQ*400/OBJ[40].fov;ctx.strokeStyle='rgba(255,255,255,0.75)';ctx.lineWidth=4.5;ctx.strokeRect(VX-q/2,VY-q/2,q,q);ctx.strokeStyle='rgba(12,12,14,0.95)';ctx.lineWidth=2;ctx.strokeRect(VX-q/2,VY-q/2,q,q);}   // eyepiece counting square
     ctx.restore();
     txt(ctx,(L>=1000?(L/1000)+' mm':L+' µm'),VX,VY+172,{s:12*k,w:700,c:'#fff',a:'center'});
     if(s.crashed)pill(ctx,'Cracked slide!',VX,VY-150,'#c62828','#fff',14*k);
     txt(ctx,p.obj+'× objective',12,24,{s:14*k,w:700});txt(ctx,(10*p.obj)+'× total',12,44,{s:13*k,c:PAL['cv-soft']});
     txt(ctx,'Field of view',12,416,{s:12*k,c:PAL['cv-soft']});txt(ctx,fmtInt(o.fov)+' µm',12,438,{s:14*k,w:700});
+    if(OL){osmPanel(sim,ctx,k);return;}
     // ---- microscope diagram
     const C=670,metal='#5a616d',dark='#30353d';
     const yst=clamp(262-(o.zf-1000)*0.06,205,332),ol=o.o.len;
