@@ -23,7 +23,7 @@ let level=store.get(LAB_KEY+'-level');if(!(level in LV))level='bio';
    ?level=bio|honors|ap picks the starting detail level for this visit only. */
 const QS=(()=>{try{return new URLSearchParams(location.search);}catch(e){return new URLSearchParams('');}})();
 const EMBED=QS.has('embed'),QMODE=QS.get('mode'),QLVL=QS.get('level'),QLAB=QS.get('lab');
-const MODES=['guided','game','lab','vlab'];
+const MODES=['guided','game','lab','vlab','review'];
 if(QLVL&&(QLVL in LV))level=QLVL;
 BL.embed=EMBED;
 const atLeast=l=>LV[level]>=LV[l||'bio'];
@@ -78,6 +78,8 @@ BL.register=function(def){if(!def||!def.id)return;DEFS.push(def);};
 /* Practical layer (practical*.js): a real situation to start from, where the idea shows up, a rule of thumb to keep,
    and plainer Big picture wording for the lede and walkthrough. Merged into the tool definitions at start. */
 const PRACT={};BL.addPractical=o=>{Object.assign(PRACT,o||{});};
+/* Review layer (review.js): questions and AP exam links per tool. Merged into the tool definitions at start. */
+const REVIEWS={};BL.addReview=o=>{Object.assign(REVIEWS,o||{});};
 const bioOver=(t,n)=>!n?t:(t&&typeof t==='object')?Object.assign({},t,{bio:n}):(t?{bio:n,honors:t}:n);
 function applyPractical(d){const P=PRACT[d.id];if(!P)return;d.practical=P;
   if(P.lede)d.lede=bioOver(d.lede,P.lede);if(P.card)d.card=P.card;
@@ -116,7 +118,8 @@ function el(tag,attrs,html){const e=document.createElement(tag);if(attrs)for(con
 function buildSim(sim){
   const d=sim.def,id=d.id,asp=d.aspect||16/9,sec=el('section',{class:'sim',id:'sim-'+id,'aria-labelledby':'h-'+id});
   const hasGraph=d.graph!==false,hasPredict=!!d.challenges;
-  sec.innerHTML=`<div class="sim-head"><p class="eyebrow">${secLabel(d.apUnit)}</p><h2 id="h-${id}">${d.title}</h2><p class="lede"></p><div class="real-uses" hidden></div><div class="modebar" role="group" aria-label="How do you want to use this tool?"></div></div>
+  sec.innerHTML=`<div class="pathbar" hidden></div><div class="sim-head"><p class="eyebrow">${secLabel(d.apUnit)}</p><h2 id="h-${id}">${d.title}</h2><p class="lede"></p><div class="real-uses" hidden></div><div class="modebar" role="group" aria-label="How do you want to use this tool?"></div></div>
+  <div class="panel review" aria-live="polite"></div><div class="rv-note"></div>
   <div class="bench">
     <div class="stage">${d.scale?`<p class="scale"></p>`:''}<canvas id="${id}-stage" style="aspect-ratio:${asp};--asp:${asp}" role="img" aria-label="${d.title} simulation"></canvas>
       <div class="tourbar" hidden><div class="tb-h"><span class="tb-n"></span><b class="tb-t"></b></div><p class="tb-x"></p>
@@ -155,7 +158,7 @@ function buildSim(sim){
   <div class="related" hidden></div>
   <p class="fb-line"><a class="fb-link" href="${fbUrl(d.tab)}" target="_blank" rel="noopener" data-tool="${d.tab}">Report a bug or request a feature</a><span class="fb-hint">Opens a short Microsoft Form with this tool already filled in. Sign in with your RJ account.</span></p>
   <details class="about embed-box"><summary>Embed this tool in Canvas</summary><div class="about-b embed-b"></div></details>`;
-  const ui=sim.ui;ui.sec=sec;ui.lede=sec.querySelector('.lede');ui.uses=sec.querySelector('.real-uses');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
+  const ui=sim.ui;ui.sec=sec;ui.review=sec.querySelector('.review');ui.rvNote=sec.querySelector('.rv-note');ui.lede=sec.querySelector('.lede');ui.uses=sec.querySelector('.real-uses');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
   ui.clock=sec.querySelector('.clock');ui.play=sec.querySelector('[data-act=play]');ui.ctrls=sec.querySelector('.controls');ui.read=sec.querySelector('.readouts');
   ui.pred=sec.querySelector('.predict');ui.info=sec.querySelector('.info');ui.tbl=sec.querySelector('.tbl');ui.gm=sec.querySelector('#'+id+'-gm');ui.gx=sec.querySelector('#'+id+'-gx');ui.gy=sec.querySelector('#'+id+'-gy');
   ui.toast=sec.querySelector('.toast');ui.ctl={};ui.ctlW={};ui.actB={};ui.tiles={};ui.cap=sec.querySelector('.cap');ui.scale=sec.querySelector('.scale');ui.lab=sec.querySelector('.lab');
@@ -236,24 +239,25 @@ BL.h.lvText=lvText;
 const modeKey=sim=>LAB_KEY+'-mode-'+sim.def.id;
 function hasGuide(sim){return tourSteps(sim).length>0;}
 function buildModebar(sim){const bar=sim.ui.sec.querySelector('.modebar');if(!bar)return;const d=sim.def,opts=[];
-  if(d.tour)opts.push(['guided','Guided']);if(d.game)opts.push(['game',d.game.label||'Challenge']);opts.push(['lab','Full lab']);if(d.labs&&d.labs.length)opts.push(['vlab','Virtual lab']);
+  if(d.tour)opts.push(['guided','Guided']);if(d.game)opts.push(['game',d.game.label||'Challenge']);opts.push(['lab','Full lab']);if(d.labs&&d.labs.length)opts.push(['vlab','Virtual lab']);if(d.review)opts.push(['review','Review']);
   if(opts.length<2){bar.hidden=true;return;}
   bar.innerHTML=opts.map(([m,l])=>`<button type="button" data-mode="${m}">${l}</button>`).join('');
   bar.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setMode(sim,b.dataset.mode,true)));}
 function restoreVisibility(sim){const d=sim.def;sim.ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl)||(!!e.dataset.vlab&&sim.mode!=='vlab');});if(d.onLevel)d.onLevel(sim);}
-function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(sim))mode='lab';if(mode==='game'&&!d.game)mode='lab';if(mode==='vlab'&&!(d.labs&&d.labs.length))mode='lab';if(!MODES.includes(mode))mode='lab';
+function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(sim))mode='lab';if(mode==='game'&&!d.game)mode='lab';if(mode==='vlab'&&!(d.labs&&d.labs.length))mode='lab';if(mode==='review'&&!d.review)mode='lab';if(!MODES.includes(mode))mode='lab';
   const was=sim.mode;
   if(sim.game&&mode!=='game')gameStop(sim);
   if(sim.tour&&sim.tour.on)tourExit(sim,'mode');
   if(was==='vlab'&&mode!=='vlab')vlabExit(sim);
   sim.mode=mode;if(user)store.set(modeKey(sim),mode);
-  const sec=sim.ui.sec;MODES.forEach(m=>sec.classList.toggle('m-'+m,m===mode));sec.classList.remove('g-try','g-done');
+  const sec=sim.ui.sec;MODES.forEach(m=>sec.classList.toggle('m-'+m,m===mode));sec.classList.remove('g-try','g-done','rv-see');
   sec.querySelectorAll('.modebar button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
   sim.ui.donecard.hidden=true;sim.ui.gamecard.hidden=true;sim.guide=null;
   const ex=sim.ui.tourbar&&sim.ui.tourbar.querySelector('[data-tour=exit]');if(ex)ex.textContent=mode==='guided'?'Skip to the full lab':'Exit walkthrough';
   if(mode==='guided'){sim.guide={phase:'tour'};sim.ch={idx:0,phase:'ask',pick:null,changed:false};renderChallenge(sim);tourGo(sim,0);}
   else if(mode==='game'){gameStart(sim);}
   else if(mode==='vlab'){restoreVisibility(sim);vlabEnter(sim,was==='vlab');}
+  else if(mode==='review'){restoreVisibility(sim);renderReview(sim);}
   else restoreVisibility(sim);
   if(user&&sim.ui.sec.scrollIntoView)window.scrollTo(0,0);
   updateReadouts(sim);drawGraph(sim);}
@@ -571,7 +575,7 @@ BL.openLab=openLab;BL.vlab={save:vlSave,report:sim=>sim.vlab?{html:vlReportHTML(
 /* ---------- "Embed this tool in Canvas" panel ---------- */
 function embedUrl(sim,o){let base=location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');const q=new URLSearchParams();q.set('embed','1');if(o.mode)q.set('mode',o.mode);if(o.mode==='vlab'&&o.lab)q.set('lab',o.lab);if(o.level)q.set('level',o.level);return base+'?'+q.toString()+'#'+sim.def.hash;}
 function buildEmbed(sim){const box=sim.ui.sec.querySelector('.embed-b');if(!box||EMBED){const d=sim.ui.sec.querySelector('.embed-box');if(d&&EMBED)d.hidden=true;return;}const d=sim.def,id=d.id;
-  const modes=[d.tour?['guided','Guided (walkthrough, then predictions)']:null,d.game?['game',(d.game.label||'Challenge')+' game']:null,['lab','Full lab'],d.labs&&d.labs.length?['vlab','Virtual lab (a teacher’s handout on the bench)']:null].filter(Boolean),labs=d.labs||[];
+  const modes=[d.tour?['guided','Guided (walkthrough, then predictions)']:null,d.game?['game',(d.game.label||'Challenge')+' game']:null,['lab','Full lab'],d.labs&&d.labs.length?['vlab','Virtual lab (a teacher’s handout on the bench)']:null,d.review?['review','Review questions']:null].filter(Boolean),labs=d.labs||[];
   box.innerHTML=`<p>Put this tool right inside a Canvas page, assignment or discussion. Students use it there with no login, and nothing they do leaves their device.</p>
   <div class="emb-opts"><label>Start in <select class="sel" data-e="mode">${modes.map(m=>`<option value="${m[0]}">${m[1]}</option>`).join('')}</select></label>
   ${labs.length>1?`<label data-e-lab hidden>Lab <select class="sel" data-e="lab"><option value="">Students choose</option>${labs.map(l=>`<option value="${esc(l.id)}">${esc(l.title)}</option>`).join('')}</select></label>`:''}
@@ -579,12 +583,7 @@ function buildEmbed(sim){const box=sim.ui.sec.querySelector('.embed-b');if(!box|
   <label>Height <select class="sel" data-e="h"><option value="900">Standard (900 px)</option><option value="1150">Tall (1150 px)</option><option value="720">Short (720 px)</option></select></label></div>
   <label class="emb-l" for="${id}-embcode">Embed code</label><textarea class="emb-code" id="${id}-embcode" readonly rows="3"></textarea>
   <div class="row"><button type="button" class="btn primary" data-e="copy">Copy embed code</button><button type="button" class="btn" data-e="copylink">Copy link</button><a class="btn" data-e="open" target="_blank" rel="noopener">Preview the embed</a><span class="toast emb-toast" hidden></span></div>
-  <ol class="emb-steps">
-  <li><b>Copy the embed code</b> with the red button above.</li>
-  <li>In Canvas, open the page (or assignment or discussion) and click <b>Edit</b>.<img src="img/canvas-embed-1.jpg" alt="A Canvas page with the Edit button outlined" loading="lazy" width="800" height="300"></li>
-  <li>Click where you want the tool in the text, then open <b>Insert</b> and choose <b>Embed</b>.<img src="img/canvas-embed-2.jpg" alt="The Canvas editor's Insert menu with Embed outlined" loading="lazy" width="800" height="460"></li>
-  <li>Paste the code into the <b>Embed Code</b> box and click <b>Submit</b>.<img src="img/canvas-embed-3.jpg" alt="Canvas's Embed box with the code pasted in and Submit outlined" loading="lazy" width="800" height="430"></li>
-  <li>Scroll down and click <b>Save</b> (or <b>Save &amp; Publish</b>). Students now see the tool right in the page.<img src="img/canvas-embed-4.jpg" alt="The bottom of the Canvas editor with the Save button outlined" loading="lazy" width="800" height="220"></li><li>Done. Students see the tool right on the page, without the site header, and can switch modes inside it.<img src="img/canvas-embed-5.jpg" alt="A published Canvas page with the projectile tool embedded" loading="lazy" width="800" height="701"></li></ol>
+  ${canvasSteps('the tool','Done. Students see the tool right on the page, without the site header, and can switch modes inside it.',true)}
   <p class="help">Prefer a link? In a module, add an <b>External URL</b> with the copied link and tick <b>Load in a new tab</b>.</p>`;
   const get=k=>box.querySelector(`[data-e=${k}]`),code=get('mode')&&box.querySelector('.emb-code');
   if(hasGuide(sim))get('mode').value='guided';else get('mode').value='lab';
@@ -615,6 +614,7 @@ function applyLevel(sim){const ui=sim.ui,d=sim.def;
   ui.lede.textContent=lvText(d.lede);if(ui.uses){const P=d.practical,u=P&&P.uses?(Array.isArray(P.uses)?P.uses:lvText(P.uses)):null;const hk=P&&P.hook?lvText(P.hook):'';ui.uses.hidden=!(hk||(u&&u.length));ui.uses.innerHTML=(hk?'<p class="ru-q">'+hk+'</p>':'')+(u&&u.length?'<details class="ru-d"><summary>Where this shows up</summary><ul>'+u.map(x=>'<li>'+x+'</li>').join('')+'</ul></details>':'');}if(ui.scale)ui.scale.textContent=lvText(d.scale);
   if(ui.lab)ui.lab.innerHTML='<p class="lab-h">Investigation</p>'+lvText(d.lab);
   if(sim.tour&&sim.tour.on)tourExit(sim,'level');
+  if(sim.mode==='review')renderReview(sim);
   ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl)||(!!e.dataset.vlab&&sim.mode!=='vlab');if(e.tagName==='OPTION')e.disabled=!atLeast(e.dataset.lvl);});
   (d.controls||[]).forEach(c=>{let reset=!atLeast(c.lvl)&&sim.p[c.id]!==c.def;
     if(!reset&&c.options){const o=c.options.find(o=>o.v===sim.p[c.id]);if(o&&o.lvl&&!atLeast(o.lvl))reset=true;}
@@ -705,13 +705,109 @@ BL.setValues=applyValues;
 BL.reset=function(sim){resetSim(sim);sim.ch.changed=false;};
 BL.gotoChallenge=function(sim,i){sim.ch={idx:i,phase:'ask',pick:null,changed:false};renderChallenge(sim);};
 
+/* ---------- Review questions, AP exam links and unit paths ---------- */
+const rvKey=sim=>LAB_KEY+'-review-'+sim.def.id;
+function rvLoad(id){try{return JSON.parse(store.get(LAB_KEY+'-review-'+id)||'{}')||{};}catch(e){return {};}}
+function rvList(sim){return ((sim.def.review&&sim.def.review.questions)||[]).filter(q=>atLeast(q.lvl));}
+const RV_KIND={real:'In the real world',test:'On the test',ap:'AP-style'};
+function apLinksHtml(links,note,open){if(!links||!links.length)return '';
+  return `<details class="about ap-res"${open?' open':''}><summary>From the real AP exam</summary><div class="about-b">${note?`<p>${note}</p>`:''}<ul class="ap-list">${links.map(a=>`<li><a href="${esc(a.url)}" target="_blank" rel="noopener">${a.title} ↗</a>${a.note?`<span>${a.note}</span>`:''}</li>`).join('')}</ul></div></details>`;}
+function renderReview(sim,focus){const box=sim.ui.review,R=sim.def.review;if(!box||!R)return;const list=rvList(sim),ans=rvLoad(sim.def.id);
+  if(sim.rvI===undefined)sim.rvI=0;sim.rvI=Math.max(0,Math.min(list.length,sim.rvI));const i=sim.rvI,q=list[i];
+  const save=()=>store.set(rvKey(sim),JSON.stringify(ans));
+  const dots=list.map((x,n)=>{const a=ans[x.id],st=a&&a.done?(a.ok?'ok':'no'):'';return `<button type="button" class="rv-dot ${st}${n===i?' cur':''}" data-rv-go="${n}" aria-label="Question ${n+1}${st==='ok'?', right the first time':st==='no'?', missed':''}"${n===i?' aria-current="true"':''}>${st==='ok'?'✓':st==='no'?'✕':n+1}</button>`;}).join('');
+  let body='';
+  if(q){const a=ans[q.id]||{};const done=!!a.done;
+    let input='';
+    if(q.num){input=`<div class="rv-num"><label for="${sim.def.id}-rvn">Your answer${q.num.unit?` (${q.num.unit})`:''}</label><div class="row"><input id="${sim.def.id}-rvn" class="vl-in" inputmode="decimal" autocomplete="off" value="${esc(a.val||'')}"${done?' disabled':''}>${done?'':`<button type="button" class="btn primary" data-rv="check">Check</button>${a.tries?'<button type="button" class="btn" data-rv="show">Show the solution</button>':''}`}</div>${!done&&a.tries?'<p class="rv-try">Not yet. Check your setup and units, then try again.</p>':''}</div>`;}
+    else{input=`<div class="choices">${q.choices.map((c,n)=>{const cl=done?(n===q.correct?' right':n===a.pick?' wrong':''):'';const mk=done&&n===q.correct?'<b>Correct answer: </b>':done&&n===a.pick?'<b>Your answer: </b>':'';return `<button type="button" class="choice${cl}" data-rv-pick="${n}"${done?' disabled':''}>${mk}${c}</button>`;}).join('')}</div>`;}
+    const fb=done?`<div class="rv-fb"><p class="verdict ${a.ok?'ok':'no'}" tabindex="-1">${a.ok?'Right.':'Not quite. Here’s how it works.'}</p><ol class="rv-steps">${q.steps.map(s=>`<li>${s}</li>`).join('')}</ol>${q.lab?`<div class="row"><button type="button" class="btn primary" data-rv="lab">See it in the lab</button></div>`:''}</div>`:'';
+    body=`<p class="rv-kind ${q.kind}">${RV_KIND[q.kind]||''}</p><div class="rv-q">${q.q}</div>${input}${fb}
+    <div class="row rv-nav"><button type="button" class="btn" data-rv="prev"${i===0?' disabled':''}>Back</button><button type="button" class="btn${done?' primary':''}" data-rv="next">${i===list.length-1?'See my results':'Next question'}</button></div>`;}
+  else if(list.length){const got=list.filter(x=>ans[x.id]&&ans[x.id].done&&ans[x.id].ok).length,did=list.filter(x=>ans[x.id]&&ans[x.id].done).length;const missed=list.length-got;
+    body=`<h3 class="rv-res">${did<list.length?`${did} of ${list.length} answered. `:''}You got ${got} of ${list.length} right the first time.</h3><p class="help">${missed?'Reset the ones you missed and try them again.':'Nice work.'} Your answers stay on this device. Your teacher can’t see them.</p><div class="row">${missed?'<button type="button" class="btn primary" data-rv="redo">Try the missed ones again</button>':''}<button type="button" class="btn" data-rv="clear">Start over</button><button type="button" class="btn" data-rv="prev">Back</button></div>`;}
+  else body='<p class="help">No review questions at this detail level yet. Try Closer look or Deep dive.</p>';
+  box.innerHTML=`<div class="rv-head"><h3>Review</h3><div class="rv-dots">${dots}</div></div>${body}${apLinksHtml(R.ap,R.apNote,atLeast('ap'))}`;
+  const stop=()=>{sim.ui.sec.classList.remove('rv-see');};
+  const go=n=>{sim.rvI=n;stop();renderReview(sim,true);};
+  box.querySelectorAll('[data-rv-go]').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.rvGo)));
+  box.querySelectorAll('[data-rv-pick]').forEach(b=>b.addEventListener('click',()=>{const n=+b.dataset.rvPick;ans[q.id]={done:true,pick:n,ok:n===q.correct};save();renderReview(sim,true);}));
+  const act=(k,f)=>{const b=box.querySelector(`[data-rv=${k}]`);if(b)b.addEventListener('click',f);};
+  act('prev',()=>go(i-1));act('next',()=>go(i+1));
+  act('check',()=>{const inp=box.querySelector('input'),raw=(inp.value||'').trim(),v=parseFloat(raw.replace(/,/g,''));if(!isFinite(v)){inp.focus();return;}const a=ans[q.id]||{tries:0};a.val=raw;const hit=Math.abs(v-q.num.ans)<=q.num.tol;if(hit){a.done=true;a.ok=!a.tries;}else a.tries=(a.tries||0)+1;ans[q.id]=a;save();renderReview(sim,true);});
+  act('show',()=>{const a=ans[q.id]||{};a.done=true;a.ok=false;ans[q.id]=a;save();renderReview(sim,true);});
+  const ni=box.querySelector('.rv-num input');if(ni&&!ni.disabled)ni.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const c=box.querySelector('[data-rv=check]');if(c)c.click();}});
+  act('redo',()=>{list.forEach(x=>{if(ans[x.id]&&!ans[x.id].ok)delete ans[x.id];});save();const n=list.findIndex(x=>!ans[x.id]);go(n<0?0:n);});
+  act('clear',()=>{store.del(rvKey(sim));go(0);});
+  act('lab',()=>{rvOpenLab(sim,q);});
+  if(focus){const v=box.querySelector('.verdict');if(v&&v.focus)v.focus({preventScroll:true});box.scrollIntoView&&window.scrollTo(0,Math.max(0,box.getBoundingClientRect().top+window.scrollY-12));}}
+function rvOpenLab(sim,q){const L=q.lab,base={};(sim.def.controls||[]).forEach(c=>base[c.id]=c.def);BL.setValues(sim,Object.assign(base,L.set||{}));BL.reset(sim);restoreVisibility(sim);
+  sim.ui.sec.classList.add('rv-see');setRunning(sim,true);
+  if(L.act){const a=(sim.def.actions||[]).find(x=>x.id===L.act);if(a)a.run(sim);}
+  const n=sim.ui.rvNote;n.innerHTML=`<p><b>Set up for you.</b> ${L.look||''}</p><button type="button" class="btn" data-rv="back">Back to the question</button>`;
+  n.querySelector('[data-rv=back]').addEventListener('click',()=>{sim.ui.sec.classList.remove('rv-see');window.scrollTo(0,Math.max(0,sim.ui.review.getBoundingClientRect().top+window.scrollY-12));});
+  window.dispatchEvent(new Event('resize'));updateReadouts(sim);drawGraph(sim);window.scrollTo(0,Math.max(0,n.getBoundingClientRect().top+window.scrollY-8));}
+BL.rvOpenLab=rvOpenLab;
+
+const unitFor=(cid,i)=>{const c=(BL.COURSES||[]).find(x=>x.id===cid),u=c&&c.units[+i];return u?{c,u,i:+i,id:'u-'+cid+'-'+i}:null;};
+function parseUnit(id){const m=/^u-(.+)-(\d+)$/.exec(id||'');return m?unitFor(m[1],m[2]):null;}
+function unitTools(U){return linkList(U.u.ids);}
+function toolSteps(d){const s=[];if(d.tour&&d.tour.length)s.push(['guided','Guided walkthrough']);if(d.review)s.push(['review','Review questions']);if(!s.length)s.push(['lab','Full lab']);return s;}
+function unitPath(U){const out=[];unitTools(U).forEach(d=>toolSteps(d).forEach(([m,l])=>out.push({d,m,l})));return out;}
+const unitUrl=(d,m,U)=>'#'+d.hash+'@'+m+'@'+U.id;
+const seenKey=()=>LAB_KEY+'-unit-seen';
+function seenLoad(){try{return JSON.parse(store.get(seenKey())||'{}')||{};}catch(e){return {};}}
+function renderPathbar(sim,ctx,mode){const bar=sim.ui.sec.querySelector('.pathbar');if(!bar)return;const U=parseUnit(ctx);if(!U){bar.hidden=true;bar.innerHTML='';return;}
+  const path=unitPath(U),n=path.findIndex(p=>p.d===sim.def&&p.m===mode),nx=n>=0?path[n+1]:path[0];
+  const seen=seenLoad();seen[sim.def.id+'@'+mode]=1;store.set(seenKey(),JSON.stringify(seen));
+  bar.innerHTML=`<a class="pb-back" href="#${U.id}">← Unit path</a><span class="pb-t">${U.c.name}, ${U.u.n||'Unit'}${n>=0?` · Step ${n+1} of ${path.length}`:''}</span>${n>=0&&n===path.length-1?`<a class="btn primary" href="#${U.id}">Finish</a>`:nx?`<a class="btn primary" href="${unitUrl(nx.d,nx.m,U)}">Next step →</a>`:''}`;bar.hidden=false;}
+function canvasSteps(what,copyWord,img5){return `<ol class="emb-steps">
+  <li><b>Copy the embed code</b> with the red button above.</li>
+  <li>In Canvas, open the page (or assignment or discussion) and click <b>Edit</b>.<img src="img/canvas-embed-1.jpg" alt="A Canvas page with the Edit button outlined" loading="lazy" width="800" height="300"></li>
+  <li>Click where you want ${what} in the text, then open <b>Insert</b> and choose <b>Embed</b>.<img src="img/canvas-embed-2.jpg" alt="The Canvas editor's Insert menu with Embed outlined" loading="lazy" width="800" height="460"></li>
+  <li>Paste the code into the <b>Embed Code</b> box and click <b>Submit</b>.<img src="img/canvas-embed-3.jpg" alt="Canvas's Embed box with the code pasted in and Submit outlined" loading="lazy" width="800" height="430"></li>
+  <li>Scroll down and click <b>Save</b> (or <b>Save &amp; Publish</b>). Students now see ${what} right in the page.<img src="img/canvas-embed-4.jpg" alt="The bottom of the Canvas editor with the Save button outlined" loading="lazy" width="800" height="220"></li><li>${copyWord}${img5?'<img src="img/canvas-embed-5.jpg" alt="A published Canvas page with the projectile tool embedded" loading="lazy" width="800" height="701">':''}</li></ol>`;}
+let unitEl=null,curUnit=null;
+function renderUnit(U){curUnit=U;const tools=unitTools(U),seen=seenLoad();let stepN=0;
+  const rows=tools.map(d=>{const steps=toolSteps(d).map(([m,l])=>{stepN++;const ok=!!seen[d.id+'@'+m];let extra='';if(m==='review'){const list=(d.review.questions||[]).filter(q=>atLeast(q.lvl)),a=rvLoad(d.id),did=list.filter(q=>a[q.id]&&a[q.id].done).length,got=list.filter(q=>a[q.id]&&a[q.id].ok).length;extra=did?` <span class="u-score">${got} of ${list.length} right</span>`:` <span class="u-score">${list.length} questions</span>`;}
+      return `<a class="u-step${ok?' seen':''}" href="${unitUrl(d,m,U)}"><span class="u-n" aria-hidden="true">${ok?'✓':stepN}</span><span>${l}${extra}${ok?'<span class="vh"> (opened)</span>':''}</span></a>`;}).join('');
+    const lab=toolSteps(d).some(s=>s[0]==='lab')?'':`<a class="u-opt" href="${unitUrl(d,'lab',U)}">Full lab (optional)</a>`;
+    return `<li class="u-tool"><h3>${d.tab}</h3><p>${d.card||''}</p><div class="u-steps">${steps}</div>${lab}</li>`;}).join('');
+  const lessons=(U.u.links||[]).map(x=>`<li><a href="${x.href}" target="_blank" rel="noopener">${x.title} ↗</a></li>`).join('');
+  const seenUrl={},ap=[];tools.forEach(d=>{((d.review&&d.review.ap)||[]).forEach(a=>{if(!seenUrl[a.url+a.title]){seenUrl[a.url+a.title]=1;ap.push(a);}});});
+  const total=stepN;
+  unitEl.innerHTML=`<a class="u-back" href="#path-${U.c.id}">← All ${U.c.name} units</a><p class="eyebrow">${U.c.name}${U.u.n?' · '+U.u.n:''}</p><h2>${U.u.t}</h2>
+  <p class="lede">${total} steps, in order. Finish each one, then press <b>Next step</b> to move on.</p>
+  <div class="u-missed"><b>Missed class?</b> Start at step 1 and work down. This covers the tools for the unit, not everything your teacher did in class, so still check Canvas for notes and assignments.</div>
+  ${lessons?`<div class="u-lessons"><h3>Start with the lesson</h3><ul>${lessons}</ul></div>`:''}
+  <ol class="u-tools">${rows}</ol>${apLinksHtml(ap,'',atLeast('ap'))}
+  <details class="about embed-box"><summary>Put this unit path in Canvas</summary><div class="about-b u-emb"></div></details>
+  <p class="help u-note">Checkmarks and scores stay on this device. <button type="button" class="linkbtn" data-u="clear">Clear my checkmarks</button></p>`;
+  const clr=unitEl.querySelector('[data-u=clear]');if(clr)clr.addEventListener('click',()=>{store.del(seenKey());renderUnit(U);});
+  buildUnitEmbed(U);}
+function buildUnitEmbed(U){const box=unitEl.querySelector('.u-emb');if(!box||EMBED)return;const base=location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');
+  box.innerHTML=`<p>Put this whole unit path on a Canvas page, for example on your absent-work page. Students use it with no login, and nothing they do leaves their device.</p>
+  <div class="emb-opts"><label>Detail <select class="sel" data-e="level"><option value="">Students choose (starts at Big picture)</option><option value="bio">Big picture</option><option value="honors">Closer look</option><option value="ap">Deep dive</option></select></label><label>Height <select class="sel" data-e="h"><option value="1150">Tall (1150 px)</option><option value="900">Standard (900 px)</option></select></label></div>
+  <label class="emb-l" for="u-embcode">Embed code</label><textarea class="emb-code" id="u-embcode" readonly rows="3"></textarea>
+  <div class="row"><button type="button" class="btn primary" data-e="copy">Copy embed code</button><button type="button" class="btn" data-e="copylink">Copy link</button><a class="btn" data-e="open" target="_blank" rel="noopener">Preview the embed</a><span class="toast emb-toast" hidden></span></div>
+  ${canvasSteps('the unit path','Done. Students see the path right on the page, without the site header. The screenshots show a tool page, and the steps are the same.',false)}
+  <p class="help">Prefer a link? In a module, add an <b>External URL</b> with the copied link and tick <b>Load in a new tab</b>.</p>`;
+  const get=k=>box.querySelector(`[data-e=${k}]`),code=box.querySelector('.emb-code');let url='';
+  const upd=()=>{const q=new URLSearchParams();q.set('embed','1');if(get('level').value)q.set('level',get('level').value);url=base+'?'+q.toString()+'#'+U.id;code.value=`<iframe src="${url}" title="${(U.u.t||'').replace(/"/g,'&quot;')} · ${LAB_NAME}" width="100%" height="${get('h').value}" style="border:0;max-width:1100px" allow="fullscreen" loading="lazy"></iframe>`;get('open').href=url;};
+  ['level','h'].forEach(k=>get(k).addEventListener('change',upd));upd();
+  const toast=box.querySelector('.emb-toast'),say=m=>{toast.textContent=m;toast.hidden=false;clearTimeout(toast._h);toast._h=setTimeout(()=>{toast.hidden=true;},2400);};
+  const copy=(t,ok)=>{const fb=()=>{code.focus();code.select();say('Selected. Press Ctrl+C to copy');};try{navigator.clipboard.writeText(t).then(()=>say(ok),fb);}catch(e){fb();}};
+  get('copy').addEventListener('click',()=>copy(code.value,'Embed code copied'));get('copylink').addEventListener('click',()=>copy(url,'Link copied'));}
+
 /* ---------- router, landing page, loop ---------- */
 let homeEl,simsEl,jumpEl,backEl;
 function ensureBuilt(id){const sim=sims[id];if(sim.ui.sec)return sim;simsEl.appendChild(buildSim(sim));resetSim(sim);applyLevel(sim);buildModebar(sim);setMode(sim,(QMODE&&MODES.includes(QMODE)?QMODE:null)||store.get(modeKey(sim))||(hasGuide(sim)?'guided':'lab'));buildEmbed(sim);return sim;}
-function show(hash){if(hash&&hash.indexOf('path-')===0){const id=hash.slice(5);if((BL.COURSES||[]).some(c=>c.id===id)||id==='topic'){browse=id;store.set(LAB_KEY+'-browse',browse);buildHome();}hash='';}
+function show(hash){const hp=(hash||'').split('@');hash=hp[0];const qm=hp[1],qc=hp[2];if(unitEl){unitEl.hidden=true;}curUnit=null;
+  const UQ=parseUnit(hash);if(UQ){active=null;homeEl.hidden=true;backEl.hidden=false;jumpEl.value='';DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=true;});renderUnit(UQ);unitEl.hidden=false;document.title=UQ.u.t+' · '+LAB_NAME;window.scrollTo(0,0);return;}
+  if(hash&&hash.indexOf('path-')===0){const id=hash.slice(5);if((BL.COURSES||[]).some(c=>c.id===id)||id==='topic'){browse=id;store.set(LAB_KEY+'-browse',browse);buildHome();}hash='';}
   const def=DEFS.find(d=>d.hash===hash);
   if(!def){active=null;homeEl.hidden=false;backEl.hidden=true;jumpEl.value='';DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=true;});document.title=LAB_NAME;drawThumbs();return;}
-  const sim=ensureBuilt(def.id);active=sim;homeEl.hidden=true;backEl.hidden=false;jumpEl.value=def.hash;renderRelated(sim);
+  const sim=ensureBuilt(def.id);if(qm&&MODES.includes(qm))setMode(sim,qm);renderPathbar(sim,qc,sim.mode);active=sim;homeEl.hidden=true;backEl.hidden=false;jumpEl.value=def.hash;renderRelated(sim);
   DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=d.id!==def.id;});document.title=def.tab+' · '+LAB_NAME;
   window.scrollTo(0,0);requestAnimationFrame(()=>{updateReadouts(sim);drawGraph(sim);});}
 function linkList(ids){return (ids||[]).map(id=>DEFS.find(d=>d.id===id||d.hash===id)).filter(Boolean);}
@@ -748,7 +844,7 @@ function buildHome(){const units=document.getElementById('units');units.innerHTM
   const course=courses.find(c=>c.id===browse);
   if(course){const intro=el('p',{class:'lede course-lede'},course.blurb||'');units.appendChild(intro);
     course.units.forEach((u,i)=>{const list=linkList(u.ids),ext=u.links||[];if(!list.length&&!ext.length)return;const sec=el('section',{class:'unit'});
-      sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${u.n||('Step '+(i+1))}</span> ${u.t}</h3>${u.note?`<p class="unit-note">${u.note}</p>`:''}<div class="cards">${ext.map(extCard).join('')}${list.map(card).join('')}</div>`;units.appendChild(sec);});
+      sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${u.n||('Step '+(i+1))}</span> ${u.t}</h3>${u.note?`<p class="unit-note">${u.note}</p>`:''}${list.length?`<a class="unit-go" href="#u-${course.id}-${i}">Walk through this unit →</a>`:''}<div class="cards">${ext.map(extCard).join('')}${list.map(card).join('')}</div>`;units.appendChild(sec);});
     const adv=linkList(course.further),ext=course.furtherLinks||[];if(adv.length||ext.length){const sec=el('section',{class:'unit further'});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">Go further</span> For students who want more</h3><p class="unit-note">Optional tools that go past what class time allows.</p><div class="cards">${adv.map(card).join('')}${ext.map(extCard).join('')}</div>`;units.appendChild(sec);}}
   else{const groups={};DEFS.forEach(d=>{(groups[d.apUnit]=groups[d.apUnit]||[]).push(d);});
     SECTIONS.forEach(u=>{const list=sortSec(groups[u]||[],u);if(!list.length)return;
@@ -759,10 +855,11 @@ function buildHome(){const units=document.getElementById('units');units.innerHTM
 BL.start=function(){
   if(EMBED)document.documentElement.classList.add('embed');
   homeEl=document.getElementById('home');simsEl=document.getElementById('sims');jumpEl=document.getElementById('jump');backEl=document.getElementById('back');
-  DEFS.forEach(d=>{applyPractical(d);sims[d.id]=makeSim(d);});
+  DEFS.forEach(d=>{applyPractical(d);if(REVIEWS[d.id])d.review=REVIEWS[d.id];sims[d.id]=makeSim(d);});
+  unitEl=el('section',{id:'unitpage',class:'unitpage'});unitEl.hidden=true;simsEl.parentNode.insertBefore(unitEl,simsEl);
   readPal();buildHome();
   const lvlBtns=[...document.querySelectorAll('#lvl button')];
-  const setLevel=l=>{level=l;store.set(LAB_KEY+'-level',l);lvlBtns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.l===l)));DEFS.forEach(d=>{if(sims[d.id].ui.sec)applyLevel(sims[d.id]);});if(active){updateReadouts(active);drawGraph(active);}};
+  const setLevel=l=>{level=l;store.set(LAB_KEY+'-level',l);lvlBtns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.l===l)));DEFS.forEach(d=>{if(sims[d.id].ui.sec)applyLevel(sims[d.id]);});if(active){updateReadouts(active);drawGraph(active);}if(curUnit)renderUnit(curUnit);};
   setLevelFn=setLevel;BL.setLevel=setLevel;
   lvlBtns.forEach(b=>b.addEventListener('click',()=>setLevel(b.dataset.l)));setLevel(level);
   const vlFlush=()=>{DEFS.forEach(d=>{const s=sims[d.id];if(s&&s.vlab)vlSave(s);});};window.addEventListener('pagehide',vlFlush);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')vlFlush();});

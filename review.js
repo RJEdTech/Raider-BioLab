@@ -1,0 +1,53 @@
+/* Review questions and AP exam links, merged into each tool by BioLab.addReview. "verify" is read only by the test script. */
+BioLab.addReview({
+hardyweinberg:{
+  apNote:'The Hardy–Weinberg equations are on the formula sheet. The released free-response sets checked for this tool (2019, 2023, 2025 and 2026) don’t ask for a Hardy–Weinberg calculation, so these links are the closest related questions.',
+  ap:[
+    {title:'AP Biology equations and formulas sheet',url:'https://apcentral.collegeboard.org/media/pdf/ap-biology-equations-and-formulas-sheet.pdf',note:'Has p² + 2pq + q² = 1 and p + q = 1, plus chi-square critical values.'},
+    {title:'2026 AP Biology free-response, Question 5',url:'https://apcentral.collegeboard.org/media/pdf/ap26-frq-biology.pdf',note:'Natural selection on a heritable trait in anole lizards.'},
+    {title:'2025 AP Biology free-response, Question 4',url:'https://apcentral.collegeboard.org/media/pdf/ap25-frq-biology.pdf',note:'Genetic evidence that a population is evolving, and how isolation leads to divergence.'},
+    {title:'All released AP Biology exam questions',url:'https://apcentral.collegeboard.org/courses/ap-biology/exam/past-exam-questions',note:'Free-response questions by year, with scoring guidelines.'}
+  ],
+  questions:[
+  {id:'carrier',kind:'real',lvl:'bio',
+    q:'A recessive genetic condition affects about 1 in 2,500 newborns in a population at Hardy–Weinberg equilibrium. About how many people are carriers, with one copy and no condition?',
+    choices:['About 1 in 25','About 1 in 50','About 1 in 1,250','About 1 in 2,500'],correct:0,
+    steps:['Affected people are aa, so q² = 1 ÷ 2,500 = 0.0004. That makes q = 0.02.','Then p = 1 − q = 0.98, and carriers are 2pq = 2 × 0.98 × 0.02 = 0.039, which is about 1 in 25.','Carriers are far more common than people with the condition. That’s why genetic counselors care about this math.'],
+    lab:{set:{p:.98},look:'p is set to 0.98. Compare <b>Expected Aa</b> with <b>Expected aa</b>. The aa number is so small that it rounds to 0%.'},verify:[['Aa',3.92,.05],['aa',.04,.01]]},
+  {id:'white',kind:'test',lvl:'bio',
+    q:'In a population at equilibrium, 16% of the plants are white (aa). What percent are heterozygous (Aa)?',
+    num:{ans:48,tol:.5,unit:'%'},
+    steps:['White plants are q², so q² = 0.16 and q = 0.4. The common mistake is to use 0.16 as q.','p = 1 − 0.4 = 0.6.','Aa = 2pq = 2 × 0.6 × 0.4 = 0.48, or 48%.'],
+    lab:{set:{p:.6},look:'p is set to 0.6. Read <b>Expected AA</b>, <b>Expected Aa</b> and <b>Expected aa</b>. They add up to 100%.'},verify:[['Aa',48,.01],['aa',16,.01],['AA',36,.01]]},
+  {id:'count',kind:'test',lvl:'bio',
+    q:'Purple (A) is dominant over white (a). You want to find the allele frequencies. Why start from the white plants?',
+    choices:['White plants are more common than purple plants.','White plants show their genotype (aa). Purple plants could be AA or Aa, and they look the same.','The white allele is always the rarer one.','The purple plants don’t follow Hardy–Weinberg.'],correct:1,
+    steps:['Every white plant must be aa, so counting them gives q² directly.','Purple plants mix two genotypes you can’t tell apart by looking, so their count doesn’t give p².','From q² you can get q, then p, then every other genotype.'],
+    lab:{set:{p:.7},look:'Look at the plants on screen. Purple ones can be AA or Aa, and only white ones show their genotype.'}},
+  {id:'dominant',kind:'test',lvl:'honors',
+    q:'A dominant allele starts at p = 0.2 in a large population that meets all the Hardy–Weinberg conditions. What happens to p over 10 generations?',
+    choices:['It rises, because dominant alleles take over.','It falls, because rare alleles get lost.','It stays at 0.2.','It rises to 0.75, the 3:1 ratio.'],correct:2,
+    steps:['Dominant describes how an allele shows up in a plant. It says nothing about whether the allele spreads.','With no selection, mutation, migration, drift or non-random mating, allele frequencies don’t change.','The 3:1 ratio comes from one Aa × Aa cross, not from a whole population.'],
+    lab:{set:{p:.2},act:'gen10',look:'Ten generations run with every condition met. Watch <b>Allele A (p)</b> stay put.'},verify:[['pA',.2,.015]],wait:4.2},
+  {id:'hidden',kind:'real',lvl:'honors',
+    q:'Selection works against white (aa) plants, which survive half as well. Starting from q = 0.3, what happens to the white allele after 10 generations in this model?',
+    choices:['It’s gone within a few generations.','It falls, but doesn’t disappear, because Aa plants carry it where selection can’t see it.','It stays at 0.3.','It rises, because white plants need more copies.'],correct:1,
+    steps:['Selection acts on what it can see. It only removes a alleles when they’re in aa plants.','As q falls, aa plants get rarer (q²), so most remaining a alleles are hidden in Aa plants (2pq) and selection slows down.','This is why harmful recessive alleles stay in real populations for a very long time.'],
+    lab:{set:{p:.7,nosel:false},act:'gen10',look:'Selection is on and ten generations run. Watch <b>Allele a (q)</b> fall, then slow down.'},verify:[['qa',.17,.06]],wait:4.2},
+  {id:'drift',kind:'real',lvl:'honors',
+    q:'A conservation team moves 20 plants from a large population to a new site. Nothing is selecting for or against either allele. What should they expect?',
+    choices:['Allele frequencies will match the original population.','Allele frequencies will wander by chance, and an allele could be lost.','The dominant allele will always win.','New mutations will quickly make up for the small size.'],correct:1,
+    steps:['Each generation is a sample of the last one. In a small sample, chance matters a lot. That’s genetic drift.','Run it again and you’ll get a different path, because no direction is favored.','Once an allele is lost, only mutation or migration brings it back. That’s why small populations lose genetic variety.'],
+    lab:{set:{p:.5,large:false},act:'gen10',look:'Only 20 plants. Watch <b>Allele A (p)</b>, then press <b>Start over</b> and run it again. The path changes.'}},
+  {id:'chi',kind:'ap',lvl:'ap',
+    q:'A sample of 100 plants has 60 AA, 20 Aa and 20 aa. From these counts p = 0.7, so the expected counts are 49, 42 and 9. Calculate χ².',
+    num:{ans:27.4,tol:.4,unit:''},
+    steps:['χ² = Σ(o − e)² ÷ e = (60 − 49)² ÷ 49 + (20 − 42)² ÷ 42 + (20 − 9)² ÷ 9.','= 2.47 + 11.52 + 13.44 = 27.4.','That’s far above the cutoff at p = 0.05, whether your class uses 3.84 (df = 1, since p came from the same data) or 5.99 (df = 2). Reject the idea that this population is at equilibrium.'],
+    lab:{set:{p:.7,random:false},act:'gen1',look:'Inbreeding is on, which gives a similar shortage of Aa plants. Read the <b>χ²</b> tile and compare it with the cutoff.'},wait:.8,verifyAbove:['chi',3.84]},
+  {id:'inbreed',kind:'ap',lvl:'ap',
+    q:'Over 10 generations, a population’s allele frequencies stay the same, but it has fewer heterozygotes than 2pq predicts. Which condition is most likely being broken?',
+    choices:['No natural selection','No mutation','Random mating','No migration'],correct:2,
+    steps:['Non-random mating, like inbreeding, shuffles alleles into different genotypes. It makes more homozygotes and fewer heterozygotes.','It doesn’t add or remove alleles, so p and q stay put.','Selection, mutation and migration all change allele frequencies, which doesn’t match this data. So a stable p doesn’t prove that a population is at equilibrium.'],
+    lab:{set:{p:.7,random:false},act:'gen10',look:'Inbreeding is on. Watch <b>Allele A (p)</b> hold steady while the Aa count stays under the expected number.'},verify:[['pA',.7,.02]],wait:4.2}
+  ]}
+});

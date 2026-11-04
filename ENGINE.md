@@ -78,3 +78,10 @@ BioLab.register(SIM);
 
 ## Course pathways
 `courses.js` lists each RJ course's units in teaching order with tool ids (owned by the lead; builders don't edit it). The course sequences come from Canvas; see the build notes.
+
+## Review questions and unit paths
+Add questions in `review.js` with `BioLab.addReview({<id>:{apNote,ap:[{title,url,note}],questions:[...]}})`. A tool with an entry gets a **Review** mode, which also opens with `#<hash>@review`.
+
+Each question has `id`, `kind` (`real`, `test` or `ap`), `lvl`, `q`, `steps` (worked solution), and either `choices` + `correct` or `num:{ans,tol,unit}`. Add `lab:{set,act,look}` for the "See it in the lab" button: `set` is control values, `act` an action id, `look` tells students what to read. `verify`, `verifyAbove` and `wait` are read only by the test script, to check answers against the model.
+
+Unit paths need no setup: `#u-<courseId>-<unitIndex>` is built from `courses.js`. A tool page opened from a path uses `#<hash>@<mode>@u-<courseId>-<unitIndex>`.
