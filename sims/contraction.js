@@ -8,7 +8,7 @@ const {clamp,lerp,rng,rr,txt,pill,atLeast,PAL,FONT,RM,axes,legend,serColor,lvTex
 const FT={slow:{n:'Slow twitch',tp:.08,tca:.05,cyc:1.4,D:2,Ao:1.7,An:1.5,clr:.006,Mb:12},fast:{n:'Fast twitch',tp:.03,tca:.02,cyc:.65,D:5,Ao:.6,An:5,clr:.004,Mb:1}};
 const LT=[[1.27,0],[1.67,.84],[2,1],[2.25,1],[3.65,0]];
 function overlap(L){if(L<=LT[0][0]||L>=LT[4][0])return 0;for(let i=0;i<4;i++)if(L<=LT[i+1][0])return lerp(LT[i][1],LT[i+1][1],(L-LT[i][0])/(LT[i+1][0]-LT[i][0]));return 0;}
-const J=.29*Math.E,DL=.35,SLOW=.1,ENERGY=3,BURN=12,ATP0=7,PCR0=25,G0=90;
+const J=.29*Math.E,DL=.2,SLOW=.1,ENERGY=3,BURN=12,ATP0=7,PCR0=25,G0=90;
 const fib=sim=>FT[sim.p.fiber==='fast'?'fast':'slow'];
 function newPool(k){return {ATP:ATP0,PCr:PCR0,Lac:0,G:G0,aer:.2,f:0,an:0,pc:0,Mb:FT[k].Mb};}
 function poolStep(q,tgt,o2,c,dt){
@@ -16,11 +16,10 @@ function poolStep(q,tgt,o2,c,dt){
   let Ao=c.Ao*(q.G>0?1:.6);if(!o2){Ao=q.Mb>0?c.Ao:0;}
   q.aer+=(Math.min(D,Ao)-q.aer)*dt/20;if(q.aer>D)q.aer=D;if(q.aer>Ao)q.aer=Ao;if(!o2)q.Mb=Math.max(0,q.Mb-q.aer*dt);
   let R=Math.max(0,D-q.aer);const use=Math.min(R,9,q.PCr/dt);q.PCr=Math.max(0,q.PCr-use*dt);R-=use;q.pc=use;
-  const capAn=c.An*clamp(1-q.Lac/60,.2,1)*(q.G>0?1:0),an=Math.min(R,capAn);q.an=an;q.Lac+=an/1.5*dt;R-=an;
+  const capAn=c.An*clamp(1-q.Lac/45,0,1)*(q.G>0?1:0),an=Math.min(R,capAn);q.an=an;q.Lac+=an/1.5*dt;R-=an;
   q.ATP=Math.max(3,q.ATP-R*dt);q.G=Math.max(0,q.G-(q.aer/38*.5+an/2)*dt);
   if(o2){const spare=Ao-q.aer;if(R<=1e-9&&spare>0&&use<=1e-9){q.PCr+=(PCR0-q.PCr)*dt/30;q.ATP+=(ATP0-q.ATP)*dt/5;q.Mb+=(c.Mb-q.Mb)*dt/20;}
-    q.Lac=Math.max(0,q.Lac-c.clr*q.Lac*(2-f)*dt);}
-  else if(D<=1e-6)q.ATP+=(Math.min(ATP0,q.ATP+.1)-q.ATP)*dt;}
+    q.Lac=Math.max(0,q.Lac-c.clr*q.Lac*(2-f)*dt);}}
 function fractions(sim){const f=sim.p.fiber;return f==='mixed'?{s:.5,f:.5}:f==='fast'?{s:0,f:1}:{s:1,f:0};}
 function energyStep(sim,dt){const s=sim.st,p=sim.p,e=p.effort/100,F=fractions(sim);const ts=F.s>0?Math.min(1,e/(F.s+(F.f?0:0))):0,tf=F.f>0?clamp((e-F.s)/F.f,0,1):0;
   poolStep(s.ps,ts,p.o2,FT.slow,dt);poolStep(s.pf,tf,p.o2,FT.fast,dt);s.et+=dt;
@@ -110,7 +109,7 @@ function updateHeads(sim,v,vdt){const s=sim.st,c=fib(sim),L=s.L,tip=L/2-THIN,on=
     if(h.st==='cocked'){if(elig&&Math.random()<(on?s.A*vdt*6/Tc:s.A>.02?vdt*2:0)){h.st='bound';h.t=0;}else if(!on&&elig&&Math.random()<vdt*.5){h.st='bound';h.t=0;}}
     else if(h.st==='bound'){if(h.t>.14*Tc){h.st='stroke';h.t=0;}}
     else if(h.st==='stroke'){if(on&&h.t>.42*Tc){h.st='rel';h.t=0;}}
-    else if(h.st==='rel'){if(h.t>.3*Tc&&on){h.st='cocked';h.t=0;}}
+    else if(h.st==='rel'){if(!on){h.st='bound';h.t=0;}else if(h.t>.3*Tc){h.st='cocked';h.t=0;}}
     if(!elig&&on&&h.st!=='cocked'){h.st='cocked';h.t=0;}});}
 function drawSarcomere(sim,ctx,vdt,k,t,y0){const s=sim.st,p=sim.p,v=sim.vis,hon=atLeast('honors'),cx=400,rowsY=[y0+40,y0+95,y0+150],L=s.L,half=L/2*U;initHeads(v);updateHeads(sim,v,vdt);
   const thinYs=[y0+13,y0+67.5,y0+122.5,y0+177];
@@ -155,15 +154,15 @@ function drawTrace(sim,ctx,x,y,w,h,k){const s=sim.st,win=1;rr(ctx,x,y,w,h,8);ctx
 function drawSarcScene(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis||(sim.vis={});ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,500);const hon=atLeast('honors');
   let y=drawStrip(ctx,k);y+=2;
   /* nerve and SR */
-  const ny=y+14*k*.5+4,th=Math.max(26,15*k+8);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(14,ny);ctx.lineTo(150,ny);ctx.stroke();ctx.fillStyle=PAL['cv-soft'];ctx.beginPath();ctx.arc(150,ny,6,0,6.3);ctx.fill();
-  if(s.ap>0){const q=1-s.ap;ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(14+q*136,ny,6.5,0,6.3);ctx.fill();}
-  txt(ctx,'Nerve signal',14,ny-6,{s:12*k,c:PAL['cv-soft']});
+  const ny=y+14*k*.5+4,th=Math.max(26,15*k+8);const ay=ny+th/2-3;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(14,ay);ctx.lineTo(150,ay);ctx.stroke();ctx.fillStyle=PAL['cv-soft'];ctx.beginPath();ctx.arc(150,ay,5,0,6.3);ctx.fill();
+  if(s.ap>0){const q=1-s.ap;ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(14+q*136,ay,6.5,0,6.3);ctx.fill();}
+  txt(ctx,'Nerve signal',14,ny+1,{s:12*k,c:PAL['cv-soft'],b:'alphabetic'});v.ly={strip:[0,0,800,y],nerve:[0,y,800,th+14],sarc:[0,ny+th/2+2,800,216]};
   rr(ctx,166,ny-th/2,624,th,th/2);ctx.fillStyle=PAL['card2'];ctx.fill();ctx.strokeStyle=PAL['s6'];ctx.lineWidth=1.4;ctx.stroke();
   txt(ctx,'Sarcoplasmic reticulum: stores calcium',478,ny+.5,{s:12*k,c:PAL['cv-ink'],a:'center',b:'middle'});
   ctx.fillStyle=PAL['s6'];const ncs=Math.round((1-clamp(s.ca,0,1))*(p.caOn?14:0));for(let i=0;i<ncs;i++){ctx.beginPath();ctx.arc(178+i*43,ny+(i%2?-th*.28:th*.28),2.4,0,6.3);ctx.fill();}
   const y0=ny+th/2+10;const end=drawSarcomere(sim,ctx,vdt,k,t,y0);
   /* lower panels */
-  const py=Math.max(end+(hon&&k<1.5?16:2),y0+228),ph=496-py;drawCycle(sim,ctx,8,py,386,ph,k,t);drawTrace(sim,ctx,406,py,386,ph,k);}
+  const py=Math.max(end+(hon&&k<1.5?16:2),y0+228),ph=496-py;drawCycle(sim,ctx,8,py,386,ph,k,t);drawTrace(sim,ctx,406,py,386,ph,k);v.ly.low=[0,py-4,400,ph+8];v.ly.tr=[400,py-4,400,ph+8];}
 
 /* ---------- energy scene ---------- */
 function fiberDisc(ctx,x,y,R,type){const c=type==='slow';ctx.fillStyle=c?'#8e2433':'#e6bfb6';ctx.strokeStyle=c?'#4b0f1a':'#8b5f55';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(x,y,R,0,6.3);ctx.fill();ctx.stroke();
@@ -178,9 +177,9 @@ function drawEnergy(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,hon=atLeast('honors'
   const desc=F==='slow'?['Red: myoglobin','Many mitochondria','Many capillaries']:F==='fast'?['White: little myoglobin','Few mitochondria','Few capillaries']:['Slow fibers work first.','Fast fibers join at','higher effort.'];
   desc.forEach((l,i)=>txt(ctx,l,lx,222+i*17*k+(k-1)*10,{s:12.5*k,c:PAL['cv-ink']}));
   /* middle: the arm doing the work */
-  const mx=345,my=140,force=s.eF,vm=(s.vPh=(s.vPh||0)+vdt*(1+force*2.2));const swing=force*.75*(.5-.5*Math.cos(vm*2.2));const ang=1.15-swing*1.2,ex=mx-32,ey=my+50,hx=ex+Math.cos(ang-.2)*90,hy=ey-Math.sin(ang-.2)*90+24;
-  ctx.lineCap='round';ctx.strokeStyle='#b4534a';ctx.lineWidth=20;ctx.beginPath();ctx.moveTo(ex-4,ey-70);ctx.lineTo(ex,ey);ctx.stroke();ctx.lineWidth=15;ctx.strokeStyle='#ad4f47';ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(hx,hy);ctx.stroke();ctx.lineCap='butt';
-  ctx.fillStyle=PAL['cv-soft'];rr(ctx,hx-5,hy-18,10,36,3);ctx.fill();rr(ctx,hx-14,hy-24,28,10,3);ctx.fill();rr(ctx,hx-14,hy+14,28,10,3);ctx.fill();
+  const mx=345,my=140,force=s.eF,vm=(s.vPh=(s.vPh||0)+vdt*(1+force*2.2));const swing=(RM?force*.5:force*(.5-.5*Math.cos(vm*2.2)));const ang=-.95+swing*2.1,ex=mx-40,ey=my+36,hx=ex+Math.cos(ang)*96,hy=ey-Math.sin(ang)*96;
+  ctx.lineCap='round';ctx.strokeStyle='#b4534a';ctx.lineWidth=20;ctx.beginPath();ctx.moveTo(ex-2,ey-96);ctx.lineTo(ex,ey);ctx.stroke();ctx.lineWidth=15;ctx.strokeStyle='#ad4f47';ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(hx,hy);ctx.stroke();ctx.lineCap='butt';
+  ctx.fillStyle=PAL['cv-soft'];rr(ctx,hx-20,hy-4,40,8,3);ctx.fill();rr(ctx,hx-24,hy-13,9,26,3);ctx.fill();rr(ctx,hx+15,hy-13,9,26,3);ctx.fill();
   txt(ctx,'Force',mx-90,226,{s:13*k,w:600});txt(ctx,Math.round(s.eF*100)+'%',mx+90,226,{s:15*k,w:700,a:'right'});
   bar(ctx,mx-90,232,180,18,s.eF,PAL['s1']);if(s.eT>0){const tx=mx-90+180*s.eT;ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx,228);ctx.lineTo(tx,254);ctx.stroke();}
   txt(ctx,'Line marks the force you are asking for',mx-90,256+13*k,{s:(k>1.3?0:12)*k||.01,c:PAL['cv-soft']});
@@ -268,6 +267,7 @@ const LAB={id:'muscle-fatigue',title:'Muscle Fatigue Lab',course:'Anatomy & Phys
     {id:'q13',n:'13',q:'<p>A marathon runner and a 100 m sprinter train for different events. Which fiber type would each want more of, and why?</p>'}],
   conclusion:{prompt:'<p>Use your data to explain how pace affects which fiber type and energy pathway a muscle relies on, and how that affects when it tires.</p>'}};
 
+const foc=(sim,n)=>((sim.vis&&sim.vis.ly&&sim.vis.ly[n])||[0,0,800,500]);
 const H={
   id:'contraction',hash:'contraction',apUnit:9,order:6,kind:'Simulation',tab:'Muscle contraction',
   card:'Slow a sarcomere down and watch calcium, ATP and cross-bridges slide the filaments. Then push a fiber until it fatigues.',
@@ -280,7 +280,7 @@ const H={
   clock(sim){const k=stageKind(sim);if(k==='bench')return 'Bench';if(k==='energy'){const t=Math.floor(sim.st.et),m=Math.floor(t/60);return 'Time '+m+':'+String(t%60).padStart(2,'0')+' (running 3× fast)';}return 'Time '+Math.round(sim.st.tm*1000)+' ms (slowed 10×)';},
   controls:[
     {id:'scene',label:'View',type:'seg',def:'sarc',lvl:'bio',noTrial:true,options:[{v:'sarc',l:'Sarcomere'},{v:'energy',l:'Energy and fatigue'}],onChange(sim){syncScene(sim);if(sim.ui&&sim.ui.gm&&sim.gMetric==='energy'&&sim.p.scene!=='energy'){sim.gMetric='force';sim.ui.gm.value='force';}BioLab.refresh&&sim.ui&&BioLab.refresh(sim);}},
-    {id:'fiber',label:'Fiber type',type:'seg',def:'fast',lvl:'bio',options:[{v:'slow',l:'Slow twitch'},{v:'fast',l:'Fast twitch'},{v:'mixed',l:'Mixed muscle',lvl:'honors'}],onChange(sim){if(sim.st&&stageKind(sim)==='energy'){}}},
+    {id:'fiber',label:'Fiber type',type:'seg',def:'slow',lvl:'bio',options:[{v:'slow',l:'Slow twitch'},{v:'fast',l:'Fast twitch'},{v:'mixed',l:'Mixed muscle',lvl:'honors'}],onChange(sim){if(sim.st&&stageKind(sim)==='energy'){}}},
     {id:'rate',label:'Stimulation rate',type:'range',min:0,max:100,step:1,def:0,unit:' per s',lvl:'bio',scene:'sarc',help:'0 means no repeating signal. Use Single nerve signal for one twitch.'},
     {id:'L0',label:'Starting sarcomere length',type:'range',min:1.4,max:3.8,step:.05,def:2.2,d:2,unit:' µm',lvl:'honors',scene:'sarc',help:'Stretch or shorten the sarcomere before it contracts.'},
     {id:'atpOn',label:'ATP available',type:'toggle',def:true,lvl:'bio',scene:'sarc'},
@@ -312,7 +312,7 @@ const H={
     {id:'F',scene:'sarc',label:'Force',unit:'% of max',lvl:'bio',min:0,max:100,fixed:true,d:0,get:s=>s.st.F*100},
     {id:'Ca',scene:'sarc',label:'Calcium around filaments',unit:'%',lvl:'bio',min:0,max:100,fixed:true,d:0,get:s=>clamp(s.st.ca,0,1)*100},
     {id:'ovl',scene:'sarc',label:'Filament overlap',unit:'% of best',lvl:'honors',min:0,max:100,fixed:true,d:0,get:s=>s.st.ovl*100},
-    {id:'state',scene:'sarc',label:'Force pattern',unit:'',lvl:'honors',text:true,get:s=>{const p=s.p,st=s.st;if(st.rig)return 'Rigor: locked';if(p.rate===0)return st.F>.01?'Single twitch':'At rest';if(st.ripple>6&&p.rate<4)return 'Separate twitches';return st.ripple>6?'Summation':'Tetanus';}},
+    {id:'state',scene:'sarc',label:'Force pattern',unit:'',lvl:'honors',text:true,get:s=>{const p=s.p,st=s.st;if(st.rig)return 'Rigor: locked';if(p.rate===0)return st.F>.01?'Single twitch':'At rest';if(st.ripple>3&&p.rate<4)return 'Separate twitches';return st.ripple>3?'Summation':'Tetanus';}},
     {id:'ripple',scene:'sarc',label:'Force ripple',unit:'% of max',lvl:'ap',min:0,max:40,d:1,get:s=>s.st.ripple},
     {id:'eF',scene:'energy',label:'Force',unit:'% of max',lvl:'bio',min:0,max:100,fixed:true,d:0,get:s=>s.st.eF*100},
     {id:'eLac',scene:'energy',label:'Lactic acid',unit:'mmol/kg',lvl:'bio',min:0,max:40,d:1,get:s=>s.st.eLac},
@@ -338,18 +338,18 @@ const H={
     if(s.L>3.5&&p.L0>3.5)return '<b>Stretched too far.</b> The thin filaments barely overlap the thick ones, so few heads can reach actin and there is almost no force.';
     if(p.L0<1.7)return '<b>Too short.</b> Thin filaments overlap each other and thick filaments hit the Z discs, so force falls.';
     if(p.rate===0){return s.F>.02?'<b>A single twitch.</b> One signal released calcium, heads pulled briefly, and the pump put calcium back. Force peaks near '+Math.round(s.Fpk*100)+'% of max, then falls.':'<b>At rest.</b> Calcium is stored and tropomyosin covers actin’s binding sites. Press <b>Single nerve signal</b> to start a contraction.';}
-    if(p.rate<6)return 'Signals arrive far apart, so the muscle relaxes between them. These are <b>separate twitches</b>.';
-    if(s.ripple>6)return 'Signals now arrive before the muscle has relaxed, so twitches add. This is <b>summation</b>. Force is about '+Math.round(s.F*100)+'% of max, with visible ripple.';
+    if(p.rate<4)return 'Signals arrive far apart, so the muscle relaxes between them. These are <b>separate twitches</b>.';
+    if(s.ripple>3)return 'Signals now arrive before the muscle has relaxed, so twitches add. This is <b>summation</b>. Force is about '+Math.round(s.F*100)+'% of max, with visible ripple.';
     return 'Signals come so fast that twitches fuse into a smooth pull: <b>tetanus</b>. Force holds near '+Math.round(s.F*100)+'% of max. Calcium stays high, so cross-bridges keep cycling.';},
   tour:[
-    {title:'From muscle to sarcomere',text:'A muscle is bundles of fibers, each fiber is packed with myofibrils, and each myofibril is a chain of sarcomeres. The sarcomere is the unit that actually shortens. Everything below is one sarcomere, slowed 10 times.',focus:[0,0,800,70],speed:.5,pause:true,setup(sim){BioLab.setValues(sim,{scene:'sarc',rate:0,atpOn:true,caOn:true,L0:2.2});BioLab.reset(sim);}},
-    {title:'At rest',text:'Thin filaments (actin) reach in from the Z discs on each side. The thick filament (myosin) sits in the middle with its heads ready. Tropomyosin covers the binding sites on actin, so no cross-bridges can form.',focus:[0,130,800,200],speed:.5,pause:true},
-    {title:'The nerve signal arrives',text:'A motor neuron fires. The signal spreads over the fiber and reaches the sarcoplasmic reticulum, which releases its stored calcium.',focus:[0,62,800,70],speed:.3,setup(sim){BioLab.setValues(sim,{rate:2});}},
-    {title:'Calcium uncovers actin',text:'Calcium floods in around the filaments and binds to troponin. Troponin shifts tropomyosin off the binding sites. Watch the amber line move, and the teal calcium dots appear.',focus:[0,130,800,200],speed:.3},
-    {title:'Cross-bridges pull',text:'A cocked myosin head grabs actin and swings: the power stroke. Each stroke pulls the thin filament toward the M line. The filaments keep their length. The sarcomere shortens because they slide past each other.',focus:[0,130,800,240],speed:.3,setup(sim){BioLab.setValues(sim,{rate:30});}},
-    {title:'ATP lets go and recocks',text:'A new ATP binds and the head lets go. Splitting that ATP recocks the head for another stroke. Without ATP there is no release, so ATP is used for letting go as well as for pulling.',focus:[0,330,400,170],speed:.3},
-    {title:'Signals add up',text:'Fire signals quickly and each twitch starts before the last one ends. Force climbs and smooths out into tetanus. Your muscles grade force this way, and also by recruiting more fibers.',focus:[400,330,400,170],speed:.5,setup(sim){BioLab.setValues(sim,{rate:80});}},
-    {title:'Stop the signal',text:'When signals stop, the pump moves calcium back into the sarcoplasmic reticulum, which costs ATP too. Tropomyosin covers the sites again, and the muscle relaxes.',focus:[0,62,800,300],speed:.4,setup(sim){BioLab.setValues(sim,{rate:0});}}
+    {title:'From muscle to sarcomere',text:'A muscle is bundles of fibers, each fiber is packed with myofibrils, and each myofibril is a chain of sarcomeres. The sarcomere is the unit that actually shortens. Everything below is one sarcomere, slowed 10 times.',focus:sim=>foc(sim,'strip'),speed:.5,pause:true,setup(sim){BioLab.setValues(sim,{scene:'sarc',rate:0,atpOn:true,caOn:true,L0:2.2});BioLab.reset(sim);}},
+    {title:'At rest',text:'Thin filaments (actin) reach in from the Z discs on each side. The thick filament (myosin) sits in the middle with its heads ready. Tropomyosin covers the binding sites on actin, so no cross-bridges can form.',focus:sim=>foc(sim,'sarc'),speed:.5,pause:true},
+    {title:'The nerve signal arrives',text:'A motor neuron fires. The signal spreads over the fiber and reaches the sarcoplasmic reticulum, which releases its stored calcium.',focus:sim=>foc(sim,'nerve'),speed:.3,setup(sim){BioLab.setValues(sim,{rate:2});}},
+    {title:'Calcium uncovers actin',text:'Calcium floods in around the filaments and binds to troponin. Troponin shifts tropomyosin off the binding sites. Watch the amber line move, and the teal calcium dots appear.',focus:sim=>foc(sim,'sarc'),speed:.3},
+    {title:'Cross-bridges pull',text:'A cocked myosin head grabs actin and swings: the power stroke. Each stroke pulls the thin filament toward the M line. The filaments keep their length. The sarcomere shortens because they slide past each other.',focus:sim=>foc(sim,'sarc'),speed:.3,setup(sim){BioLab.setValues(sim,{rate:30});}},
+    {title:'ATP lets go and recocks',text:'A new ATP binds and the head lets go. Splitting that ATP recocks the head for another stroke. Without ATP there is no release, so ATP is used for letting go as well as for pulling.',focus:sim=>foc(sim,'low'),speed:.3},
+    {title:'Signals add up',text:'Fire signals quickly and each twitch starts before the last one ends. Force climbs and smooths out into tetanus. Your muscles grade force this way, and also by recruiting more fibers.',focus:sim=>foc(sim,'tr'),speed:.5,setup(sim){BioLab.setValues(sim,{rate:80});}},
+    {title:'Stop the signal',text:'When signals stop, the pump moves calcium back into the sarcoplasmic reticulum, which costs ATP too. Tropomyosin covers the sites again, and the muscle relaxes.',focus:sim=>foc(sim,'nerve'),speed:.4,setup(sim){BioLab.setValues(sim,{rate:0});}}
   ],
   onTourExit(sim){BioLab.setValues(sim,{rate:0});},
   challenges:[
@@ -388,7 +388,7 @@ const H={
     {t:'Creatine phosphate',d:'A fast store that hands its phosphate to ADP to remake ATP. It lasts seconds at maximum effort.',lvl:'ap'}
   ],
   about:'<p><b>Sarcomere model.</b> Each signal gives a twitch with a rise time of about 30 ms (fast) or 80 ms (slow). Twitches add together, and force saturates: activation = 1 − e<sup>−x</sup>. A single twitch reaches about 25% of maximum. Force is activation times the classic length-tension curve (Gordon, Huxley and Julian, 1966, from frog fibers: plateau at 2.0 to 2.25 µm, zero at 3.65 µm). Human sarcomeres are a bit longer, with an optimum near 2.7 µm, but the shape is the same. The drawing has far fewer heads than a real filament, and they show the idea, not an exact count.</p>'+
-    '<p><b>Energy model.</b> Stores are per kg of muscle: ATP about 7 mmol, creatine phosphate about 25 mmol. Aerobic supply ramps up over about 20 s, and it reaches about 1.7 mmol ATP/kg/s for slow fibers and 0.6 for fast. Anaerobic supply reaches 1.5 and 5. These are rounded values in the range reported for human muscle. Real muscles recruit slow fibers first, as this model does in Mixed.</p>'+
+    '<p><b>Energy model.</b> Stores are per kg of muscle: ATP about 7 mmol, creatine phosphate about 25 mmol. Aerobic supply ramps up over about 20 s, and it reaches about 1.7 mmol ATP/kg/s for slow fibers and 0.6 for fast. Anaerobic supply reaches 1.5 and 5. These are rounded values in the range reported for human muscle. Real muscles recruit slow fibers first, as this model does in Mixed. ATP in a living muscle never runs out completely, because force falls first and protects it, so the model stops ATP from falling below about 40% of its resting level. The Sarcomere view lets a sarcomere shorten by up to 0.2 µm against its load.</p>'+
     '<p><b>Simplifications your handout uses.</b> The handout’s 38 ATP per glucose is the textbook maximum, and real cells yield nearer 30 to 32. “The burn” as lactic acid is the classic explanation. Lactate itself is actually a fuel, and acidity and other metabolites contribute to the burn and to fatigue. Fast fibers still use some oxygen. The burn threshold of 12 mmol/kg here is a teaching mark, since feeling varies by person.</p>'+
     '<p><b>Virtual lab.</b> Bench times are built from typical values for this kind of classroom lab, with variation between partners and hands. They are not the output of the energy model, because a pinch or a book lift uses many fibers at changing effort.</p>',
   labs:[LAB]

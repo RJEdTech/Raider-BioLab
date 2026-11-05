@@ -16,14 +16,14 @@ const CN=[
   {n:'II',name:'Optic',fn:'Visual acuity and visual field',sup:'Something to read',tst:'Read something close and far',kw:/vis|acuity|sight|see|field/i,skw:/read|card|book|sign|chart|paper|text|phone/i},
   {n:'III',name:'Oculomotor',fn:'Eye movement, pupil size and reactivity (PEARL)',sup:'Penlight',tst:'Look ahead, move the light across, watch for constriction',kw:/eye|pupil|pearl|react/i,skw:/light/i},
   {n:'IV',name:'Trochlear',fn:'Eye movement down and lateral',sup:'Pen',tst:'Track the pen, check for nystagmus',kw:/eye|down|lateral/i,skw:/pen|finger|light/i},
-  {n:'V',name:'Trigeminal',fn:'Chewing and facial sensation',sup:'Your hands',tst:'Pretend to chew, feel touch over forehead and nose',kw:/chew|sensation|feel|face|facial|bite/i,skw:/hand|finger|cotton|touch|none|nothing/i},
+  {n:'V',name:'Trigeminal',fn:'Chewing and facial sensation',sup:'Your hands',tst:'Pretend to chew, check sensation over forehead and nose',kw:/chew|sensation|feel|face|facial|bite/i,skw:/hand|finger|cotton|touch|none|nothing/i},
   {n:'VI',name:'Abducens',fn:'Lateral eye movement',sup:'Pen',tst:'Track the pen out to each side',kw:/eye|lateral/i,skw:/pen|finger|light/i},
   {n:'VII',name:'Facial',fn:'Facial expression',sup:'None',tst:'Look surprised, angry, eyes wide, smile',kw:/express|face|facial|smile/i,skw:/none|nothing|no |instruction|command|n\/a/i},
-  {n:'VIII',name:'Vestibulocochlear',fn:'Hearing and balance',sup:'Your hands',tst:'Hearing check and BESS',kw:/hear|balance/i,skw:/hand|finger|none|nothing|no /i},
-  {n:'IX',name:'Glossopharyngeal',fn:'Gagging and swallowing',sup:'Cup of water',tst:'Yawn, give a drink',kw:/gag|swallow/i,skw:/water|drink|cup/i},
-  {n:'X',name:'Vagus',fn:'Pharynx and larynx sensation, swallowing',sup:'Cup of water',tst:'Say "ahh", then swallow a sip',kw:/pharyn|laryn|swallow|throat|voice/i,skw:/water|drink|cup|none|nothing/i},
-  {n:'XI',name:'Spinal accessory',fn:'Shoulder shrug and head rotation',sup:'Your hands',tst:'Shrug and turn the head against your hands',kw:/shrug|shoulder|head|rotat|turn/i,skw:/hand|none|nothing/i},
-  {n:'XII',name:'Hypoglossal',fn:'Tongue movement',sup:'None',tst:'Stick out the tongue, move it side to side',kw:/tongue/i,skw:/none|nothing|no |n\/a|instruction/i}];
+  {n:'VIII',name:'Vestibulocochlear',fn:'Hearing and balance',sup:'Your hands',tst:'BESS test and hearing eval',kw:/hear|balance/i,skw:/hand|finger|none|nothing|no /i},
+  {n:'IX',name:'Glossopharyngeal',fn:'Gagging and swallowing',sup:'Cup of water',tst:'Yawn, give them something to drink',kw:/gag|swallow/i,skw:/water|drink|cup/i},
+  {n:'X',name:'Vagus',fn:'Pharynx / Larynx Sensation & Swallow',sup:'Cup of water',tst:'Have athlete swallow drink & say ahhhh',kw:/pharyn|laryn|swallow|throat|voice/i,skw:/water|drink|cup|none|nothing/i},
+  {n:'XI',name:'Accessory (Spinal Accessory)',fn:'Shoulder Shrugging / Head Rotation',sup:'Your hands',tst:'Have athlete pretend to put a purse on / shoulder shrug',kw:/shrug|shoulder|head|rotat|turn/i,skw:/hand|none|nothing/i},
+  {n:'XII',name:'Hypoglossal',fn:'Tongue Movement / Speech',sup:'None',tst:'Have athlete stick their tongue out straight',kw:/tongue|speech/i,skw:/none|nothing|no |n\/a|instruction/i}];
 const cnBy=n=>CN.find(c=>c.n===n);
 const SUP=[{v:'scent',l:'Something strong to smell (gum, mint, coffee)'},{v:'card',l:'Something to read, close and far'},{v:'light',l:'Penlight'},{v:'pen',l:'Pen'},{v:'hands',l:'Your hands'},{v:'water',l:'Cup of water'},{v:'none',l:'No supply, just instructions'}];
 const supName=v=>(SUP.find(s=>s.v===v)||{}).l||'';
@@ -32,14 +32,14 @@ const TESTS=[
   {id:'read',n:'II',l:'Read something close and far, one eye at a time',sup:['card']},
   {id:'pupil',n:'III',l:'Look ahead, move a light across, watch the pupils',sup:['light']},
   {id:'down',n:'IV',l:'Track an object down and out, check for nystagmus',sup:['pen','light']},
-  {id:'chew',n:'V',l:'Pretend to chew, then feel touch on forehead and nose',sup:['hands']},
+  {id:'chew',n:'V',l:'Pretend to chew, check sensation over forehead and nose',sup:['hands']},
   {id:'lat',n:'VI',l:'Track an object out to each side',sup:['pen','light']},
   {id:'face',n:'VII',l:'Look surprised, angry, eyes wide, then smile',sup:['none']},
-  {id:'hear',n:'VIII',l:'Check hearing at each ear, then a BESS balance check',sup:['hands']},
-  {id:'swal',n:'IX',l:'Yawn, then take a drink',sup:['water']},
-  {id:'ahh',n:'X',l:'Say "ahh", then swallow a sip',sup:['water']},
-  {id:'shrug',n:'XI',l:'Shrug and turn the head against your hands',sup:['hands']},
-  {id:'tongue',n:'XII',l:'Stick out the tongue, move it side to side',sup:['none']}];
+  {id:'hear',n:'VIII',l:'BESS test and hearing eval',sup:['hands']},
+  {id:'swal',n:'IX',l:'Yawn, give them something to drink',sup:['water']},
+  {id:'ahh',n:'X',l:'Swallow a drink and say ahhhh',sup:['water']},
+  {id:'shrug',n:'XI',l:'Pretend to put a purse on / shoulder shrug, then turn the head',sup:['hands']},
+  {id:'tongue',n:'XII',l:'Stick the tongue out straight, then speak',sup:['none']}];
 const testBy=id=>TESTS.find(t=>t.id===id);
 const testOfNerve=n=>TESTS.find(t=>t.n===n);
 /* one nerve can make more than one test look wrong: the pupil reflex comes in on II and goes out on III */
@@ -96,12 +96,12 @@ function script(id,def){const hit=(n,s)=>!!def&&def.n===n&&def.side===s,D=def&&d
       return {beats:[{d:1.5,set:{mouth:1,lidR:.5,lidL:.5},say:'(yawns)'},{d:.8,set:{cup:1}},{d:1.5,set:{cup:1},say:bad?'(coughs) That felt wrong going down.':'(swallows) Fine.'}],
       find:bad?lr(s=>s===D?'Coughs on the sip. Swallowing feels wrong on this side of the throat.':'No trouble felt on this side of the throat.'):{both:'Yawns fully and swallows the sip with no cough.'}};}
     case'ahh':{const bad=a('X');
-      return {beats:[{d:2,set:{mouth:1},say:bad?'(hoarse) Ahhh.':'(clear) Ahhh.'},{d:.7,set:{cup:1}},{d:1.5,set:{cup:1},say:bad?'(coughs)':'(swallows) Fine.'}],
+      return {beats:[{d:.7,set:{cup:1}},{d:1.5,set:{cup:1},say:bad?'(coughs)':'(swallows) Fine.'},{d:2,set:{mouth:1},say:bad?'(hoarse) Ahhhh.':'(clear) Ahhhh.'}],
       find:bad?lr(s=>s===D?'Hoarse voice. The palate does not lift on this side, so the uvula pulls away from it. Coughs on the sip.':'The palate lifts on this side.'):{both:'Clear voice. The uvula stays in the middle. Swallows cleanly.'}};}
-    case'shrug':return {beats:[{d:1.6,set:{hands:true,shR:14,shL:14},say:'(shrugs against your hands)'},{d:1.5,set:{push:'R',turn:-1},say:'(turns toward the right)'},{d:1.5,set:{push:'L',turn:1},say:'(turns toward the left)'}],
+    case'shrug':return {beats:[{d:1.6,set:{hands:true,shR:14,shL:14},say:'(pretends to put a purse on, then shrugs against your hands)'},{d:1.5,set:{push:'R',turn:-1},say:'(turns toward the right)'},{d:1.5,set:{push:'L',turn:1},say:'(turns toward the left)'}],
       find:lr(s=>hit('XI',s)?'Shoulder gives way against your push. Turning the head away from this side is weak.':'Shoulder holds against your push. Head turn is strong.')};
-    case'tongue':return {beats:[{d:1.6,set:{mouth:.6,tongue:1},say:'(sticks out the tongue)'},{d:1.1,set:{mouth:.6,tongue:1,tx:-1}},{d:1.1,set:{mouth:.6,tongue:1,tx:1}}],
-      find:a('XII')?{both:'The tongue points toward the athlete’s '+SIDE[D]+' side when stuck out, and barely moves the other way.'}:{both:'The tongue comes out straight and moves well both ways.'}};
+    case'tongue':{const bad=a('XII');return {beats:[{d:2,set:{mouth:.6,tongue:1},say:'(sticks the tongue out)'},{d:1.4,set:{mouth:.25},say:bad?'(slurred) Testing one, two, three.':'(clearly) Testing one, two, three.'}],
+      find:a('XII')?{both:'The tongue points toward the athlete’s '+SIDE[D]+' side when stuck out. Speech is slurred.'}:{both:'The tongue comes out straight. Speech is clear.'}};}
   }
   return {beats:[],find:{}};}
 
@@ -374,7 +374,7 @@ const LAB_CN={id:'cranial-nerve',title:'Cranial Nerve Assessment Lab',course:'SP
     cnStep('Face and jaw',['V','VII'],'Test nerves V and VII. Compare the two sides of the face.'),
     cnStep('Hearing and balance',['VIII'],'Test nerve VIII. It has two jobs, so read both findings.'),
     cnStep('Throat',['IX','X'],'Test nerves IX and X. Listen to the voice and watch the swallow.'),
-    cnStep('Shoulders and tongue',['XI','XII'],'Test nerves XI and XII. Which way does the head turn weakly? Which way does the tongue point?'),
+    cnStep('Shoulders and tongue',['XI','XII'],'Test nerves XI and XII. Does a shoulder or head turn give way? Does the tongue come out straight?'),
     {title:'Make your call',controls:['supply','test','run'],text:'<p>Look down your Result column. Repeat any test you are unsure of. Then answer below the bench: which nerve looks affected, and on which side?</p>'},
     {title:'Questions',text:'<p>Answer the questions below the bench, then turn in your lab.</p>'}],
   tables:[{id:'t1',title:'Cranial nerve assessment',cols:[{id:'nerve',label:'Nerve',rows:CN.map(c=>c.n+' '+c.name)},
@@ -384,7 +384,7 @@ const LAB_CN={id:'cranial-nerve',title:'Cranial Nerve Assessment Lab',course:'SP
     {id:'res',label:'Result (athlete’s side)',input:'select',options:sideOpts,check(sim,rv,v){const c=CN[cnRowIdx(rv)];if(!c)return null;const t=testOfNerve(c.n),b=sim.vlab.bench;if(!(b.done||{})[t.id])return 'Run this test on the athlete before you record a result.';
       const ab=isAbn(t.id,b.cn),want=ab?'Abnormal: '+SIDE[b.cn.side]:'Normal';return v===want?null:'Run this test again and compare the athlete’s right and left.';}}]}],
   calcs:[{id:'which',label:'Which nerve looks affected, and on which side?',input:'text',check(sim,v){const b=sim.vlab.bench,c=cnBy(b.cn.n),u=' '+v.toUpperCase().replace(/[^A-Z0-9 ]/g,' ')+' ';const num={I:1,II:2,III:3,IV:4,V:5,VI:6,VII:7,VIII:8,IX:9,X:10,XI:11,XII:12}[c.n];
-    const named=u.includes(' '+c.n+' ')||u.includes(c.name.toUpperCase())||u.includes(' '+num+' ');if(!named)return 'Look down your Result column again. Which nerve’s own test points to the problem?';
+    const named=u.includes(' '+c.n+' ')||u.includes(c.name.split(' (')[0].toUpperCase())||u.includes(' '+num+' ');if(!named)return 'Look down your Result column again. Which nerve’s own test points to the problem?';
     if(!new RegExp(SIDE[b.cn.side],'i').test(v))return 'Name the side too, and check it against your results.';return null;}}],
   questions:[
     {id:'q1',n:'1',q:'<p>Why is it important for an Athletic Trainer to test Cranial Nerves following head / brain injuries?</p>'},
@@ -510,7 +510,7 @@ const SIM={
     {t:'Bilateral comparison',d:'Testing the same thing on both sides. The athlete’s uninjured side is the best normal you have.',lvl:'honors'},
     {t:'Consensual response',d:'Light in one eye narrows the other pupil too, because the signal crosses in the brain stem.',lvl:'ap'},
     {t:'Afferent and efferent',d:'Afferent signals travel in, toward the brain. Efferent signals travel out, toward muscles and glands.',lvl:'ap'}],
-  about:'<p><b>For education only.</b> This is not a medical tool. Never use it to self-diagnose. Anyone with a head or neck injury needs a trained clinician.</p><p>The cranial nerve table and the myotome and dermatome key mirror Ms. McKeon’s notes and key. Her notes describe nerve IV as moving the eye down and lateral, and the sideline test tracks a pen there. Clinicians also test it with the eye turned in toward the nose, where a real problem shows most clearly.</p><p>Her notes list no test of their own for nerve X, so this tool has the athlete say "ahh" and swallow. The tool models a problem as one nerve, or one nerve root, on one side. Real injuries can be partial, on both sides, and can involve the brain itself rather than the nerve. Facial weakness shown here is the whole-side pattern. Brain injuries can spare the forehead, which the tool does not show.</p><p>The root map follows the key. Standard charts differ: many place the great toe at L5, not L4, and C2 and C3 have skin areas on the back of the head and neck that the key does not list. C8, T1 to T12 and S1 are not on the key and are not shown. Pupil sizes are typical values, not exact ones.</p>',
+  about:'<p><b>For education only.</b> This is not a medical tool. Never use it to self-diagnose. Anyone with a head or neck injury needs a trained clinician.</p><p>The cranial nerve table and the myotome and dermatome key mirror Ms. McKeon’s notes and key. Her notes describe nerve IV as moving the eye down and lateral, and the sideline test tracks a pen there. Clinicians also test it with the eye turned in toward the nose, where a real problem shows most clearly.</p><p>Her notes call nerve XI Accessory and her lab handout calls it Spinal Accessory, so both names appear. The purse motion stands in for her shoulder shrug, and the head turn tests the rest of that nerve’s job. The tool models a problem as one nerve, or one nerve root, on one side. Real injuries can be partial, on both sides, and can involve the brain itself rather than the nerve. Facial weakness shown here is the whole-side pattern. Brain injuries can spare the forehead, which the tool does not show.</p><p>The root map follows the key. Standard charts differ: many place the great toe at L5, not L4, and C2 and C3 have skin areas on the back of the head and neck that the key does not list. C8, T1 to T12 and S1 are not on the key and are not shown. Pupil sizes are typical values, not exact ones.</p>',
   challengeTitle:'What does this finding mean?',
   challenges:[
     {lvl:'bio',instant:true,demo:{test:'face',supply:'none',cn:{n:'VII',side:'L'}},q:'The athlete smiles and the left mouth corner droops, and the left eyebrow will not lift. Which nerve fits?',choices:['VII Facial','V Trigeminal','XII Hypoglossal'],correct:0,explain:'Nerve VII runs the muscles of facial expression. Nerve V carries feeling from the face and works the jaw. Nerve XII moves the tongue.'},

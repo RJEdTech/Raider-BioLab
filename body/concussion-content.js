@@ -2,9 +2,9 @@
 BioLab.addPractical({
 concussion:{
   hook:'A freshman takes a hit in Friday’s game, gets up and says he’s fine, but he asks the score twice. The coach wants him back in. What is happening in his brain, what do you do right now, and when can he play again?',
-  answer:'His brain moved inside his skull and his brain cells stretched. Asking the same question twice is a sign, so remove him with no return today. In Colorado he needs clearance from a health care provider. He then climbs a stepwise return, at least 24 hours per step, and full contact waits for clearance.',
+  answer:'His brain moved inside his skull and his brain cells stretched. Asking the same question twice is a sign, so remove him with no return today. In Colorado he needs written clearance from a health care provider before any supervised team activity, and an athletic trainer cannot give it. He climbs six stages, at least 24 hours per step, going back if symptoms return.',
   uses:[
-    'Colorado high school sports: the Jake Snakenberg Youth Concussion Act removes an athlete with a suspected concussion from play until a health care provider clears them.',
+    'Colorado high school sports: the Jake Snakenberg Youth Concussion Act removes an athlete with a suspected concussion from play and supervised team activities until a health care provider gives written clearance.',
     'Baseline testing: many programs score BESS and symptoms before the season, so an injured athlete can be compared with their own normal.',
     'School: a student with a concussion may need less screen time, more breaks or part-time days as part of a return to learn plan.'
   ],
@@ -15,7 +15,7 @@ concussion:{
     'Twisting a wet towel stretches it more than pushing on it. Rotation stretches brain tissue the same way. A hit to the body can do it too, without anything touching the head.',
     'On the sideline, look for red flags first: numbness, uneven pupils and others call for <b>EMS</b>. Any other sign or symptom means <b>remove from play</b>, with no return today.',
     'BESS is a balance check. Eyes closed, hands on hips, three stances for 20 seconds each. You count errors, then compare them with the athlete’s own preseason number, not a teammate’s.',
-    'The way back is a staircase: rest, then light activity, then harder steps. Each step takes at least <b>24 hours</b>. Symptoms come back? Go back a step. Full contact needs clearance.'
+    'The way back is a staircase of six stages, from No Activity to Return to Play. Each step takes at least <b>24 hours</b>. Symptoms come back? Go back a step. Written clearance comes before the first team drills.'
   ]
 }});
 BioLab.addReview({
@@ -37,9 +37,11 @@ concussion:{
     lab:{set:{view:'bess',who:'today',stance:'single'},act:'bstart',look:'Practice counting. Press Count an error for each one you see.'}},
   {id:'rise',kind:'test',lvl:'honors',q:'An athlete’s preseason BESS total was 5. After a hit, the total is 12. By how many errors did the score rise?',num:{ans:7,tol:0,unit:'errors'},
     steps:['Subtract the athlete’s own baseline: 12 − 5.','The rise is 7 errors.','A rise of several errors is a warning sign, but BESS alone does not diagnose or clear anyone.']},
-  {id:'law',kind:'real',lvl:'honors',q:'Under Colorado’s Jake Snakenberg Youth Concussion Act, what must happen to an athlete with a suspected concussion?',choices:['Removal from play, and clearance from a health care provider before returning','A 24-hour rest and then return','A CT scan before leaving the field','Nothing unless the athlete lost consciousness'],correct:0,
-    steps:['The law starts with suspicion. You do not need a confirmed diagnosis.','The athlete comes out of play.','The athlete needs clearance from a health care provider before returning.'],
+  {id:'law',kind:'real',lvl:'honors',q:'Under Colorado’s Jake Snakenberg Youth Concussion Act, what must happen when a coach suspects a concussion?',choices:['Immediate removal, with no return to play or supervised team activities until a health care provider gives written clearance','A 24-hour rest and then return','A CT scan before leaving the field','Nothing unless the athlete lost consciousness'],correct:0,
+    steps:['The law starts with suspicion. You do not need a confirmed diagnosis.','The coach removes the athlete immediately.','No return to play or supervised physical team activities until a health care provider gives written clearance. It covers activities where most participants are at least 11 and under 19, not college.'],
     lab:{set:{view:'side',scn:'b'},act:'dremove',look:'Read the explanation of the call.'}},
+  {id:'who',kind:'test',lvl:'honors',q:'Under Colorado’s law, who can NOT give the written clearance?',choices:['An athletic trainer','An MD or DO','A licensed nurse practitioner or physician assistant','A licensed doctor of psychology with concussion training'],correct:0,
+    steps:['The law lists MDs, DOs, licensed NPs, licensed PAs and licensed doctors of psychology with concussion training.','An athletic trainer is not on that list.','After written clearance, a registered athletic trainer who knows the athlete’s condition may manage the graduated return.']},
   {id:'ct',kind:'test',lvl:'honors',q:'Why are CT and MRI not routine for a concussion?',choices:['A concussion usually looks normal on them, so they are used when a bleed or fracture is suspected','They are never useful in head injury','They make a concussion worse','Only a coach can order them'],correct:0,
     steps:['A concussion is mostly a problem of how brain cells are working, so structure usually looks normal.','CT and MRI look for structure: bleeds and fractures.','Clinicians use them when red flags raise concern for those problems.']},
   {id:'back',kind:'real',lvl:'ap',q:'An athlete on step 3 of the return gets a headache that keeps coming back during the session. What is the right next move?',choices:['Go back a step and try again after at least 24 hours','Finish the session, then move up tomorrow','Skip ahead to practice to test it','Start over with a week of total rest in a dark room'],correct:0,
