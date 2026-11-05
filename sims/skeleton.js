@@ -231,7 +231,7 @@ function figT(view,zoom,box){if(zoom&&ZOOM[zoom]){const z=ZOOM[zoom],s=Math.min(
 const toX=(T,x)=>T.ox+T.s*x,toY=(T,y)=>T.oy+T.s*y;
 /* palette: bone is an object with its own color, kept pale with a dark outline in both themes */
 function dark(){const c=String(PAL['card']||'#fff');if(c[0]!=='#')return false;const h=c.length<6?c.replace(/#(.)(.)(.)/,'#$1$1$2$2$3$3'):c;return parseInt(h.slice(1,3),16)<90;}
-function hex(c){if(c[0]!=='#')return [128,128,128];if(c.length<6)c=c.replace(/#(.)(.)(.)/,'#$1$1$2$2$3$3');return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];}
+function hex(c){if(c[0]!=='#'){const m=String(c).match(/[\d.]+/g);return m&&m.length>=3?[+m[0],+m[1],+m[2]]:[128,128,128];}if(c.length<6)c=c.replace(/#(.)(.)(.)/,'#$1$1$2$2$3$3');return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];}
 function mix(a,b,t){const A=hex(a),B=hex(b);return 'rgb('+A.map((v,i)=>Math.round(lerp(v,B[i],t))).join(',')+')';}
 function pal(){const d=dark();return d?{bone:'#e6dcc2',shade:'#bfb292',wing:'#d6caab',cart:'#a9c7d3',hole:'#57503f',dark:'#26221a',tooth:'#fbf7ea',ink:'#2b2619'}:{bone:'#f1e8d1',shade:'#d8cba9',wing:'#e6dbbd',cart:'#bcd5de',hole:'#6f654f',dark:'#3a3426',tooth:'#fffdf3',ink:'#5a503c'};}
 /* draw one figure. colorOf(id) returns a fill or null for plain bone */
@@ -256,7 +256,8 @@ const LONG_IN=sym([[0,44],[56,50],[94,78],[108,116],[102,152],[80,186],[52,222],
 const LONG_CAV=sym([[0,236],[18,244],[28,270],[28,540],[18,596],[0,610]]).map(p=>[p[0]+CX,p[1]]);
 function capPath(top){const o=top?[[-122,114],[-106,68],[-60,36],[0,28],[60,36],[106,68],[122,114],[110,116],[94,82],[54,54],[0,46],[-54,54],[-94,82],[-110,116]]:[[-124,716],[-124,742],[-98,768],[-48,776],[-18,762],[0,756],[18,762],[48,776],[98,768],[124,742],[124,716],[111,718],[108,736],[88,756],[48,762],[20,748],[0,742],[-20,748],[-48,762],[-88,756],[-108,736],[-111,718]];return closed(o.map(p=>[p[0]+CX,p[1]]));}
 let LG=null;function lg(){if(LG)return LG;const G={out:closed(LONG_OUT),inn:closed(LONG_IN),cav:closed(LONG_CAV),capT:capPath(true),capB:capPath(false)};
-  const r=rng(77),tr=new Path2D();for(let i=0;i<340;i++){const y=44+Math.floor(i/340*2)*0;const top=i%2===0,x0=CX+(r()-.5)*220,y0=top?46+r()*200:600+r()*160,ang=(top?1.57:-1.57)+(r()-.5)*1.5,l=16+r()*26;tr.moveTo(x0,y0);tr.lineTo(x0+Math.cos(ang)*l,y0+Math.sin(ang)*l);}G.tr=tr;
+  const r=rng(77),tr=new Path2D(),gap=21,cols=16,rowsN=38,pt=[];for(let j=0;j<=rowsN;j++){pt[j]=[];for(let i=0;i<=cols;i++)pt[j][i]=[CX-168+i*gap+(j%2?gap/2:0)+(r()-.5)*11,30+j*gap+(r()-.5)*11];}
+  for(let j=0;j<=rowsN;j++)for(let i=0;i<=cols;i++){const p=pt[j][i];if(i<cols&&r()>.14){const q=pt[j][i+1];tr.moveTo(p[0],p[1]);tr.lineTo(q[0],q[1]);}if(j<rowsN){const q=pt[j+1][i],q2=j%2?pt[j+1][Math.min(cols,i+1)]:pt[j+1][Math.max(0,i-1)];if(r()>.1){tr.moveTo(p[0],p[1]);tr.lineTo(q[0],q[1]);}if(r()>.55){tr.moveTo(p[0],p[1]);tr.lineTo(q2[0],q2[1]);}}}G.tr=tr;
   const fat=[];for(let i=0;i<60;i++)fat.push([CX+(r()-.5)*44,248+r()*352,2.5+r()*4]);G.fat=fat;
   G.art=open([[CX+70,352],[CX+52,370],[CX+36,392],[CX+22,406]]);G.artUp=open([[CX+22,406],[CX+6,370],[CX+10,320],[CX-6,270]]);G.artDn=open([[CX+22,406],[CX+4,450],[CX+12,510],[CX-4,580]]);
   G.artHit=open([[CX+70,352],[CX+52,370],[CX+36,392],[CX+22,406],[CX+6,370]]);
@@ -291,7 +292,7 @@ const FUNCS={
   mineral:{n:'Mineral storage',job:'Bone is a bank for calcium and phosphate. About 99% of the body’s calcium is in bone. When blood calcium falls, bone releases some, and when it rises, bone stores more.',
     hi:'all',notes:[['Calcium and phosphate move between bone and blood',-76,600,-1]]},
   blood:{n:'Blood cell formation',job:'Red marrow carries out hematopoiesis, making red blood cells, white blood cells and platelets. In adults it is mostly in the flat bones, the vertebrae and the ends of the femur and humerus.',
-    hi:['pelvis','sternum','ribs','cranium','cervical','thoracic','lumbar','sacrum'],notes:[['Flat bones and vertebrae hold red marrow',-8,240,-1],['So do the upper femur and humerus',-82,470,-1]]},
+    hi:['pelvis','sternum','ribs','cranium','cervical','thoracic','lumbar','sacrum'],notes:[['Flat bones and vertebrae hold red marrow',-8,240,-1],['So do the upper femur and humerus',-62,452,-1]]},
   fat:{n:'Fat storage',job:'Yellow marrow in the shafts of long bones stores fat, an energy reserve.',
     hi:[],notes:[['Yellow marrow fills the long bone shafts',-65,590,-1],['It is in the arm too',136,270,1]]},
   hormone:{n:'Hormone production',job:'Bone cells release hormones into the blood. Osteocalcin helps regulate blood sugar and energy use.',
@@ -439,7 +440,7 @@ function drawPractice(ctx,sim,T,k){const r=sim.st.pr,t=prTarget(sim),size=13.5*k
   if(r.done)txt(ctx,BONES[t].n,tx,ty+R+13*k*.8,{s:13*k,w:700,c:PAL['cv-ink'],a:'center',b:'middle'});}
 /* ========== Draw: functions ========== */
 function drawFunc(ctx,sim,k,t){const F=FUNCS[sim.p.fn],view=sim.p.view==='both'?'front':sim.p.view,T=figT(view,null,{x:0,y:15,w:800,h:770});sim.vis.Ts=[T];sim.vis.rects=[];
-  const hi=F.hi==='all'?null:Object.fromEntries(F.hi.map(i=>[i,1])),on=mix(PAL['s2'],'#ffffff',dark()?.3:.45);
+  const hi=F.hi==='all'?null:Object.fromEntries(F.hi.map(i=>[i,1])),on=sim.p.fn==='blood'?'#dd7f88':mix(PAL['s2'],'#ffffff',dark()?.3:.45);
   drawFig(ctx,T,id=>(F.hi==='all'||(hi&&hi[id]))?on:null);
   ctx.save();ctx.translate(T.ox,T.oy);ctx.scale(T.s,T.s);overlay(ctx,sim.p.fn,t,T);ctx.restore();
   const size=12.5*k,lh=size*1.25,ws=222-6;const L=[],R=[];F.notes.forEach(n=>{const lines=wrap(ctx,n[0],ws,size,600),o={lines:lines.length+.5,tl:lines,ax:toX(T,n[1]),ay:toY(T,n[2]),c:n[3]};(n[3]<0?L:R).push(o);});
@@ -448,13 +449,13 @@ function drawFunc(ctx,sim,k,t){const F=FUNCS[sim.p.fn],view=sim.p.view==='both'?
 function overlay(ctx,fn,t,T){const P=(pts,c,a)=>{ctx.globalAlpha=a;ctx.fillStyle=c;ctx.fill(closed(pts));ctx.globalAlpha=1;};
   const sw=(pts,w,c,a)=>{ctx.globalAlpha=a;ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineCap='round';ctx.stroke(open(pts));ctx.globalAlpha=1;};
   const tp=RM?0:t;
-  if(fn==='protect'){P(ell(0,36,31,27),'#e88fa6',.82);sw([[-20,26],[-8,18],[6,26],[20,20]],1.2,'#9c3f58',.8);sw([[-22,44],[-6,38],[8,46],[24,40]],1.2,'#9c3f58',.8);
-    sw([[0,70],[0,200],[0,400]],5,'#e8c23a',.95);
+  if(fn==='protect'){P(ell(0,25,33,18),'#e88fa6',.85);sw([[-24,22],[-10,16],[4,24],[22,18]],1.1,'#9c3f58',.8);sw([[-24,32],[-8,28],[8,34],[24,29]],1.1,'#9c3f58',.8);
+    sw([[0,108],[0,200],[0,322]],4.5,'#e8c23a',.95);
     P(ell(-40,240,27,50,.05),'#d98a9b',.55);P(ell(45,240,23,48,-.05),'#d98a9b',.55);P(ell(14,240,24,30,.35),'#c9303f',.9);}
   if(fn==='anchor'){const m='#c0392b';ctx.globalAlpha=.88;ctx.fillStyle=m;ctx.fill(closed(band([[122,215],[128,262],[146,318]],[5,11,5])));ctx.fill(closed(band([[-70,500],[-68,580],[-58,680]],[8,16,7])));ctx.globalAlpha=1;
     sw([[92,192],[108,200],[122,215]],2.5,'#efe3b4',1);sw([[146,318],[155,350],[162,382]],2.5,'#efe3b4',1);sw([[-58,680],[-56,705],[-54,747]],3,'#efe3b4',1);sw([[-72,430],[-71,470],[-70,500]],3,'#efe3b4',1);}
   if(fn==='mineral'||fn==='hormone'){const n=fn==='mineral'?18:12;for(let i=0;i<n;i++){const ph=(i/n+tp*.05)%1,side=i%2?1:-1,x=side*lerp(30,76,(i%5)/5)+Math.sin(ph*6+i)*14,y=lerp(460,760,((i*37)%n)/n)+Math.sin(ph*6.28+i)*18,c=fn==='mineral'?(i%3?'#2d6bd2':'#c27a00'):'#7b3fe4';ctx.globalAlpha=.9;ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,3.2,0,6.3);ctx.fill();}ctx.globalAlpha=1;}
-  if(fn==='blood'){[[1,1],[-1,1]].forEach(([s])=>{P(ell(s*62,452,11,11),'#c9303f',.85);P(ell(s*108,190,10,10),'#c9303f',.85);P(ell(s*62,466,8,8),'#c9303f',.7);});const n=14;for(let i=0;i<n;i++){const a=i/n*6.28,yy=(i*53)%n/n;ctx.fillStyle='#c9303f';ctx.beginPath();ctx.arc(Math.cos(a)*65,175+yy*150,2.8,0,6.3);ctx.fill();ctx.beginPath();ctx.arc(Math.sin(a*2)*50,395+yy*50,2.8,0,6.3);ctx.fill();}}
+  if(fn==='blood'){[1,-1].forEach(sg=>{P(ell(sg*62,452,12,12),'#c9303f',.9);P(ell(sg*108,190,11,11),'#c9303f',.9);});}
   if(fn==='fat'){const y='#e8c23a';[[[75,520],[55,690]],[[49,770],[46,900]],[[126,225],[140,325]]].forEach(s=>{sw(s,6,y,.95);sw([[-s[0][0],s[0][1]],[-s[1][0],s[1][1]]],6,y,.95);});}
   if(fn==='support'){for(const s of [-1,1]){sw([[s*0,120],[s*0,400]],0,'#000',0);}const ar=(x,y0,y1)=>{sw([[x,y0],[x,y1]],3.4,PAL['s1'],.9);ctx.fillStyle=PAL['s1'];ctx.beginPath();ctx.moveTo(x-7,y1-7);ctx.lineTo(x+7,y1-7);ctx.lineTo(x,y1+5);ctx.closePath();ctx.fill();};ar(0,130,350);[-1,1].forEach(s=>{ar(s*40,395,445);ar(s*70,500,690);ar(s*48,750,925);});}}
 /* ========== Draw: long bone ========== */
@@ -469,7 +470,7 @@ function drawLong(ctx,sim,k,t){const G=lg(),P=pal(),sel=sim.p.part,grow=sim.p.ag
   /* compact bone lamellae: fine lines along the shaft */
   ctx.save();ctx.clip(G.out);ctx.strokeStyle=P.ink;ctx.globalAlpha=.2;ctx.lineWidth=.8;for(const dx of [-48,-42,-36,36,42,48]){ctx.beginPath();ctx.moveTo(CX+dx,250);ctx.lineTo(CX+dx,560);ctx.stroke();}ctx.restore();
   /* spongy region with red marrow */
-  ctx.save();ctx.clip(G.inn);ctx.fillStyle=sel==='red'?mix(redC,'#ffffff',.0):redC;ctx.fillRect(250,40,300,730);ctx.strokeStyle=sel==='spongy'?PAL['s1']:P.bone;ctx.lineWidth=sel==='spongy'?4:3.2;ctx.lineCap='round';ctx.stroke(G.tr);ctx.restore();
+  ctx.save();ctx.clip(G.inn);ctx.fillStyle=sel==='red'?mix(redC,'#ffffff',.0):redC;ctx.fillRect(250,40,300,730);ctx.strokeStyle=sel==='spongy'?PAL['s1']:P.bone;ctx.lineWidth=sel==='spongy'?4:3;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke(G.tr);ctx.restore();
   /* cavity */
   const adultYel=grow?mix(yel,redC,.28):yel;ctx.fillStyle=adultYel;ctx.fill(G.cav);ctx.save();ctx.clip(G.cav);ctx.globalAlpha=.55;G.fat.forEach(f=>{ctx.fillStyle='#fff1b5';ctx.beginPath();ctx.arc(f[0],f[1],f[2],0,6.3);ctx.fill();});ctx.globalAlpha=1;ctx.restore();
   ctx.strokeStyle=sel==='endosteum'?PAL['s1']:P.ink;ctx.lineWidth=sel==='endosteum'?3.5:(hon?1.6:1);ctx.stroke(G.cav);
@@ -488,12 +489,12 @@ function drawLong(ctx,sim,k,t){const G=lg(),P=pal(),sel=sim.p.part,grow=sim.p.ag
   brackets.forEach(b=>{const on=sel===b[0],c=on?PAL['s1']:PAL['cv-soft'];ctx.strokeStyle=c;ctx.lineWidth=on?3:1.6;ctx.beginPath();ctx.moveTo(bx+8,b[1]);ctx.lineTo(bx,b[1]);ctx.lineTo(bx,b[2]);ctx.lineTo(bx+8,b[2]);ctx.stroke();const y=(b[1]+b[2])/2;txt(ctx,LP[b[0]].n,bx-8,y,{s:size,w:on?700:500,c:on?PAL['s1']:PAL['cv-ink'],a:'right',b:'middle'});ctx.font=(on?700:500)+' '+size+'px '+FONT;const w=ctx.measureText(LP[b[0]].n).width,gp=size*1.3;sim.vis.rects.push({id:b[0],x:bx-8-w,y:y-gp/2,w:w+10,h:gp});
     if(on){ctx.save();ctx.globalAlpha=.16;ctx.fillStyle=PAL['s1'];ctx.clip(G.out);ctx.fillRect(250,b[1],300,b[2]-b[1]);ctx.restore();}});
   /* structure labels, right side */
-  const list=LP_R.map(l=>({id:l[0],ax:l[1],ay:l[2]}));if(hon)list.push({id:'endosteum',ax:CX+28,ay:500});if(ap)list.push({id:'osteon',ax:CX+45,ay:600});
-  column(list,size*1.5,18,782);const tx=576;
+  const list=LP_R.map(l=>({id:l[0],ax:l[1],ay:l[2]}));if(hon)list.push({id:'endosteum',ax:CX+28,ay:500});if(ap)list.push({id:'osteon',ax:696,ay:654});
+  column(list,size*1.5,18,ap?640:782);const tx=576;
   list.forEach(it=>{const on=sel===it.id,name=(it.id==='plate'&&!grow)?'Epiphyseal line':LP[it.id].n;ctx.strokeStyle=on?PAL['s1']:PAL['cv-soft'];ctx.lineWidth=on?2:1;ctx.beginPath();ctx.moveTo(tx-4,it.y);ctx.lineTo(it.ax,it.ay);ctx.stroke();ctx.fillStyle=ctx.strokeStyle;ctx.beginPath();ctx.arc(it.ax,it.ay,2.6,0,6.3);ctx.fill();txt(ctx,name,tx,it.y,{s:size,w:on?700:500,c:on?PAL['s1']:PAL['cv-ink'],b:'middle'});ctx.font=(on?700:500)+' '+size+'px '+FONT;const w=ctx.measureText(name).width;sim.vis.rects.push({id:it.id,x:tx,y:it.y-size*.75,w,h:size*1.5});});
   /* osteon inset at Deep dive */
-  if(ap){const ix=118,iy=690,R=66;ctx.save();ctx.beginPath();ctx.arc(ix,iy,R,0,6.3);ctx.fillStyle=P.bone;ctx.fill();ctx.clip();ctx.strokeStyle=P.ink;for(let r=9;r<R;r+=8){ctx.globalAlpha=.55;ctx.lineWidth=1.1;ctx.beginPath();ctx.arc(ix,iy,r,0,6.3);ctx.stroke();}ctx.globalAlpha=1;ctx.fillStyle='#d11f2f';ctx.beginPath();ctx.arc(ix,iy,6,0,6.3);ctx.fill();ctx.restore();ctx.strokeStyle=sel==='osteon'?PAL['s1']:PAL['cv-soft'];ctx.lineWidth=sel==='osteon'?3:1.5;ctx.beginPath();ctx.arc(ix,iy,R,0,6.3);ctx.stroke();ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(ix+R,iy-20);ctx.lineTo(CX-44,590);ctx.stroke();ctx.setLineDash([]);}
-  const age=grow?'Growing teen: plate open':'Adult: plate closed';txt(ctx,age,12,22,{s:13*k,w:700,c:PAL['cv-soft']});}
+  if(ap){const ix=696,iy=712,R=58;ctx.save();ctx.beginPath();ctx.arc(ix,iy,R,0,6.3);ctx.fillStyle=P.bone;ctx.fill();ctx.clip();ctx.strokeStyle=P.ink;for(let r=9;r<R;r+=8){ctx.globalAlpha=.55;ctx.lineWidth=1.1;ctx.beginPath();ctx.arc(ix,iy,r,0,6.3);ctx.stroke();}ctx.globalAlpha=1;ctx.fillStyle='#d11f2f';ctx.beginPath();ctx.arc(ix,iy,6,0,6.3);ctx.fill();ctx.restore();ctx.strokeStyle=sel==='osteon'?PAL['s1']:PAL['cv-soft'];ctx.lineWidth=sel==='osteon'?3:1.5;ctx.beginPath();ctx.arc(ix,iy,R,0,6.3);ctx.stroke();ctx.setLineDash([4,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(ix-R*.8,iy-R*.6);ctx.lineTo(CX+42,540);ctx.stroke();ctx.setLineDash([]);}
+  const age=grow?'Growing teen: plate open':'Adult: plate closed';txt(ctx,age,12,792,{s:13*k,w:700,c:PAL['cv-soft']});}
 /* ========== Draw: virtual lab bench ========== */
 function drawBench(ctx,sim,k){if(sim.p.vView==='site')return drawSite(ctx,sim,k);const V=sim.vlab,i=+sim.p.vPartner||0,P=PARTNERS[i],M=MEAS[sim.p.vBone],b=hb(sim),key=i+':'+sim.p.vBone,read=!!b.rd[key],d=partnerData(sim,i),size=13*k;
   ctx.fillStyle=PAL['cv-bg2'];ctx.fillRect(0,0,800,800);

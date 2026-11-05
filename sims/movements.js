@@ -110,7 +110,7 @@ function viewFor(j,mv,plane){
   if(j==='elbow'&&(mv==='pronation'||mv==='supination'))return {cam:'angled',f:[-.125,.64,.13],s:1100};
   if(j==='shoulder'&&(mv==='ir'||mv==='er'))return {cam:'top',f:[-.1,.66,.1],s:800};
   if(j==='shoulder'&&(mv==='hadd'||mv==='habd'))return {cam:'top',f:[-.08,.75,.05],s:560};
-  if(j==='hip'&&(mv==='ir'||mv==='er'))return {cam:'top',f:[-.06,.02,.05],s:1250};
+  if(j==='hip'&&(mv==='ir'||mv==='er'))return {cam:'top',f:[-.06,.03,.05],s:800};
   if(j==='knee'&&(mv==='ir'||mv==='er'))return {cam:'top',f:[-.06,.28,.26],s:1150};
   const cam=plane==='sagittal'?'side':plane==='frontal'?'front':'top';
   if(j==='shoulder')return {cam,f:[0,.6,0],s:400};
@@ -200,6 +200,7 @@ function syncAngle(sim,val){const r=M[curJ(sim)][curM(sim)].rom,el=document.getE
 function sync(sim){if(!sim.ui||!sim.ui.ctlW)return;const v=sim.p.view;[['joint','move'],['move','move'],['angle','move'],['cam','move'],['jtype','types']].forEach(e=>{const w=sim.ui.ctlW[e[0]];if(w)w.hidden=v!==e[1];});
   const w=sim.ui.ctlW.move;if(w){const L=movesOf(sim.p.joint);w.querySelectorAll('button').forEach(b=>{b.hidden=!L.includes(b.dataset.v);});}
   if(sim.ui.actB){if(sim.ui.actB.play)sim.ui.actB.play.hidden=v!=='move';if(sim.ui.actB.nextq)sim.ui.actB.nextq.hidden=v!=='check';}
+  if(sim.ui.tiles)['ang','range','plane','ex'].forEach(id=>{const t=sim.ui.tiles[id],e=t&&t.num.closest('.tile');if(e)e.hidden=v==='types'||(v==='check'&&id==='ang');});
   if(v==='check')qEnsure(sim);const L=movesOf(sim.p.joint);if(!L.includes(sim.p.move)){sim.p.move=L[0];if(sim.ui.ctl.move)sim.ui.ctl.move.set(L[0]);}syncAngle(sim);}
 const mainDef=(j,mv)=>Math.round(M[j][mv].rom*.6);
 
@@ -207,8 +208,8 @@ function labelBox(ctx,lines,k){let y=8;lines.forEach(l=>{ctx.font=(l.w||600)+' '
 function renderFigure(sim,ctx,k,j,mv,a,reveal){const m=M[j][mv],plane=m.plane,V=viewFor(j,mv,plane);let camId=V.cam,camChoice=sim.p.cam;if(sim.p.view==='move'&&camChoice!=='auto')camId=camChoice;
   const free=(sim.p.view==='move'&&camChoice!=='auto'),S=free?400:V.s,f=free?[0,.6,0]:V.f;const pr=makeProj(camId,f,S,330,free?322:(V.s<=490?322:318));
   if(reveal&&!free&&(V.cam==='side'||V.cam==='front')&&V.s<=490){const gp=pr([0,0,0]);ctx.strokeStyle=PAL['line'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,gp.y+6);ctx.lineTo(W,gp.y+6);ctx.stroke();}
-  if(reveal)drawSweep(ctx,j,mv,a,pr);
   const P=pose(j,mv,a);ctx.globalAlpha=1;drawFigure(ctx,P,pr,S,hot(j,mv));
+  if(reveal)drawSweep(ctx,j,mv,a,pr);
   return CAM[camId].n;}
 
 function infoPanel(sim){const p=sim.p;

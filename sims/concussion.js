@@ -4,7 +4,7 @@ const {clamp,lerp,rng,rr,txt,pill,atLeast,PAL,FONT,RM}=BioLab.h;
 
 /* Concussion: four linked views.
    Mechanism: the brain as a damped mass in the skull, x'' = a(t) - w^2 x - 2 z w x', with a half-sine head pulse of 12 ms.
-   w and z are tuned so a 100 g pulse moves the brain about 4 mm, the size seen in cadaver studies. Tissue stretch scales with rotational acceleration. */
+   w and z are tuned so a 100 g pulse moves the brain about 6 mm, the order of size seen in cadaver studies. Tissue stretch scales with rotational acceleration. */
 const MS_PER_S=25,PW=440,PZ=.35,PT=12;
 const HITS={front:{l:'Straight blow to the front',rot:30,arrow:'front'},side:{l:'Glancing blow that turns the head',rot:65,arrow:'side'},jolt:{l:'Jolt to the body, no head contact',rot:90,arrow:'jolt'}};
 function wrap(ctx,s,x,y,w,o){o=o||{};const size=o.s||13,lh=o.lh||size*1.26;ctx.font=(o.w||400)+' '+size+'px '+FONT;let line='',yy=y;
@@ -45,7 +45,7 @@ const total=a=>a.every(v=>v!==null)?a.reduce((x,y)=>x+y,0):null;
 
 /* ---------- Sideline ---------- */
 const SIGNS=[
-  {id:'posture',l:'Posturing (arms or legs stiff)',red:true},{id:'lobar',l:'Consciousness fading or changing',red:true},{id:'numb',l:'Numbness in arms or legs',red:true},{id:'pupil',l:'Unequal or non-reactive pupils',red:true},
+  {id:'posture',l:'Posturing (arms or legs stiff)',red:true},{id:'loc',l:'Consciousness fading or changing',red:true},{id:'numb',l:'Numbness in arms or legs',red:true},{id:'pupil',l:'Unequal or non-reactive pupils',red:true},
   {id:'vomit',l:'Repeated vomiting',red:true},{id:'seizure',l:'Seizure',red:true},{id:'speak',l:'Cannot speak',red:true},{id:'recog',l:'Cannot recognize people or places',red:true},
   {id:'head',l:'Headache or pressure'},{id:'dizzy',l:'Dizzy or poor balance'},{id:'fog',l:'Confused or foggy'},{id:'light',l:'Bothered by light or noise'},{id:'off',l:'“Just doesn’t feel right”'},{id:'daze',l:'Looks dazed, slow to answer'}];
 const SCN=[
@@ -53,7 +53,7 @@ const SCN=[
   {v:'b',l:'Soccer: headache at halftime',t:'A soccer player headed the ball hard and kept playing. At halftime she says her head hurts and the lights feel too bright.',s:['head','light']},
   {v:'c',l:'Football: arm numb, pupils uneven',t:'A football player stays down after a tackle. He says his arm is numb. One pupil looks larger than the other.',s:['numb','pupil']},
   {v:'d',l:'Hard tackle, sideline check clear',t:'A lacrosse player takes a hard check. On your sideline check she has no symptoms, and her balance and memory are normal. Her coach wants her back in.',s:[]},
-  {v:'e',l:'Vomiting and getting sleepier',t:'A wrestler hit the mat with his head. On the sideline he has vomited three times and is getting harder to keep awake.',s:['vomit','lobar']},
+  {v:'e',l:'Vomiting and getting sleepier',t:'A wrestler hit the mat with his head. On the sideline he has vomited three times and is getting harder to keep awake.',s:['vomit','loc']},
   {v:'f',l:'Dizzy, does not know teammates',t:'A basketball player fell and hit her head on the court. She is dizzy and does not recognize the teammate talking to her.',s:['dizzy','recog']},
   {v:'custom',l:'Pick your own signs',t:'Pick the signs you see, then make your call.',s:[]}];
 const scn=sim=>SCN.find(x=>x.v===sim.p.scn)||SCN[0];
@@ -264,8 +264,8 @@ const SIM={
     {id:'shift',vw:'mech',label:'Peak brain shift',unit:'mm',lvl:'bio',min:0,max:10,d:1,get:s=>s.st.m.peakX},
     {id:'strain',vw:'mech',label:'Brain tissue stretch',unit:'%',lvl:'honors',min:0,max:60,d:0,get:s=>s.st.m.strain*100},
     {id:'alpha',vw:'mech',label:'Rotational acceleration',unit:'rad/s²',lvl:'ap',min:0,max:14000,d:0,get:s=>s.st.m.alpha},
-    {id:'btoday',vw:'bess',label:'Baseline total',unit:'errors',lvl:'bio',min:0,max:30,d:0,get:s=>{const v=total(s.st.b.res.base);return v===null?NaN:v;}},
-    {id:'bchange',vw:'bess',label:'Today’s total',unit:'errors',lvl:'bio',min:0,max:30,d:0,get:s=>{const v=total(s.st.b.res.today);return v===null?NaN:v;}},
+    {id:'bbase',vw:'bess',label:'Baseline total errors',lvl:'bio',text:true,get:s=>{const v=total(s.st.b.res.base);return v===null?'Run all 3 stances':String(v);}},
+    {id:'btoday',vw:'bess',label:'Today’s total errors',lvl:'bio',text:true,get:s=>{const v=total(s.st.b.res.today);return v===null?'Run all 3 stances':String(v);}},
     {id:'rday',vw:'rtp',label:'Day',lvl:'bio',min:0,max:40,d:0,get:s=>s.st.r.day},
     {id:'rstep',vw:'rtp',label:'Step',lvl:'bio',min:0,max:6,d:0,get:s=>s.st.r.step},
     {id:'rsym',vw:'rtp',label:'Symptoms',unit:'of 10',lvl:'bio',min:0,max:10,d:1,get:s=>s.st.r.sym}
@@ -300,7 +300,7 @@ const SIM={
     {t:'SIS',d:'Second impact syndrome: rare, dangerous brain swelling after a second hit before the first has healed.',lvl:'honors'},
     {t:'CTE',d:'Chronic traumatic encephalopathy. Linked with repeated head impacts and only diagnosed at autopsy.',lvl:'honors'},
     {t:'Neurometabolic cascade',d:'The chemical changes after a concussion: ions leak across stretched membranes, cells burn more energy to restore them, and blood flow may fall. That mismatch is one reason a second hit is dangerous.',lvl:'ap'}],
-  about:'<p><b>For education only.</b> This tool never diagnoses anyone. If you think you have a concussion, stop playing and tell your athletic trainer, a parent or a clinician. Never decide on your own that you are ready to go back.</p><p><b>Mechanism.</b> The brain is modeled as a damped mass in the skull: a 12 ms half-sine pulse drives it, with spring and damping tuned so 95 g shifts it about 4 mm, the size reported in cadaver studies. The drawing doubles the shift so you can see it. Tissue stretch is a simple scale on rotational acceleration, fitted to the size of finite-element estimates (about 25% near 5,500 rad/s²). The three hit types use fixed ratios of rotation to g, and the jolt does not model the neck in detail. Real brains are not this simple, and no number predicts injury in one person. The chemical bars show direction only, with no units.</p><p><b>BESS.</b> Baseline and post-injury error counts are made-up but realistic, with single-leg the hardest stance. Only the firm surface is used, as in class. <b>Return.</b> The steps follow the Amsterdam 2022 consensus in general terms: relative rest for the first 24 to 48 hours, early light activity is encouraged, each step takes at least 24 hours, and full contact comes after medical clearance. Consensus lets steps 1 to 3 start with mild symptoms and asks for symptoms to be gone before step 4. Symptoms use a made-up 0 to 10 scale that decays with time and rises with too much load. Most adolescents recover within about 4 weeks.</p><p>Follow your school’s and your clinician’s plan, which may differ.</p>',
+  about:'<p><b>For education only.</b> This tool never diagnoses anyone. If you think you have a concussion, stop playing and tell your athletic trainer, a parent or a clinician. Never decide on your own that you are ready to go back.</p><p><b>Mechanism.</b> The brain is modeled as a damped mass in the skull: a 12 ms half-sine pulse drives it, with spring and damping tuned so 95 g shifts it between 5 and 6 mm, the order of size reported in cadaver studies. The drawing doubles the shift so you can see it. Tissue stretch is a simple scale on rotational acceleration, fitted to the size of finite-element estimates (about 25% near 5,500 rad/s²). The three hit types use fixed ratios of rotation to g, and the jolt does not model the neck in detail. Real brains are not this simple, and no number predicts injury in one person. The chemical bars show direction only, with no units.</p><p><b>BESS.</b> Baseline and post-injury error counts are made-up but realistic, with single-leg the hardest stance. Only the firm surface is used, as in class. <b>Return.</b> The steps follow the Amsterdam 2022 consensus in general terms: relative rest for the first 24 to 48 hours, early light activity is encouraged, each step takes at least 24 hours, and full contact comes after medical clearance. Consensus lets steps 1 to 3 start with mild symptoms and asks for symptoms to be gone before step 4. Symptoms use a made-up 0 to 10 scale that decays with time and rises with too much load. Most adolescents recover within about 4 weeks.</p><p>Follow your school’s and your clinician’s plan, which may differ.</p>',
   challengeTitle:'Predict, then test',
   challenges:[
     {lvl:'bio',instant:true,demo:{view:'mech',hit:'jolt',g:60},q:'Can an athlete get a concussion without being hit in the head?',choices:['Yes. A jolt to the body can move the brain inside the skull.','No. Something must hit the head.','Only if the athlete has no helmet.'],correct:0,explain:'Run the jolt: the brain still shifts and stretches. The CDC definition includes a bump, blow or jolt to the head or body.'},
@@ -318,7 +318,7 @@ const SIM={
     {title:'Rotation and jolts',text:'Turning the head stretches brain tissue more than a straight blow of the same size. A hit to the body can do it too, with no contact to the head at all.',speed:.3,focus:[0,0,800,533],setup(sim){BioLab.setValues(sim,{view:'mech',hit:'jolt',g:60});hitStart(sim);}},
     {title:'The sideline decision',text:'Scan for red flags first: those mean EMS. Any other sign or symptom means <b>remove from play</b>, with no return today.',speed:1,pause:false,focus:[0,0,800,533],setup(sim){BioLab.setValues(sim,{view:'side',scn:'c'});decide(sim,'ems');}},
     {title:'BESS: balance against baseline',text:'Eyes closed, hands on hips, three stances for 20 seconds each. Count the errors and compare them with this athlete’s own preseason score.',speed:1,focus:[0,0,800,533],setup(sim){BioLab.setValues(sim,{view:'bess',who:'today',stance:'single'});bessStart(sim);}},
-    {title:'The return',text:'First relative rest, then light activity. Each step takes at least <b>24 hours</b>. If symptoms come back, go back a step. Full contact needs clearance from a health care provider.',speed:1,focus:[0,0,800,533],setup(sim){BioLab.setValues(sim,{view:'rtp'});const r=sim.st.r=rFresh(4242);for(let i=0;i<4;i++)rGo(sim,i>1&&i<3?0:1);}}
+    {title:'The return',text:'First relative rest, then light activity. Each step takes at least <b>24 hours</b>. If symptoms come back, go back a step. Full contact needs clearance from a health care provider.',speed:1,focus:[0,0,800,533],setup(sim){BioLab.setValues(sim,{view:'rtp'});sim.st.r=rFresh(4242);rGo(sim,1);rGo(sim,1);rGo(sim,0);rGo(sim,1);}}
   ],
   onTourExit(sim){BioLab.setValues(sim,{view:'mech',hit:'front',g:95});sim.st.m=hitFresh();sync(sim);},
   thumbSetup(sim){hitStart(sim);},thumbFrames:12
