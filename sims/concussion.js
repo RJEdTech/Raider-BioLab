@@ -92,7 +92,7 @@ function sync(sim){if(!sim.ui||!sim.ui.ctlW)return;const v=sim.p.view,cust=sim.p
 
 /* ---------- drawing ---------- */
 const BRAIN='#d98a96',BRAINL='#b8606f',RED='#C11430';
-function drawMech(sim,ctx,k,t){const m=sim.st.m,hit=m.ran?m.hit:sim.p.hit,scale=3.5; /* px per real cm of skull shift */
+function drawMech(sim,ctx,k,t){const m=sim.st.m,hit=m.ran?m.hit:sim.p.hit;
   const cx=225,cy=210;const skullPx=m.xs*1000*1.26*.6,thetaDeg=clamp(m.th*.6,-.32,.32);
   const dir=-1; /* the blow pushes the head backward (to the left); the brain lags forward */
   const brainShift=m.x*1000*1.26*2;
@@ -103,7 +103,7 @@ function drawMech(sim,ctx,k,t){const m=sim.st.m,hit=m.ran?m.hit:sim.p.hit,scale=
   ctx.fillStyle=PAL['card2'];ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-62,84);ctx.lineTo(-52,195);ctx.lineTo(44,195);ctx.lineTo(40,110);ctx.closePath();ctx.fill();ctx.stroke();
   // skull with a face in profile
   ctx.beginPath();ctx.ellipse(0,0,130,128,0,0,6.2832);ctx.fillStyle=PAL['card2'];ctx.fill();ctx.lineWidth=7;ctx.strokeStyle=PAL['cv-soft'];ctx.stroke();
-  ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(122,-18);ctx.lineTo(150,18);ctx.lineTo(126,26);ctx.quadraticCurveTo(136,52,118,70);ctx.lineTo(92,108);ctx.stroke();
+  ctx.lineWidth=3;ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(126,-34);ctx.lineTo(166,16);ctx.lineTo(130,26);ctx.lineTo(136,44);ctx.lineTo(126,52);ctx.lineTo(132,72);ctx.quadraticCurveTo(118,104,86,106);ctx.stroke();
   // CSF gap
   ctx.beginPath();ctx.ellipse(0,-6,119,112,0,0,6.2832);ctx.fillStyle=PAL['cv-water'];ctx.fill();
   // brain
@@ -112,7 +112,7 @@ function drawMech(sim,ctx,k,t){const m=sim.st.m,hit=m.ran?m.hit:sim.p.hit,scale=
   ctx.lineWidth=3;ctx.lineCap='round';[[-60,-40,-20,-70,20,-42],[-70,10,-30,-22,10,8],[-30,44,10,20,52,40],[22,-70,50,-46,78,-54],[30,-12,60,-30,84,-4]].forEach(q=>{ctx.beginPath();ctx.moveTo(bx+q[0],q[1]);ctx.quadraticCurveTo(bx+q[2],q[3],bx+q[4],q[5]);ctx.stroke();});ctx.lineCap='butt';
   // contact glow: front wall (coup) and back wall (contrecoup)
   const glow=(x,a)=>{if(a<=.02)return;const g=ctx.createRadialGradient(x,-6,2,x,-6,62);g.addColorStop(0,'rgba(255,170,40,'+a+')');g.addColorStop(1,'rgba(255,170,40,0)');ctx.fillStyle=g;ctx.fillRect(x-62,-68,124,124);};
-  glow(112,clamp((sh-gap*.45)/gap,0,.95));glow(-112,clamp((-sh-gap*.3)/(gap*.5),0,.95));
+  const gc=clamp((sh-gap*.45)/gap,0,.95),gb=clamp((-sh-gap*.3)/(gap*.5),0,.95);glow(112,gc);glow(-112,gb);if(atLeast('honors')){ctx.save();if(gc>.25)pill(ctx,'Coup',62,-6,PAL['card'],PAL['cv-ink'],12*k);if(gb>.25)pill(ctx,'Contrecoup',-40,-6,PAL['card'],PAL['cv-ink'],12*k);ctx.restore();}
   ctx.restore();
   // what hit
   const hx=cx+dir*skullPx;
@@ -122,8 +122,7 @@ function drawMech(sim,ctx,k,t){const m=sim.st.m,hit=m.ran?m.hit:sim.p.hit,scale=
     else arrow(ctx,10,458,88,458,PAL['s4'],7);ctx.globalAlpha=1;}
   const lab=hit==='jolt'?'Jolt to the body':hit==='side'?'Glancing blow':'Blow to the front';
   txt(ctx,lab,12,16+12*k,{s:13*k,w:700});
-  if(atLeast('honors')&&m.ran&&k<1.35){txt(ctx,'Coup',cx+96,cy-112,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,'Contrecoup',cx-100,cy-142,{s:12*k,c:PAL['cv-soft'],a:'center'});}
-  // right panel
+    // right panel
   const X=468,W=320;ctx.fillStyle=PAL['cv-bg2'];rr(ctx,X-6,8,W+12,517,12);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
   let y=14+15*k;txt(ctx,'One axon stretching',X+6,y,{s:13.5*k,w:700});y+=14*k;
   const strain=m.strain*clamp(m.t/PT,0,1),st=m.ran?strain:0;
@@ -131,7 +130,7 @@ function drawMech(sim,ctx,k,t){const m=sim.st.m,hit=m.ran?m.hit:sim.p.hit,scale=
   ctx.fillStyle=PAL['s2'];ctx.beginPath();ctx.arc(ax0,ay,8,0,6.2832);ctx.fill();ctx.beginPath();ctx.arc(ax1,ay,5,0,6.2832);ctx.fill();
   y=ay+24;
   y=wrap(ctx,!m.ran?'Press Run the impact and watch this fiber.':st>.2?'A large stretch. The cell’s membrane leaks.':st>.08?'The fiber straightens and stretches.':'A small stretch, and the fiber recovers.',X+6,y+8,W-12,{s:12*k,c:PAL['cv-soft']});
-  y+=4;txt(ctx,'Chemical changes',X+6,y+12*k,{s:13.5*k,w:700});y+=24*k;
+  y+=4;txt(ctx,'Chemical changes',X+6,y+12*k,{s:13.5*k,w:700});y+=30*k;
   const on=m.ran&&m.t>PT?clamp(m.strain/.2,0,1):0;
   const bar=(lab,v,col)=>{txt(ctx,lab,X+6,y,{s:12*k,c:PAL['cv-ink']});y+=5;ctx.fillStyle=PAL['line'];rr(ctx,X+6,y,W-14,9,4);ctx.fill();ctx.fillStyle=PAL[col];rr(ctx,X+6,y,Math.max(4,(W-14)*v),9,4);ctx.fill();y+=14+10*k;};
   bar('Energy the cell needs',.4+.6*on,'s4');bar('Blood flow to the area',.75-.4*on,'s2');
@@ -139,8 +138,8 @@ function drawMech(sim,ctx,k,t){const m=sim.st.m,hit=m.ran?m.hit:sim.p.hit,scale=
       const fx=q=>pX+q/120*pW,fg=v=>y+pH-clamp(v/150,0,1)*pH,fm=v=>y+pH*.6-clamp(v/10,-.5,1)*pH*.6;
       ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2.5;ctx.beginPath();T.forEach((q,i)=>{i?ctx.lineTo(fx(q[0]),fg(q[1])):ctx.moveTo(fx(q[0]),fg(q[1]));});ctx.stroke();
       ctx.strokeStyle=PAL['s1'];ctx.beginPath();T.forEach((q,i)=>{i?ctx.lineTo(fx(q[0]),fm(q[2])):ctx.moveTo(fx(q[0]),fm(q[2]));});ctx.stroke();
-      txt(ctx,'Head g',pX+4,y+13,{s:12,w:600,c:PAL['s4']});txt(ctx,'Brain shift',pX+pW-4,y+13,{s:12,w:600,c:PAL['s1'],a:'right'});
-      txt(ctx,'0',pX,y+pH+15,{s:12,c:PAL['cv-soft'],a:'center'});txt(ctx,'120 ms',pX+pW,y+pH+15,{s:12,c:PAL['cv-soft'],a:'right'});}}
+      txt(ctx,'Head g',pX+4,y+13*k,{s:12*k,w:600,c:PAL['s4']});txt(ctx,'Brain shift',pX+pW-4,y+13*k,{s:12*k,w:600,c:PAL['s1'],a:'right'});
+      txt(ctx,'0',pX,y+pH+15*k,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,'120 ms',pX+pW,y+pH+15*k,{s:12*k,c:PAL['cv-soft'],a:'right'});}}
 }
 /* a front-view figure, used for the balance test */
 function limb(ctx,pts,w,fill,st){ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=st;ctx.lineWidth=w+3;ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();ctx.strokeStyle=fill;ctx.lineWidth=w;ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();}
@@ -150,7 +149,7 @@ function drawBess(sim,ctx,k,t){const b=sim.st.b,tr=b.tr,stance=tr?tr.stance:sim.
   const fill=PAL['card2'],st=PAL['cv-soft'],cx=205;
   ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,496,410,38);ctx.fillStyle=PAL['line'];ctx.fillRect(0,496,410,2);
   ctx.save();const lean=e==='out'?.2:sway*.008;ctx.translate(cx,490);ctx.rotate(lean);ctx.translate(-cx,-490);
-  const hipY=300,kneeY=395,footY=490;const Lf=e==='step'?38:0; /* step: the free foot lands wide */
+  const hipY=300,kneeY=395,footY=490;
   const legs=[];
   if(stance==='double'){legs.push([[cx-20,hipY],[cx-22-(e==='step'?22:0),kneeY],[cx-24-(e==='step'?48:0),footY]],[[cx+20,hipY],[cx+22,kneeY],[cx+24,footY-(e==='heel'?10:0)]]);}
   else if(stance==='single'){const free=e==='hip'?[[cx-20,hipY],[cx-70,kneeY-22],[cx-122,footY-92]]:e==='step'?[[cx-20,hipY],[cx-46,kneeY],[cx-74,footY]]:[[cx-20,hipY],[cx-34,kneeY-14],[cx-22,footY-58]];legs.push(free,[[cx+18,hipY],[cx+16,kneeY],[cx+14,footY-(e==='heel'?10:0)]]);}
@@ -166,7 +165,7 @@ function drawBess(sim,ctx,k,t){const b=sim.st.b,tr=b.tr,stance=tr?tr.stance:sim.
   ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2.5;[-14,14].forEach(dx=>{ctx.beginPath();if(e==='eyes'){ctx.fillStyle=PAL['card'];ctx.arc(cx+dx,108,6,0,6.2832);ctx.fill();ctx.stroke();ctx.fillStyle=PAL['cv-ink'];ctx.beginPath();ctx.arc(cx+dx,108,2.4,0,6.2832);ctx.fill();}else{ctx.moveTo(cx+dx-6,108);ctx.quadraticCurveTo(cx+dx,112,cx+dx+6,108);ctx.stroke();}});
   ctx.lineCap='butt';ctx.restore();
   // feet from above
-  const px=14,py=16,pw=118,ph=70+10*k;ctx.fillStyle=PAL['card'];ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;rr(ctx,px,py,pw,ph,8);ctx.fill();ctx.stroke();txt(ctx,'Feet from above',px+pw/2,py+10*k,{s:k>1.35?10:12,c:PAL['cv-soft'],a:'center',w:600});
+  const px=14,py=16,pw=118,ph=70+10*k;ctx.fillStyle=PAL['card'];ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;rr(ctx,px,py,pw,ph,8);ctx.fill();ctx.stroke();txt(ctx,k>1.35?'Feet':'Feet from above',px+pw/2,py+12*k,{s:12*k,c:PAL['cv-soft'],a:'center',w:600});
   const foot=(x,y,lit)=>{ctx.fillStyle=lit?PAL['s2']:PAL['line'];ctx.beginPath();ctx.ellipse(x,y,6,14,0,0,6.2832);ctx.fill();};const fy=py+ph/2+8*k-2;
   if(stance==='double'){foot(px+pw/2-8,fy,true);foot(px+pw/2+8,fy,true);}else if(stance==='single'){foot(px+pw/2-10,fy,false);foot(px+pw/2+10,fy,true);}else{foot(px+pw/2,fy-13,true);foot(px+pw/2,fy+13,true);}
   // panel
@@ -197,7 +196,7 @@ function drawSide(sim,ctx,k){const sd=sim.st.sd,c=scn(sim),cust=c.v==='custom',s
   // flow
   const FX=424,FW=364;ctx.fillStyle=PAL['cv-bg2'];rr(ctx,FX-6,8,FW+12,517,12);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
   const res=decided?sd.want:null;const nodes=[['ems','Any red flag?','Call EMS.'],['remove','Any sign or symptom?','Remove from play. No return today.'],['watch','None now?','Keep watching and recheck.']];
-  let fy=16;const fh=(decided?(k>1.35?92:84):(k>1.35?76:72));
+  let fy=16;const fh=44+26*k;
   nodes.forEach(n=>{const isOn=res===n[0];ctx.fillStyle=isOn?PAL[n[0]==='ems'?'s1':n[0]==='remove'?'s4':'s3']:PAL['card'];ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;rr(ctx,FX+4,fy,FW-12,fh,8);ctx.fill();ctx.stroke();const fc=isOn?'#ffffff':PAL['cv-ink'];
     let ty=fy+16*k;ty=wrap(ctx,n[1],FX+14,ty,FW-32,{s:12.5*k,w:700,c:fc});wrap(ctx,n[2],FX+14,ty,FW-32,{s:12*k,c:fc});fy+=fh+8;});
   if(decided){const yy=fy+8*k;const hdr=(sd.ok?'Right call: ':'Think again. ');let t;
@@ -215,12 +214,12 @@ function drawRtp(sim,ctx,k){const r=sim.st.r;const X=12,W=372;
   const CX=404,CW=384;ctx.fillStyle=PAL['cv-bg2'];rr(ctx,CX-6,8,CW+12,517,12);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
   txt(ctx,'Day '+r.day,CX+6,14+15*k,{s:15*k,w:700});txt(ctx,'Symptoms '+r.sym.toFixed(1)+' of 10',CX+CW-10,14+15*k,{s:13*k,w:700,a:'right'});
   txt(ctx,r.clear?'Clearance: yes':'Clearance: not yet',CX+6,14+32*k,{s:12*k,c:r.clear?PAL['s3']:PAL['cv-soft'],w:600});
-  const pX=CX+36,pY=30+34*k,pW=CW-52,pH=500-pY-14*k,dMax=Math.max(21,r.day+2);ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;for(let i=0;i<=10;i+=5){const yy=pY+pH-(i/10)*pH;ctx.beginPath();ctx.moveTo(pX,yy);ctx.lineTo(pX+pW,yy);ctx.stroke();txt(ctx,String(i),pX-6,yy+4,{s:12,c:PAL['cv-soft'],a:'right'});}
+  const pX=CX+36,pY=30+34*k,pW=CW-52,pH=500-pY-14*k,dMax=Math.max(21,r.day+2);ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;for(let i=0;i<=10;i+=5){const yy=pY+pH-(i/10)*pH;ctx.beginPath();ctx.moveTo(pX,yy);ctx.lineTo(pX+pW,yy);ctx.stroke();txt(ctx,String(i),pX-6,yy+4,{s:12*k,c:PAL['cv-soft'],a:'right'});}
   const fx=d=>pX+d/dMax*pW,fy=v=>pY+pH-(v/10)*pH;
   // steps as a band
   r.hist.forEach((h,i)=>{const nx=r.hist[i+1];const x1=fx(h.d),x2=fx(nx?nx.d:h.d+1);ctx.fillStyle=PAL['s2'];ctx.globalAlpha=.1+.07*h.s;ctx.fillRect(x1,pY,x2-x1,pH);ctx.globalAlpha=1;});
   ctx.strokeStyle=PAL['s1'];ctx.lineWidth=3;ctx.beginPath();r.hist.forEach((h,i)=>{i?ctx.lineTo(fx(h.d),fy(h.y)):ctx.moveTo(fx(h.d),fy(h.y));});ctx.stroke();ctx.fillStyle=PAL['s1'];r.hist.forEach(h=>{ctx.beginPath();ctx.arc(fx(h.d),fy(h.y),4,0,6.2832);ctx.fill();});
-  txt(ctx,'Days since injury. Darker band: higher step.',pX+pW/2,pY+pH+12+6*k,{s:k>1.35?11:12,c:PAL['cv-soft'],a:'center'});}
+  txt(ctx,k>1.35?'Days since injury':'Days since injury. Darker band: higher step.',pX+pW/2,pY+pH+12+6*k,{s:12*k,c:PAL['cv-soft'],a:'center'});}
 
 /* ---------- definition ---------- */
 const SIM={

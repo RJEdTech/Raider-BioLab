@@ -135,11 +135,11 @@ const PIC={
   C3:{base:[.5,.98],segs:[62,18],head:true,bar:true,poses:[[-90,-90],[-90,-58]],push:1,arrow:[-1,0],moving:1},
   C4:{base:[.28,.42],segs:[70,78],poses:[[8,90],[-14,90]],push:0,arrow:[0,1],moving:0,torso:true},
   C5:{base:[.28,.25],segs:[52,44],poses:[[86,86],[0,0]],push:1,arrow:[0,1],moving:0,torso:true},
-  C6:{base:[.26,.05],segs:[66,56,24],poses:[[90,74,74],[90,0,0],[90,0,-42]],push:1,arrow:[0,1],moving:1},
-  C7:{base:[.26,.05],segs:[66,56,24],poses:[[90,0,0],[90,58,58],[90,0,42]],push:1,arrow:[-1,-1],moving:1},
+  C6:{base:[.26,.16],segs:[66,56,24],poses:[[90,74,74],[90,0,0],[90,0,-42]],push:1,arrow:[0,1],moving:1},
+  C7:{base:[.26,.16],segs:[66,56,24],poses:[[90,0,0],[90,58,58],[90,0,42]],push:1,arrow:[-1,-1],moving:1},
   L1L2:{base:[.2,.42],segs:[78,70],poses:[[0,90],[-26,64]],push:0,arrow:[0,1],moving:0,seat:true},
   L3:{base:[.14,.32],segs:[72,72],poses:[[0,90],[0,12]],push:1,arrow:[0,1],moving:1,seat:true},
-  L4:{base:[.3,.05],segs:[92,54],poses:[[90,24],[90,-16]],push:1,arrow:[0,1],moving:1},
+  L4:{base:[.3,.12],segs:[92,54],poses:[[90,24],[90,-16]],push:1,arrow:[0,1],moving:1},
   L5:{base:[.12,.5],segs:[100,34],poses:[[0,0],[0,-36]],push:1,arrow:[0,1],moving:1}};
 
 /* ---------- state ---------- */
@@ -290,11 +290,11 @@ function drawChain(ctx,x,y,w,h,rid,ph,give,k,side){const pc=PIC[rid];const mirro
   if(pc.seat){ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,by+8*sc,bx+18*sc,h-by-8*sc);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.lineCap='round';ctx.lineWidth=14*sc;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx-4*sc,by-Math.max(30,by-6)*.92);ctx.stroke();}
   if(pc.torso){ctx.strokeStyle=PAL['cv-soft'];ctx.lineCap='round';ctx.lineWidth=26*sc;ctx.beginPath();ctx.moveTo(bx-30*sc,by-16*sc);ctx.lineTo(bx-30*sc,h-6);ctx.stroke();}
   if(pc.bar){ctx.strokeStyle=PAL['cv-soft'];ctx.lineCap='round';ctx.lineWidth=20*sc;ctx.beginPath();ctx.moveTo(bx-60*sc,by-52*sc);ctx.lineTo(bx+60*sc,by-52*sc);ctx.stroke();}
-  let px=bx,py=by,tip=[bx,by],pushP=null;
+  let px=bx,py=by,tip=[bx,by],pushP=null,headLean=0;
   pc.segs.forEach((L,i)=>{const a=ang[i]*Math.PI/180,nx=px+Math.cos(a)*L*sc,ny=py+Math.sin(a)*L*sc,mv=i>=pc.moving;ctx.strokeStyle=mv?PAL['s2']:PAL['cv-soft'];ctx.lineCap='round';ctx.lineWidth=(i===0?15:12)*sc;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(nx,ny);ctx.stroke();
     if(i===pc.push)pushP=[px+(nx-px)*.8,py+(ny-py)*.8];px=nx;py=ny;tip=[nx,ny];});
-  if(pc.head){const a=ang[1]*Math.PI/180,hx=px+Math.cos(a)*26*sc,hy=py+Math.sin(a)*26*sc;ctx.fillStyle=PAL['card2'];ctx.strokeStyle=PAL['s2'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(hx,hy,28*sc,0,6.2832);ctx.fill();ctx.stroke();pushP=[hx+pc.arrow[0]*28*sc,hy];}
-  if(pushP&&ph[3]){const ax=pc.arrow,len=32*sc;ctx.save();arrowLine(ctx,pushP[0]-(ax[0]?ax[0]/Math.abs(ax[0]):0)*0-ax[0]*len-(0),pushP[1]-ax[1]*len-(ax[1]>0?8*sc:0),pushP[0],pushP[1]-(ax[1]>0?8*sc:0),PAL['s4'],3.5);ctx.restore();}
+  if(pc.head){const a=ang[1]*Math.PI/180,hx=px+Math.cos(a)*26*sc,hy=py+Math.sin(a)*26*sc;ctx.fillStyle=PAL['card2'];ctx.strokeStyle=PAL['s2'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(hx,hy,28*sc,0,6.2832);ctx.fill();ctx.stroke();const lean=Math.cos(a)>=0?1:-1;pushP=[hx+lean*28*sc,hy];headLean=lean;}
+  if(pushP&&ph[3]){const ax=headLean?[-headLean,0]:pc.arrow,len=32*sc,dy=ax[1]>0?8*sc:0;arrowLine(ctx,pushP[0]-ax[0]*len,pushP[1]-ax[1]*len-dy,pushP[0],pushP[1]-dy,PAL['s4'],3.5);}
   ctx.lineCap='butt';ctx.restore();}
 function zoomO(x,y,w,h,id,sgn){const H=rtZoom[id]||1100,c=REGC[id];return {cx:x+w/2-sgn*c[0]*H,top:y+h/2-c[1]*H,h:H};}
 const rtZoom={C4:1300,C5:900,L1L2:800,L3:1200};
@@ -355,7 +355,7 @@ function drawMyo(sim,ctx,k){const s=sim.st,X=292,W=498,rid=sim.p.mtest,r=rtBy(ri
   wrap(ctx,line,X+6,y,W-14,{s:12*k,c:PAL['cv-soft']});}
 
 /* ---------- labs ---------- */
-const sideOpts=['Normal','Abnormal on athlete’s right','Abnormal on athlete’s left'];
+const sideOpts=['Normal','Abnormal: right','Abnormal: left'];
 function cnBench(sim){const b=sim.vlab.bench;if(!b.cn){const g=sim.vlab.rng(7);b.cn={n:CN[Math.floor(g()*12)].n,side:g()<.5?'R':'L'};}b.done=b.done||{};return b;}
 function rtBench(sim){const b=sim.vlab.bench;if(!b.root){const g=sim.vlab.rng(11),L=RT.filter(r=>r.skin);b.root={r:L[Math.floor(g()*L.length)].id,side:g()<.5?'R':'L',grade:g()<.5?3:4};}b.mdone=b.mdone||{};return b;}
 const cnRowIdx=rv=>CN.findIndex(c=>c.n+' '+c.name===rv);
@@ -381,8 +381,8 @@ const LAB_CN={id:'cranial-nerve',title:'Cranial Nerve Assessment Lab',course:'SP
     {id:'fn',label:'Function',input:'text',check(sim,rv,v){const c=CN[cnRowIdx(rv)];return c&&!c.kw.test(v)?'Check your notes: what is this nerve’s job?':null;}},
     {id:'sup',label:'Supplies used',input:'text',check(sim,rv,v){const c=CN[cnRowIdx(rv)];return c&&!c.skw.test(v)?'Check this entry: did you use that supply when the test worked on the bench?':null;}},
     {id:'tst',label:'Test conducted',input:'text'},
-    {id:'res',label:'Result',input:'select',options:sideOpts,check(sim,rv,v){const c=CN[cnRowIdx(rv)];if(!c)return null;const t=testOfNerve(c.n),b=sim.vlab.bench;if(!(b.done||{})[t.id])return 'Run this test on the athlete before you record a result.';
-      const ab=isAbn(t.id,b.cn),want=ab?'Abnormal on athlete’s '+SIDE[b.cn.side]:'Normal';return v===want?null:'Run this test again and compare the athlete’s right and left.';}}]}],
+    {id:'res',label:'Result (athlete’s side)',input:'select',options:sideOpts,check(sim,rv,v){const c=CN[cnRowIdx(rv)];if(!c)return null;const t=testOfNerve(c.n),b=sim.vlab.bench;if(!(b.done||{})[t.id])return 'Run this test on the athlete before you record a result.';
+      const ab=isAbn(t.id,b.cn),want=ab?'Abnormal: '+SIDE[b.cn.side]:'Normal';return v===want?null:'Run this test again and compare the athlete’s right and left.';}}]}],
   calcs:[{id:'which',label:'Which nerve looks affected, and on which side?',input:'text',check(sim,v){const b=sim.vlab.bench,c=cnBy(b.cn.n),u=' '+v.toUpperCase().replace(/[^A-Z0-9 ]/g,' ')+' ';const num={I:1,II:2,III:3,IV:4,V:5,VI:6,VII:7,VIII:8,IX:9,X:10,XI:11,XII:12}[c.n];
     const named=u.includes(' '+c.n+' ')||u.includes(c.name.toUpperCase())||u.includes(' '+num+' ');if(!named)return 'Look down your Result column again. Which nerve’s own test points to the problem?';
     if(!new RegExp(SIDE[b.cn.side],'i').test(v))return 'Name the side too, and check it against your results.';return null;}}],
@@ -392,7 +392,7 @@ const LAB_CN={id:'cranial-nerve',title:'Cranial Nerve Assessment Lab',course:'SP
     {id:'q3',n:'3',q:'<p>Which tests would you perform differently, and why?</p>'},
     {id:'q4',n:'4',q:'<p>Which tests could be combined to save time?</p>'},
     {id:'q5',n:'5',q:'<p>What should an Athletic Trainer pack in the kit?</p>'}]};
-const STR_OPT=['Normal','Weak on athlete’s right','Weak on athlete’s left'],SEN_OPT=['Normal','Reduced on athlete’s right','Reduced on athlete’s left','No skin area on the key'];
+const STR_OPT=['Normal','Weak: right','Weak: left'],SEN_OPT=['Normal','Reduced: right','Reduced: left','No skin area'];
 const rtRowIdx=rv=>RT.findIndex(r=>r.mo===rv);
 const normRoot=v=>String(v).toUpperCase().replace(/\s+AND\s+/g,'/').replace(/[\s,&-]+/g,'/').replace(/\/+/g,'/').replace(/^\/|\/$/g,'');
 function myStep(title,ids,text){return {title,controls:['mtest','mStr','mSen'],text:'<p>'+text+'</p>',done:sim=>ids.every(id=>{const d=(sim.vlab.bench.mdone||{})[id]||{};return d.str&&(d.sen||!rtBy(id).skin);}),
@@ -413,8 +413,8 @@ const LAB_MY={id:'myotome-dermatome',title:'Myotomes and Dermatomes Practical',c
     {title:'Make your call',controls:['mtest','mStr','mSen'],text:'<p>Look down your table. Repeat any row you are unsure of. Then answer below the bench: which nerve root looks affected, and on which side?</p>'},
     {title:'Questions',text:'<p>Answer the questions below the bench, then turn in your lab.</p>'}],
   tables:[{id:'t1',title:'Myotome and dermatome screen',cols:[{id:'mo',label:'Myotome test',rows:RT.map(r=>r.mo)},
-    {id:'str',label:'Strength',input:'select',options:STR_OPT,check(sim,rv,v){const r=RT[rtRowIdx(rv)],b=sim.vlab.bench;if(!r)return null;if(!((b.mdone||{})[r.id]||{}).str)return 'Test this row’s strength before you record it.';const want=b.root.r===r.id?'Weak on athlete’s '+SIDE[b.root.side]:'Normal';return v===want?null:'Test this row again and compare the two sides.';}},
-    {id:'sen',label:'Sensation',input:'select',options:SEN_OPT,check(sim,rv,v){const r=RT[rtRowIdx(rv)],b=sim.vlab.bench;if(!r)return null;if(!r.skin)return v===SEN_OPT[3]?null:'Check your key for this row’s skin area.';if(v===SEN_OPT[3])return 'Check your key for this row’s skin area.';if(!((b.mdone||{})[r.id]||{}).sen)return 'Test this row’s sensation before you record it.';const want=b.root.r===r.id?'Reduced on athlete’s '+SIDE[b.root.side]:'Normal';return v===want?null:'Test this row again and compare the two sides.';}},
+    {id:'str',label:'Strength (athlete’s side)',input:'select',options:STR_OPT,check(sim,rv,v){const r=RT[rtRowIdx(rv)],b=sim.vlab.bench;if(!r)return null;if(!((b.mdone||{})[r.id]||{}).str)return 'Test this row’s strength before you record it.';const want=b.root.r===r.id?'Weak: '+SIDE[b.root.side]:'Normal';return v===want?null:'Test this row again and compare the two sides.';}},
+    {id:'sen',label:'Sensation (athlete’s side)',input:'select',options:SEN_OPT,check(sim,rv,v){const r=RT[rtRowIdx(rv)],b=sim.vlab.bench;if(!r)return null;if(!r.skin)return v===SEN_OPT[3]?null:'Check your key for this row’s skin area.';if(v===SEN_OPT[3])return 'Check your key for this row’s skin area.';if(!((b.mdone||{})[r.id]||{}).sen)return 'Test this row’s sensation before you record it.';const want=b.root.r===r.id?'Reduced: '+SIDE[b.root.side]:'Normal';return v===want?null:'Test this row again and compare the two sides.';}},
     {id:'root',label:'Nerve root',input:'text',check(sim,rv,v){const r=RT[rtRowIdx(rv)];if(!r)return null;const g=normRoot(v),a=normRoot(r.root);return g===a?null:'Check your key: which root goes with this motion?';}}]}],
   calcs:[{id:'which',label:'Which nerve root looks affected, and on which side?',input:'text',check(sim,v){const b=sim.vlab.bench,r=rtBy(b.root.r),g=normRoot(v);if(!g.includes(normRoot(r.root)))return 'Find the row where one side is weak and the skin feels dull on that same side.';if(!new RegExp(SIDE[b.root.side],'i').test(v))return 'Name the side too.';return null;}}],
   questions:[
@@ -494,7 +494,7 @@ const SIM={
       if(sim.vlab)return 'Read the response, then record it in the table.';
       return def?'<b>Abnormal.</b> Nerve '+t.n+' carries '+cnBy(t.n).fn.toLowerCase()+', so damage shows up here, and on one side only.':'<b>Normal.</b> Nerve '+t.n+' is working: '+cnBy(t.n).fn.toLowerCase()+'.';}
     const r=rtBy(sim.p.mtest),m=s.m,lab=inLab(sim,'myotome-dermatome');
-    if(!m)return hid?'One nerve root has a hidden problem. A root affects <b>both</b> its muscles and its skin area, on one side.':lab?'Choose a row and test it.':r.root+' supplies the skin of the '+(r.skin?r.skin.toLowerCase():'neck (not on your key)')+' and the muscles for '+r.mo.toLowerCase()+'. <b>One root, one skin map, one muscle group.</b>';
+    if(!m)return hid?'One nerve root has a hidden problem. A root affects <b>both</b> its muscles and its skin area, on one side.':lab?'Choose a row and test it.':r.skin?r.root+' supplies the skin of the '+r.skin.toLowerCase()+' and the muscles for '+r.mo.toLowerCase()+'. <b>One root, one skin area, one muscle group.</b>':r.root+' runs '+r.mo.toLowerCase()+'. Your key lists no skin area for this root.';
     const f=mFindings(sim,m.test),bad=f.str('R')==='Gives way'||f.str('L')==='Gives way';
     if(m.mode==='str')return bad?'<b>One side gives way.</b> A single root’s muscles can be weak while the other side stays strong.':'Both sides hold. Strength is <b>even</b> on this row.';
     return !rtBy(m.test).skin?'Your key lists no skin area for this row.':bad?'<b>One side feels dull.</b> Skin and strength problems on the same side point to one nerve root.':'Both sides feel the same on this skin area.';},
@@ -510,7 +510,7 @@ const SIM={
     {t:'Bilateral comparison',d:'Testing the same thing on both sides. The athlete’s uninjured side is the best normal you have.',lvl:'honors'},
     {t:'Consensual response',d:'Light in one eye narrows the other pupil too, because the signal crosses in the brain stem.',lvl:'ap'},
     {t:'Afferent and efferent',d:'Afferent signals travel in, toward the brain. Efferent signals travel out, toward muscles and glands.',lvl:'ap'}],
-  about:'<p><b>For education only.</b> This is not a medical tool. Never use it to self-diagnose. Anyone with a head or neck injury needs a trained clinician.</p><p>The cranial nerve table and the myotome and dermatome key mirror Ms. McKeon’s notes and key. Her notes describe nerve IV as moving the eye down and lateral, and the sideline test tracks a pen there. Clinicians also test it with the eye turned in toward the nose, where a real problem shows most clearly.</p><p>Her notes list no test of their own for nerve X, so this tool has the athlete say "ahh" and swallow. The tool models a problem as one nerve, or one nerve root, on one side. Real injuries can be partial, on both sides, and can involve the brain itself rather than the nerve. Facial weakness shown here is the whole-side pattern. Brain injuries can spare the forehead, which the tool does not show.</p><p>The root map follows the key. Standard charts differ: many place the great toe at L5, not L4, and C2 and C3 have skin areas on the back of the head and neck that the key does not list. C8, T1, T-levels and S1 are not on the key and are not shown. Pupil sizes are typical values, not exact ones.</p>',
+  about:'<p><b>For education only.</b> This is not a medical tool. Never use it to self-diagnose. Anyone with a head or neck injury needs a trained clinician.</p><p>The cranial nerve table and the myotome and dermatome key mirror Ms. McKeon’s notes and key. Her notes describe nerve IV as moving the eye down and lateral, and the sideline test tracks a pen there. Clinicians also test it with the eye turned in toward the nose, where a real problem shows most clearly.</p><p>Her notes list no test of their own for nerve X, so this tool has the athlete say "ahh" and swallow. The tool models a problem as one nerve, or one nerve root, on one side. Real injuries can be partial, on both sides, and can involve the brain itself rather than the nerve. Facial weakness shown here is the whole-side pattern. Brain injuries can spare the forehead, which the tool does not show.</p><p>The root map follows the key. Standard charts differ: many place the great toe at L5, not L4, and C2 and C3 have skin areas on the back of the head and neck that the key does not list. C8, T1 to T12 and S1 are not on the key and are not shown. Pupil sizes are typical values, not exact ones.</p>',
   challengeTitle:'What does this finding mean?',
   challenges:[
     {lvl:'bio',instant:true,demo:{test:'face',supply:'none',cn:{n:'VII',side:'L'}},q:'The athlete smiles and the left mouth corner droops, and the left eyebrow will not lift. Which nerve fits?',choices:['VII Facial','V Trigeminal','XII Hypoglossal'],correct:0,explain:'Nerve VII runs the muscles of facial expression. Nerve V carries feeling from the face and works the jaw. Nerve XII moves the tongue.'},
