@@ -66,7 +66,6 @@ const CELLS={
  plt:{n:'Platelets',count:'About 150,000 to 450,000 per µL',size:'About 2 to 3 µm across',d:'Clot blood to plug a leak. They are fragments of larger bone marrow cells, not whole cells.'},
  plasma:{n:'Plasma',count:'About 55% of blood volume',size:'About 90% water',d:'The straw-colored liquid. It carries nutrients, hormones, proteins, wastes and most of the carbon dioxide.'}
 };
-const showFor={path:['rate','code','body0'],breaks:['hr','sv','co','body','lungs','ratio'],output:['hr','sv','co','loop','ef','edv','day'],circuits:['vDir','vBlood','vMm'],blood:['cCount','cSize']};
 function sync(sim){if(!sim.ui||!sim.ui.tiles)return;const v=sim.p.view;
   sim.def.metrics.forEach(m=>{const t=sim.ui.tiles[m.id];if(!t)return;const e=t.num.closest('.tile');if(e)e.hidden=!atLeast(m.lvl)||!m.views.includes(v);});
   sim.def.controls.forEach(c=>{if(!c.views)return;const w=sim.ui.ctlW&&sim.ui.ctlW[c.id];if(w){w.hidden=!atLeast(c.lvl)||!c.views.includes(v)||(c.only&&!c.only(sim));}});

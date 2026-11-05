@@ -25,8 +25,8 @@ function gas(sim,s,p,dt){const A=ALT[p.alt],C=ACT[p.act],Pset=A.pco2;
   const need=863*C.vco2/Pset,rest=863*.2/Pset,ffT=rest+.55*(need-rest);s.vaff+=(ffT-s.vaff)*dt/40;
   if(s.holding){s.holdT+=dt;s.Ps+=.1*(s.vc/.2)*dt;s.P+=((s.Ps+6)-s.P)*dt/8;s.PA=Math.max(20,s.PA-.4*(s.vc/.2)*dt);s.VA=0;
     if(s.P>=Pset+15){s.holding=false;s.broke=s.holdT;s.lastHold=s.holdT;s.minO2=s.PA;sim.infoDirty=true;}}
-  else{const fb=clamp(1+.4*(s.P-Pset),.25,4);let VA=s.vaff*fb;if(s.hv>0){VA=Math.max(VA,36);s.hv=Math.max(0,s.hv-dt);}
-    s.VA=VA;s.P+=((863*s.vc/VA)-s.P)*dt/12;s.P=Math.max(5,s.P);s.Ps+=(s.P-s.Ps)*dt/60;
+  else{const fb=clamp(1+.4*(s.P-Pset),.25,4);let VA=s.vaff*fb;const hv=s.hv>0;if(hv){VA=Math.max(VA,10);s.hv=Math.max(0,s.hv-dt);}
+    s.VA=VA;s.P+=((863*s.vc/VA)-s.P)*dt/(hv?18:12);s.P=Math.max(5,s.P);s.Ps+=(s.P-s.Ps)*dt/(hv?30:60);
     const eq=Math.max(15,piO2(A)-s.P/.8);s.PA+=(eq-s.PA)*dt/4;}
   const v=veOf(Math.max(s.VA,.01));if(!s.holding){s.VE=v.VE;s.TV=v.TV;s.RR=v.RR;}else{s.VE=0;s.RR=0;}
   // gas exchange
@@ -38,7 +38,6 @@ function gas(sim,s,p,dt){const A=ALT[p.alt],C=ACT[p.act],Pset=A.pco2;
 function breath(s){const ph=s.ph;let V,Pa,dir;if(ph<.4){const u=ph/.4;V=Math.pow(Math.sin(u*Math.PI/2),2);Pa=-Math.sin(u*Math.PI);dir=1;}else{const u=(ph-.4)/.6;V=Math.pow(Math.cos(u*Math.PI/2),2);Pa=Math.sin(u*Math.PI);dir=-1;}
   if(s.holding){dir=0;Pa=0;}const sc=clamp(s.TV/.45,1,4);return {V,Pa:Pa*(s.TV>0?Math.sqrt(sc)*(s.RR/15>1?Math.sqrt(s.RR/15):1):1),dir};}
 
-const showFor={};
 function sync(sim){if(!sim.ui||!sim.ui.tiles)return;const v=sim.p.view;
   sim.def.metrics.forEach(m=>{const t=sim.ui.tiles[m.id];if(!t)return;const e=t.num.closest('.tile');if(e)e.hidden=!atLeast(m.lvl)||!m.views.includes(v);});
   sim.def.controls.forEach(c=>{if(!c.views)return;const w=sim.ui.ctlW&&sim.ui.ctlW[c.id];if(w)w.hidden=!atLeast(c.lvl)||!c.views.includes(v);});
@@ -57,7 +56,7 @@ function drawVent(sim,ctx,k,t){const s=sim.st,p=sim.p,B=breath(s),A=ALT[p.alt],a
   ctx.strokeStyle=PAL['cv-soft'];ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=20;ctx.beginPath();ctx.moveTo(cx,-6);ctx.lineTo(cx,96);ctx.moveTo(cx-44,132);ctx.lineTo(cx,96);ctx.lineTo(cx+44,132);ctx.stroke();
   ctx.strokeStyle=PAL['cv-bg'];ctx.lineWidth=12;ctx.stroke();
   // air moving
-  if(B.dir&&!RM||B.dir){const n=7;ctx.fillStyle=PAL['s6'];for(let i=0;i<n;i++){const f=((t*(B.dir>0?.6:-.6)*Math.min(3,s.RR/15+.2)+i/n)%1+1)%1,lane=i%2?-1:1,y=f*130,x=y<96?cx+(i%3-1)*2.5:cx+lane*(y-96)*1.3;ctx.beginPath();ctx.arc(x,y,3.4,0,6.29);ctx.fill();}}
+  if(B.dir){const n=7;ctx.fillStyle=PAL['s6'];for(let i=0;i<n;i++){const f=((t*(B.dir>0?.6:-.6)*Math.min(3,s.RR/15+.2)+i/n)%1+1)%1,lane=i%2?-1:1,y=f*130,x=y<96?cx+(i%3-1)*2.5:cx+lane*(y-96)*1.3;ctx.beginPath();ctx.arc(x,y,3.4,0,6.29);ctx.fill();}}
   // ribs
   ctx.strokeStyle='#a8a08a';ctx.lineWidth=7;ctx.lineCap='round';for(let i=0;i<6;i++){const y0=110+i*38,yEnd=y0+36-lift*(1+i*.15);[-1,1].forEach(d=>{ctx.beginPath();ctx.moveTo(cx+d*22,y0);ctx.quadraticCurveTo(cx+d*(120*wide),y0-8,cx+d*(172*wide),yEnd);ctx.stroke();});}
   // diaphragm
@@ -133,7 +132,7 @@ function drawExch(sim,ctx,k,t,internal){const s=sim.st,p=sim.p,v=sim.vis,hon=atL
     let y=12+20*k;y=wrap(ctx,ACT[p.act].n,px+14,y,pw-28,{s:15*k,w:800,c:PAL['s1']},18*k)+2;
     y=wrap(ctx,'Cells use oxygen and make carbon dioxide, so inside a cell O₂ stays low and CO₂ stays high.',px+14,y,pw-28,{s:12.5*k},15.5*k)+10;
     const drop=(lab,val,col)=>{txt(ctx,lab,px+14,y,{s:12*k,w:700});y+=8;ctx.fillStyle=PAL['card2'];rr(ctx,px+14,y,pw-28,18,6);ctx.fill();ctx.fillStyle=col;rr(ctx,px+14,y,Math.max(4,(pw-28)*val),18,6);ctx.fill();y+=18+15*k;txt(ctx,r0(val*100)+'%',px+14,y,{s:14*k,w:800});y+=18*k;};
-    drop('Hemoglobin full, arriving',s.Sa,PAL['s1']);drop('Hemoglobin full, leaving',s.Sv,DEOX==='x'?'':PAL['s2']);
+    drop('Hemoglobin full, arriving',s.Sa,PAL['s1']);drop('Hemoglobin full, leaving',s.Sv,PAL['s2']);
     wrap(ctx,'Working muscle takes more oxygen, so blood leaves with less. Blood at rest keeps a reserve of about 75%.',px+14,y,pw-28,{s:12*k,c:PAL['cv-soft']},15*k);
   }
 }
@@ -215,7 +214,7 @@ const BREATHING={
       explain:'CO₂ keeps building up because cells keep making it and you are not breathing it out. Near 55 mmHg your brain stem wins, and you gasp. Your hemoglobin is still about 90% full at that point. The urge comes mostly from CO₂, not from running out of oxygen.'},
     {lvl:'bio',instant:true,q:'Your diaphragm contracts and flattens. What happens in your chest?',choices:['Volume goes up, pressure goes down, and air flows in','Volume goes down, pressure goes up, and air flows in','Volume goes up, pressure goes up, and air flows out'],correct:0,set:{view:'vent'},
       explain:'A bigger space gives the same air more room, so pressure falls below the air outside. Air flows from high pressure to low pressure, into your lungs. That is Boyle’s law.'},
-    {lvl:'honors',q:'You move from sea level to Denver. What happens to alveolar O₂ and hemoglobin saturation?',choices:['Both stay exactly the same','Alveolar O₂ drops about 25%, but hemoglobin stays almost full (about 94%)','Both drop by about half'],correct:1,baseline:{view:'ext',alt:'sea'},change:{alt:'denver'},changeText:'Now in Denver',watch:'sat',at:4,reveal:40,
+    {lvl:'honors',q:'You move from sea level to Denver. What happens to alveolar O₂ and hemoglobin saturation?',choices:['Both stay exactly the same','Alveolar O₂ drops about 20%, but hemoglobin stays almost full (about 94%)','Both drop by about half'],correct:1,baseline:{view:'ext',alt:'sea'},change:{alt:'denver'},changeText:'Now in Denver',watch:'sat',at:4,reveal:40,
       explain:'Air in Denver is thinner, so there is less O₂ pressure in the alveoli, about 77 mmHg. Hemoglobin’s curve is flat near the top, so a person still loads about 94%. Everest is on the steep part of the curve, where saturation falls fast.'},
     {lvl:'honors',instant:true,q:'Blood arrives at the lungs with O₂ at 40 mmHg. Alveolar air has O₂ at 100 mmHg. Which way does O₂ move?',choices:['Blood to air, because blood is moving','Air to blood, from high to low','It does not move, because the wall blocks it'],correct:1,set:{view:'ext',alt:'sea',act:'rest'},
       explain:'Each gas moves down its own gradient. O₂ moves from 100 to 40, into the blood. CO₂ moves the other way, from 45 to 40.'},
@@ -223,7 +222,7 @@ const BREATHING={
       explain:'Fast blood spends only about 0.3 s in the capillary. With less surface area, oxygen does not have time to fill it. Compare the Hemoglobin full tile before and after. This is why lung disease often shows up first with exertion.'},
     {lvl:'ap',instant:true,q:'About how does most of the CO₂ in your blood travel?',choices:['As bicarbonate in plasma, about 70%','Dissolved in plasma, about 70%','On hemoglobin, about 70%'],correct:0,set:{view:'trans'},
       explain:'About 70% becomes bicarbonate, about 23% rides on hemoglobin, and about 7% stays dissolved. CO₂ + H₂O ⇌ H₂CO₃ ⇌ H⁺ + HCO₃⁻.'},
-    {lvl:'ap',q:'A swimmer overbreathes for 30 s, then holds their breath. Compared with a normal hold, what happens?',choices:['They feel the urge later, and alveolar O₂ runs lower before they notice','They feel the urge sooner','Nothing changes, because lungs are already full'],correct:0,baseline:{view:'vent',act:'rest'},changeAction:'hv',changeText:'Overbreathing for 30 s',watch:'pco2',at:4,reveal:34,
+    {lvl:'ap',instant:true,q:'A swimmer overbreathes for 30 s, then holds their breath. Compared with a normal hold, what happens?',choices:['They feel the urge later, and alveolar O₂ runs lower before they notice','They feel the urge sooner','Nothing changes, because lungs are already full'],correct:0,set:{view:'vent',act:'rest',alt:'sea'},
       explain:'Overbreathing lowers blood CO₂, so the alarm takes longer to go off. It adds little oxygen, because hemoglobin is already nearly full. During a swim, oxygen can run out before the urge arrives, and the swimmer can black out underwater. Never overbreathe before swimming underwater.'}
   ],
   onChallenge(sim,ch,phase){if(ch&&ch.set&&phase==='ask')BioLab.setValues(sim,ch.set);},
