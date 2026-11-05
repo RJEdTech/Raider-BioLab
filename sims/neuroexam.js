@@ -365,7 +365,7 @@ const LAB_CN={id:'cranial-nerve',title:'Cranial Nerve Assessment Lab',course:'SP
   purpose:'<p>Run a full cranial nerve assessment on a simulated athlete after a head injury. Choose your supplies, run each test, compare the two sides, and record what you find.</p>',
   background:'<p>Twelve pairs of cranial nerves leave the brain directly, so a head injury can affect them. Each test takes less than a minute. This athlete took a blow to the head, and at most one nerve is affected. Your job is to run every test, not just the ones you expect to fail.</p>',
   materials:['Something strong to smell (gum, mint or coffee)','Something to read, close and far','Penlight','Pen','Cup of water','Your hands'],
-  setup(sim){cnBench(sim);BioLab.setValues(sim,{view:'cn',test:'smell',supply:'scent'});BioLab.refresh(sim);},
+  setup(sim){cnBench(sim);if(!document.getElementById('neuro-lab-css')){const st=document.createElement('style');st.id='neuro-lab-css';st.textContent='.neuro-nb .vl-cell.vl-wide{min-width:10.5em}';document.head.appendChild(st);}sim.ui.nb.classList.add('neuro-nb');BioLab.setValues(sim,{view:'cn',test:'smell',supply:'scent'});BioLab.refresh(sim);},
   controls:['supply','test','run'],
   steps:[
     {title:'Get ready',text:'<p>Your athlete is on the bench. Read each row of the table below the bench. For each nerve you will write its function, the supplies you used and the test you ran, then record the result.</p><p>Start by choosing a supply and a test, then press <b>Run this test</b>. If the supply does not fit, the athlete will tell you.</p>'},

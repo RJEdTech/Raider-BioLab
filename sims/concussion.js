@@ -73,13 +73,13 @@ const RSTEPS=[{n:'Relative rest',d:'First 24 to 48 hours. Light daily activity a
   {n:'Step 4: Non-contact drills',d:'Harder team drills with no contact. Symptoms should be gone by now.',L:3.6},
   {n:'Step 5: Full-contact practice',d:'Only after clearance from a health care provider.',L:4.6},
   {n:'Step 6: Return to sport',d:'Normal game play.',L:5.4}];
-function rFresh(seed){const g=rng(seed);const r={seed,S0:5+g()*2.5,tau:3+g()*3,tc:4+g()*3,day:0,step:0,clear:false,msg:null,flare:0,sym:0,hist:[]};r.sym=rSym(r,0,0);r.hist.push({d:0,s:0,y:r.sym});return r;}
-function rSym(r,day,step){const B=r.S0*Math.exp(-day/r.tau),cap=6*(1-Math.exp(-day/r.tc)),fl=Math.max(0,RSTEPS[step].L-cap)*1.6;let y=B+fl;y=Math.round(y*2)/2;return clamp(y<.5?0:y,0,10);}
-function rGo(sim,dStep){const r=sim.st.r;if(r.step>=6&&dStep>=0&&r.done){return;}const was=r.sym,want=clamp(r.step+dStep,0,6);
+function rFresh(seed){const g=rng(seed);const r={seed,S0:5+g()*2.5,tau:3+g()*3,tc:6+g()*3,day:0,step:0,clear:false,msg:null,flare:0,sym:0,hist:[]};r.sym=rSym(r,0,0);r.hist.push({d:0,s:0,y:r.sym});return r;}
+function rSym(r,day,step){const B=r.S0*Math.exp(-day/r.tau),cap=6.5*(1-Math.exp(-day/r.tc)),fl=Math.max(0,RSTEPS[step].L-cap)*2.5;let y=B+fl;y=Math.round(y*2)/2;return clamp(y<.5?0:y,0,10);}
+function rGo(sim,dStep){const r=sim.st.r;if(r.step>=6&&dStep>=0&&r.done){return;}const want=clamp(r.step+dStep,0,6);
   if(dStep>0&&want===5&&!r.clear){r.msg={t:'Stop. Colorado law and the consensus both require clearance from a health care provider before full contact. Press See a provider first.',c:'s1'};return;}
   if(dStep>0&&want>=4&&r.sym>0){r.msg={t:'Steps 4 to 6 wait until symptoms are gone. Stay on this step for now.',c:'s1'};return;}
   r.day++;r.step=want;r.sym=rSym(r,r.day,r.step);r.flare=Math.max(0,r.sym-rSym(r,r.day,0));r.hist.push({d:r.day,s:r.step,y:r.sym});
-  if(r.flare>=1&&r.sym>was)r.msg={t:'Symptoms came back on this step. Go back a step and try again after at least 24 hours.',c:'s1'};
+  if(r.flare>=.5)r.msg={t:'Symptoms came back on this step. Go back a step and try again after at least 24 hours.',c:'s1'};
   else if(r.step===6&&r.sym===0){r.msg={t:'Returned to sport on day '+r.day+'. Every step took at least 24 hours.',c:'s3'};r.done=true;}
   else r.msg=dStep>0?{t:'Moved up. At least 24 hours passed on the last step.',c:'cv-soft'}:dStep<0?{t:'Moved back one step. Symptoms need time to settle.',c:'cv-soft'}:{t:'Stayed on this step for another day.',c:'cv-soft'};}
 function rClear(sim){const r=sim.st.r;if(r.sym>0){r.msg={t:'The provider will not clear an athlete who still has symptoms. Try again when symptoms are gone.',c:'s1'};return;}r.clear=true;r.msg={t:'Cleared by a health care provider. Full-contact practice is now allowed.',c:'s3'};}
