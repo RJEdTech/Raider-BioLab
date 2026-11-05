@@ -27,24 +27,24 @@ const seatSide=(ua,fa,fm,th,sh,ft,x)=>fig({x:x||420,y:TT-24,t:270,armA:[ua,fa,fm
 const seatFront=(ua,fa,fm,opts)=>fig(Object.assign({x:480,y:TT-24,t:270,a:-1,sw:40,hw:26,tw:26,armA:[ua,fa,fm||1],armB:(opts&&opts.a===1)?[102,102]:[78,78],legA:[90,90,90,.28,.85],legB:[90,90,90,.28,.85]},opts||{}));
 const supSide=(o)=>fig(Object.assign({x:540,y:TT-24,t:180,armA:[0,0],armB:[2,2],legA:[0,0,-90],legB:[0,0,-86]},o));
 const proneSide=(o)=>fig(Object.assign({x:520,y:TT-24,t:180,armA:[4,4],armB:[0,0],legA:[0,0,0],legB:[0,0,20]},o));
-const sideLie=(top,bot,th)=>fig({x:520,y:TT-44,t:180,a:1,sw:32,hw:28,tw:22,armA:[20,4],armB:[12,0],legA:[top,top,top-90],legB:[bot,bot,bot-90]});
+const sideLie=(top,bot,th)=>fig({x:520,y:TT-44,t:180,a:1,sw:32,hw:28,tw:22,armA:[20,4],armB:[2,0],legA:[top,top,top-90],legB:[bot,bot,bot-90]});
 const pm=(cx,cy)=>({x:cx,y:cy});
 /* Each test: sheet words, then the picture. scene(u) gets u from 0 (test position) to 1 (moved). flip mirrors the picture for the patient's left side. */
 const TESTS=[
 {id:'pecU',g:'s',m:'Pectoralis Major',f:'Upper',pos:'Supine',hands:'One hand on pectoralis major, one hand on bicep (providing resistance)',test:'Instruct patient to punch the person behind them',
  short:'Supine',flip:'y',cy:260,top:1,ins:{v:'front',p:[[.03,.175,.105,.18,.018]]},
  why:'The upper fibers run from the clavicle to the humerus, so they pull the arm up and across the body, toward the opposite ear.',
- scene(u){const J=supTop(pm(lerp(290,320,u),lerp(428,370,u)));return {J,mus:[on(J.neck,J.sA,.05,1,-10,12)],P:[off(J.neck,J.sA,.12,-14)],R:[lp(J.sA,J.hA,.45)],mv:[{at:lp(J.sA,J.hA,.86),ang:262,len:66}],rs:[{at:lp(J.sA,J.hA,.45),ang:82,len:58}]};},
+ scene(u){const J=supTop(pm(lerp(290,320,u),lerp(428,370,u)));return {J,mus:[[{x:J.neck.x+8,y:J.neck.y+2},{x:J.sA.x-2,y:J.sA.y+2},9]],P:[{x:J.neck.x+22,y:J.neck.y-16}],R:[lp(J.sA,J.hA,.45)],mv:[{at:lp(J.sA,J.hA,.86),ang:262,len:66}],rs:[{at:lp(J.sA,J.hA,.45),ang:82,len:58}]};},
  nerve:'Lateral pectoral nerve',root:'C5 to C7',inj:'A one-sided weak or painful test points to a pectoralis major strain. Weakness with no pain raises a nerve question.'},
 {id:'pecM',g:'s',m:'Pectoralis Major',f:'Middle',pos:'Supine',hands:'One hand on pectoralis major, one hand on bicep (providing resistance)',test:'Instruct patient to "punch" the person next to them',
  short:'Supine',flip:'y',cy:260,top:1,ins:{v:'front',p:[[.02,.205,.105,.195,.03]]},
  why:'The middle fibers run straight across from the sternum to the humerus, so they pull the arm directly across the chest. That movement is horizontal adduction.',
- scene(u){const J=supTop(pm(422,lerp(446,370,u)));return {J,mus:[on(J.neck,J.sA,.0,1,-30,15)],P:[off(J.neck,J.sA,.05,-34)],R:[lp(J.sA,J.hA,.45)],mv:[{at:{x:J.hA.x+26,y:J.hA.y},ang:270,len:66}],rs:[{at:{x:lp(J.sA,J.hA,.45).x-26,y:lp(J.sA,J.hA,.45).y},ang:90,len:58}]};},
+ scene(u){const J=supTop(pm(422,lerp(446,370,u)));return {J,mus:[[{x:J.neck.x+46,y:J.neck.y+2},{x:J.sA.x+2,y:J.sA.y+2},11]],P:[{x:J.neck.x+58,y:J.neck.y-16}],R:[lp(J.sA,J.hA,.45)],mv:[{at:{x:J.hA.x+26,y:J.hA.y},ang:270,len:66}],rs:[{at:{x:lp(J.sA,J.hA,.45).x-26,y:lp(J.sA,J.hA,.45).y},ang:90,len:58}]};},
  nerve:'Medial and lateral pectoral nerves',root:'C6 to T1',inj:'A one-sided weak or painful test points to a pectoralis major strain, often from bench pressing.'},
 {id:'pecL',g:'s',m:'Pectoralis Major',f:'Lower',pos:'Supine',hands:'One hand on pectoralis major, one hand on bicep (providing resistance)',test:'Instruct patient to put something in the opposite pocket',
  short:'Supine',flip:'y',cy:260,top:1,ins:{v:'front',p:[[.03,.245,.1,.205,.022]]},
  why:'The lower fibers rise from the lower sternum and ribs to the humerus, so they pull the arm down and across, toward the opposite hip.',
- scene(u){const J=supTop(pm(lerp(530,530,u),lerp(424,366,u)));return {J,mus:[on(J.neck,J.sA,.05,1,-54,13)],P:[off(J.neck,J.sA,.0,-62)],R:[lp(J.sA,J.hA,.45)],mv:[{at:{x:J.hA.x+30,y:J.hA.y-8},ang:285,len:66}],rs:[{at:{x:lp(J.sA,J.hA,.45).x+32,y:lp(J.sA,J.hA,.45).y+6},ang:105,len:54}]};},
+ scene(u){const J=supTop(pm(lerp(530,530,u),lerp(424,366,u)));return {J,mus:[[{x:J.neck.x+84,y:J.neck.y+4},{x:J.sA.x+4,y:J.sA.y+2},11]],P:[{x:J.neck.x+96,y:J.neck.y-14}],R:[lp(J.sA,J.hA,.45)],mv:[{at:{x:J.hA.x+30,y:J.hA.y-8},ang:285,len:66}],rs:[{at:{x:lp(J.sA,J.hA,.45).x+32,y:lp(J.sA,J.hA,.45).y+6},ang:105,len:54}]};},
  nerve:'Medial and lateral pectoral nerves',root:'C6 to T1',inj:'A one-sided weak or painful test points to a pectoralis major strain.'},
 {id:'deltA',g:'s',m:'Deltoid',f:'Anterior',pos:'Sitting with hands pronated 90 degrees',hands:'One hand on anterior deltoid, one hand on humerus (providing resistance)',test:'Instruct patient to move into shoulder flexion',
  short:'Sitting',ins:{v:'front',p:[[.112,.175,.13,.235,.02]]},

@@ -44,7 +44,7 @@ const SLANG={lats:'lats',latissimus:'lats',pecs:'pec',pec:'pec',chest:'pec',trap
 
 /* ---------- the art ---------- */
 const TONE=['#b4534a','#a84b45','#bd5c50','#ad4f47'];
-const MUTED='#8d6a64',BONE='#ded3bf',DEEPC='#5a2c28',HI='#f4b730',HI2='#8a5d0a';
+const MUTED='#8d6a64',BONE='#ded3bf',DEEPC='#673631',HI='#f4b730',HI2='#8a5d0a';
 function bspline(pts,n){const out=[],L=pts.length;for(let i=0;i<L;i++){const p0=pts[i],p1=pts[(i+1)%L],p2=pts[(i+2)%L],a=[(p0[0]+p1[0])/2,(p0[1]+p1[1])/2],b=[(p1[0]+p2[0])/2,(p1[1]+p2[1])/2];
   for(let j=0;j<n;j++){const t=j/n,u=1-t;out.push([u*u*a[0]+2*u*t*p1[0]+t*t*b[0],u*u*a[1]+2*u*t*p1[1]+t*t*b[1]]);}}return out;}
 function strapPts(c,w){const left=[],right=[];c.forEach((p,i)=>{const a=c[Math.max(0,i-1)],b=c[Math.min(c.length-1,i+1)];let dx=b[0]-a[0],dy=b[1]-a[1];const L=Math.hypot(dx,dy)||1;dx/=L;dy/=L;left.push([p[0]-dy*w[i],p[1]+dx*w[i]]);right.push([p[0]+dy*w[i],p[1]-dx*w[i]]);});
@@ -81,11 +81,12 @@ const FRONT=[
   P(null,[[.045,.45],[.076,.44],[.070,.50],[.055,.525]],{d:[.5,1]}),
   P('gmed',[[.092,.398],[.106,.43],[.110,.466],[.098,.442]],{c:[.108,.48]}),
   P(null,[[.090,.418],[.106,.44],[.112,.50],[.102,.535],[.092,.50],[.085,.45]],{d:[.25,1]}),
-  P('adductors',[[.014,.468],[.044,.478],[.060,.525],[.048,.575],[.036,.625],[.028,.668],[.018,.655],[.008,.58],[-.002,.52]],{c:[.052,.70]}),
+  P('adductors',[[.014,.468],[.044,.478],[.060,.525],[.048,.575],[.036,.625],[.028,.668],[.018,.655],[.008,.58],[.002,.52]],{c:[.052,.70]}),
   P('vastlat',[[.097,.50],[.114,.515],[.112,.58],[.100,.66],[.090,.70],[.076,.716],[.072,.69],[.079,.62],[.084,.56],[.089,.52]],{d:[-.28,1]},{pale:[.080,.668,.075,.712]}),
   P('vastmed',[[.049,.572],[.0475,.64],[.051,.695],[.047,.716],[.036,.714],[.027,.695],[.029,.66],[.039,.615]],{d:[.5,1]}),
   S('rectusfem',[[.079,.44],[.074,.50],[.066,.57],[.060,.64],[.057,.70]],[.006,.017,.021,.016,.008],{pale:[.061,.645,.057,.70]}),
   S('sartorius',[[.094,.412],[.083,.465],[.062,.535],[.044,.60],[.032,.665],[.026,.715],[.030,.762]],[.005,.0095,.0095,.009,.008,.006,.003]),
+  P(null,[[.038,.700],[.056,.694],[.074,.700],[.078,.735],[.066,.758],[.046,.758],[.034,.735]],null,{fascia:true}),
   P(null,[[.076,.755],[.092,.77],[.090,.82],[.080,.875],[.068,.93],[.060,.93],[.068,.87],[.076,.82],[.075,.79]],{d:[-.2,1]}),
   P('gastroc',[[.022,.750],[.033,.752],[.033,.80],[.031,.848],[.023,.846],[.015,.80]],{d:[.1,1]}),
   P('gastroc',[[.088,.772],[.096,.80],[.090,.842],[.081,.84],[.086,.80]],{d:[-.1,1]}),
@@ -95,6 +96,7 @@ const FRONT=[
 ];
 const BACK=[
   /* under the surface muscles */
+  ...[.205,.225,.245,.265,.285,.305].map(y=>Object.assign(S(null,[[.026,y],[.06,y+.008],[.098,y+.03]],[.0028,.003,.0026]),{deep:true,boneLook:true})),
   P(null,[[.002,.098],[.024,.102],[.034,.128],[.030,.150],[.002,.152]],{d:[.6,1]},{deep:true}),
   P(null,[[.024,.118],[.036,.126],[.054,.178],[.046,.178]],{d:[.4,1]},{deep:true}),
   P(null,[[.050,.166],[.110,.156],[.120,.167],[.056,.182]],{d:[1,-.1]},{deep:true}),
@@ -108,21 +110,21 @@ const BACK=[
   P('flexors',[[.130,.372],[.146,.372],[.147,.395],[.154,.425],[.168,.484],[.160,.480],[.145,.42]],{d:[.4,1]},{pale:[.150,.43,.163,.48]}),
   P('extensors',[[.148,.372],[.163,.358],[.171,.39],[.181,.43],[.190,.46],[.193,.484],[.167,.484],[.160,.45],[.153,.42],[.147,.39]],{d:[.4,1]},{pale:[.172,.44,.180,.482]}),
   P('brachiorad',[[.160,.332],[.170,.350],[.178,.385],[.187,.428],[.179,.428],[.168,.385],[.162,.360]],{d:[.3,1]}),
-  P('infra',[[.054,.190],[.078,.184],[.104,.178],[.122,.196],[.114,.208],[.088,.225],[.068,.237],[.058,.215]],{c:[.126,.196]}),
+  P('infra',[[.044,.190],[.078,.184],[.104,.178],[.122,.196],[.114,.208],[.088,.225],[.066,.240],[.050,.218]],{c:[.126,.196]}),
   P(null,[[.068,.233],[.092,.218],[.114,.204],[.118,.212],[.095,.227],[.073,.240]],{d:[1,-.55]}),
   P('teres',[[.061,.235],[.075,.238],[.096,.225],[.118,.212],[.122,.226],[.099,.240],[.077,.252],[.063,.249]],{d:[1,-.52]}),
   P('triceps',[[.106,.238],[.118,.216],[.130,.25],[.143,.276],[.156,.298],[.163,.335],[.158,.364],[.141,.366],[.130,.345],[.120,.30]],{d:[.26,1]},{pale:[.149,.325,.147,.366]}),
-  P('adductors',[[.0,.515],[.014,.535],[.024,.60],[.019,.635],[.009,.58]],{d:[.3,1]}),
-  S('semimem',[[.024,.555],[.024,.61],[.027,.67],[.031,.738]],[.008,.012,.011,.004],{pale:[.024,.555,.024,.59]}),
-  S('semiten',[[.040,.53],[.040,.60],[.038,.66],[.034,.72],[.029,.765]],[.010,.0135,.008,.003,.002],{pale:[.039,.645,.034,.715]}),
-  S('bicfem',[[.058,.525],[.068,.60],[.077,.66],[.083,.72],[.085,.758]],[.010,.017,.015,.007,.003],{pale:[.079,.68,.084,.75]}),
-  P('vastlat',[[.088,.555],[.108,.575],[.099,.655],[.088,.70],[.085,.66]],{d:[-.25,1]}),
+  P('adductors',[[.002,.515],[.014,.535],[.024,.60],[.019,.635],[.009,.58]],{d:[.3,1]}),
+  S('semimem',[[.024,.555],[.023,.61],[.027,.67],[.031,.738]],[.009,.013,.012,.005],{pale:[.026,.70,.031,.738]}),
+  S('semiten',[[.040,.53],[.043,.60],[.042,.66],[.036,.72],[.029,.765]],[.012,.016,.010,.003,.002],{pale:[.039,.645,.034,.715]}),
+  S('bicfem',[[.060,.525],[.070,.60],[.076,.66],[.080,.72],[.085,.758]],[.014,.021,.019,.009,.003],{pale:[.079,.68,.084,.75]}),
+  P('vastlat',[[.090,.55],[.112,.575],[.103,.655],[.092,.70],[.089,.66]],{d:[-.25,1]}),
   /* surface-only layers, which lift away in the deep view */
   P('lats',[[.002,.232],[.04,.238],[.066,.248],[.092,.241],[.112,.232],[.110,.238],[.105,.25],[.104,.30],[.100,.35],[.096,.398],[.068,.402],[.034,.352],[.002,.302]],{c:[.122,.214]},{surf:true}),
   P(null,[[.002,.298],[.03,.345],[.068,.398],[.036,.424],[.012,.472],[.002,.495]],null,{surf:true,fascia:true}),
   S('erector',[[.018,.335],[.020,.38],[.018,.43],[.012,.464]],[.012,.015,.012,.006],{surf:true,thin:true}),
   P('trapezius',[[.002,.090],[.024,.098],[.034,.118],[.039,.142],[.068,.152],[.096,.157],[.122,.164],[.100,.172],[.070,.177],[.050,.186],[.030,.235],[.012,.29],[.002,.314]],{c:[.092,.174]},{surf:true}),
-  P('gmed',[[.046,.405],[.072,.386],[.098,.398],[.110,.445],[.112,.476],[.094,.448],[.072,.428]],{c:[.110,.49]},{surf:true}),
+  P('gmed',[[.046,.405],[.072,.386],[.098,.398],[.113,.445],[.116,.488],[.092,.466],[.060,.448]],{c:[.110,.49]},{surf:true}),
   P('gmax',[[.003,.452],[.026,.422],[.058,.432],[.092,.452],[.114,.492],[.116,.527],[.102,.549],[.070,.558],[.036,.552],[.012,.530],[.002,.50]],{d:[1,.55]},{surf:true}),
   P('gastroc',[[.0485,.735],[.030,.742],[.016,.79],[.021,.835],[.033,.867],[.0485,.874],[.0505,.81]],{d:[.1,1]},{surf:true,pale:[.042,.83,.047,.874]}),
   P('gastroc',[[.0545,.735],[.080,.742],[.095,.79],[.085,.83],[.066,.859],[.0535,.874],[.0525,.81]],{d:[-.12,1]},{surf:true,pale:[.062,.825,.056,.874]}),
@@ -134,17 +136,19 @@ const BONES={
 front:[
   S('b',[[.008,.164],[.04,.160],[.075,.159],[.114,.164]],[.0035,.004,.004,.0045]),
   P('b',[[.001,.166],[.009,.170],[.008,.25],[.001,.260]]),
-  P('b',[[.045,.70],[.056,.698],[.068,.70],[.071,.716],[.064,.732],[.056,.736],[.048,.732],[.041,.716]]),
+  P('b',[[.047,.702],[.056,.700],[.066,.702],[.069,.716],[.063,.730],[.056,.734],[.049,.730],[.043,.716]]),
   P('b',[[.050,.730],[.062,.730],[.059,.754],[.053,.754]]),
-  P('b',[[.035,.752],[.052,.752],[.054,.80],[.048,.86],[.041,.928],[.033,.928],[.032,.86],[.033,.80]]),
-  P('b',[[.122,.355],[.132,.352],[.134,.366],[.125,.370]])],
+  P('b',[[.037,.754],[.050,.754],[.051,.80],[.046,.86],[.041,.928],[.035,.928],[.035,.86],[.036,.80]]),
+  P('b',[[.122,.355],[.132,.352],[.134,.366],[.125,.370]]),
+  S('b',[[.158,.487],[.200,.479]],[.0035,.0035]),S('b',[[.024,.940],[.074,.940]],[.0045,.0045])],
 back:[
   S('b',[[.050,.187],[.075,.178],[.100,.170],[.122,.164]],[.0018,.003,.004,.005]),
   P('b',[[.140,.362],[.154,.362],[.153,.378],[.144,.380]]),
-  P('b',[[.044,.872],[.058,.872],[.054,.945],[.046,.945]])]};
+  P('b',[[.044,.872],[.058,.872],[.054,.945],[.046,.945]]),
+  S('b',[[.158,.487],[.200,.479]],[.0035,.0035]),S('b',[[.024,.940],[.074,.940]],[.0045,.0045])]};
 function pieces(view,deep){return (view==='front'?FRONT:BACK).filter(p=>deep?!p.surf:!p.deep);}
 const inPoly=(poly,x,y)=>{let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])c=!c;}return c;};
-function hitAt(view,deep,nx,ny){const L=pieces(view,deep),ax=Math.abs(nx);for(let i=L.length-1;i>=0;i--){const p=L[i];if(p.fascia||p.thin&&false)continue;if(inPoly(p.poly,ax,ny)){if(p.m)return p.m;return null;}}return null;}
+function hitAt(view,deep,nx,ny){const L=pieces(view,deep),ax=Math.abs(nx);for(let i=L.length-1;i>=0;i--){const p=L[i];if(p.fascia)continue;if(inPoly(p.poly,ax,ny)){if(p.m)return p.m;return null;}}return null;}
 function onView(id,view,deep){return pieces(view,deep).some(p=>p.m===id);}
 function trace(ctx,poly,sx,f){ctx.beginPath();poly.forEach((q,i)=>{const X=f.cx+sx*q[0]*f.h,Y=f.top+q[1]*f.h;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.closePath();}
 function paint(ctx,p,f,col,opt){opt=opt||{};const lw=Math.max(.5,f.h/1100);[1,-1].forEach(sx=>{ctx.save();trace(ctx,p.poly,sx,f);
@@ -163,7 +167,7 @@ function drawBody(ctx,f,deep){const o={cx:f.cx,top:f.top,h:f.h};
   /* deep tissue under the muscles; head, hands and feet stay plain */
   ctx.fillStyle=DEEPC;ctx.fillRect(f.cx-.25*f.h,f.top+.112*f.h,.5*f.h,(.484-.112)*f.h);ctx.fillRect(f.cx-.125*f.h,f.top+.484*f.h,.25*f.h,(.945-.484)*f.h);
   if(f.view==='back'){ctx.fillStyle=PAL['card2'];ctx.fillRect(f.cx-.08*f.h,f.top,.16*f.h,.112*f.h);}
-  pieces(f.view,deep).forEach(p=>{if(p.fascia){[1,-1].forEach(sx=>{trace(ctx,p.poly,sx,f);ctx.fillStyle='#cdbfa8';ctx.fill();});return;}paint(ctx,p,f,p.m?TONE_OF(p.m):MUTED);});
+  pieces(f.view,deep).forEach(p=>{if(p.boneLook){paintBone(ctx,p,f);return;}if(p.fascia){[1,-1].forEach(sx=>{trace(ctx,p.poly,sx,f);ctx.fillStyle='#c9baa2';ctx.fill();});return;}paint(ctx,p,f,p.m?TONE_OF(p.m):MUTED);});
   (BONES[f.view]||[]).forEach(p=>paintBone(ctx,p,f));
   /* the midline */
   ctx.strokeStyle='rgba(30,10,8,.75)';ctx.lineWidth=Math.max(.8,f.h/800);ctx.beginPath();
@@ -185,6 +189,7 @@ function layout(sim){const v=sim.p.view,z=sim.p.zoom;
   return {figs:[{view:v,cx:400,top:16,h:690}]};}
 function artCache(sim,ctx,L,deep){const w=ctx.canvas.width,hh=ctx.canvas.height,key=[sim.p.view,sim.p.zoom,deep,w,hh,PAL['cv-bg'],PAL['card2']].join('|');const v=sim.vis||(sim.vis={});
   if(v.key!==key||!v.art){const c=document.createElement('canvas');c.width=w;c.height=hh;const x=c.getContext('2d'),sc=w/800;x.setTransform(sc,0,0,sc,0,0);L.figs.forEach(f=>drawBody(x,f,deep));v.art=c;v.key=key;}return v.art;}
+function cached(sim,ctx,slot,key,fn){const w=ctx.canvas.width,hh=ctx.canvas.height,v=sim.vis||(sim.vis={}),full=[key,w,hh,PAL['cv-bg'],PAL['card2']].join('|');if(!v[slot]||v[slot+'K']!==full){const c=document.createElement('canvas');c.width=w;c.height=hh;const x=c.getContext('2d'),sc=w/800;x.setTransform(sc,0,0,sc,0,0);fn(x);v[slot]=c;v[slot+'K']=full;}ctx.drawImage(v[slot],0,0,800,LH);}
 function wrap(ctx,s,x,y,w,lh,o){o=o||{};ctx.font=(o.w||400)+' '+(o.s||13)+'px '+FONT;const words=String(s).split(' ');let line='',yy=y;words.forEach(wd=>{const t=line?line+' '+wd:wd;if(ctx.measureText(t).width>w&&line){txt(ctx,line,x,yy,o);yy+=lh;line=wd;}else line=t;});if(line){txt(ctx,line,x,yy,o);yy+=lh;}return yy;}
 
 /* ---------- practice ---------- */
@@ -224,15 +229,16 @@ const ROOTS=[
  {id:'biceps',g:'Number of heads',w:'biceps',m:'two heads',d:'The muscle starts at two places (origins) and joins into one belly.',ex:['biceps','bicfem'],dr:'heads',a:2},
  {id:'triceps',g:'Number of heads',w:'triceps',m:'three heads',d:'The muscle starts at three places and joins into one belly.',ex:['triceps'],dr:'heads',a:3},
  {id:'deltoid',g:'Shape',w:'deltoid',m:'triangle',d:'Shaped like the Greek letter delta (Δ).',ex:['deltoid'],dr:'shape',a:'tri'},
- {id:'trapezius',g:'Shape',w:'trapezius',m:'trapezoid',d:'The left and right muscles together make a trapezoid.',ex:['trapezius'],dr:'shape',a:'trap'},
+ {id:'trapezius',v:'back',g:'Shape',w:'trapezius',m:'trapezoid',d:'The left and right muscles together make a trapezoid.',ex:['trapezius'],dr:'shape',a:'trap'},
  {id:'serratus',g:'Shape',w:'serratus',m:'saw-toothed',d:'The edge has teeth like a saw, where the muscle reaches the ribs.',ex:['serratus'],dr:'shape',a:'saw'},
  {id:'teres',g:'Shape',w:'teres',m:'round',d:'Long and round in cross-section, like a cord.',ex:['teres'],dr:'shape',a:'round'}];
 const rootOf=sim=>ROOTS.find(r=>r.id===sim.p.root)||ROOTS[0];
 function chipBoxes(k){const out=[],cols=3,w=156,x0=292,gap=6,h=Math.round(20*k+10);ROOTS.forEach((r,i)=>{const c=i%cols,ro=Math.floor(i/cols);out.push({r,x:x0+c*(w+gap),y:14+ro*(h+gap),w,h});});return out;}
-function drawDecoder(sim,ctx,k){const v=sim.vis,r=rootOf(sim);ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,LH);
-  const hasBack=r.ex.some(e=>!onView(e,'front',false)),view=r.ex.length&&hasBack?'back':'front',f={view,cx:140,top:30,h:620};
-  drawBody(ctx,f,false);r.ex.forEach(e=>highlight(ctx,f,e,false));
-  txt(ctx,(view==='front'?'Front':'Back')+' view',140,LH-20,{s:12*k,c:PAL['cv-soft'],a:'center'});
+function drawDecoder(sim,ctx,k){const v=sim.vis||(sim.vis={}),r=rootOf(sim);ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,LH);
+  const views=[...new Set(r.ex.map(e=>r.v||(onView(e,'front',false)?'front':'back')))];if(!views.length)views.push(r.dr==='size'?'back':'front');
+  const figs=views.length>1?[{view:views[0],cx:140,top:28,h:320},{view:views[1],cx:140,top:372,h:320}]:[{view:views[0],cx:140,top:30,h:620}];
+  cached(sim,ctx,'dec',views.join(),x=>figs.forEach(f=>drawBody(x,f,false)));
+  figs.forEach(f=>{r.ex.forEach(e=>highlight(ctx,f,e,false));txt(ctx,f.view==='front'?'Front':'Back',figs.length>1?28:140,f.top+(figs.length>1?14:f.h+22),{s:12*k,c:PAL['cv-soft'],a:figs.length>1?'left':'center'});});
   const B=chipBoxes(k);v.chips=B;B.forEach(b=>{const on=b.r.id===r.id;rr(ctx,b.x,b.y,b.w,b.h,7);ctx.fillStyle=on?'#8f1d2c':PAL['card2'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();txt(ctx,b.r.w,b.x+b.w/2,b.y+b.h/2,{s:13*k,w:on?700:500,c:on?'#fff':PAL['cv-ink'],a:'center',b:'middle'});});
   const last=B[B.length-1],y0=last.y+last.h+18*k+14;
   txt(ctx,r.g,292,y0,{s:12.5*k,c:PAL['cv-soft']});txt(ctx,r.w+' = '+r.m,292,y0+26*k,{s:21*k,w:700});
@@ -261,13 +267,11 @@ const TYPES=[{id:'skeletal',n:'Skeletal muscle',a:'Long, striped (striated) fibe
 function tissue(ctx,id,x,y,w,h){ctx.save();rr(ctx,x,y,w,h,8);ctx.clip();ctx.fillStyle='#efdcd8';ctx.fillRect(x,y,w,h);const nuc='#3f3a78';
   if(id==='skeletal'){const n=4,fh=h/n;for(let i=0;i<n;i++){const fy=y+i*fh;ctx.fillStyle=i%2?'#c9707e':'#c26573';ctx.fillRect(x,fy+2,w,fh-4);ctx.strokeStyle='rgba(90,20,40,.55)';ctx.lineWidth=1.6;for(let q=x+((i*3)%6);q<x+w;q+=6){ctx.beginPath();ctx.moveTo(q,fy+3);ctx.lineTo(q,fy+fh-3);ctx.stroke();}
       ctx.fillStyle=nuc;[.14,.42,.7,.92].forEach((t,j)=>{ctx.beginPath();ctx.ellipse(x+w*((t+i*.13)%1),fy+((i+j)%2?5:fh-5),11,3.2,0,0,6.3);ctx.fill();});}}
-  else if(id==='cardiac'){ctx.strokeStyle='rgba(90,20,40,.5)';const fibres=[[.2],[.55],[.87]];ctx.lineCap='round';
-    const seg=(a,b,c,d,t)=>{ctx.strokeStyle='#c26573';ctx.lineWidth=t;ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();};
-    fibres.forEach((f,i)=>{seg(x-10,y+h*f[0],x+w+10,y+h*f[0]+(i-1)*6,h*.22);});
-    seg(x+w*.26,y+h*.2,x+w*.42,y+h*.55,h*.16);seg(x+w*.62,y+h*.56,x+w*.78,y+h*.86,h*.16);seg(x+w*.1,y+h*.86,x+w*.2,y+h*.55,h*.16);
-    ctx.strokeStyle='rgba(90,20,40,.5)';ctx.lineWidth=1.3;ctx.lineCap='butt';for(let q=x;q<x+w;q+=6){ctx.beginPath();ctx.moveTo(q,y);ctx.lineTo(q+2,y+h);ctx.stroke();}
-    ctx.fillStyle='#efdcd8';ctx.save();ctx.globalCompositeOperation='source-over';ctx.restore();
-    ctx.strokeStyle='#4b1320';ctx.lineWidth=3.5;[[.32,.2],[.68,.2],[.5,.56],[.9,.55],[.34,.86],[.7,.87]].forEach(q=>{const X=x+w*q[0],Y=y+h*q[1],H=h*.11;ctx.beginPath();ctx.moveTo(X,Y-H);ctx.lineTo(X+4,Y-H*.4);ctx.lineTo(X-3,Y+H*.2);ctx.lineTo(X+3,Y+H);ctx.stroke();});
+  else if(id==='cardiac'){ctx.lineCap='butt';
+    const seg=(a,b,c,d,t)=>{ctx.setLineDash([]);ctx.strokeStyle='#c26573';ctx.lineWidth=t;ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();ctx.strokeStyle='rgba(90,20,40,.5)';ctx.setLineDash([1.4,4.6]);ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();ctx.setLineDash([]);};
+    [[.2,-5],[.55,0],[.87,5]].forEach(f=>seg(x-10,y+h*f[0]-f[1],x+w+10,y+h*f[0]+f[1],h*.2));
+    seg(x+w*.24,y+h*.2,x+w*.42,y+h*.55,h*.15);seg(x+w*.62,y+h*.55,x+w*.8,y+h*.87,h*.15);seg(x+w*.08,y+h*.87,x+w*.2,y+h*.55,h*.15);seg(x+w*.78,y+h*.2,x+w*.92,y+h*.55,h*.15);
+    ctx.strokeStyle='#4b1320';ctx.lineWidth=3.5;[[.32,.2],[.68,.2],[.5,.56],[.92,.55],[.34,.86],[.7,.87]].forEach(q=>{const X=x+w*q[0],Y=y+h*q[1],H=h*.095;ctx.beginPath();ctx.moveTo(X,Y-H);ctx.lineTo(X+4,Y-H*.4);ctx.lineTo(X-3,Y+H*.2);ctx.lineTo(X+3,Y+H);ctx.stroke();});
     ctx.fillStyle=nuc;[[.15,.2],[.5,.2],[.3,.56],[.72,.56],[.52,.87],[.85,.87]].forEach(q=>{ctx.beginPath();ctx.ellipse(x+w*q[0],y+h*q[1],10,6,0,0,6.3);ctx.fill();});}
   else{const rows=4;for(let i=0;i<rows;i++){for(let j=-1;j<4;j++){const cx=x+w*(j+.5+(i%2)*.5)/3,cy=y+h*(i+.5)/rows,hw=w/3*.62,hh=h/rows*.62;ctx.beginPath();ctx.moveTo(cx-hw,cy);ctx.quadraticCurveTo(cx,cy-hh*1.5,cx+hw,cy);ctx.quadraticCurveTo(cx,cy+hh*1.5,cx-hw,cy);ctx.closePath();ctx.fillStyle=(i+j)%2?'#d27f8b':'#c8707d';ctx.fill();ctx.strokeStyle='rgba(90,20,40,.45)';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=nuc;ctx.beginPath();ctx.ellipse(cx,cy,w*.04,4,0,0,6.3);ctx.fill();}}}
   ctx.restore();rr(ctx,x,y,w,h,8);ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();}
@@ -304,7 +308,7 @@ function drawPull(sim,ctx,vdt,k){const s=sim.st,v=sim.vis;ctx.fillStyle=PAL['cv-
   lab('Triceps Brachii','extensor: opens the joint',196,200,tb.x,tb.y,'right');
   lab('Origin','fixed bone',196,100,g.triO.x,g.triO.y,'right');
   lab('Insertion','moving bone',196,LH-110,g.ol.x,g.ol.y,'right');
-  txt(ctx,'Insertion of Biceps Brachii: on the moving bone, just past the joint',30,LH-26,{s:12*k,c:PAL['cv-soft']});
+  lab('Insertion','moving bone',500,LH-190,g.ins.x,g.ins.y,'left');
   txt(ctx,'Elbow angle: '+Math.round(180-deg)+'°',500,LH-70,{s:16*k,w:700});txt(ctx,'Flexion: '+Math.round(deg)+'°',500,LH-70+19*k,{s:13*k,c:PAL['cv-soft']});
   txt(ctx,bActive?'Biceps Brachii shortens. Triceps Brachii relaxes.':tActive?'Triceps Brachii shortens. Biceps Brachii relaxes.':'',30,24,{s:13.5*k,w:600});
   v._g=g;}

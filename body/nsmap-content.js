@@ -9,7 +9,7 @@ BioLab.addPractical({nsmap:{
     'The PNS has a sensory side and a motor side. Sensory signals are afferent: they arrive at the CNS. Motor signals are efferent: they exit it. A and E are your memory hook.',
     'Motor signals split again. Somatic goes to skeletal muscle and you select it, like picking up a pencil. Autonomic goes to smooth muscle, cardiac muscle and glands, and runs automatically, like your heartbeat.',
     'A loud bang. The sympathetic division speeds the heart, opens the pupils and airways, and sends blood from the gut to the muscles. That is the feeling of your heart pounding before you know why.',
-    'After dinner, the parasympathetic division takes over. The heart slows, the pupils narrow and the gut gets to work. That is why you feel sleepy on the couch.',
+    'After dinner, the parasympathetic division takes over. The heart slows, the pupils narrow and the gut gets to work. That is the settled feeling you get on the couch.',
     'Each lobe of the cerebrum has main jobs. The cerebellum coordinates movement, and the brain stem keeps you breathing. Each hemisphere runs the opposite side of the body, so your left brain moves your right hand.',
     'Sensory neurons bring signals in, interneurons connect inside the CNS and motor neurons send commands out. Dendrites receive, and the axon carries, like a cable.']
 }});

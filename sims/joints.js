@@ -28,7 +28,7 @@ const KNEE_FRONT=[
   i:'The thin outer bone of the lower leg. It carries little weight. The LCL and biceps femoris attach to its head.'},
  {id:'quads',n:'Quadriceps',k:'mus',g:'prox',d:'M340 0L460 0L452 80L430 96L370 96L348 80Z',at:[440,40],
   i:'Four muscles on the front of the thigh: rectus femoris and the three vasti. They extend the knee.',x:'Weak or slow quadriceps let the kneecap track poorly and leave the knee less protected after injury.'},
- {id:'hams',n:'Hamstrings',k:'mus',g:'prox',pts:[[270,0],[286,160],[296,288]],pg:['prox','prox','dist'],w:11,alt:[[530,0],[516,170],[478,335]],at:[275,70],
+ {id:'hams',n:'Hamstrings',k:'mus',g:'prox',soft:1,pts:[[270,0],[286,160],[296,288]],pg:['prox','prox','dist'],w:13,alt:[[530,0],[516,170],[478,335]],at:[275,70],
   i:'Biceps femoris on the lateral side, semitendinosus and semimembranosus on the medial side. They flex the knee and pull the tibia backward.',x:'That backward pull helps the ACL, which is why hamstring strength is part of ACL rehab.'},
  {id:'itband',n:'IT band',k:'mus',lvl:'ap',g:'prox',pts:[[300,0],[305,160],[326,272]],pg:['prox','prox','dist'],w:7,at:[304,110],
   i:'The iliotibial band: thick connective tissue on the outer thigh that attaches to the lateral tibia (Gerdy’s tubercle).'},
@@ -72,8 +72,6 @@ const KNEE_SIDE=[
 
 /* ---------- ANKLE, front view of a right ankle: lateral (fibula) on the viewer's left. Dashed means behind the joint. ---------- */
 const ANKLE=[
- {id:'achilles',n:'Achilles tendon',k:'mus',lvl:'honors',dash:1,pts:[[400,40],[400,350]],pg:['prox','dist'],w:22,soft:1,at:[412,110],
-  i:'The thickest tendon in the body. It joins the gastrocnemius and soleus to the calcaneus, behind the ankle, and plantarflexes the foot.'},
  {id:'tibia',n:'Tibia',k:'bone',g:'prox',d:'M345 0L455 0L458 170C462 195 478 215 480 248L466 262L440 240C420 232 380 232 360 240L338 230L340 170Z',at:[430,110],
   i:'The weight-bearing bone of the lower leg. Its inner end forms the medial malleolus, the bump on the inside of the ankle.'},
  {id:'iom',n:'Interosseous membrane',k:'lig',lvl:'ap',pts:[[318,100],[342,60]],pg:['fib','prox'],w:5,alt:[[318,150],[342,110]],at:[330,100],
@@ -84,6 +82,8 @@ const ANKLE=[
   i:'Sits under the tibia inside the mortise formed by the two malleoli. It moves the ankle in plantarflexion and dorsiflexion.',x:'It is wider in front, so the joint is most stable in dorsiflexion and loosest in plantarflexion.'},
  {id:'calc',n:'Calcaneus',k:'bone',g:'dist',d:'M340 345C370 328 430 328 462 340C480 368 470 420 440 438C400 450 360 445 340 430C322 405 326 365 340 345Z',at:[400,395],
   i:'The heel bone, the largest bone in the foot. The Achilles tendon and the plantar fascia attach to it.'},
+ {id:'achilles',n:'Achilles tendon',k:'mus',lvl:'honors',dash:1,pts:[[400,40],[400,350]],pg:['prox','dist'],w:20,soft:1,at:[400,180],
+  i:'The thickest tendon in the body. It joins the gastrocnemius and soleus to the calcaneus, behind the ankle, and plantarflexes the foot.'},
  {id:'fibtend',n:'Fibularis tendons',k:'mus',lvl:'honors',pts:[[272,60],[270,290],[330,440]],pg:['fib','fib','dist'],w:6,at:[271,180],
   i:'Fibularis (peroneus) longus and brevis pass behind the lateral malleolus. They evert the foot and are the active defense against an inversion sprain.'},
  {id:'tibant',n:'Tibialis anterior',k:'mus',lvl:'honors',pts:[[445,0],[470,220],[474,345]],pg:['prox','prox','dist'],w:7,at:[458,120],
@@ -108,33 +108,33 @@ const SHOULDER=[
   i:'The muscle cap of the shoulder. Its three parts flex, abduct and extend the arm.',x:'A deltoid that loses its rounded shape is a sign of anterior dislocation.'},
  {id:'sternum',n:'Sternum',k:'bone',lvl:'honors',d:'M528 110L585 110L578 300L535 300Z',at:[558,200],
   i:'The breastbone. The clavicle joins it at the sternoclavicular joint, the only bony link between the arm and the trunk.'},
- {id:'scap',n:'Scapula',k:'bone',g:'scap',d:'M262 82C280 70 300 86 306 112L320 124L480 118C470 220 430 320 400 380C370 320 340 260 322 238C312 228 304 222 304 200C304 182 310 172 318 162L302 134L286 120C278 104 270 96 262 82Z',at:[430,240],
+ {id:'scap',n:'Scapula',k:'bone',g:'scap',d:'M262 82C280 70 300 86 306 112L320 124L480 118C470 220 430 320 400 380C370 320 340 260 322 238C312 228 304 222 304 200C304 182 310 172 318 162L302 134L286 120C278 104 270 96 262 82Z',at:[466,135],
   i:'The shoulder blade. It includes the acromion (top), the coracoid (front hook) and the glenoid (shallow socket).'},
- {id:'subscap',n:'Subscapularis',k:'mus',g:'scap',d:'M452 150C440 230 420 300 400 345C380 300 340 250 298 226L296 202C350 190 400 160 452 150Z',at:[400,250],
-  i:'The S in SITS without a twin: the only rotator cuff muscle on the front of the scapula. It internally rotates the arm.'},
+ {id:'subscap',n:'Subscapularis',k:'mus',g:'scap',d:'M452 150C440 230 420 300 400 345C380 300 340 250 298 226L296 202C350 190 400 160 452 150Z',side:'R',at:[385,222],
+  i:'The second S in SITS: the only rotator cuff muscle on the front of the scapula. It internally rotates the arm.'},
  {id:'coracoid',n:'Coracoid process',k:'land',lvl:'honors',g:'scap',d:'M345 138C330 133 320 148 328 158C345 163 362 158 365 148Z',at:[343,150],
   i:'A hook of the scapula at the front of the shoulder. Pectoralis minor and the short head of biceps attach here. The coracoclavicular ligaments hold the clavicle down to it.'},
  {id:'humerus',n:'Humerus',k:'bone',g:'hum',d:'M232 190C232 160 262 150 285 158C310 170 318 205 305 230C295 250 282 250 280 262L272 500L228 500L228 262C222 240 230 210 232 190Z',at:[250,380],
   i:'The upper arm bone. Its round head sits on the glenoid like a golf ball on a tee: lots of motion, little bony stability.'},
  {id:'labrum',n:'Glenoid labrum',k:'cart',lvl:'honors',pts:[[314,160],[302,180],[304,212],[316,236]],pg:['scap','scap','scap','scap'],w:7,at:[305,200],
   i:'Ring of cartilage that deepens the glenoid. An anterior dislocation often tears its front lower edge (a Bankart lesion).'},
- {id:'supra',n:'Supraspinatus',k:'mus',pts:[[452,132],[320,134],[262,160]],pg:['scap','scap','hum'],w:16,at:[390,132],
+ {id:'supra',n:'Supraspinatus',k:'mus',pts:[[452,132],[320,134],[262,160]],pg:['scap','scap','hum'],w:16,side:'R',at:[420,132],
   i:'Sits above the spine of the scapula and passes under the acromion to the greater tubercle. It starts abduction.',x:'Its tendon can get pinched under the acromion. That is impingement.'},
- {id:'infra',n:'Infraspinatus',k:'mus',dash:1,pts:[[436,262],[300,250],[240,214]],pg:['scap','scap','hum'],w:15,at:[350,252],
+ {id:'infra',n:'Infraspinatus',k:'mus',dash:1,pts:[[436,262],[300,250],[240,214]],pg:['scap','scap','hum'],w:15,side:'R',at:[380,256],
   i:'Behind the scapula, below the spine. It externally rotates the arm.'},
- {id:'teres',n:'Teres minor',k:'mus',dash:1,pts:[[410,322],[300,298],[236,238]],pg:['scap','scap','hum'],w:10,at:[340,308],
+ {id:'teres',n:'Teres minor',k:'mus',dash:1,pts:[[410,322],[300,298],[236,238]],pg:['scap','scap','hum'],w:10,side:'R',at:[370,314],
   i:'Behind the scapula along its lateral edge, just under infraspinatus. It externally rotates the arm.'},
  {id:'biceps',n:'Biceps long head tendon',sh:'Biceps tendon',k:'mus',lvl:'ap',pts:[[258,500],[262,262],[284,178],[306,160]],pg:['hum','hum','hum','scap'],w:5,at:[266,235],
   i:'Runs in the groove of the humerus and over the humeral head to the top of the glenoid. It can get irritated in overhead athletes.'},
- {id:'capsule',n:'Anterior-inferior capsule',sh:'Ant-inf capsule',k:'lig',lvl:'honors',pts:[[314,236],[282,266]],pg:['scap','hum'],w:8,at:[300,250],
+ {id:'capsule',n:'Anterior-inferior capsule',sh:'Ant-inf capsule',k:'lig',pts:[[314,236],[282,266]],pg:['scap','hum'],w:8,at:[300,250],
   i:'The front lower part of the joint capsule, thickened by the inferior glenohumeral ligament. It stops the humeral head going forward and down when the arm is abducted and externally rotated.'},
  {id:'axnerve',n:'Axillary nerve',k:'nerve',lvl:'ap',pts:[[340,330],[276,282],[232,296]],pg:['scap','hum','hum'],w:4,at:[280,285],
   i:'Wraps under the humeral head to the deltoid. An anterior dislocation can stretch it, so check the patch of skin over the lateral deltoid.'},
  {id:'clavicle',n:'Clavicle',k:'bone',g:'clav',d:'M286 96C320 70 380 100 430 88C470 80 515 96 540 120L530 140C500 118 470 108 430 112C380 122 320 98 296 118Z',at:[430,98],
   i:'The collarbone, a strut holding the arm away from the trunk. It is one of the most commonly broken bones in sport.'},
- {id:'ccl',n:'Coracoclavicular ligaments',sh:'CC ligaments',k:'lig',lvl:'honors',pts:[[346,102],[344,140]],pg:['clav','scap'],w:7,at:[344,122],
+ {id:'ccl',n:'Coracoclavicular ligaments',sh:'CC ligaments',k:'lig',pts:[[346,102],[344,140]],pg:['clav','scap'],w:7,at:[344,122],
   i:'Hold the clavicle down to the coracoid. In a Grade III AC sprain they tear too, and the end of the clavicle sticks up.'},
- {id:'acl_s',n:'AC ligament',k:'lig',lvl:'honors',pts:[[300,106],[282,92]],pg:['clav','scap'],w:7,at:[292,100],
+ {id:'acl_s',n:'AC ligament',k:'lig',pts:[[300,106],[282,92]],pg:['clav','scap'],w:7,at:[292,100],
   i:'Acromioclavicular ligament: holds the end of the clavicle to the acromion. It tears first when you land on the point of the shoulder.'},
  {id:'acj',n:'AC joint',k:'land',ring:1,d:E(292,102,17,17),at:[278,92],
   i:'Acromioclavicular joint, where the clavicle meets the acromion. A fall on the point of the shoulder sprains it.'},
@@ -148,7 +148,7 @@ const ELBOW=[
   i:'Back of the arm. It inserts on the olecranon and extends the elbow.'},
  {id:'humerus',n:'Humerus',k:'bone',g:'prox',d:'M365 0L435 0L438 130C445 155 495 175 500 205C498 225 470 232 445 232C425 232 410 222 400 222C388 222 370 232 350 232C325 232 302 225 300 205C305 175 355 155 362 130Z',at:[378,150],
   i:'The upper arm bone. Its lower end flares out to the two epicondyles, where the forearm muscles start.'},
- {id:'wflex',n:'Wrist flexors',k:'mus',lvl:'honors',g:'dist',d:'M494 216C500 300 470 420 445 500L425 500L436 310C445 285 470 250 480 225Z',at:[470,340],
+ {id:'wflex',n:'Wrist flexors',k:'mus',lvl:'honors',g:'dist',d:'M494 216C500 300 470 420 445 500L425 500L436 310C445 285 470 250 480 225Z',at:[462,340],
   i:'Forearm muscles that start from the medial epicondyle. Overuse here is medial epicondylitis, or golfer’s elbow.'},
  {id:'wext',n:'Wrist extensors',k:'mus',lvl:'honors',g:'dist',d:'M306 216C286 300 300 420 318 500L332 500L338 310C330 285 320 250 312 225Z',at:[310,350],
   i:'Forearm muscles that start from the lateral epicondyle. Overuse here is lateral epicondylitis, or tennis elbow.'},
@@ -158,7 +158,7 @@ const ELBOW=[
   i:'The forearm bone on the pinky side. Its hook at the elbow, the olecranon, makes the hinge with the humerus.'},
  {id:'biceps',n:'Biceps brachii',k:'mus',g:'prox',d:'M368 0L432 0L428 120L394 178L370 130Z',at:[400,60],
   i:'Front of the arm. It flexes the elbow and supinates the forearm. Its tendon reaches the radius.'},
- {id:'bursa',n:'Olecranon bursa',k:'bursa',dash:1,g:'dist',d:E(408,194,34,40),at:[446,200],
+ {id:'bursa',n:'Olecranon bursa',k:'bursa',dash:1,g:'dist',d:E(408,194,34,40),at:[436,196],
   i:'Fluid sac over the point of the elbow, on the back side. It swells after a fall or from leaning on it. Redness, heat and fever suggest infection and need referral.'},
  {id:'olec',n:'Olecranon',k:'bone',dash:1,g:'dist',d:'M385 185C395 170 420 170 430 185C435 205 425 225 408 230C392 226 380 205 385 185Z',at:[408,200],
   i:'The bony point of the elbow, part of the ulna, on the back side. The triceps attaches here.'},
@@ -204,9 +204,9 @@ const HAND=[
  {id:'trapd',n:'Trapezoid',k:'bone',lvl:'honors',emph:1,d:carp.trd,at:[362,362],i:'Small distal row carpal under the index finger metacarpal.'},
  {id:'capit',n:'Capitate',k:'bone',lvl:'honors',emph:1,d:carp.cap,at:[393,362],i:'The largest carpal, in the center of the distal row.'},
  {id:'hamate',n:'Hamate',k:'bone',lvl:'honors',emph:1,d:carp.ham,at:[430,364],i:'Distal row carpal with a hook on its palm side. A bat or club handle can break the hook.'},
- {id:'meta',n:'Metacarpals',k:'bone',d:allMc,at:[412,270],
+ {id:'meta',n:'Metacarpals',k:'bone',d:allMc,at:[430,270],
   i:'The five bones of the palm, numbered 1 (thumb) to 5 (pinky).',x:'A boxer’s fracture is a break at the neck of the 5th metacarpal, usually from punching.'},
- {id:'phal',n:'Phalanges',k:'bone',d:allPh,at:[450,120],
+ {id:'phal',n:'Phalanges',k:'bone',d:allPh,at:[441,118],
   i:'The finger bones. Each finger has three (proximal, middle, distal). The thumb has two.'},
  {id:'median',n:'Median nerve',k:'nerve',lvl:'honors',pts:[[396,500],[396,350],[388,300]],w:4,at:[395,440],
   i:'Passes through the carpal tunnel on the palm side of the wrist. Pressure there causes carpal tunnel syndrome: numbness in the thumb, index and middle fingers.'},
@@ -220,7 +220,7 @@ const HAND=[
 const HIP=[
  {id:'gmax',n:'Gluteus maximus',k:'mus',lvl:'honors',dash:1,d:'M220 110C300 140 500 230 560 400L510 440C420 400 300 330 200 300Z',at:[300,300],
   i:'The large buttock muscle, drawn as a dashed outline over the deeper layers. It extends and externally rotates the hip.'},
- {id:'pelvis',n:'Pelvis',k:'bone',d:'M270 60C340 5 470 20 505 95C490 140 470 170 462 210C455 250 440 280 390 345C365 360 340 350 335 330C345 290 350 260 330 230C300 190 270 140 270 60Z',at:[350,90],
+ {id:'pelvis',n:'Pelvis',k:'bone',d:'M270 60C340 5 470 20 505 95C490 140 470 170 462 210C455 250 440 280 390 345C365 360 340 350 335 330C345 290 350 260 330 230C300 190 270 140 270 60Z',at:[300,120],
   i:'The hip bone: ilium, ischium and pubis fused together. Its cup, the acetabulum, holds the head of the femur.'},
  {id:'sacrum',n:'Sacrum',k:'bone',lvl:'honors',d:'M190 70L272 60C268 120 280 180 262 240L220 255L178 240C162 180 172 120 190 70Z',at:[218,110],
   i:'Five fused vertebrae at the back of the pelvis. Piriformis starts on its front surface.'},
@@ -228,7 +228,7 @@ const HIP=[
   i:'The thigh bone. Its round head fits the acetabulum in a ball-and-socket joint, much deeper and more stable than the shoulder.'},
  {id:'gmed',n:'Gluteus medius',k:'mus',lvl:'honors',d:'M340 40C400 25 480 50 498 100C510 140 530 180 538 210L505 212C480 180 420 150 360 138C340 110 335 70 340 40Z',at:[450,130],
   i:'Fan-shaped muscle from the ilium to the greater trochanter. It abducts the hip and keeps the pelvis level when you stand on one leg.'},
- {id:'crest',n:'Iliac crest',k:'land',pts:[[272,58],[330,22],[420,20],[505,92]],w:8,at:[420,22],
+ {id:'crest',n:'Iliac crest',k:'land',pts:[[270,60],[300,42],[331,32],[365,28],[400,29],[432,36],[463,50],[487,72],[505,95]],w:8,at:[420,31],
   i:'The curved top edge of the pelvis, the bone under your hands on your hips. A direct blow here bruises the bone and the muscles attached to it: a hip pointer.'},
  {id:'piri',n:'Piriformis',k:'mus',pts:[[240,170],[390,190],[530,212]],w:22,at:[380,190],
   i:'Runs from the front of the sacrum to the top of the greater trochanter. It externally rotates the hip.',x:'A tight piriformis can press on the sciatic nerve: piriformis syndrome. The figure four stretch targets it.'},
@@ -247,10 +247,10 @@ const HIP=[
 const JOINTS={
  knee:{n:'Knee',view:'Right knee, front view',left:'Lateral',right:'Medial',art:KNEE_FRONT,def:'acl',ex:{s:1,ox:0,oy:0},stress:'fk',scale:'Right knee from the front. The knee joint itself is about 10 cm across.'},
  ankle:{n:'Ankle',view:'Right ankle, front view',left:'Lateral',right:'Medial',art:ANKLE,def:'atfl',ex:{s:1,ox:0,oy:15},stress:'fa',scale:'Right ankle from the front. The two malleoli are about 7 cm apart.'},
- shoulder:{n:'Shoulder',view:'Right shoulder, front view',left:'Lateral',right:'Medial',art:SHOULDER,def:'ghj',ex:{s:.86,ox:-5,oy:30},stress:'fs',scale:'Right shoulder from the front. The humeral head is about 4.5 cm across.'},
+ shoulder:{n:'Shoulder',view:'Right shoulder, front view',left:'Lateral',right:'Medial',art:SHOULDER,def:'ghj',ex:{s:.78,ox:20,oy:50},stress:'fs',scale:'Right shoulder from the front. The humeral head is about 4.5 cm across.'},
  elbow:{n:'Elbow',view:'Right elbow, palm forward',left:'Lateral',right:'Medial',art:ELBOW,def:'ucl',ex:{s:1,ox:0,oy:0},stress:'fe',scale:'Right elbow from the front with the palm forward. The two epicondyles are about 6 cm apart.'},
- hand:{n:'Hand and wrist',view:'Right hand, palm view',left:'Thumb side',right:'Pinky side',art:HAND,def:'scaphoid',ex:{s:1,ox:0,oy:0},scale:'Right hand, palm toward you. An adult hand is about 18 cm long.'},
- hip:{n:'Hip',view:'Right hip, back view',left:'Medial',right:'Lateral',art:HIP,def:'piri',ex:{s:.86,ox:-20,oy:30},scale:'Right hip from behind, so lateral is on the right. The femoral head is about 5 cm across.'}
+ hand:{n:'Hand and wrist',view:'Right hand, palm view',left:'Thumb side',right:'Pinky side',art:HAND,def:'scaphoid',ex:{s:.98,ox:0,oy:8},scale:'Right hand, palm toward you. An adult hand is about 18 cm long.'},
+ hip:{n:'Hip',view:'Right hip, back view',left:'Medial',right:'Lateral',art:HIP,def:'piri',ex:{s:.78,ox:25,oy:40},scale:'Right hip from behind, so lateral is on the right. The femoral head is about 5 cm across.'}
 };
 const JK=Object.keys(JOINTS);
 const visArt=j=>JOINTS[j].art.filter(a=>atLeast(a.lvl));
@@ -282,7 +282,7 @@ const MECH={
    rows:p=>{const f=.35+.65*Math.min(p.flex,60)/60;return [row('mmen','','cart',13,0,f),row('lmen','','cart',9,0,f),row('acl','','lig',12,15)];},
    how:'The femur twists on a fixed tibia and the condyles grind the menisci. Flexion makes this worse. The ACL also resists the twist.',real:'Cutting or pivoting with the cleats stuck in the turf. Athletes often report catching or locking afterward.'},
  pat:{t:'Lateral push on the patella',art:KNEE_FRONT,test:'Patellar apprehension test',
-   rows:p=>[row('mpfl','','lig',14,0,p.flex<=30?1.1:clamp(1.1-.8*(p.flex-30)/60,.3,1.1),'ap')],
+   rows:p=>[row('mpfl','','lig',14,0,p.flex<=30?1.1:clamp(1.1-.8*(p.flex-30)/60,.3,1.1))],
    how:'The patella slides toward the lateral side. Near full extension it has not settled in its groove on the femur, so it escapes more easily.',real:'A twist on a nearly straight knee or a blow to the inner patella. It usually pops out laterally.'},
  inv:{t:'Inversion',art:ANKLE,test:'Anterior drawer (ATFL) and talar tilt (CFL)',
    rows:p=>[row('atfl','','lig',20,0,clamp(.55+.45*p.pf/30,.3,1.1)),row('cfl','','lig',16,30,clamp(1-.4*p.pf/30,.5,1.3)),row('ptfl','','lig',16,65,clamp(1-.3*p.pf/30,.6,1.2))],
@@ -300,10 +300,10 @@ const MECH={
    rows:()=>[row('rcl','','lig',14,0)],
    how:'The forearm is pushed inward and the lateral elbow opens. The radial collateral ligament takes the load.',real:'Less common in sport, because the body usually shields this side.'},
  sant:{t:'Abducted, externally rotated arm forced back',art:SHOULDER,test:'Apprehension test, sulcus sign',
-   rows:()=>[row('capsule','','lig',15,0,1,'honors'),row('labrum','','cart',11,20,1,'honors'),row('subscap','Subscapularis','mus',6,40),row('axnerve','','nerve',7,60,1,'ap')],
+   rows:()=>[row('capsule','','lig',15,0),row('labrum','','cart',11,20,1,'honors'),row('subscap','Subscapularis','mus',6,40),row('axnerve','','nerve',7,60,1,'ap')],
    how:'The arm levers the humeral head forward and down over the shallow glenoid. The result is an anterior inferior dislocation.',real:'A high tackle with the arm out, or a volleyball block forced back. The athlete holds the arm out from the side.'},
  sac:{t:'Fall on the point of the shoulder',art:SHOULDER,test:'AC compression (shear) test',
-   rows:()=>[row('acl_s','','lig',16,0,1,'honors'),row('ccl','','lig',11,40,1,'honors')],
+   rows:()=>[row('acl_s','','lig',16,0),row('ccl','','lig',11,40)],
    how:'The acromion is driven down while the clavicle stays up. The AC ligament goes first, then the coracoclavicular ligaments.',real:'A fall onto the top of the shoulder, common in football, hockey and biking.'}
 };
 function mechKey(sim){const p=sim.p,j=p.joint;if(j==='knee')return kneeMech(p);if(j==='ankle')return p.fa;if(j==='elbow')return p.fe==='val'?'eval':'evar';if(j==='shoulder')return p.fs==='ant'?'sant':'sac';return null;}
@@ -345,8 +345,8 @@ function drawStruct(ctx,a,o){const T=o.T||{},sel=o.sel===a.id,faded=o.fade&&!sel
   const isLine=!!a.pts;ctx.globalAlpha=faded?.45:1;
   if(!isLine){const p=pathOf(a);applyT(ctx,T[a.g]);
     if(a.ring){ctx.strokeStyle=sel?PAL['cv-ink']:PAL[KIND[a.k].c];ctx.lineWidth=sel?3.5:2.2;ctx.setLineDash([5,4]);if(sel){ctx.fillStyle=PAL['s6'];ctx.globalAlpha=.25;ctx.fill(p);ctx.globalAlpha=1;}ctx.stroke(p);}
-    else if(a.k==='bone'||a.k==='land'){const inner=a.emph;ctx.fillStyle=sel?PAL['cv-e']:a.dash?'transparent':inner?PAL['card2']:PAL['card'];if(a.k==='land'&&!sel){ctx.fillStyle=PAL['s6'];ctx.globalAlpha=(faded?.3:.55);}
-      if(sel)ctx.globalAlpha=1;if(a.dash)ctx.setLineDash([5,4]);ctx.fill(p);ctx.globalAlpha=faded?.45:1;ctx.strokeStyle=sel?PAL['cv-ink']:PAL['cv-soft'];ctx.lineWidth=sel?3:1.5;ctx.stroke(p);}
+    else if(a.k==='bone'||a.k==='land'){ctx.fillStyle=sel?PAL['cv-e']:a.dash?'transparent':PAL['cv-tail'];if(a.k==='land'&&!sel){ctx.fillStyle=PAL['s6'];ctx.globalAlpha=.55;}
+      else ctx.globalAlpha=1;if(a.dash)ctx.setLineDash([5,4]);ctx.fill(p);ctx.globalAlpha=1;ctx.strokeStyle=sel?PAL['cv-ink']:PAL['cv-soft'];ctx.lineWidth=sel?3:1.5;ctx.stroke(p);}
     else{ctx.fillStyle=PAL[KIND[a.k].c];ctx.globalAlpha=(sel?.55:.26)*(faded?.7:1);ctx.fill(p);ctx.globalAlpha=faded?.45:1;if(a.dash)ctx.setLineDash([5,4]);ctx.strokeStyle=sel?PAL['cv-ink']:PAL[KIND[a.k].c];ctx.lineWidth=sel?3:1.3;ctx.stroke(p);}
     ctx.restore();return;}
   const lines=[a.pts];if(a.alt)lines.push(a.alt);if(a.alt2)lines.push(a.alt2);
@@ -360,7 +360,7 @@ function drawStruct(ctx,a,o){const T=o.T||{},sel=o.sel===a.id,faded=o.fade&&!sel
     else strokePts(ctx,pts);
     ctx.setLineDash([]);});
   ctx.restore();}
-function strokePts(ctx,pts){ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();}
+function strokePts(ctx,pts){ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);if(pts.length<3)ctx.lineTo(pts[1][0],pts[1][1]);else{for(let i=1;i<pts.length-1;i++){const m=[(pts[i][0]+pts[i+1][0])/2,(pts[i][1]+pts[i+1][1])/2];if(i===pts.length-2)ctx.quadraticCurveTo(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1]);else ctx.quadraticCurveTo(pts[i][0],pts[i][1],m[0],m[1]);}}ctx.stroke();}
 
 /* Full name when it fits the column, the real abbreviation when it does not. */
 function fitName(ctx,a,w,size){ctx.font='600 '+size+'px '+BioLab.h.FONT;return ctx.measureText(a.n).width<=w?a.n:(a.sh||a.n);}
@@ -438,7 +438,7 @@ function drawStress(sim,ctx,vdt,k){const j=sim.p.joint;
   /* A dislocating patella or humerus, a separated AC joint and a torn ligament jump further than strain alone. */
   const top3=clamp((e-9)/2,0,1),T=poses(sim,M,mk,{top:Math.min(e,14),top3});
   const strain={};rows.forEach(r=>{strain[r.id]=v.es[r.id];});
-  const art=M.art.filter(a=>atLeast(a.lvl)||M.art===KNEE_SIDE),side=M.art===KNEE_SIDE;
+  const art=M.art.filter(a=>atLeast(a.lvl)||M.art===KNEE_SIDE||strain[a.id]!==undefined),side=M.art===KNEE_SIDE;
   const s=j==='shoulder'?.8:side?1:.96,cx=side?300:(j==='shoulder'?250:240),ox=side?(cx-KC[0]):(cx-400*s),oy=side?30:(j==='shoulder'?45:18);
   ctx.save();ctx.beginPath();ctx.rect(0,0,484,500);ctx.clip();ctx.translate(ox,oy);ctx.scale(s,s);
   art.forEach(a=>{const loaded=strain[a.id]!==undefined;if(a.k==='lig'&&!loaded)drawStruct(ctx,a,{T,sel:null});else if(a.k!=='lig')drawStruct(ctx,a,{T,sel:null,strain:a.k==='cart'||a.k==='nerve'?strain:undefined});});
@@ -468,7 +468,7 @@ function currentSel(sim){const j=sim.p.joint,list=visArt(j);let id=sim.st.sel[j]
 function setSel(sim,id){sim.st.sel[sim.p.joint]=id;sim.infoDirty=true;}
 function stepSel(sim,d){const list=orderedList(sim),i=list.findIndex(a=>a.id===currentSel(sim));setSel(sim,list[(i+d+list.length)%list.length].id);}
 function orderedList(sim){const list=visArt(sim.p.joint),out=[];KORDER.forEach(k=>list.forEach(a=>{if(a.k===k)out.push(a);}));return out;}
-function practice(sim){const j=sim.p.joint,lv=BioLab.level?BioLab.level():'',key=j+'|'+visArt(j).length;let P=sim.st.pr[key];if(!P){P=sim.st.pr[key]={key,deck:[],done:0,right:0,miss:{},cur:null,answered:false,choices:[],draft:'',msg:''};nextQ(sim,P);}return P;}
+function practice(sim){const j=sim.p.joint,key=j+'|'+visArt(j).length;let P=sim.st.pr[key];if(!P){P=sim.st.pr[key]={key,deck:[],done:0,right:0,miss:{},cur:null,answered:false,choices:[],draft:'',msg:''};nextQ(sim,P);}return P;}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const n=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[n];a[n]=t;}return a;}
 function nextQ(sim,P){const list=visArt(sim.p.joint);if(!P.deck.length)P.deck=shuffle(list.map(a=>a.id));P.cur=P.deck.shift();P.answered=false;P.draft='';P.msg='';P.ok=null;
   const a=list.find(q=>q.id===P.cur)||list[0];P.cur=a.id;const same=shuffle(list.filter(q=>q.id!==a.id&&(q.k===a.k||(q.k==='land'&&a.k==='bone')||(q.k==='bone'&&a.k==='land')))),rest=shuffle(list.filter(q=>q.id!==a.id&&!same.includes(q)));
@@ -556,9 +556,9 @@ const SIM={
     {lvl:'bio',q:'You roll your ankle inward with your toes pointed down. A light force is applied. Which ligament is first to reach a sprain?',choices:['CFL','Deltoid ligament','ATFL'],correct:2,
      baseline:{view:'stress',joint:'ankle',fa:'inv',pf:20,F:0},change:{F:30},changeText:'Force applied',at:.6,reveal:2.5,verify:['worst','ATFL'],
      explain:'Inversion opens the lateral side. The ATFL is the weakest lateral ligament and is tightest with the foot plantarflexed, so it goes first. The deltoid is on the medial side and goes slack.'},
-    {lvl:'honors',q:'Same force of 70. Which reads lower strain at 90° of flexion: the ACL under an anterior push, or the PCL under a posterior push?',choices:['ACL','PCL','They are the same'],correct:1,
-     baseline:{view:'stress',joint:'knee',fk:'ant',bone:'tibia',flex:90,F:70},change:{fk:'post'},changeText:'Direction switched to posterior',at:1.2,reveal:3,verifyFn:'pclLower',
-     explain:'At the same force the ACL reads 7.3% and the PCL reads 7.7% at 90°, but the ACL model peaks near 25° at 11.2%. Now look at the same joint at 25° and the gap is wide. The PCL is the stronger ligament, and the ACL is most vulnerable near extension.'},
+    {lvl:'honors',q:'Same force of 70, same 30° of flexion. Which reads lower strain: the ACL under an anterior push, or the PCL under a posterior push?',choices:['ACL','PCL','They are the same'],correct:1,
+     baseline:{view:'stress',joint:'knee',fk:'ant',bone:'tibia',flex:30,F:70},change:{fk:'post'},changeText:'Direction switched to posterior',at:1.2,reveal:3,verifyFn:'pclLower',
+     explain:'At this angle the ACL reads about 11% and the PCL about 6%. The PCL is the stronger ligament, so the same force stretches it less. Injuring it usually takes a big direct force, like a dashboard.'},
     {lvl:'honors',q:'Your foot is planted and you pivot at force 60. What happens as your knee goes from straight to 60° of flexion?',choices:['Meniscus load rises','Meniscus load falls','Nothing changes'],correct:0,
      baseline:{view:'stress',joint:'knee',fk:'rot',flex:0,F:60},change:{flex:60},changeText:'Knee flexed to 60°',at:1,reveal:3,verifyFn:'meniscusRises',
      explain:'Flexing the knee rolls the femoral condyles back onto the menisci, and twisting then grinds them. That is why McMurray’s test uses flexion plus rotation. Medial meniscus load is higher than lateral because the medial meniscus is held more tightly.'},
@@ -602,7 +602,7 @@ const SIM={
   onClick(sim,x,y){const p=sim.p;if(p.view==='practice')return;if(p.view==='stress')return;const labs=sim.vis.lab||[];for(const L of labs)if(x>=L.x&&x<=L.x+L.w&&y>=L.y&&y<=L.y+L.h){setSel(sim,L.id);return;}
     const X=artXf(p.joint),ax=(x-X.ox)/X.s,ay=(y-X.oy)/X.s,list=visArt(p.joint);const c=hitCtx();
     for(let i=list.length-1;i>=0;i--){const a=list[i];if(a.pts){let found=false;[a.pts,a.alt,a.alt2].forEach(ln=>{if(!ln)return;c.lineWidth=a.w+8;if(c.isPointInStroke(linePath(ln),ax,ay))found=true;});if(found){setSel(sim,a.id);return;}}
-      else{const q=pathOf(a);if(a.ring){c.lineWidth=8;if(c.isPointInStroke(q,ax,ay)){setSel(sim,a.id);return;}}else if(c.isPointInPath(q,ax,ay)){setSel(sim,a.id);return;}}}},
+      else{const q=pathOf(a);if(a.ring&&a.id==='ghj'){c.lineWidth=8;if(c.isPointInStroke(q,ax,ay)){setSel(sim,a.id);return;}}else if(c.isPointInPath(q,ax,ay)){setSel(sim,a.id);return;}}}},
   lab:{bio:'<p><b>Question:</b> Which knee ligament does each force load?</p><ol><li>Choose Stress test and the knee, with the force level at 60.</li><li>Run each direction: anterior and posterior on the tibia, then lateral and medial on the femur (foot planted). Record a trial for each.</li><li>Choose the ankle and run inversion and eversion at 60.</li></ol><p>Write one sentence for each row: "When ___ happens, the ___ is loaded."</p>',
        honors:'<p><b>Question:</b> How does joint position change the injury?</p><ol><li>Set the knee to Rotate on a planted foot, force 60. Record medial meniscus load at 0, 30 and 60° of flexion.</li><li>Set the ankle to Inversion, force 60. Record ATFL and CFL strain at 30° plantarflexion, neutral and 20° dorsiflexion.</li></ol><p>Explain each pattern. Then name the stress test you would use for each and why it sets the joint at that angle.</p>',
        ap:'<p><b>Question:</b> What force causes each sprain grade, and which ligament is most at risk?</p><ol><li>For the ACL at 25° and the PCL at 90°, find the force level where each reaches Grade I, II and III.</li><li>Repeat for the ATFL at 20° plantarflexion and the deltoid under eversion.</li><li>Plot force against strain for each ligament.</li></ol><p><b>Claim, evidence, reasoning:</b> Rank the four ligaments by strength and explain how the ranking fits the injury numbers for the ankle (almost 90% inversion, 3-4% eversion).</p>'},

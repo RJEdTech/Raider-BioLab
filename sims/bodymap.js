@@ -157,7 +157,7 @@ function prAnswer(it,n){const r=relate(it.a,n?it.b2:it.b);return r[n?it.ax2:it.a
 function prNext(sim){const L=prList();sim.st.pr={i:(sim.st.pr.i+1)%L.length,blank:0,picks:[],msg:'',bad:0,done:false};sim.infoDirty=true;}
 function prPick(sim,t){const pr=sim.st.pr,it=prCur(sim);if(pr.done)return;const n=pr.blank,bId=n?it.b2:it.b,ans=prAnswer(it,n);
   if(t===ans){pr.picks[n]=t;pr.msg='';pr.bad=0;if(it.b2&&n===0){pr.blank=1;}else pr.done=true;return;}
-  const r=relate(it.a,bId);if([r.si,r.ap,r.ml,r.pd,r.sd,r.side].includes(t)){pr.msg='That is true too: '+sentence(it.a,t,bId).toLowerCase().replace(/^the /,'the ')+'. This sentence wants a different pair of terms. '+AXHINT[n?it.ax2:it.ax];return;}
+  const r=relate(it.a,bId);if([r.si,r.ap,r.ml,r.pd,r.sd,r.side].includes(t)){pr.msg='That is true too: t'+sentence(it.a,t,bId).slice(1)+'. This sentence wants a different pair of terms. '+AXHINT[n?it.ax2:it.ax];return;}
   pr.bad++;pr.msg='Not this one. '+AXHINT[n?it.ax2:it.ax];}
 function prReveal(sim){const pr=sim.st.pr,it=prCur(sim);pr.picks[0]=prAnswer(it,0);if(it.b2)pr.picks[1]=prAnswer(it,1);pr.blank=it.b2?1:0;pr.done=true;pr.msg='';}
 function prPair(sim){const pr=sim.st.pr,it=prCur(sim);return [it.a,(it.b2&&pr.blank===1)?it.b2:it.b];}
@@ -175,7 +175,6 @@ function drawSide(ctx,M,h){sidePath(ctx,M);ctx.fillStyle=PAL['card2'];ctx.fill()
   const a=M(0,.185),b=M(0,.36),c=M(.002,.482),d=M(.006,.56);ctx.lineCap='round';ctx.lineJoin='round';
   ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=.052*h+2;[[a,b,c,d]].forEach(q=>{ctx.beginPath();ctx.moveTo(q[0].x,q[0].y);q.slice(1).forEach(e=>ctx.lineTo(e.x,e.y));ctx.globalAlpha=.55;ctx.stroke();ctx.globalAlpha=1;ctx.strokeStyle=PAL['card2'];ctx.lineWidth=.052*h;ctx.stroke();});
   const e=M(.05,.052);ctx.fillStyle=PAL['cv-soft'];ctx.beginPath();ctx.arc(e.x,e.y,Math.max(1.4,.0045*h),0,6.3);ctx.fill();}
-function front(l){return {x:l.fx,y:l.fy};}
 
 /* Layout for the two figures */
 const FR={cx:225,top:72,h:515},SD={cx:590,top:72,h:515};
@@ -255,7 +254,7 @@ function drawCavities(sim,ctx,k){const p=sim.p,sel=p.cavity,c=CAVS[sel];const he
   /* labels between the two figures */
   const lx=FR.cx-55+.225*FR.h;let items;
   if(sel==='all')items=Object.keys(CAVS).map(id=>({t:CAVS[id].n.replace(' cavity',''),y:CAVS[id].box[1],x:CAVS[id].box[3]*.7}));
-  else{const seen=[];items=ORGORDER.filter(id=>ORG[id].cav===sel).map(id=>({t:ORG[id].n,y:ORG[id].c[1],x:ORG[id].c[0]+(ORG[id].both?0:0)}));items.forEach(e=>seen.push(e));}
+  else items=ORGORDER.filter(id=>ORG[id].cav===sel).map(id=>({t:ORG[id].n,y:ORG[id].c[1],x:ORG[id].c[0]}));
   items.sort((a,b)=>a.y-b.y);const gap=20*k;let ys=items.map(e=>FM2(0,e.y).y);for(let i=1;i<ys.length;i++)if(ys[i]<ys[i-1]+gap)ys[i]=ys[i-1]+gap;const over=ys.length?ys[ys.length-1]-(H-14):0;if(over>0)ys=ys.map(v=>v-over);
   for(let i=ys.length-2;i>=0;i--)if(ys[i]>ys[i+1]-gap)ys[i]=ys[i+1]-gap;
   items.forEach((e,i)=>{const q=FM2(e.x,e.y);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(lx-4,ys[i]);ctx.stroke();txt(ctx,e.t,lx,ys[i],{s:12*k,w:600,b:'middle'});});
@@ -317,8 +316,7 @@ function bindInfo(sim,el){const f=sim.st.refocus;sim.st.refocus=null;
 /* ---------- control visibility ---------- */
 const CTLVIEW={a:['terms'],b:['terms'],supine:['terms'],plane:['planes'],cut:['planes'],cavity:['cavities'],system:['systems']};
 function sync(sim){if(!sim.ui||!sim.ui.ctlW)return;const v=sim.p.view;Object.keys(CTLVIEW).forEach(id=>{const w=sim.ui.ctlW[id];if(w)w.hidden=!CTLVIEW[id].includes(v);});
-  if(sim.ui.actB){if(sim.ui.actB.swap)sim.ui.actB.swap.hidden=v!=='terms';if(sim.ui.actB.next)sim.ui.actB.next.hidden=v!=='practice';}
-  if(sim.ui.ctlW.a){sim.ui.ctlW.a.querySelectorAll('option').forEach(o=>{});}}
+  if(sim.ui.actB){if(sim.ui.actB.swap)sim.ui.actB.swap.hidden=v!=='terms';if(sim.ui.actB.next)sim.ui.actB.next.hidden=v!=='practice';}}
 
 const opts=LMORDER.map(id=>({v:id,l:LM[id].n.charAt(0).toUpperCase()+LM[id].n.slice(1),lvl:LM[id].lvl}));
 const base=extra=>Object.assign({view:'terms',a:'knee',b:'ankle',supine:false,plane:'sagittal',cut:50,cavity:'all',system:'respiratory'},extra);
@@ -367,7 +365,7 @@ const BODYMAP={
     if(p.view==='practice')return 'Read the sentence, find A and B on the figures, and choose the term. <b>Picture the body in anatomical position</b> before you answer.';
     if(p.view==='planes'){const pl=PLANES[p.plane];return `<b>${pl.does}</b> The cut sits ${cutPos(p)}.`;}
     if(p.view==='cavities')return p.cavity==='all'?'The side view shows two groups: <b>the cranial and spinal cavities</b> run along the back, and <b>the thoracic, abdominal and pelvic cavities</b> sit in front. The diaphragm divides the chest from the abdomen.':`<b>${CAVS[p.cavity].n}:</b> ${CAVS[p.cavity].org.join(', ').toLowerCase()}. ${CAVS[p.cavity].prot}`;
-    const s=SYS[p.system];return `<b>${s.n} system.</b> ${s.fn} Structure fits function: ${s.dom[0].toLowerCase()}, so it can ${s.dom[1].charAt(0).toLowerCase()+s.dom[1].slice(1)}.`.replace(/so it can (Pull|Protect|Carr|Filter|Let|Evap|More|Release|Hold|Gases)/i,m=>m).replace(', so it can ',': ');},
+    const s=SYS[p.system];return `<b>${s.n} system.</b> ${s.fn} Structure: ${s.dom[0].charAt(0).toLowerCase()+s.dom[0].slice(1)}. Function: ${s.dom[1].charAt(0).toLowerCase()+s.dom[1].slice(1)}.`;},
   onClick(sim,x,y){const p=sim.p;
     if(p.view==='terms'&&!p.supine){let best=null,bd=46;visLM().forEach(id=>{const l=LM[id],pts=[FM(l.x,l.y),SM(l.z,l.y)];if(l.both)pts.push(FM(-l.x,l.y));pts.forEach(q=>{const d=Math.hypot(q.x-x,q.y-y);if(d<bd){bd=d;best=id;}});});if(!best)return;const key=sim.st.pickB?'b':'a';BioLab.setValues(sim,{[key]:best});sim.st.pickB=!sim.st.pickB;return;}
     if(p.view==='planes'){const fy=clamp((y-FR.top)/FR.h,0,1);if(p.plane==='transverse')BioLab.setValues(sim,{cut:Math.round(fy*100)});

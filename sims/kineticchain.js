@@ -210,14 +210,14 @@ function drawAll(sim,ctx,k){const p=sim.p,m=M(sim),h=healthy(sim),f=(p.move&&!RM
   if(m.v>m.q.th/90*3+2.5){const s=m.R===m.L?'Valgus '+Math.round(m.v)+'°':'Valgus R '+Math.round(m.vR)+'°, L '+Math.round(m.vL)+'°';pill(ctx,s,cx,26+18*k,PAL['s1'],'#fff',12*k);}
   // joint by joint gauges
   const rows=[];
-  if(atLeast('ap')){rows.push({n:'Shoulder blade',r:'S',v:m.scap,max:100,ref:h.scap,u:'demand'});rows.push({n:'Thoracic spine',r:'M',v:m.T,max:25,ref:25,u:'° ext',low:true});}
+  if(atLeast('ap')){rows.push({n:'Shoulder blade',r:'S',v:m.scap,max:100,ref:h.scap,u:'demand'});rows.push({n:'Thoracic spine',r:'M',v:m.T,max:25,ref:25,u:'°',low:true});}
   rows.push({n:'Low back',r:'S',v:m.back,max:320,ref:h.back,u:'N·m'},{n:'Hip',r:'M',v:m.hipM,max:110,ref:h.hipM,u:'N·m'},{n:'Knee bending',r:'S',v:m.knee,max:110,ref:h.knee,u:'N·m'},{n:'Knee valgus',r:'S',v:m.valg,max:70,ref:h.valg,u:'N·m'},{n:'Ankle',r:'M',v:m.ankleM,max:60,ref:h.ankleM,u:'N·m'});
   const gx=516,gw=272,top=14+14*k,bot=488-14*k,rh=Math.min(66,(bot-top)/rows.length);
   txt(ctx,'Load at the bottom',gx,20*Math.max(1,k*.9),{s:13*k,w:800});
   rows.forEach((r,i)=>{const y=top+i*rh+rh*.5-(6*k+5),c=r.r==='M'?mob:stb,tag=9*k;
     ctx.fillStyle=c;ctx.beginPath();ctx.arc(gx+tag*.8,y,tag*.8,0,6.29);ctx.fill();txt(ctx,r.r,gx+tag*.8,y+.5,{s:11*k>12?11*k:12,w:800,c:'#fff',a:'center',b:'middle'});
-    txt(ctx,r.n,gx+tag*2.1,y,{s:12*k,w:700,b:'middle'});txt(ctx,Math.round(r.v)+(k>1.25&&r.u.length>3?'':' '+r.u),gx+gw,y,{s:12*k,c:PAL['cv-soft'],a:'right',b:'middle'});
-    const by=y+6*k+2,bh=10;ctx.fillStyle=PAL['card2'];rr(ctx,gx,by,gw,bh,5);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
+    txt(ctx,r.n,gx+tag*2.1,y,{s:12*k,w:700,b:'middle'});txt(ctx,Math.round(r.v)+(r.u==='°'?'°':(k>1.25&&r.u==='demand'?'':' '+r.u)),gx+gw,y,{s:12*k,c:PAL['cv-soft'],a:'right',b:'middle'});
+    const by=y+6*k+4,bh=10;ctx.fillStyle=PAL['card2'];rr(ctx,gx,by,gw,bh,5);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
     const fr=clamp(r.v/r.max,0,1),over=r.low?(r.ref-r.v)/r.ref>.2:r.ref>0&&r.v>r.ref*1.1+1.5,bigOver=r.low?(r.ref-r.v)/r.ref>.5:r.ref>0&&r.v>r.ref*1.3+2;
     ctx.fillStyle=bigOver?PAL['s1']:over?PAL['s4']:PAL['cv-soft'];rr(ctx,gx,by,Math.max(4,fr*gw),bh,5);ctx.fill();
     const tx=gx+clamp(r.ref/r.max,0,1)*gw;ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(tx,by-3);ctx.lineTo(tx,by+bh+3);ctx.stroke();});

@@ -57,7 +57,7 @@ const tc=()=>isDark()?TD:TL;
 /* ---------- Text helpers ---------- */
 function wrapLines(ctx,s,maxW,size,w){ctx.font=(w||400)+' '+size+'px '+FONT;const out=[];String(s).split('\n').forEach(par=>{let line='';par.split(' ').forEach(wd=>{const t=line?line+' '+wd:wd;if(ctx.measureText(t).width>maxW&&line){out.push(line);line=wd;}else line=t;});out.push(line);});return out;}
 function wrapTxt(ctx,s,x,y,maxW,o){o=o||{};const size=o.s||13,lh=o.lh||size*1.25,L=wrapLines(ctx,s,maxW,size,o.w);L.forEach((l,i)=>txt(ctx,l,x,y+i*lh,{s:size,w:o.w,c:o.c,a:o.a}));return y+L.length*lh;}
-function lcd(ctx,x,y,w,h,label,value,k){ctx.fillStyle='#1b2a22';rr(ctx,x,y,w,h,8);ctx.fill();txt(ctx,label,x+10,y+6+11*k,{s:11*k,c:'#9fd8b4',w:600});txt(ctx,value,x+w-12,y+h-10,{s:30*Math.min(k,1.5),w:700,c:'#6ff09e',a:'right'});}
+function lcd(ctx,x,y,w,h,label,value,k){ctx.fillStyle='#1b2a22';rr(ctx,x,y,w,h,8);ctx.fill();txt(ctx,label,x+10,y+6+12*k,{s:12*k,c:'#9fd8b4',w:600});txt(ctx,value,x+w-12,y+h-10,{s:30*Math.min(k,1.5),w:700,c:'#6ff09e',a:'right'});}
 
 /* ---------- Structures and the explorer's info ---------- */
 const PARTS=[
@@ -90,7 +90,7 @@ const SEC={x:10,y:10,w:505,h:600},SEC2={x:10,y:10,w:380,h:450},ZOOM={x:525,y:10,
 function geom(R){const air=R.h*.085,ys=R.y+air,hh=R.h-air,y1=ys+.1*hh,y2=ys+.74*hh,pap=y1+(y2-y1)/5,tr=y2-.035*hh,per=R.w/6,a=.024*hh;
   const X=f=>R.x+f*R.w,ridge=x=>y1+a*Math.sin(2*Math.PI*(x-R.x)/per);
   return {R,air,ys,hh,y1,y2,pap,tr,X,ridge,a,
-    at:{hair:[X(.3),y1+(y2-y1)*.72],arrector:[X(.37),y1+(y2-y1)*.47],sebaceous:[X(.37),y1+(y2-y1)*.28],merkel:[X(.208),ridge(X(.208))-4],meissner:[X(.625),ridge(X(.625))+16],
+    at:{hair:[X(.3),y1+(y2-y1)*.72],arrector:[X(.37),y1+(y2-y1)*.47],sebaceous:[X(.345),y1+(y2-y1)*.28],merkel:[X(.208),ridge(X(.208))-4],meissner:[X(.625),ridge(X(.625))+16],
       caploop:[X(.458),ridge(X(.458))+16],fne:[X(.875),y1-4],sweat:[X(.53),y1+(y2-y1)*.66],pacinian:[X(.8),y2+.035*hh],ruffini:[X(.14),y1+(y2-y1)*.56],
       papillae:[X(.125),ridge(X(.125))+6]}};}
 function layerAt(g,x,y){if(y<g.ys)return null;const r=g.ridge(x);if(y<r)return 'epidermis';if(y<g.y2){if(atLeast('honors'))return y<g.pap?'papillary':'reticular';return 'dermis';}return 'hypodermis';}
@@ -115,7 +115,7 @@ function drawSkinBlock(sim,ctx,R,o,k,t){const g=geom(R),C=tc(),X=g.X,comp=o.comp
   const vy=g.y2+.012*g.hh;ctx.lineCap='round';ctx.strokeStyle=C.art;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(R.x,vy);ctx.lineTo(R.x+R.w,vy);ctx.stroke();ctx.strokeStyle=C.vein;ctx.beginPath();ctx.moveTo(R.x,vy+8);ctx.lineTo(R.x+R.w,vy+8);ctx.stroke();
   [.125,.458,.958].forEach(f=>{const x=X(f),top=g.ridge(x)+7;ctx.lineWidth=2.4;ctx.strokeStyle=C.art;ctx.beginPath();ctx.moveTo(x-4,vy);ctx.lineTo(x-4,top+4);ctx.arc(x,top+4,4,Math.PI,0);ctx.strokeStyle=C.art;ctx.stroke();ctx.strokeStyle=C.vein;ctx.beginPath();ctx.moveTo(x+4,top+4);ctx.lineTo(x+4,vy+8);ctx.stroke();});
   // sweat gland and duct
-  {const sx=X(.53),sy=g.at.sweat[1];ctx.strokeStyle=C.sweats;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(sx,sy-12);for(let y=sy-12;y>g.ys;y-=6){ctx.lineTo(sx+3*Math.sin(y*.34),y);}ctx.stroke();
+  {const sx=X(.53),sy=g.at.sweat[1];ctx.strokeStyle=C.sweats;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(sx,sy-12);for(let y=sy-12;y>g.ys;y-=2){ctx.lineTo(sx+3*Math.sin(y*.3),y);}ctx.stroke();
     ctx.fillStyle=C.sweat;ctx.strokeStyle=C.sweats;ctx.lineWidth=1.5;[[-9,0],[0,-5],[9,0],[-5,8],[5,8]].forEach(q=>{ctx.beginPath();ctx.arc(sx+q[0],sy+q[1],7,0,6.2832);ctx.fill();ctx.stroke();});}
   // nerve trunk and receptor branches
   const act=o.act||{},glow=(id)=>act[id]||0;
@@ -164,16 +164,16 @@ function exploreLabels(sim,ctx,g,k){const big=k>1.35,sel=sim.p.part,R=g.R,L=(s,x
   const rtEdge=(s,y)=>L(s,R.x+R.w-6-width(s)/2,y);
   if(big){lt('Epidermis',g.ys+14*k*.6);rtEdge('Dermis',g.pap+22);lt('Hypodermis',R.y+R.h-14-6*k);
     const s=partBy(sel);if(s&&g.at[sel]){const q=g.at[sel],w=width(s.n),x=clamp(q[0],R.x+w/2+4,R.x+R.w-w/2-4),y=q[1]+(q[1]>R.y+R.h*.6?-44:44);L(s.n,x,y);}return;}
-  lt('Epidermis',g.ys+22);lt(atLeast('honors')?'Papillary layer':'Dermis',g.pap-16);if(atLeast('honors'))lt('Reticular layer',g.pap+22);lt('Hypodermis',R.y+R.h-20);
+  lt('Epidermis',g.ys+22);rtEdge(atLeast('honors')?'Papillary layer':'Dermis',g.pap-16);if(atLeast('honors'))rtEdge('Reticular layer',g.pap+22);lt('Hypodermis',R.y+R.h-20);
   const lead=(id,s,lx,ly)=>{const q=g.at[id];if(!q)return;ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(q[0],q[1]);ctx.lineTo(lx,ly);ctx.stroke();L(s,lx,ly);};
   const X=g.X,dy=g.y2-g.y1;
   lead('hair','Hair follicle',X(.15),g.y1+dy*.84);lead('sebaceous','Sebaceous gland',X(.2),g.y1+dy*.36);lead('arrector','Arrector pili',X(.47),g.y1+dy*.40);
-  lead('merkel','Merkel cell',X(.28),g.ys-20);lead('fne','Free nerve endings',X(.82),g.ys-20);lead('meissner','Meissner’s corpuscle',X(.72),g.y1+dy*.28);
-  lead('sweat','Sudoriferous gland',X(.72),g.y1+dy*.56);lead('caploop','Capillary loop',X(.52),g.ys-20);lead('pacinian','Pacinian corpuscle',X(.7),g.y2+g.hh*.17);
+  lead('merkel','Merkel cell',X(.28),g.ys-20);lead('fne','Free nerve endings',X(.82),g.ys-20);lead('meissner','Meissner’s corpuscle',X(.72),g.y1+dy*.37);
+  lead('sweat','Sudoriferous gland',X(.74),g.y1+dy*.6);lead('caploop','Capillary loop',X(.52),g.ys-20);lead('pacinian','Pacinian corpuscle',X(.7),g.y2+g.hh*.17);
   if(atLeast('honors'))lead('papillae','Dermal papillae',X(.13),g.y1+dy*.28);
   if(atLeast('ap'))lead('ruffini','Ruffini ending',X(.16),g.y1+dy*.68);
   txt(ctx,'Hair',X(.3)+26,R.y+16,{s:12*k,c:PAL['cv-soft']});
-  txt(ctx,'Arteriole and venule',R.x+R.w-8,g.y2+g.hh*.075,{s:12*k,c:PAL['cv-ink'],a:'right'});}
+  lt('Arteriole and venule',g.y2+g.hh*.08);}
 
 /* ---------- Epidermis zoom ---------- */
 const ROWS=[['corneum','Stratum corneum',.3],['lucidum','Stratum lucidum',.08],['granulosum','Stratum granulosum',.14],['spinosum','Stratum spinosum',.3],['basale','Stratum basale',.18]];
@@ -193,7 +193,8 @@ function drawZoom(sim,ctx,k,t,sel){const C=tc(),Z=ZOOM,site=SITES[sim.p.site];ct
   const merx=Z.x+Z.w-26;ctx.fillStyle='#d6589a';ctx.beginPath();ctx.ellipse(merx,by+2,7,5,0,0,6.2832);ctx.fill();
   if(atLeast('honors')){const lx=Z.x+Z.w-40,ly=sy.y+sy.h*.5;ctx.strokeStyle='#2a8276';ctx.lineWidth=2.4;for(let i=0;i<6;i++){const a=i*1.05;ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+Math.cos(a)*13,ly+Math.sin(a)*13);ctx.stroke();}ctx.fillStyle='#2a8276';ctx.beginPath();ctx.arc(lx,ly,5,0,6.2832);ctx.fill();}
   rows.forEach(r=>{const on=sel===r.id,w2=(ctx.font='700 '+12*k+'px '+FONT,ctx.measureText(r.n).width+13*k);pill(ctx,r.n,x0+6+w2/2,r.y+r.h/2,on?PAL['rj']:PAL['card'],on?'#fff':PAL['cv-ink'],12*k);});
-  if(k<=1.35){txt(ctx,'Melanocyte',mx-14,by+24,{s:11.5*k,c:PAL['cv-ink'],a:'right',w:600});txt(ctx,'Merkel',merx+14,by+24,{s:11.5*k,c:PAL['cv-ink'],a:'right',w:600});if(atLeast('honors'))txt(ctx,'Langerhans',Z.x+Z.w-14,sy.y+sy.h*.5+28,{s:11.5*k,c:PAL['cv-ink'],a:'right',w:600});}
+  if(k<=1.35){pill(ctx,'Melanocyte',Z.x+171,by+23,PAL['card'],PAL['cv-ink'],12*k);pill(ctx,'Merkel',Z.x+236,by+23,PAL['card'],PAL['cv-ink'],12*k);if(atLeast('honors'))pill(ctx,'Langerhans',Z.x+Z.w-48,sy.y+sy.h*.5+28,PAL['card'],PAL['cv-ink'],12*k);}
+  {const ring=sel==='melanocyte'?[mx,by]:sel==='merkel'?[merx,by+2]:sel==='langerhans'?[Z.x+Z.w-40,sy.y+sy.h*.5]:null;if(ring){ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(ring[0],ring[1],18,0,6.2832);ctx.stroke();}}
   ctx.restore();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;rr(ctx,Z.x,Z.y,Z.w,Z.h,10);ctx.stroke();}
 
 /* ---------- Probes ---------- */
@@ -201,8 +202,8 @@ function drawProbe(sim,ctx,g,k,t){const p=sim.p,s=sim.st,x=g.X(.625),y0=g.ys;if(
   if(p.stim==='touch'){ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+40,g.R.y+4);ctx.quadraticCurveTo(x+14,y0-16,x,y0+1);ctx.stroke();ctx.fillStyle=PAL['cv-ink'];ctx.beginPath();ctx.arc(x,y0+1,2.5,0,6.2832);ctx.fill();}
   else if(p.stim==='press'){ctx.fillStyle=PAL['cv-soft'];rr(ctx,x-34,y0-30+6*down,68,30,8);ctx.fill();}
   else if(p.stim==='vib'){const w=RM?0:Math.sin(t*60)*2.5;ctx.fillStyle=PAL['cv-soft'];rr(ctx,x-22+w,y0-26,8,26,3);ctx.fill();rr(ctx,x+14-w,y0-26,8,26,3);ctx.fill();rr(ctx,x-22,y0-8,44,8,3);ctx.fill();}
-  else if(p.stim==='heat'){ctx.fillStyle='#c8342f';rr(ctx,x-46,y0-14,92,14,6);ctx.fill();txt(ctx,heatC(p.S).toFixed(0)+' °C',x,y0-3,{s:11*k,w:700,c:'#fff',a:'center'});}
-  else if(p.stim==='cold'){ctx.fillStyle='#2f76b8';rr(ctx,x-46,y0-14,92,14,6);ctx.fill();txt(ctx,coldC(p.S).toFixed(0)+' °C',x,y0-3,{s:11*k,w:700,c:'#fff',a:'center'});}
+  else if(p.stim==='heat'){ctx.fillStyle='#c8342f';{const ph=12*k+6;rr(ctx,x-50,y0-ph,100,ph,6);ctx.fill();txt(ctx,heatC(p.S).toFixed(0)+' °C',x,y0-4,{s:12*k,w:700,c:'#fff',a:'center'});}}
+  else if(p.stim==='cold'){ctx.fillStyle='#2f76b8';{const ph=12*k+6;rr(ctx,x-50,y0-ph,100,ph,6);ctx.fill();txt(ctx,coldC(p.S).toFixed(0)+' °C',x,y0-4,{s:12*k,w:700,c:'#fff',a:'center'});}}
   else{const px=g.X(.875);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(px+18,g.R.y+4);ctx.lineTo(px,y0+7);ctx.stroke();}
   ctx.restore();}
 
@@ -231,7 +232,7 @@ function drawChain(sim,ctx,k,t,vdt){const x0=10,y=470,bw=184,gap=14,h=LH-y-8,big
   const active=s.on&&sim.t>=s.t0?clamp((mainRec(sim.p)?rateOf(sim,mainRec(sim.p)):0)/40,0,1):0;
   heads.forEach((hd,i)=>{const x=x0+i*(bw+gap);ctx.fillStyle=PAL['card'];rr(ctx,x,y,bw,h,10);ctx.fill();ctx.strokeStyle=active>0.02?PAL['s3']:PAL['line'];ctx.lineWidth=active>0.02?2.5:1.5;ctx.stroke();
     const size=12*k;wrapTxt(ctx,big?hd.replace(/^\d\. /,'').replace('Afferent pathway','Pathway').replace('Sensory cortex','Cortex'):hd,x+10,y+6+size,bw-16,{s:size,w:700,c:PAL['rj']});
-    wrapTxt(ctx,vals[i],x+10,y+12+size*2.1,bw-16,{s:big?size*.95:size,c:PAL['cv-ink'],lh:size*1.14});
+    wrapTxt(ctx,vals[i],x+10,y+12+size*2.1,bw-16,{s:size,c:PAL['cv-ink'],lh:size*1.14});
     if(i<3){ctx.fillStyle=PAL['cv-soft'];ctx.beginPath();const ax=x+bw+1,ay=y+h/2;ctx.moveTo(ax,ay-7);ctx.lineTo(ax+11,ay);ctx.lineTo(ax,ay+7);ctx.closePath();ctx.fill();}});
   if(!v.chain)v.chain=[];if(vdt>0&&!RM&&active>0.02){v.cacc=(v.cacc||0)+vdt*(1+active*5);while(v.cacc>=1){v.cacc--;v.chain.push(0);}}
   v.chain=v.chain.map(q=>q+vdt*.5).filter(q=>q<1);ctx.fillStyle='#ff9f1c';v.chain.forEach(q=>{ctx.beginPath();ctx.arc(x0+q*(800-2*x0),y+2,4.5,0,6.2832);ctx.fill();});}
@@ -274,7 +275,7 @@ function benchInit(sim){const b=sim.vlab.bench;if(!b.log)b.log={};if(!b.loc)b.lo
 function personT(V,i,T){const a=gauss(V.rng(11)),c=gauss(V.rng(20+i));return T*Math.exp(.12*a+.1*c);}
 function touch(sim,id,gap){const V=sim.vlab,b=V.bench,i=A_SITES.findIndex(q=>q.id===id),S=A_SITES[i];b.n++;let ans='one';if(gap>0){const T=personT(V,i,S.T),pr=1/(1+Math.exp(-(gap-T)/(.1*T+.5)));ans=V.rng(5000+b.n)()<pr?'two':'one';}
   (b.log[id]=b.log[id]||[]).push({g:gap,a:ans});b.last={site:id,g:gap,a:ans};}
-function locPlace(sim){const V=sim.vlab,b=V.bench,id=sim.p.tSiteB,S=B_SITES.find(q=>q.id===id);b.n++;const r=V.rng(7000+b.n),spread=Math.exp(.38*gauss(r)),d=clamp(Math.round(S.E*spread*10)/10,1.5,46),ang=(r()-.5)*.6;
+function locPlace(sim){const V=sim.vlab,b=V.bench,id=sim.p.tSiteB,S=B_SITES.find(q=>q.id===id);b.n++;const r=V.rng(7000+b.n),spread=Math.exp(.38*gauss(r)),d=clamp(Math.round(S.E*spread*10)/10,1.5,46),ang=(r()-.5)*.24;
   (b.loc[id]=b.loc[id]||[]).push(d);b.cur={site:id,d,ang,mark:true,point:true};}
 function benchStep(sim,dt){const V=sim.vlab;if(!V)return;const b=V.bench,R=b.run;if(R&&!R.done){R.el+=dt;if(R.el>=R.T){R.el=R.T;R.done=true;const v=Math.round(R.T*10)/10;if(R.k==='coin')b.coin[R.site][R.ph==='one'?'one':'stack'].push(v);else b.rib.push(v);}}}
 function startCoin(sim,ph){const V=sim.vlab,b=V.bench,site=sim.p.tCoin,C=COIN[site];b.n++;const mean=ph==='one'?C.T:C.S,T=clamp(mean*Math.exp(.25*gauss(V.rng(9000+b.n))),3,60);b.run={k:'coin',site,ph,T,el:0,done:false};}
@@ -289,7 +290,7 @@ function thrCheck(ext){return (sim,rv,v)=>{const S=A_SITES.find(q=>q.n===rv);if(
   if(!at.some(e=>e.a==='two'))return 'Your log shows one point at '+p.n+' mm. The threshold is the first spacing that felt like two.';
   if(!ext&&log.some(e=>e.g<p.n&&e.a==='two'))return 'Check your log: a smaller spacing was already reported as two points.';
   return null;};}
-function locCheck(sim,rv,v){const S=B_SITES.find(q=>q.n===rv);if(!S)return null;const L=sim.vlab.bench.loc[S.id]||[];if(!L.length)return 'Run this site on the bench first.';if(L.some(d=>Math.abs(d-v)<=1.5))return null;return 'That does not match the ruler. Read from the center of the blue dot to the center of the red dot.';}
+function locCheck(sim,rv,v){const S=B_SITES[['Palm','Hand','Arm A','Arm P','Sole','Calf'].indexOf(rv)];if(!S)return null;const L=sim.vlab.bench.loc[S.id]||[];if(!L.length)return 'Run this site on the bench first.';if(L.some(d=>Math.abs(d-v)<=1.5))return null;return 'That does not match the ruler. Read from the center of the blue dot to the center of the red dot.';}
 function timeCheck(site,ph){return (sim,rv,v)=>{const L=sim.vlab.bench.coin[site][ph];if(!L.length)return 'Run this on the bench first.';return L.some(d=>Math.abs(d-v)<=.3)?null:'That does not match a stopwatch reading from this part. Look at the stopwatch again.';};}
 function coinChk(ph){return (sim,rv,v)=>{const site=rv==='Back of hand'?'hand':'arm';return timeCheck(site,ph)(sim,rv,v);};}
 function ribChk(sim,rv,v){const V=sim.vlab,b=V.bench,m=/^Trial (\d)$/.exec(rv);if(m){const i=+m[1]-1;if(b.rib[i]===undefined)return 'Run trial '+m[1]+' on the bench first.';return Math.abs(b.rib[i]-v)<=.15?null:'That does not match the stopwatch for this trial.';}
@@ -326,11 +327,11 @@ const LAB_TS={id:'touch-sense',title:'Physiology Lab: General Cutaneous Sensatio
    {title:'Questions',controls:['tView'],text:'<p>Use your data to answer the questions below the bench, then save your report and turn it in.</p>'}],
   tables:[
    {id:'t1a',title:'Table 1A: Two-point discrimination',cols:[{id:'site',label:'Body site',rows:A_SITES.map(s=>s.n)},{id:'thr',label:'Two-point threshold on the card (mm, or 20+)',input:'text',check:thrCheck(false)},{id:'ext',label:'Extension card (mm, or 50+), optional',input:'text',check:thrCheck(true)}]},
-   {id:'t1b',title:'Table 1B: Tactile localization',cols:[{id:'site',label:'Body site',rows:B_SITES.map(s=>s.n)},{id:'dist',label:'Distance from the mark (mm)',input:'number',dp:0,check:locCheck}]},
+   {id:'t1b',title:'Table 1B: Tactile localization',cols:[{id:'site',label:'Body site',rows:['Palm','Hand','Arm A','Arm P','Sole','Calf'],rowLabels:B_SITES.map(s=>s.n)},{id:'dist',label:'Distance from the mark (mm)',input:'number',dp:0,check:locCheck}]},
    {id:'t2a',title:'Table 2A: Touch adaptation',cols:[{id:'site',label:'Body site',rows:['Back of hand','Forearm']},{id:'fade',label:'One coin: time until the feeling fades (s)',input:'number',dp:1,check:coinChk('one')},{id:'stack',label:'Two coins added: time the feeling lasts (s)',input:'number',dp:1,check:coinChk('stack')}]},
    {id:'t2b',title:'Table 2B: Hair receptors (forearm)',cols:[{id:'trial',label:'Trial',rows:['Trial 1','Trial 2','Trial 3','Average']},{id:'dur',label:'Time the feeling lasts (s)',input:'number',dp:1,check:ribChk}]}],
   observations:[{id:'limit',label:'Which sites hit the limit of your 20 mm card? What can you honestly claim about those sites from the card alone?'}],
-  graph:{type:'bar',title:'Tactile localization: distance from the mark by site',xl:'Body site',yl:'Distance (mm)',series:[{table:'t1b',x:'site',y:'dist',label:'Distance from the mark'}]},
+  graph:{type:'bar',title:'Distance from the mark by site',xl:'Body site (Hand = back of hand, Arm A and P = forearm anterior and posterior)',yl:'Distance (mm)',series:[{table:'t1b',x:'site',y:'dist',label:'Distance from the mark'}]},
   questions:[
    {id:'q1',n:'1',q:'<p>In your own words, define sensation. Then list the four things that must all be in place for a sensation to happen.</p>'},
    {id:'q2',n:'2',q:'<p>Which site had the smallest two-point threshold? What does that tell you about how many touch receptors are packed into that skin?</p>'},
@@ -358,7 +359,7 @@ function drawBench(sim,ctx,vdt,k,t){const V=sim.vlab,b=V.bench,p=sim.p;ctx.fillS
   if(ex==='1A'||ex==='1X'){const id=p.tSiteA,S=A_SITES.find(q=>q.id===id),gap=ex==='1X'?+p.tGapX:+p.tGap,log=b.log[id]||[],last=b.last&&b.last.site===id?b.last:null;
     benchHead(ctx,ex==='1X'?'1A extension: two-point':'1A: Two-point discrimination',k);
     miniFig(ctx,88,50+14*k,300,S.lm,S.view);
-    const cx=340,px=ex==='1X'?4.6:5.6,yC=90;drawCard(ctx,cx,yC,gap,px,k);const yP=yC+74+62;patch(ctx,cx-168,yP,336,130,/hand|neck|calf/.test(id)?22:0);txt(ctx,S.n,cx,yP+112,{s:13*k,w:700,c:'#3a2a20',a:'center'});
+    const cx=340,px=ex==='1X'?4.6:5.6,yC=90;drawCard(ctx,cx,yC,gap,px,k);const yP=yC+74+62;patch(ctx,cx-168,yP,336,130,/hand|neck|calf/.test(id)?22:0);pill(ctx,S.n,cx,yP+112,PAL['card'],PAL['cv-ink'],13*k);txt(ctx,'Eyes closed',88,50+14*k+300+18*k,{s:13*k,c:PAL['cv-soft'],a:'center'});
     const y2=yP+146;bubble(ctx,last?(last.a==='two'?'I feel two points.':'I feel one point.'):'Touch when you are ready.',cx-168,y2,336,k,last&&last.a==='two'?PAL['s3']:PAL['rj']);
     const x=530,w=258,size=13*k;ctx.fillStyle=PAL['card'];rr(ctx,x,50+6*k,w,LH-50-6*k-30,10);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();txt(ctx,'Your log: '+(k>1.35?'':S.n.toLowerCase()),x+12,50+6*k+8+size,{s:size,w:700});
     const rows=log.slice(-Math.floor((LH-140)/(size*1.42)));rows.forEach((e,i)=>{const y=50+6*k+14+size*2.2+i*size*1.42;txt(ctx,e.g+' mm:',x+12,y,{s:size,c:PAL['cv-soft']});txt(ctx,e.a==='two'?'two points':'one point',x+w-12,y,{s:size,w:e.a==='two'?700:400,a:'right',c:e.a==='two'?PAL['s3']:PAL['cv-ink']});});
@@ -367,8 +368,8 @@ function drawBench(sim,ctx,vdt,k,t){const V=sim.vlab,b=V.bench,p=sim.p;ctx.fillS
     const px=14,ax=74,ay=330;const C=tc();patch(ctx,16,170,768,330,/hand|forearm|calf/.test(id)?30:0);txt(ctx,S.n,30,170+14+13*k,{s:13*k,w:700,c:'#3a2a20'});
     miniFig(ctx,740,18,150,S.lm,S.view);
     if(mk||c){ctx.fillStyle='#2d6bd2';ctx.beginPath();ctx.arc(ax,ay,7,0,6.2832);ctx.fill();}
-    if(c){ctx.save();ctx.translate(ax,ay);ctx.rotate(c.ang);const rl=48*px;ctx.fillStyle=isDark()?'#d8cda0':'#f4e9b8';ctx.strokeStyle='#8a7b45';ctx.lineWidth=1.2;ctx.beginPath();ctx.rect(-14,20,rl+28,44);ctx.fill();ctx.stroke();
-      ctx.strokeStyle='#2a2616';for(let mm=0;mm<=48;mm++){const x=mm*px;ctx.lineWidth=mm%5===0?1.6:1;ctx.beginPath();ctx.moveTo(x,20);ctx.lineTo(x,20+(mm%5===0?16:9));ctx.stroke();if(mm%(k>1.35?10:5)===0)txt(ctx,String(mm),x,20+18+12*k*.8,{s:12*k*.85,w:600,c:'#2a2616',a:'center'});}
+    if(c){ctx.save();ctx.translate(ax,ay);ctx.rotate(c.ang);const rl=47*px;ctx.fillStyle=isDark()?'#d8cda0':'#f4e9b8';ctx.strokeStyle='#8a7b45';ctx.lineWidth=1.2;ctx.beginPath();ctx.rect(-14,20,rl+28,44);ctx.fill();ctx.stroke();
+      ctx.strokeStyle='#2a2616';for(let mm=0;mm<=47;mm++){const x=mm*px;ctx.lineWidth=mm%5===0?1.6:1;ctx.beginPath();ctx.moveTo(x,20);ctx.lineTo(x,20+(mm%5===0?16:9));ctx.stroke();if(mm%(k>1.35?10:5)===0)txt(ctx,String(mm),x,20+17+12*k*.8,{s:12*k,w:600,c:'#2a2616',a:'center'});}
       ctx.setLineDash([3,4]);ctx.lineWidth=1;ctx.strokeStyle='#2a2616';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,20);ctx.moveTo(c.d*px,0);ctx.lineTo(c.d*px,20);ctx.stroke();ctx.setLineDash([]);
       ctx.fillStyle='#c8342f';ctx.beginPath();ctx.arc(c.d*px,0,7,0,6.2832);ctx.fill();ctx.restore();}
     bubble(ctx,c?'I tried to touch the same spot.':(mk?'I felt that. Let me try to find it.':'Eyes closed. Touch when ready.'),16,60+14*k,640,k);
@@ -401,7 +402,7 @@ const SKIN={
   lede:{bio:'Explore the layers of the skin, then touch it. See which receptor fires, how long it keeps firing, and how the message reaches your brain.',
         honors:'Follow one stimulus through the skin, into an afferent neuron and up to the sensory cortex. Compare fast-adapting and slow-adapting receptors at different body sites.',
         ap:'Tune vibration frequency across receptor types, push heat past the pain threshold, and calculate how long the signal takes to reach the cortex on different nerve fibers.'},
-  scale:'A block of skin about 3 mm deep. The epidermis on most of the body is about 0.1 mm thick, and up to about 1.5 mm on the soles.',
+  scale:'A block of skin and the fat under it. Skin is about 1 to 4 mm thick. The epidermis is about 0.1 mm on most of the body, and up to about 1.5 mm on the soles.',
   aspect:800/LH,timeScale:1,dtMax:0.002,prewarm:0,sampleDt:0.05,window:12,unit:'s',timeLabel:'Time',chChange:0,chReveal:5,
   controls:[
     {id:'view',label:'View',type:'seg',def:'explore',noTrial:true,options:[{v:'explore',l:'Explore structures'},{v:'test',l:'Test a stimulus'}]},
@@ -453,7 +454,7 @@ const SKIN={
     ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();ids.forEach((id,i)=>{ctx.strokeStyle=serColor(i);ctx.lineWidth=2.2;ctx.lineJoin='round';ctx.beginPath();let first=true;s.h.forEach(h=>{if(h.t<xmin)return;const x=ax.X(h.t),y=ax.Y(h.r[id]||0);if(first){ctx.moveTo(x,y);first=false;}else ctx.lineTo(x,y);});ctx.stroke();});ctx.restore();
     legend(ctx,box.L,14,ids.slice(0,3).map((id)=>({label:REC[id].sh,color:serColor(ids.indexOf(id))})));},
   challenges:[
-    {lvl:'bio',q:'You rest a finger lightly on the fingertip skin and hold it still. What does the Meissner’s corpuscle do?',choices:['Fires steadily the whole time','Fires a quick burst, then goes quiet while the touch continues','Never fires'],correct:1,
+    {lvl:'bio',q:'A light touch lands on a fingertip and stays there. What does the Meissner’s corpuscle do?',choices:['Fires steadily the whole time','Fires a quick burst, then goes quiet while the touch continues','Never fires'],correct:1,
      baseline:{view:'test',site:'fingertip',stim:'touch',S:60},watch:'rates',at:0,reveal:4,changeText:'A steady light touch is on the fingertip',
      explain:'Meissner’s corpuscles adapt fast. They report that a touch started and then fall silent, even though the touch is still there. That is why you stop noticing a ring or a shirt.'},
     {lvl:'bio',q:'Same steady touch. What does the Merkel cell do?',choices:['Goes silent as fast as Meissner’s corpuscle','Fires a burst, then keeps firing at a lower rate','Fires only when the touch ends'],correct:1,
@@ -495,12 +496,12 @@ const SKIN={
   infoPanel(sim){if(isLab(sim))return '';const p=sim.p,q=partBy(p.part);if(p.view==='explore'&&q)return '<h3>'+q.n+'</h3><p><b>Where:</b> '+q.l+'</p><p>'+q.d+'</p><p class="muted">Tap the stage or use the Structure list to choose another.</p>';
     const m=mainRec(p);if(!m)return '<h3>No receptor is firing</h3><p>The stimulus is below threshold. Raise the strength.</p>';const R=REC[m],S=SITES[p.site];
     const fibers=atLeast('ap')?('<p><b>Signal:</b> '+R.fib+' fiber at about '+R.v+' m/s, '+S.dist+' m to the cortex, about '+Math.round(travelMs(p))+' ms.</p>'):'';
-    return '<h3>'+R.n+'</h3><p><b>Adapts:</b> '+R.ad+'.</p><p><b>At this site:</b> '+S.n+' has a two-point threshold of about '+S.T+' mm. '+(S.T<=10?'Receptors are packed close together.':'Receptors are spread far apart.')+'</p>'+fibers;},
+    return '<h3>'+R.n+'</h3><p><b>Adapts:</b> '+R.ad+'.</p><p><b>At this site:</b> '+S.n+' has a two-point threshold of about '+S.T+' mm. '+(S.T<=10?'Receptors are packed close together.':'Receptors are spread far apart.')+'</p>'+fibers+(sim.vis.tap&&partBy(sim.vis.tap)?'<p><b>You tapped '+partBy(sim.vis.tap).n+':</b> '+partBy(sim.vis.tap).d+'</p>':'');},
   onClick(sim,x,y){if(isLab(sim))return;const p=sim.p;
-    if(p.view==='explore'){if(x>=ZOOM.x&&y<ZOOM.y+ZOOM.h){const r=zoomRows(sim).find(o=>y>=o.y&&y<o.y+o.h);if(r)BioLab.setValues(sim,{part:r.id});return;}
+    if(p.view==='explore'){if(x>=ZOOM.x&&y<ZOOM.y+ZOOM.h){const rs=zoomRows(sim),bs=rs[rs.length-1],by=bs.y+bs.h*.55,ss=rs.find(o=>o.id==='spinosum'),near=(a,b)=>Math.hypot(a-x,b-y)<20;if(near(ZOOM.x+ZOOM.w-60,by)){BioLab.setValues(sim,{part:'melanocyte'});return;}if(near(ZOOM.x+ZOOM.w-26,by)){BioLab.setValues(sim,{part:'merkel'});return;}if(atLeast('honors')&&near(ZOOM.x+ZOOM.w-40,ss.y+ss.h*.5)){BioLab.setValues(sim,{part:'langerhans'});return;}const r=rs.find(o=>y>=o.y&&y<o.y+o.h);if(r)BioLab.setValues(sim,{part:r.id});return;}
       if(x<SEC.x+SEC.w){const g=geom(SEC);let best=null,dmin=26;Object.keys(g.at).forEach(id=>{if(id==='ruffini'&&!atLeast('ap'))return;if(id==='papillae'&&!atLeast('honors'))return;const q=g.at[id],d=Math.hypot(q[0]-x,q[1]-y);if(d<dmin){dmin=d;best=id;}});
         if(!best)best=layerAt(g,x,y);if(best)BioLab.setValues(sim,{part:best});}return;}
-    const g=geom(SEC2);if(x<SEC2.x+SEC2.w){let best=null,dmin=26;Object.keys(g.at).forEach(id=>{const q=g.at[id],d=Math.hypot(q[0]-x,q[1]-y);if(d<dmin){dmin=d;best=id;}});if(best&&best!=='ruffini')BioLab.setValues(sim,{part:best,view:'explore'});}},
+    const g=geom(SEC2);if(x<SEC2.x+SEC2.w){let best=null,dmin=26;Object.keys(g.at).forEach(id=>{if(id==='ruffini'&&!atLeast('ap'))return;if(id==='papillae'&&!atLeast('honors'))return;const q=g.at[id],d=Math.hypot(q[0]-x,q[1]-y);if(d<dmin){dmin=d;best=id;}});if(best){BioLab.setValues(sim,{part:best});sim.vis.tap=best;}}},
   tour:[
     {title:'Three layers',text:'Skin has an epidermis on top and a dermis below it. The hypodermis underneath is mostly fat and is not actually part of the skin. All together, your skin covers about 2.2 m² and makes up about 15% of your body weight.',focus:[10,10,505,600],pause:true,setup(sim){BioLab.setValues(sim,{view:'explore',part:'epidermis',site:'palm'});}},
     {title:'The epidermis rebuilds itself',text:'The stratum basale makes new keratinocytes, and they get pushed upward through the strata, flattening and dying on the way. Watch them rise. You grow a whole new epidermis every 25 to 45 days, with no blood vessels in this layer.',focus:[525,10,265,470],speed:1,setup(sim){BioLab.setValues(sim,{view:'explore',part:'basale',site:'palm'});}},
@@ -522,7 +523,7 @@ const SKIN={
   about:'<p><b>Model.</b> Each receptor’s firing rate follows rate = strength × (sustained + (peak − sustained) × e<sup>−t/τ</sup>). Time constants: Pacinian corpuscle 0.02 s, Meissner’s corpuscle 0.15 s, hair follicle receptor 0.2 s, Merkel cell about 1.5 to 2 s, heat and cold endings 6 s, pain endings 20 s. Fast adapters also fire a short burst when a stimulus ends. Vibration tuning uses a best frequency of about 250 Hz for Pacinian corpuscles, about 30 Hz for Meissner’s corpuscles and hair follicle receptors, and about 8 Hz for Merkel cells. Conduction speeds are typical values: Aβ 50, Aδ 15 and C 1 m/s.</p><p><b>What is simplified.</b> Rates are illustrative for one fiber, shaped to match the published pattern of each receptor type. Thermal adaptation is really slower and more complicated than one time constant. Some heat signals travel on Aδ fibers and pain on both Aδ and C fibers, and we show only one. Real receptors are not spread evenly, and a real block of skin never holds every structure at once: the explorer is a composite. Two-point thresholds are Weinstein-style adult averages, which vary between people and studies. Signal travel time ignores the short delays at synapses.</p><p><b>Virtual lab.</b> Your partner’s answers come from those same threshold averages plus random variation. Tactile localization values (about 5 mm on the palm to about 16 mm on the calf) are estimates for the marker method, which includes pointing error, and are larger than published point-localization thresholds. Coin and ribbon times are classroom-style estimates. Real class results vary a lot. The handout’s card stops at 20 mm, so we added an optional extension card. The suture lab stays hands-on in class.</p>',
   initVis(sim){},
   draw,
-  thumbSetup(sim){BioLab.setValues?0:0;sim.p.view='test';sim.p.site='fingertip';},thumbFrames:30
+  thumbSetup(sim){sim.p.view='test';sim.p.site='fingertip';},thumbFrames:40
 };
 BioLab.register(SKIN);
 })();

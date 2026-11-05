@@ -15,7 +15,7 @@ const NODES={
  aut:{n:'Autonomic',x:488,y:270,c:C.aut,up:'mot',short:'Involuntary, to smooth muscle, cardiac muscle and glands.',info:{bio:'Involuntary control of smooth muscle, cardiac muscle and glands. <b>Autonomic = automatic.</b>'}},
  sym:{n:'Sympathetic',x:328,y:350,c:C.sym,up:'aut',short:'Fight or flight: ready the body for action.',info:{bio:'<b>Fight or flight.</b> Readies the body for action: heart rate up, pupils wider, airways wider, digestion slowed.',ap:'<b>Fight or flight.</b> Fibers leave the spinal cord from T1 to L2 (thoracolumbar). Most release norepinephrine at the target, and the adrenal medulla adds epinephrine to the blood, so the effect outlasts the nerve signal.'}},
  para:{n:'Parasympathetic',x:458,y:350,c:C.para,up:'aut',short:'Rest and digest: save energy and handle food.',info:{bio:'<b>Rest and digest.</b> Saves energy: heart rate down, pupils smaller, airways narrower, digestion active.',ap:'<b>Rest and digest.</b> Fibers leave from the brain stem and sacral spinal cord (craniosacral). The vagus nerve (cranial nerve X) carries most of them. They release acetylcholine at the target.'}}};
-NODES.sym.x=262;NODES.para.x=444;NODES.som.x=322;NODES.aut.x=470;
+NODES.sym.x=250;NODES.para.x=448;NODES.som.x=322;NODES.aut.x=470;
 const NKEY=Object.keys(NODES);
 const SC={
  walk:{n:'Walking home',sym:.4,par:.35,hr:95,pu:3.5,air:.6,gut:.4,vg:.5,vm:.75,
@@ -28,13 +28,13 @@ const SC={
    hrT:'Below the 72 BPM set point',puT:'Constricted',airT:'Narrower, at rest you need less',gutT:'Active: saliva, enzymes, gut motion',vT:'Gut vessels wide',
    nar:'<b>Rest and digest.</b> Sitting on the couch, the parasympathetic division dominates: the heart slows, pupils and airways narrow and the gut gets to work on your dinner.'}};
 const PARTS={
- cerebrum:{n:'Cerebrum',c:'#7b58b5',t:{bio:'The largest part of the brain, split into a left and a right hemisphere. Each hemisphere controls the opposite side of the body. It has four lobes: frontal, parietal, occipital and temporal.'}},
- frontal:{n:'Frontal lobe',c:'#a8324a',t:{bio:'Plans and starts movement. Handles reasoning, decisions, personality and producing speech.',honors:'Plans and starts movement through the motor cortex at its back edge. Handles reasoning, decisions, personality and producing speech (Broca’s area).'}},
- parietal:{n:'Parietal lobe',c:'#3f6fb0',t:{bio:'Takes in touch, pain, temperature and pressure, and tracks where your body is.',honors:'Holds the sensory cortex just behind the motor cortex. Takes in touch, pain, temperature and pressure, and tracks where your body is in space.'}},
- occipital:{n:'Occipital lobe',c:'#4f7f2f',t:{bio:'Handles vision. This is why a hard hit to the back of the head can make you see stars.'}},
- temporal:{n:'Temporal lobe',c:'#a85c1a',t:{bio:'Handles hearing, memory and understanding language.',honors:'Handles hearing, forming memories (hippocampus) and understanding language (Wernicke’s area).'}},
- cerebellum:{n:'Cerebellum',c:'#1f7a7a',t:{bio:'Coordinates movement, balance and posture. It fine-tunes movements the frontal lobe starts.'}},
- stem:{n:'Brain stem',c:'#5a6470',t:{bio:'Connects the brain to the spinal cord and runs what keeps you alive: breathing, heart rate and swallowing.',honors:'Midbrain, pons and medulla. Connects the brain to the spinal cord and runs breathing, heart rate and swallowing. Motor pathways cross sides here.'}}};
+ cerebrum:{n:'Cerebrum',s:'Two hemispheres, four lobes. Each hemisphere controls the opposite side of the body.',c:'#7b58b5',t:{bio:'The largest part of the brain, split into a left and a right hemisphere. Each hemisphere controls the opposite side of the body. It has four lobes: frontal, parietal, occipital and temporal.'}},
+ frontal:{n:'Frontal lobe',s:'Plans and starts movement. Handles reasoning, decisions, personality and speech.',c:'#a8324a',t:{bio:'Plans and starts movement. Handles reasoning, decisions, personality and producing speech.',honors:'Plans and starts movement through the motor cortex at its back edge. Handles reasoning, decisions, personality and producing speech (Broca’s area).'}},
+ parietal:{n:'Parietal lobe',s:'Takes in touch, pain, temperature and pressure. Tracks where your body is.',c:'#3f6fb0',t:{bio:'Takes in touch, pain, temperature and pressure, and tracks where your body is.',honors:'Holds the sensory cortex just behind the motor cortex. Takes in touch, pain, temperature and pressure, and tracks where your body is in space.'}},
+ occipital:{n:'Occipital lobe',s:'Handles vision.',c:'#4f7f2f',t:{bio:'Handles vision. This is why a hard hit to the back of the head can make you see stars.'}},
+ temporal:{n:'Temporal lobe',s:'Handles hearing, memory and understanding language.',c:'#a85c1a',t:{bio:'Handles hearing, memory and understanding language.',honors:'Handles hearing, forming memories (hippocampus) and understanding language (Wernicke’s area).'}},
+ cerebellum:{n:'Cerebellum',s:'Coordinates movement, balance and posture.',c:'#1f7a7a',t:{bio:'Coordinates movement, balance and posture. It fine-tunes movements the frontal lobe starts.'}},
+ stem:{n:'Brain stem',s:'Connects brain to spinal cord. Runs breathing, heart rate and swallowing.',c:'#5a6470',t:{bio:'Connects the brain to the spinal cord and runs what keeps you alive: breathing, heart rate and swallowing.',honors:'Midbrain, pons and medulla. Connects the brain to the spinal cord and runs breathing, heart rate and swallowing. Motor pathways cross sides here.'}}};
 const NP={
  dend:{n:'Dendrites',t:{bio:'Branches that receive signals and carry them toward the cell body.'}},
  body:{n:'Cell body',t:{bio:'Holds the nucleus and keeps the neuron alive. Signals add up here in many neurons.'}},
@@ -58,12 +58,12 @@ const LOBE={frontal:[[0,0],[.47,0],[.37,.5],[.2,.57],[0,.7]],parietal:[[.47,0],[
 const inPoly=(P,u,v)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a[1]>v)!==(b[1]>v)&&u<(b[0]-a[0])*(v-a[1])/(b[1]-a[1])+a[0])c=!c;}return c;};
 function brainHit(u,v){if(inPoly(CB,u,v)){for(const l of ['frontal','parietal','occipital','temporal'])if(inPoly(LOBE[l],u,v))return l;return 'cerebrum';}
   if(((u-.76)/.16)**2+((v-.74)/.13)**2<=1)return 'cerebellum';if(u>=.53&&u<=.63&&v>=.6&&v<=1)return 'stem';return null;}
-function drawBrain(ctx,x,y,w,h,sel,k){const X=u=>x+u*w,Y=v=>y+v*h,cs=PARTS,all=sel==='cerebrum',dim=id=>(sel===id||(all&&LOBE[id]))?1:.72;
+function drawBrain(ctx,x,y,w,h,sel,k){const X=u=>x+u*w,Y=v=>y+v*h,cs=PARTS,all=sel==='cerebrum',dim=()=>1;
   ctx.globalAlpha=dim('stem');ctx.fillStyle=cs.stem.c;rr(ctx,X(.53),Y(.6),.1*w,.4*h,.04*w);ctx.fill();ctx.globalAlpha=1;if(sel==='stem'){ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=3.5;ctx.stroke();}
   ctx.globalAlpha=dim('cerebellum');ctx.fillStyle=cs.cerebellum.c;ctx.beginPath();ctx.ellipse(X(.76),Y(.74),.16*w,.13*h,0,0,6.2832);ctx.fill();ctx.globalAlpha=1;if(sel==='cerebellum'){ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=3.5;ctx.stroke();}
   const path=()=>{ctx.beginPath();const n=CB.length,P=CB.map(q=>[X(q[0]),Y(q[1])]),m=(a,b)=>[(P[a][0]+P[b][0])/2,(P[a][1]+P[b][1])/2],s=m(n-1,0);ctx.moveTo(s[0],s[1]);for(let i=0;i<n;i++){const e=m(i,(i+1)%n);ctx.quadraticCurveTo(P[i][0],P[i][1],e[0],e[1]);}ctx.closePath();};
-  ctx.save();path();ctx.clip();Object.keys(LOBE).forEach(l=>{ctx.globalAlpha=dim(l);ctx.fillStyle=cs[l].c;ctx.beginPath();LOBE[l].forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));ctx.closePath();ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=2;ctx.stroke();
-    if(sel===l){ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=7;ctx.stroke();}});ctx.restore();
+  ctx.save();path();ctx.clip();Object.keys(LOBE).forEach(l=>{ctx.globalAlpha=dim(l);ctx.fillStyle=cs[l].c;ctx.beginPath();LOBE[l].forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));ctx.closePath();ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=2;ctx.stroke();});
+  if(LOBE[sel]){ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=7;ctx.beginPath();LOBE[sel].forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));ctx.closePath();ctx.stroke();}ctx.restore();
   path();ctx.strokeStyle=sel==='cerebrum'?PAL['cv-ink']:PAL['cv-soft'];ctx.lineWidth=sel==='cerebrum'?4:2;ctx.stroke();
   const L=[['Frontal','lobe',.2,.3],['Parietal','lobe',.56,.22],['Occipital','lobe',.85,.34],['Temporal','lobe',.42,.62]],s=12.5*k;
   L.forEach(q=>{txt(ctx,q[0],X(q[2]),Y(q[3])-s*.6,{s,w:700,c:'#fff',a:'center',b:'middle'});txt(ctx,q[1],X(q[2]),Y(q[3])+s*.6,{s,w:700,c:'#fff',a:'center',b:'middle'});});
@@ -106,7 +106,7 @@ function drawBody(sim,ctx,k,t){const v=sim.st,sc=SC[sim.p.scen];
   BioLab.body.draw(ctx,Object.assign({view:'front',marks:false},O));
   const walk=sim.p.scen==='walk';
   if(walk){const f=[[0,.1],[0,.36],[.08,.46],[.06,.72],[.05,.93]].map(q=>M(q[0],q[1]));line(ctx,f,C.som,3,.85);dots(ctx,f,C.som,t,3,.35);}
-  const cols=[C.sym,C.mot,C.sens,C.som,C.pns],orgs=[[.018,.21],[.022,.052],[-.05,.21],[.015,.33],[.06,.56]],RX=232,TX=RX+72;
+  const cols=[C.sym,C.mot,C.sens,C.som,C.pns],orgs=[[.018,.21],[.022,.052],[-.05,.21],[.015,.33],[.06,.56]],RX=232,TX=RX+82;
   const row=(i,name,val,desc,icon)=>{const y=y0+i*RH,cy=y+RH/2,o=M(orgs[i][0],orgs[i][1]);
     ctx.strokeStyle=PAL['cv-soft'];ctx.globalAlpha=.55;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(o[0],o[1]);ctx.lineTo(RX-2,cy);ctx.stroke();ctx.globalAlpha=1;ctx.fillStyle=cols[i];ctx.beginPath();ctx.arc(o[0],o[1],4.5,0,6.2832);ctx.fill();
     ctx.fillStyle=PAL['card2'];rr(ctx,RX,y+3,800-RX-8,RH-6,8);ctx.fill();icon(RX+36,cy);
@@ -116,17 +116,17 @@ function drawBody(sim,ctx,k,t){const v=sim.st,sc=SC[sim.p.scen];
   row(1,'Pupils',v.pu.toFixed(1)+' mm',sc.puT,(x,y)=>{ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(x,y,28,17,0,0,6.2832);ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.stroke();ctx.fillStyle='#4a7a9c';ctx.beginPath();ctx.arc(x,y,15,0,6.2832);ctx.fill();ctx.fillStyle='#111';ctx.beginPath();ctx.arc(x,y,v.pu*1.9,0,6.2832);ctx.fill();});
   row(2,'Airways','',sc.airT,(x,y)=>{const w=3+v.air*11;ctx.strokeStyle='#d98a94';ctx.lineCap='round';ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x,y-20);ctx.lineTo(x,y-2);ctx.lineTo(x-18,y+18);ctx.moveTo(x,y-2);ctx.lineTo(x+18,y+18);ctx.stroke();ctx.lineCap='butt';});
   row(3,'Digestion','',sc.gutT,(x,y)=>{ctx.strokeStyle='#a85c1a';ctx.lineWidth=11;ctx.lineCap='round';ctx.beginPath();for(let i=0;i<=24;i++){const u=i/24,xx=x-28+56*u,yy=y+Math.sin(u*9+(RM?0:t*3*v.gut))*(2+9*v.gut);i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);}ctx.stroke();ctx.lineCap='butt';});
-  row(4,'Blood vessels','',sc.vT,(x,y)=>{ctx.strokeStyle='#b03a2e';ctx.lineCap='round';ctx.lineWidth=2+v.vg*12;ctx.beginPath();ctx.moveTo(x-28,y-11);ctx.lineTo(x+28,y-11);ctx.stroke();ctx.lineWidth=2+v.vm*12;ctx.beginPath();ctx.moveTo(x-28,y+12);ctx.lineTo(x+28,y+12);ctx.stroke();ctx.lineCap='butt';});}
+  row(4,'Vessels (gut over muscle)','',sc.vT,(x,y)=>{ctx.strokeStyle='#b03a2e';ctx.lineCap='round';ctx.lineWidth=2+v.vg*12;ctx.beginPath();ctx.moveTo(x-28,y-11);ctx.lineTo(x+28,y-11);ctx.stroke();ctx.lineWidth=2+v.vm*12;ctx.beginPath();ctx.moveTo(x-28,y+12);ctx.lineTo(x+28,y+12);ctx.stroke();ctx.lineCap='butt';});}
 function drawBrainView(sim,ctx,k,t){const p=sim.p;drawBrain(ctx,12,14,500,368,p.part,k);
   const P=PARTS[p.part];ctx.fillStyle=PAL['card2'];rr(ctx,8,396,784,96,8);ctx.fill();ctx.strokeStyle=P.c;ctx.lineWidth=2.5;ctx.stroke();
-  const y=wrap(ctx,P.n,20,396+14+6*k,760,{s:13.5*k,w:700});wrap(ctx,plain(lvText(P.t)),20,y+1,760,{s:12*k});
+  const y=wrap(ctx,P.n,20,396+14+6*k,760,{s:13.5*k,w:700});wrap(ctx,P.s,20,y+1,760,{s:12*k});
   /* cross control: front view, the figure's left on the viewer's right */
   const O={cx:662,top:120,h:268},M=(x,y)=>{const q=BioLab.body.map(x,y,O);return [q.x,q.y];};
   txt(ctx,'Cross-control',O.cx,14+13*k*.7,{s:13*k,w:700,a:'center'});
   BioLab.body.draw(ctx,Object.assign({view:'front',marks:false},O));
   const left=p.hemi==='left',hy=78,hc=O.cx,col=C.cns,HR=48;
-  [[-1,'R'],[1,'L']].forEach(q=>{const on=(q[0]===1)===left;ctx.fillStyle=on?col:PAL['card2'];ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(hc+q[0]*(HR/2+2),hy,HR/2,28,0,0,6.2832);ctx.fill();ctx.stroke();txt(ctx,q[1],hc+q[0]*(HR/2+2),hy,{s:13*k,w:700,c:on?'#fff':PAL['cv-ink'],a:'center',b:'middle'});});
-  const s=left?1:-1,path=[[hc+s*24,hy],[hc,hy+30],[hc-s*2,O.top+.11*O.h]].concat([[-s*.01,.17],[-s*.125,.185],[-s*.148,.36],[-s*.178,.482],[-s*.19,.52]].map(q=>M(q[0],q[1])));
+  [[-1,'R'],[1,'L']].forEach(q=>{const on=(q[0]===1)===left;ctx.fillStyle=on?col:PAL['card2'];ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(hc+q[0]*(HR/2+2),hy,HR/2,28,0,0,6.2832);ctx.fill();ctx.stroke();txt(ctx,q[1],hc+q[0]*(HR/2+2),hy-10,{s:12*k,w:700,c:on?'#fff':PAL['cv-ink'],a:'center',b:'middle'});});
+  const s=left?1:-1,path=[[hc+s*24,hy+12],[hc,hy+30],[hc-s*2,O.top+.11*O.h]].concat([[-s*.01,.17],[-s*.125,.185],[-s*.148,.36],[-s*.178,.482],[-s*.19,.52]].map(q=>M(q[0],q[1])));
   line(ctx,path,C.mot,3,.9);dots(ctx,path,C.mot,t,3,.4);const e=M(-s*.19,.52);ctx.fillStyle=C.mot;ctx.beginPath();ctx.arc(e[0],e[1],7,0,6.2832);ctx.fill();}
 const NCOL='#7b58b5';
 function neuronGeo(ty){if(ty==='sensory')return {sig:[[110,195],[640,195],[700,195]],axon:[[110,195],[700,195]],body:[420,92],stalk:[[420,195],[420,110]],dend:[80,195],term:[700,195],lab:{dend:[108,152],body:[510,92],axon:[250,240],myelin:[560,240],term:[716,262]},my:[130,650]};

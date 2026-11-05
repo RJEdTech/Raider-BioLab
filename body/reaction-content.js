@@ -10,7 +10,7 @@ BioLab.addPractical({reaction:{
     'The signal reaches the occipital lobe and moves forward to the frontal lobe, where the brain decides to act. This is the longest step, and the only step that a second task like your phone can stretch.',
     'The command runs down the spinal cord and out along motor neurons to the hand. Then the muscle needs about 40 ms to contract and close your fingers, about twice as long as the whole nerve trip.',
     'The ruler falls under gravity the whole time, so the distance it fell tells you the time, like a stopwatch with no buttons. A 17.7 cm fall always takes 0.19 s.',
-    'Change only the cue. Sound opens channels in the ear almost immediately, so the sensory step shrinks and the catch is about 6 cm shorter. Touch comes out about the same as sound.',
+    'Change only the cue. Sound opens channels in the ear almost immediately, so the sensory step shrinks and the catch is about 7 cm shorter. Touch comes out about the same as sound.',
     'A tap on the knee sends a signal to the spinal cord, and a motor neuron answers from right there. No brain, about 0.04 s. Your brain only finds out afterward, which is why your leg kicks before you think about it.']
 }});
 BioLab.addReview({reaction:{questions:[
