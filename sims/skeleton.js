@@ -284,7 +284,7 @@ const LP_R=[['cartilage',CX+72,44],['spongy',CX+66,108],['red',CX+36,150],['plat
 /* ========== Bone functions ========== */
 const FUNCS={
   support:{n:'Support',job:'The skeleton is the frame that holds you up. Your weight runs down the spine, through the pelvis and down the legs.',
-    hi:['cervical','thoracic','lumbar','sacrum','pelvis','femur','tibia','tarsals'],notes:[['Spine holds up the head and trunk',-8,320,-1],['Pelvis passes weight to the legs',-70,400,-1],['Femur and tibia carry your weight to the ground',-58,700,1]]},
+    hi:['cervical','thoracic','lumbar','sacrum','pelvis','femur','tibia','tarsals'],notes:[['Spine holds up the head and trunk',-8,320,-1],['Pelvis passes weight to the legs',-70,400,-1],['Femur and tibia carry your weight to the ground',64,650,1]]},
   protect:{n:'Protection',job:'Bone shields soft organs. The skull protects the brain, the vertebrae protect the spinal cord, and the ribcage protects the heart and lungs.',
     hi:['cranium','cervical','thoracic','lumbar','ribs','sternum'],notes:[['Skull: brain',-28,32,-1],['Vertebrae: spinal cord',-3,130,-1],['Ribcage: heart and lungs',55,230,1]]},
   anchor:{n:'Anchorage',job:'Muscles pull on bones through tendons. Bones act as levers, and joints act as the pivots, so a muscle’s pull becomes movement.',
@@ -294,7 +294,7 @@ const FUNCS={
   blood:{n:'Blood cell formation',job:'Red marrow carries out hematopoiesis, making red blood cells, white blood cells and platelets. In adults it is mostly in the flat bones, the vertebrae and the ends of the femur and humerus.',
     hi:['pelvis','sternum','ribs','cranium','cervical','thoracic','lumbar','sacrum'],notes:[['Flat bones and vertebrae hold red marrow',-8,240,-1],['So do the upper femur and humerus',-62,452,-1]]},
   fat:{n:'Fat storage',job:'Yellow marrow in the shafts of long bones stores fat, an energy reserve.',
-    hi:[],notes:[['Yellow marrow fills the long bone shafts',-65,590,-1],['It is in the arm too',136,270,1]]},
+    hi:[],notes:[['Yellow marrow fills the long bone shafts',-65,590,-1],['The humerus has it too',134,275,1]]},
   hormone:{n:'Hormone production',job:'Bone cells release hormones into the blood. Osteocalcin helps regulate blood sugar and energy use.',
     hi:'all',notes:[['Bone cells release osteocalcin into the blood',-76,600,-1]],ap:'Bone also releases FGF23, which tells the kidneys how much phosphate to get rid of. This is a newer finding, and research on it continues.'}
 };
@@ -315,8 +315,8 @@ function freshPractice(){return {order:shuffle(IDS),i:0,round:1,tries:0,msg:'',o
 function freshSort(){return {order:shuffle(IDS),i:0,right:0,seen:0,msg:'',done:false};}
 const prTarget=sim=>{const r=sim.st.pr;return r.order[r.i]||null;};
 const prView=(sim,id)=>{const v=sim.p.view;if(v!=='both'&&LAB[v].some(l=>l[0]===id))return v;return (BONES[id]&&BONES[id].view)||'front';};
-function prNext(sim){const r=sim.st.pr;if(r.i<r.order.length-1){r.i++;}else{const miss=IDS.filter(id=>r.status[id]!=='first'&&r.status[id]!=='later2');if(r.round>=1&&miss.length&&!r.finished){r.finished=true;}r.i=r.order.length;}
-  r.tries=0;r.msg='';r.ok=false;r.done=false;r.shown=false;r.hint=false;r.focus=true;const t=prTarget(sim);if(t){zoomOK(sim,t);}sim.infoDirty=true;}
+function prNext(sim){const r=sim.st.pr;if(!prTarget(sim))return;if(!r.done&&!r.status[r.order[r.i]])r.status[r.order[r.i]]='skipped';r.i++;
+  r.keep='';r.tries=0;r.msg='';r.ok=false;r.done=false;r.shown=false;r.hint=false;r.focus=true;const t=prTarget(sim);if(t){zoomOK(sim,t);}sim.infoDirty=true;}
 function zoomOK(sim,id){const z=sim.p.zoom;if(z==='whole')return;const v=prView(sim,id),Z=ZOOM[z];const here=LAB[v].some(l=>l[0]===id&&inZoom(l,Z));if(!here)BioLab.setValues(sim,{zoom:'whole'});}
 const inZoom=(l,Z)=>{const x=Math.abs(l[1]);return (Z.x0<0?x<=Z.x1:(x>=Z.x0&&x<=Z.x1))&&l[2]>=Z.y0&&l[2]<=Z.y1;};
 function prAnswer(sim,id,raw){const r=sim.st.pr,t=prTarget(sim);if(!t||r.done)return;r.focus=true;
@@ -327,7 +327,7 @@ function prAnswer(sim,id,raw){const r=sim.st.pr,t=prTarget(sim);if(!t||r.done)re
   else if(raw&&raw.vague)r.msg='Which vertebrae? Name the section: neck, upper back or lower back each has its own name.';
   else if(raw&&raw.ambiguous)r.msg='That spelling is close to two different bones. Check it letter by letter.';
   else if(raw&&raw.none)r.msg='Type a bone name first.';
-  else{const w=id||(raw&&raw.id);r.msg=(w?'Not the '+BONES[w].n.toLowerCase()+'. The '+BONES[w].n.toLowerCase()+' is '+BONES[w].where+'. ':'That is not one of the bones in the word bank. ')+'Look at where the numbered bone sits.';if(r.tries>=2)r.hint=true;}
+  else{const w=id||(raw&&raw.id),nm=w&&BONES[w].n,pl=w&&/s$|ges$|vertebrae$/.test(nm)&&w!=='humerus'&&w!=='radius'&&w!=='pelvis'&&w!=='coccyx';r.msg=(w?'Not the '+nm.toLowerCase()+'. The '+nm.toLowerCase()+(pl?' are ':' is ')+BONES[w].where+'. ':'That is not one of the bones in the word bank. ')+'Look at where the numbered bone sits.';if(r.tries>=2)r.hint=true;}
   sim.infoDirty=true;}
 function findAnswer(sim,id){const r=sim.st.pr,t=prTarget(sim);if(!t||r.done||!id)return;prAnswer(sim,id,{id});}
 /* ========== Virtual lab data: formula table exactly as on the handout ========== */
@@ -392,7 +392,7 @@ function syncCtl(sim){if(!sim.ui||!sim.ui.ctlW||(sim.vlab&&sim.mode==='vlab'))re
   on('view',skel||t==='func');on('zoom',skel&&!(sim.p.view==='both'&&t!=='practice'));on('labels',t==='explore'||t==='groups');on('bone',t==='explore'||(t==='practice'&&sim.p.answer==='find'));on('answer',t==='practice');on('sortMode',t==='groups');on('fn',t==='func');on('part',t==='long');on('age',t==='long');
   ['vView','vPartner','vBone','vSite'].forEach(id=>on(id,false));
   [['nextBone',t==='practice'],['showAns',t==='practice'],['restart',t==='practice'],['hbTape',false]].forEach(([k,v])=>{if(A[k])A[k].hidden=!v;});}
-function hideTable(sim){if(!sim.ui||!sim.ui.sec)return;const s=sim.ui.sec,h=s.querySelector('.trials>.p-head'),t=s.querySelector('.trials>.tbl');if(h)h.hidden=true;if(t)t.hidden=true;}
+function hideTable(sim){if(!sim.ui||!sim.ui.sec)return;const s=sim.ui.sec,h=s.querySelector('.trials>.p-head'),t=s.querySelector('.trials>.tbl');if(h)h.hidden=true;if(t)t.hidden=true;const pl=s.querySelector('.transport [data-act=play]'),sp=s.querySelector('.transport .g-opts');if(pl)pl.hidden=true;if(sp)sp.hidden=true;}
 /* ========== Draw: skeleton modes ========== */
 function colorFn(sim){const t=sim.p.task,hi=PAL['s1'],ax=PAL['s2'],ap=PAL['s4'];
   if(t==='groups'){if(sim.p.sortMode==='sort'){const r=sim.st.gr,cur=r.order[r.i];return id=>id===cur?hi:null;}return id=>BONES[id].g===AX?mix(ax,'#ffffff',dark()?.25:.35):mix(ap,'#ffffff',dark()?.2:.35);}
@@ -418,13 +418,13 @@ function drawSkeleton(ctx,sim,k){const task=sim.p.task,Ts=layout(sim),color=colo
   Ts.forEach(T=>drawFig(ctx,T,color,{ghost}));
   const two=Ts.length>1;
   if(two){const f=15*k;Ts.forEach((T,i)=>txt(ctx,i?'Back':'Front',i?790:10,24,{s:f,w:700,c:PAL['cv-soft'],a:i?'right':'left'}));
-    if(task==='explore'&&BONES[sim.p.bone]){pill(ctx,BONES[sim.p.bone].n,400,44,PAL['s1'],'#fff',14*k);}}
+    if(task==='explore'&&BONES[sim.p.bone]){pill(ctx,BONES[sim.p.bone].n,400,44,'#C11430','#fff',14*k);}}
   if(task==='explore'&&!two){if(sim.p.labels)drawLabels(ctx,sim,Ts[0],k,{sel:sim.p.bone,top:Ts[0].zoom?20:Math.max(20,14*k)});else if(BONES[sim.p.bone])drawLabels(ctx,sim,Ts[0],k,{only:id=>id===sim.p.bone,sel:sim.p.bone});
     drawMarks(ctx,sim,Ts[0],k);}
   if(task==='explore'&&two){Ts.forEach(T=>drawMarks(ctx,sim,T,k));}
   if(task==='groups'){const sort=sim.p.sortMode==='sort';if(!two&&sim.p.labels&&!sort)drawLabels(ctx,sim,Ts[0],k,{bot:Ts[0].zoom?788:736,color:id=>BONES[id].g===AX?PAL['s2']:PAL['s4']});
-    if(!sort){const y=772,s=13*k;pill(ctx,'Axial: 80 bones',two?130:112,y,PAL['s2'],'#fff',s);pill(ctx,'Appendicular: 126',two?670:668,y,PAL['s4'],'#fff',s);}
-    else{const r=sim.st.gr,c=r.order[r.i];if(c)pill(ctx,BONES[c].n,two?400:Math.max(120,14*k*6),30,PAL['s1'],'#fff',14*k);}}
+    if(!sort){const y=772,s=13*k;pill(ctx,'Axial: 80 bones',two?130:112,y,'#2d6bd2','#fff',s);pill(ctx,'Appendicular: 126',two?670:668,y,'#a86500','#fff',s);}
+    else{const r=sim.st.gr,c=r.order[r.i];if(c)pill(ctx,BONES[c].n,two?400:Math.max(120,14*k*6),30,'#C11430','#fff',14*k);}}
   if(task==='practice')drawPractice(ctx,sim,Ts[0],k);
 }
 function drawPractice(ctx,sim,T,k){const r=sim.st.pr,t=prTarget(sim),size=13.5*k;
@@ -508,9 +508,9 @@ function drawBench(ctx,sim,k){if(sim.p.vView==='site')return drawSite(ctx,sim,k)
   const wx=350,wy=100,ww=438,wh=680;rr(ctx,wx,wy,ww,wh,10);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
   txt(ctx,'Tape, up close',wx+14,wy+24,{s:14*k,w:700});
   if(!read){const m=wrap(ctx,'Press Stretch the tape to measure from the '+M.from+' to the '+M.to+'.',ww-50,14*k);m.forEach((s,j)=>txt(ctx,s,wx+22,wy+90+j*20*k,{s:14*k,c:PAL['cv-soft']}));return;}
-  const L=d[sim.p.vBone],r=V.rng(500+i*7+['femur','tibia','ulna','height'].indexOf(sim.p.vBone)),lo=Math.floor(L)-2-Math.floor(r()*3),span=6,ppc=(wh-90)/span,tx=wx+150,tw=130,y0=wy+60,up=!M.id;
-  const Y=v=>up?y0+(wh-90)-(v-lo)*ppc:y0+(v-lo)*ppc;
-  ctx.save();ctx.beginPath();ctx.rect(wx+2,y0-6,ww-4,wh-78);ctx.clip();ctx.fillStyle='#f4d35e';ctx.fillRect(tx,y0-6,tw,wh-78);ctx.strokeStyle='#7a6410';ctx.lineWidth=1;ctx.strokeRect(tx,y0-6,tw,wh-78);
+  const L=d[sim.p.vBone],r=V.rng(500+i*7+['femur','tibia','ulna','height'].indexOf(sim.p.vBone)),lo=Math.floor(L)-2-Math.floor(r()*3),span=6,y0=wy+30+22*k,ppc=(wy+wh-24-y0)/span,tx=wx+150,tw=130,up=!M.id;
+  const Y=v=>up?y0+span*ppc-(v-lo)*ppc:y0+(v-lo)*ppc,tapeH=span*ppc+12;
+  ctx.save();ctx.beginPath();ctx.rect(wx+2,y0-6,ww-4,tapeH);ctx.clip();ctx.fillStyle='#f4d35e';ctx.fillRect(tx,y0-6,tw,tapeH);ctx.strokeStyle='#7a6410';ctx.lineWidth=1;ctx.strokeRect(tx,y0-6,tw,tapeH);
   for(let m=lo*10;m<=(lo+span+1)*10;m++){const v=m/10,y=Y(v),cm=m%10===0,half=m%5===0;ctx.strokeStyle='#1c1c1f';ctx.lineWidth=cm?2.4:(half?1.6:1);ctx.beginPath();ctx.moveTo(tx,y);ctx.lineTo(tx+(cm?64:half?40:22),y);ctx.stroke();if(cm)txt(ctx,String(v),tx+70,y,{s:18*Math.max(1,k*.82),w:700,c:'#1c1c1f',b:'middle'});}
   const yr=Y(L);ctx.strokeStyle='#d11f2f';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(wx+16,yr);ctx.lineTo(tx+tw+18,yr);ctx.stroke();ctx.restore();
   const lb=wrap(ctx,cap(M.to),120,13*k,700);lb.forEach((s,j)=>txt(ctx,s,wx+16,yr-10-(lb.length-1-j)*16*k,{s:13*k,w:700,c:PAL['s1']}));
@@ -554,7 +554,7 @@ const SK={
   ],
   actions:[
     {id:'nextBone',label:'Next bone',primary:true,run(sim){if(sim.p.task!=='practice')return;prNext(sim);}},
-    {id:'showAns',label:'Show the answer',run(sim){if(sim.p.task!=='practice')return;const r=sim.st.pr,t=prTarget(sim);if(!t||r.done)return;r.done=true;r.ok=false;r.status[t]='shown';r.msg='This one is <b>'+BONES[t].n+'</b>. '+BONES[t].clue+' It comes back at the end.';sim.infoDirty=true;}},
+    {id:'showAns',label:'Show the answer',run(sim){if(sim.p.task!=='practice')return;const r=sim.st.pr,t=prTarget(sim);if(!t||r.done)return;r.done=true;r.ok=false;r.status[t]='shown';r.msg='This one is <b>'+BONES[t].n+'</b>. '+BONES[t].clue+' It goes on your list to practice at the end.';sim.infoDirty=true;}},
     {id:'restart',label:'Start over',run(sim){sim.st.pr=freshPractice();sim.infoDirty=true;}},
     {id:'hbTape',label:'Stretch the tape',primary:true,vlab:true,run(sim){if(!sim.vlab)return;hb(sim).rd[(+sim.p.vPartner||0)+':'+sim.p.vBone]=1;}}
   ],
@@ -581,7 +581,7 @@ const SK={
   infoPanel(sim){if(sim.vlab&&sim.mode==='vlab')return panelVlab(sim);const t=sim.p.task;return t==='practice'?panelPractice(sim):t==='groups'?panelGroups(sim):t==='long'?panelLong(sim):t==='func'?panelFunc(sim):panelExplore(sim);},
   bindInfo(sim,el){const r=sim.st.pr;
     el.querySelectorAll('[data-bank]').forEach(b=>b.addEventListener('click',()=>{prAnswer(sim,b.dataset.bank);BioLab.refresh(sim);}));
-    const f=el.querySelector('form[data-type]');if(f){f.addEventListener('submit',e=>{e.preventDefault();const inp=f.querySelector('input'),c=classify(inp.value);c.typed=inp.value;r.typed=inp.value;prAnswer(sim,null,c);BioLab.refresh(sim);});if(r.focus&&!r.done){const inp=f.querySelector('input');inp.value=r.keep||'';setTimeout(()=>{try{inp.focus({preventScroll:true});}catch(e){}},0);}}
+    const f=el.querySelector('form[data-type]');if(f){f.addEventListener('submit',e=>{e.preventDefault();const inp=f.querySelector('input'),c=classify(inp.value);c.typed=inp.value;r.keep=inp.value;prAnswer(sim,null,c);BioLab.refresh(sim);});if(r.focus&&!r.done){const inp=f.querySelector('input');inp.value=r.keep||'';setTimeout(()=>{try{inp.focus({preventScroll:true});}catch(e){}},0);}}
     if(r.focus){r.focus=false;}
     const nx=el.querySelector('[data-next]');if(nx)nx.addEventListener('click',()=>{prNext(sim);BioLab.refresh(sim);});
     const ag=el.querySelector('[data-again]');if(ag)ag.addEventListener('click',()=>{const miss=IDS.filter(id=>sim.st.pr.status[id]!=='first');const n=freshPractice();if(miss.length&&ag.dataset.again==='miss'){n.order=shuffle(miss);}sim.st.pr=n;BioLab.refresh(sim);});
@@ -612,7 +612,7 @@ const SK={
   ],
   about:'<p><b>What this is.</b> A drawn study model of an adult skeleton, not a scan. Proportions are close to real but simplified, and the small bones are enlarged slightly so that you can see them and click them.</p>'+
     '<p><b>How the word bank maps to the art.</b> Cranium here covers the whole skull above the jaw, including the upper face bones, so the mandible is the only separate skull bone. Pelvis means the two hip bones. Strictly, the bony pelvis also includes the sacrum and coccyx, which the word bank lists on their own. Phalanges highlights both fingers and toes.</p>'+
-    '<p><b>Counts.</b> 206 is the usual adult total. Real people vary: some have an extra rib or small extra bones in the hand and foot, and children have more because their bones have not fused yet.</p>'+
+    '<p><b>Educational use only.</b> This tool teaches names and locations. It does not diagnose injuries, so anyone hurt should see an athletic trainer or a doctor.</p><p><b>Counts.</b> 206 is the usual adult total. Real people vary: some have an extra rib or small extra bones in the hand and foot, and children have more because their bones have not fused yet.</p>'+
     '<p><b>Long bone.</b> The cutaway is a generalized long bone, not a specific femur. Plate closure varies by bone and person, generally in the mid to late teens.</p>'+
     '<p><b>Virtual lab.</b> These are the handout’s mid-20th-century regression equations (Trotter and Gleser). Their group labels come from those samples, and modern forensic practice treats them with caution. Asian female uses the male equation on the sheet because that data set had no female sample. The original equations use bones measured on a skeleton, and your bench measures a landmark-to-landmark length on a living partner, as the handout does. Because the equations come with a standard error, your estimate can miss the actual height. Your partners’ bone lengths are generated from the equations plus random variation, so this bench can show how well the method behaves but it cannot test the equations on real bodies.</p>',
   thumbSetup(sim){BioLab.setValues(sim,{bone:'femur',labels:false});}

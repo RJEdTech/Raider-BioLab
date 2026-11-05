@@ -478,7 +478,7 @@ function practice(sim){const j=sim.p.joint,key=j+'|'+visArt(j).length;let P=sim.
 function shuffle(a){for(let i=a.length-1;i>0;i--){const n=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[n];a[n]=t;}return a;}
 function nextQ(sim,P){const list=visArt(sim.p.joint);if(!P.deck.length)P.deck=shuffle(list.map(a=>a.id));P.cur=P.deck.shift();P.answered=false;P.draft='';P.msg='';P.ok=null;
   const a=list.find(q=>q.id===P.cur)||list[0];P.cur=a.id;const same=shuffle(list.filter(q=>q.id!==a.id&&(q.k===a.k||(q.k==='land'&&a.k==='bone')||(q.k==='bone'&&a.k==='land')))),rest=shuffle(list.filter(q=>q.id!==a.id&&!same.includes(q)));
-  P.choices=shuffle([a.id].concat(same.concat(rest).slice(0,3)));sim.infoDirty=true;}
+  P.choices=shuffle([a.id].concat(same.concat(rest).slice(0,3).map(q=>q.id)));sim.infoDirty=true;}
 function lev(a,b){const d=[];for(let i=0;i<=a.length;i++){d[i]=[i];for(let j=1;j<=b.length;j++)d[i][j]=i?Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1)):j;}return d[a.length][b.length];}
 const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 function nameOK(a,val){const v=norm(val);if(!v)return false;const n=norm(a.n);if(v===n||(a.sh&&v===norm(a.sh)))return true;return n.length>4&&lev(v,n)<=Math.max(1,Math.floor(n.length/6));}
@@ -594,7 +594,7 @@ const SIM={
       return '<b>'+t.n+': '+rowResult(t)+'.</b> '+M.how.split('. ')[0]+'. Strain is '+t.s.toFixed(1)+'%.'+(others.length?' Also stressed: '+others.join(', ')+'.':'');}
     const a=visArt(j).find(q=>q.id===currentSel(sim));return a?'<b>'+a.n+'.</b> '+a.i:'';},
   tour:[
-    {title:'Start with the structures',text:'This is a right knee from the front, so lateral is on your left. The femur sits on the tibia, with two cruciate ligaments in the center and a collateral ligament on each side. Tap any label or use the buttons below.',focus:[220,0,360,500],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{view:'explore',joint:'knee'});setSel(sim,'acl');}},
+    {title:'Start with the structures',text:'This is a right knee from the front, so lateral is on your left. The femur sits on the tibia, with two cruciate ligaments in the center and a collateral ligament on each side. Tap any label or use the buttons below.',focus:[0,0,800,500],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{view:'explore',joint:'knee'});setSel(sim,'acl');}},
     {title:'Tibia forward: ACL',text:'Now the side view, with anterior on your right. Push the tibia forward under the femur. The ACL goes tight and the strain bar climbs. A Lachman test checks this exact motion.',focus:[0,0,484,500],speed:1,setup(sim){BioLab.setValues(sim,{view:'stress',joint:'knee',fk:'ant',bone:'tibia',flex:30,F:55});}},
     {title:'Tibia backward: PCL',text:'A bent knee hits a dashboard and the shin goes backward. Now the PCL takes the load. It is stronger than the ACL, so the same force reads less strain.',focus:[0,0,484,500],speed:1,setup(sim){BioLab.setValues(sim,{fk:'post',flex:90,F:55});}},
     {title:'A hit from the side: MCL',text:'The foot is planted and a blow lands on the outside of the knee. The knee bends inward, which is valgus. The medial side opens, so the MCL is the one that stretches.',focus:[0,0,484,500],speed:1,setup(sim){BioLab.setValues(sim,{fk:'fromlat',bone:'femur',flex:30,F:55});}},

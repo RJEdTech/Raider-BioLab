@@ -1,6 +1,6 @@
 /* Practical and review content for the skeleton tool. */
 BioLab.addPractical({skeleton:{
-  hook:'A construction crew digs up one femur, 52.4 cm long, from a tall Caucasian male. There is no other bone with it. How tall was he?',
+  hook:'A construction crew digs up one femur, 52.4 cm long, from a Caucasian male. There is no other bone with it. How tall was he?',
   answer:'About 187 cm, or 6 feet 2 inches. The handout’s equation is height = 2.32 × 52.4 + 65.53, give or take 3.94 cm. Long bones and height grow together, so one bone gives a useful range, not an exact number.',
   uses:[
     'Forensic anthropology: teams estimate a person’s height from a single long bone, which helps narrow a list of missing people.',

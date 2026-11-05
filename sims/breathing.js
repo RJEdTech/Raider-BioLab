@@ -65,7 +65,7 @@ function drawVent(sim,ctx,k,t){const s=sim.st,p=sim.p,B=breath(s),A=ALT[p.alt],a
   txt(ctx,'Trachea',cx+22,34,{s:12.5*k,w:700,c:PAL['cv-ink']});
   txt(ctx,'Lung',cx-92,200,{s:13*k,w:800,c:'#fff',a:'center',b:'middle'});txt(ctx,'Lung',cx+92,200,{s:13*k,w:800,c:'#fff',a:'center',b:'middle'});
   txt(ctx,'Diaphragm',cx,domeY+52+10*k,{s:13*k,w:800,c:PAL['cv-ink'],a:'center'});
-  txt(ctx,'Ribs and rib muscles',cx,domeY+72+24*k,{s:12*k,c:PAL['cv-soft'],a:'center'});
+  txt(ctx,'Ribs',cx+182,226,{s:12.5*k,w:700,c:PAL['cv-ink']});
   // panel
   const px=478,pw=314;panel(ctx,px,10,pw,580);const inh=B.dir>0,exh=B.dir<0;
   let y=12+20*k;txt(ctx,s.holding?'Holding your breath':inh?'Breathing in':'Breathing out',px+14,y,{s:15*k,w:800,c:PAL['s1']});y+=20*k;
@@ -77,10 +77,12 @@ function drawVent(sim,ctx,k,t){const s=sim.st,p=sim.p,B=breath(s),A=ALT[p.alt],a
   const bx=px+14,bw=pw-28,mid=bx+bw/2,bh=14;ctx.fillStyle=PAL['card2'];rr(ctx,bx,y,bw,bh,5);ctx.fill();const pv=clamp(B.Pa/4,-1,1)*(bw/2);ctx.fillStyle=B.Pa<0?PAL['s2']:PAL['s4'];ctx.fillRect(Math.min(mid,mid+pv),y+1,Math.abs(pv),bh-2);ctx.fillStyle=PAL['cv-ink'];ctx.fillRect(mid-1,y-3,2,bh+6);y+=bh+15*k;
   txt(ctx,'lower',bx,y-4,{s:12*k,c:PAL['cv-soft']});txt(ctx,'higher',bx+bw,y-4,{s:12*k,c:PAL['cv-soft'],a:'right'});if(atLeast('ap'))txt(ctx,(B.Pa>0?'+':'')+B.Pa.toFixed(1)+' mmHg',mid,y-4,{s:12*k,w:700,a:'center'});y+=8;
   // brain stem
-  const cy=Math.max(y,590-(atLeast('honors')?112:96)*Math.min(k,1.45)-18);ctx.fillStyle=PAL['card2'];rr(ctx,px+10,cy,pw-20,588-cy-8,8);ctx.fill();
+  const room=k<1.3;if(room){y+=4;txt(ctx,'Lung volume: '+(2.4+s.TV*(s.holding?1:B.V)).toFixed(1)+' L',px+14,y+6,{s:12*k,w:700,c:PAL['cv-soft']});y+=14;ctx.fillStyle=PAL['card2'];rr(ctx,bx,y,bw,14,5);ctx.fill();ctx.fillStyle=PAL['s6'];rr(ctx,bx,y,Math.max(4,bw*clamp((2.4+s.TV*(s.holding?1:B.V))/6,0,1)),14,5);ctx.fill();y+=30;
+    y=wrap(ctx,'Boyle’s law: more volume, less pressure. Air always flows from high pressure to low.',px+14,y,pw-28,{s:12*k,c:PAL['cv-soft']},15)+4;}
+  const cy=room?y+4:Math.max(y,455);ctx.fillStyle=PAL['card2'];rr(ctx,px+10,cy,pw-20,Math.min(room?92:999,588-cy-8),8);ctx.fill();
   let yy=cy+16*k;yy=wrap(ctx,'Brain stem senses blood CO₂: '+s.P.toFixed(1)+' mmHg',px+20,yy,pw-40,{s:12*k,w:700},15*k);
   yy=wrap(ctx,s.holding?'Urge to breathe is growing':'Sets breathing at '+r0(s.RR)+' per minute',px+20,yy,pw-40,{s:12*k},15*k);
-  if(atLeast('honors')&&k<1.3)wrap(ctx,'Air pressure at '+A.n.toLowerCase()+': '+A.pb+' mmHg',px+20,yy,pw-40,{s:12*k,c:PAL['cv-soft']},15*k);
+  if(atLeast('honors')&&room)wrap(ctx,'Air pressure at '+A.n.toLowerCase()+': '+A.pb+' mmHg',px+20,yy,pw-40,{s:12*k,c:PAL['cv-soft']},15*k);
 }
 
 function drawExch(sim,ctx,k,t,internal){const s=sim.st,p=sim.p,v=sim.vis,hon=atLeast('honors'),A=ALT[p.alt];
@@ -90,17 +92,17 @@ function drawExch(sim,ctx,k,t,internal){const s=sim.st,p=sim.p,v=sim.vis,hon=atL
   if(internal){ctx.fillStyle='#b97a6b';rr(ctx,x0,chamberTop,w,chamberH,18);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=2;for(let i=1;i<3;i++){ctx.beginPath();ctx.moveTo(x0+i*w/3,chamberTop+8);ctx.lineTo(x0+i*w/3,chamberTop+chamberH-8);ctx.stroke();}}
   else{ctx.fillStyle=PAL['card2'];ctx.beginPath();ctx.moveTo(x0,chamberTop+chamberH);ctx.lineTo(x0,chamberTop+130);ctx.bezierCurveTo(x0,chamberTop-30,x0+w,chamberTop-30,x0+w,chamberTop+130);ctx.lineTo(x0+w,chamberTop+chamberH);ctx.closePath();ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2.5;ctx.stroke();}
   const inkTop=internal?'#fff':PAL['cv-ink'];
-  txt(ctx,internal?'Body cells (muscle)':'Alveolus (air sac)',x0+w/2,chamberTop+22*k,{s:14*k,w:800,c:inkTop,a:'center'});
-  if(hon)txt(ctx,'O₂ '+r0(topO)+' mmHg, CO₂ '+r0(topC)+' mmHg',x0+w/2,chamberTop+40*k,{s:12.5*k,w:700,c:inkTop,a:'center'});
-  else txt(ctx,internal?'Low O₂, high CO₂':'High O₂, low CO₂',x0+w/2,chamberTop+40*k,{s:12.5*k,w:700,c:inkTop,a:'center'});
+  txt(ctx,internal?'Body cells (muscle)':'Alveolus (air sac)',x0+w/2,chamberTop+26+12*k,{s:14*k,w:800,c:inkTop,a:'center'});
+  if(hon)txt(ctx,'O₂ '+r0(topO)+' mmHg, CO₂ '+r0(topC)+' mmHg',x0+w/2,chamberTop+26+29*k,{s:12.5*k,w:700,c:inkTop,a:'center'});
+  else txt(ctx,internal?'Low O₂, high CO₂':'High O₂, low CO₂',x0+w/2,chamberTop+26+29*k,{s:12.5*k,w:700,c:inkTop,a:'center'});
   // dots in chamber show concentration
-  const nO=clamp(Math.round(topO/4),0,26),nC=clamp(Math.round(topC/4),0,14),yMin=chamberTop+50*k,yMax=chamberTop+chamberH-10;
+  const nO=clamp(Math.round(topO/4),0,26),nC=clamp(Math.round(topC/4),0,14),yMin=chamberTop+36+32*k,yMax=chamberTop+chamberH-10;
   v.dots.slice(0,nO+nC).forEach((d,i)=>{const isO=i<nO,x=x0+22+d.x*(w-44),y=yMin+d.y*(yMax-yMin);const jx=RM?0:Math.sin(t*.9+d.p)*5,jy=RM?0:Math.cos(t*.8+d.p)*5;ctx.fillStyle=isO?O2C:CO2C;ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x+jx,y+jy,isO?4.6:4,0,6.29);ctx.fill();ctx.stroke();});
   // capillary
   const g=ctx.createLinearGradient(x0,0,x0+w,0);g.addColorStop(0,mix(DEOX,OXY,internal?1:(inS-.3)/.67));g.addColorStop(1,mix(DEOX,OXY,internal?(outS-.3)/.67:(outS-.3)/.67));ctx.fillStyle=g;rr(ctx,x0,capY,w,capH,20);ctx.fill();
   // wall
   ctx.fillStyle=PAL['cv-soft'];ctx.fillRect(x0,capY-8,w,3);ctx.fillRect(x0,chamberTop+chamberH+6,w,3);
-  txt(ctx,'Thin wall: gases cross here',x0+w/2,capY+capH-10,{s:12*k,w:700,c:'#fff',a:'center'});
+  txt(ctx,'Capillary (thin wall)',x0+w/2,capY+capH-10,{s:12*k,w:700,c:'#fff',a:'center'});
   // red cells
   v.rbc.forEach(c=>{c.x=(c.x+.0)%1;const f=((t*.09+c.o)%1),x=x0+20+f*(w-40),y=capY+30+c.j;const S=lerp(inS,outS,internal?f:1-Math.exp(-f*C_tr(p)/Math.max(.001,tauOf(p))));ctx.fillStyle=mix(DEOX,OXY,(S-.3)/.67);ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(x,y,15,10,0,0,6.29);ctx.fill();ctx.stroke();});
   // diffusion
@@ -125,13 +127,13 @@ function drawExch(sim,ctx,k,t,internal){const s=sim.st,p=sim.p,v=sim.vis,hon=atL
     ctx.restore();
     let y=cy+R+18*k;y=wrap(ctx,p.balloon?'One big sac: 0.16 m²':areaOf(p)+' m² of alveolar surface',px+14,y,pw-28,{s:14*k,w:800},17*k);
     y=wrap(ctx,p.balloon?'Same air, almost no surface. Blood barely picks up oxygen.':'Roughly 300 to 500 million alveoli. Normal is about 70 m², the floor of a classroom.',px+14,y,pw-28,{s:12*k,c:PAL['cv-soft']},15*k)+8;
-    txt(ctx,'Hemoglobin full, leaving the lungs',px+14,y,{s:12*k,w:700});y+=8;ctx.fillStyle=PAL['card2'];rr(ctx,px+14,y,pw-28,18,6);ctx.fill();ctx.fillStyle=s.Sa<.9?PAL['s1']:PAL['s3'];rr(ctx,px+14,y,Math.max(4,(pw-28)*s.Sa),18,6);ctx.fill();y+=18+15*k;
+    y=wrap(ctx,'Hemoglobin full, leaving the lungs',px+14,y,pw-28,{s:12*k,w:700},15*k)-15*k+8;ctx.fillStyle=PAL['card2'];rr(ctx,px+14,y,pw-28,18,6);ctx.fill();ctx.fillStyle=s.Sa<.9?PAL['s1']:PAL['s3'];rr(ctx,px+14,y,Math.max(4,(pw-28)*s.Sa),18,6);ctx.fill();y+=18+15*k;
     txt(ctx,r0(s.Sa*100)+'%',px+14,y,{s:15*k,w:800,c:s.Sa<.9?PAL['s1']:PAL['cv-ink']});y+=14*k;
     wrap(ctx,A.n+(A.ft?' ('+A.ft.toLocaleString('en-US')+' ft)':'')+': air pressure '+A.pb+' mmHg',px+14,y,pw-28,{s:12*k,c:PAL['cv-soft']},15*k);
   }else{
     let y=12+20*k;y=wrap(ctx,ACT[p.act].n,px+14,y,pw-28,{s:15*k,w:800,c:PAL['s1']},18*k)+2;
     y=wrap(ctx,'Cells use oxygen and make carbon dioxide, so inside a cell O₂ stays low and CO₂ stays high.',px+14,y,pw-28,{s:12.5*k},15.5*k)+10;
-    const drop=(lab,val,col)=>{txt(ctx,lab,px+14,y,{s:12*k,w:700});y+=8;ctx.fillStyle=PAL['card2'];rr(ctx,px+14,y,pw-28,18,6);ctx.fill();ctx.fillStyle=col;rr(ctx,px+14,y,Math.max(4,(pw-28)*val),18,6);ctx.fill();y+=18+15*k;txt(ctx,r0(val*100)+'%',px+14,y,{s:14*k,w:800});y+=18*k;};
+    const drop=(lab,val,col)=>{y=wrap(ctx,lab,px+14,y,pw-28,{s:12*k,w:700},15*k)-15*k+8;ctx.fillStyle=PAL['card2'];rr(ctx,px+14,y,pw-28,18,6);ctx.fill();ctx.fillStyle=col;rr(ctx,px+14,y,Math.max(4,(pw-28)*val),18,6);ctx.fill();y+=18+15*k;txt(ctx,r0(val*100)+'%',px+14,y,{s:14*k,w:800});y+=18*k;};
     drop('Hemoglobin full, arriving',s.Sa,PAL['s1']);drop('Hemoglobin full, leaving',s.Sv,PAL['s2']);
     wrap(ctx,'Working muscle takes more oxygen, so blood leaves with less. Blood at rest keeps a reserve of about 75%.',px+14,y,pw-28,{s:12*k,c:PAL['cv-soft']},15*k);
   }
@@ -144,7 +146,7 @@ function drawHb(ctx,cx,cy,R,n,lab,sub,k,t){ctx.fillStyle=PAL['card2'];ctx.beginP
     if(i<n){ctx.fillStyle=O2C;ctx.strokeStyle='#fff';ctx.lineWidth=1.4;[-1,1].forEach(a=>{ctx.beginPath();ctx.arc(x+a*R*.09,y-R*.2,R*.1,0,6.29);ctx.fill();ctx.stroke();});}});
   txt(ctx,lab,cx,cy+R+6+18*k,{s:13*k,w:800,a:'center'});txt(ctx,sub,cx,cy+R+6+34*k,{s:12*k,a:'center',c:PAL['cv-soft']});}
 function drawTrans(sim,ctx,k,t){const s=sim.st,ap=atLeast('ap'),hon=atLeast('honors');
-  const R=74,hbY=100;drawHb(ctx,210,hbY,R,Math.round(s.Sa*4),'Leaving the lungs',r0(s.Sa*100)+'% full',k,t);drawHb(ctx,590,hbY,R,Math.round(s.Sv*4),'Leaving the tissues',r0(s.Sv*100)+'% full',k,t);
+  const R=k<1.3?84:70,hbY=R+18;drawHb(ctx,210,hbY,R,Math.round(s.Sa*4),'Leaving the lungs',r0(s.Sa*100)+'% full',k,t);drawHb(ctx,590,hbY,R,Math.round(s.Sv*4),'Leaving the tissues',r0(s.Sv*100)+'% full',k,t);
   // arrow
   ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(320,hbY);ctx.lineTo(480,hbY);ctx.stroke();ctx.beginPath();ctx.moveTo(470,hbY-8);ctx.lineTo(482,hbY);ctx.lineTo(470,hbY+8);ctx.stroke();
   txt(ctx,'Hemoglobin',400,hbY-16,{s:12.5*k,w:800,a:'center'});txt(ctx,'4 iron, 4 O₂',400,hbY+22*k,{s:12*k,a:'center',c:PAL['cv-soft']});
@@ -157,7 +159,8 @@ function drawTrans(sim,ctx,k,t){const s=sim.st,ap=atLeast('ap'),hon=atLeast('hon
   txt(ctx,'Plasma 7%',bx+bw,by+bh+16*k,{s:12.5*k,w:800,a:'right'});
   let y=by+bh+16*k;
   if(hon)y=wrap(ctx,'Oxygen rides almost entirely on hemoglobin. CO₂ mostly dissolves into plasma as bicarbonate.',12,y+ (k>1.3?22:0),k>1.3?776:620,{s:12*k,c:PAL['cv-soft']},15*k);
-  if(ap)txt(ctx,'CO₂ + H₂O ⇌ H₂CO₃ ⇌ H⁺ + HCO₃⁻',400,Math.min(y+18*k,592),{s:13.5*k,w:800,a:'center'});
+  if(ap)y=(txt(ctx,'CO₂ + H₂O ⇌ H₂CO₃ ⇌ H⁺ + HCO₃⁻',400,Math.min(y+18*k,592),{s:13.5*k,w:800,a:'center'}),y+18*k);
+  if(k<1.3){y+=26;txt(ctx,'How oxygen travels in blood',12,y,{s:14*k,w:800});y+=10;const w1=bw*.98;ctx.fillStyle='#a24d58';ctx.fillRect(bx,y,w1-1,40);ctx.fillStyle='#6d6a3a';ctx.fillRect(bx+w1,y,bw-w1,40);txt(ctx,'On hemoglobin, about 98%',bx+w1/2,y+20,{s:12.5*k,w:800,c:'#fff',a:'center',b:'middle'});txt(ctx,'Dissolved in plasma, about 2%',bx+bw,y+56,{s:12.5*k,w:800,a:'right'});}
 }
 
 const BREATHING={
