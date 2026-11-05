@@ -74,8 +74,35 @@ BioLab.COURSES = [
       { n: 'Module 3', t: 'Genetic engineering 102', ids: ['plasmid', 'sanger'], note: 'Plasmid miniprep and reading DNA sequences.' },
       { n: 'Review', t: 'Molecular biology foundations', ids: ['replication', 'expression', 'lacoperon'] }
     ],
-    further: ['sanger', 'qpcr', 'crispr', 'synthbio', 'molclock'] }
+    further: ['sanger', 'qpcr', 'crispr', 'synthbio', 'molclock'] },
+  { id: 'anatomy', name: 'Anatomy & Physiology',
+    blurb: 'Tools in the order Anatomy & Physiology covers them, one body system at a time.',
+    units: [
+      { n: 'Unit 1', t: 'Body terms, planes, cavities and organ systems', ids: ['bodymap'] },
+      { n: 'Unit 2', t: 'Homeostasis', ids: ['homeostasis'] },
+      { n: 'Unit 3', t: 'Integumentary system', ids: ['skin'], note: 'Touch Sense lab. The suture lab stays hands-on in class.' },
+      { n: 'Unit 4', t: 'Skeletal system', ids: ['skeleton'], note: 'Bones of the body, the long bone and the bone lab.' },
+      { n: 'Unit 5', t: 'Muscular system', ids: ['muscles', 'contraction', 'movements'], note: 'Major muscles, the sarcomere and the fatigue lab.' },
+      { n: 'Unit 6', t: 'Cardiovascular system', ids: ['heart'] },
+      { n: 'Unit 7', t: 'Respiratory system', ids: ['breathing', 'transport'] },
+      { n: 'Unit 8', t: 'Nervous system', ids: ['nsmap', 'neuron', 'reaction'], note: 'Divisions, neurons, the brain and the reaction lab.' }
+    ],
+    further: ['dissection', 'signaling'] },
+  { id: 'spat', name: 'Scientific Principles of Athletic Training',
+    blurb: 'Tools in the order SPAT covers them: foundations, then upper body, then lower body.',
+    units: [
+      { n: 'Unit 1', t: 'Body terms and movement', ids: ['bodymap', 'movements', 'skeleton', 'muscles'] },
+      { n: 'Unit 1', t: 'The kinetic chain', ids: ['kineticchain'] },
+      { n: 'Unit 1', t: 'Injury basics, healing and rehabilitation', ids: ['injury'] },
+      { n: 'Unit 2', t: 'Head, face and concussion', ids: ['concussion', 'neuroexam', 'clinic'], note: 'Cranial nerve lab and the myotome and dermatome practical.' },
+      { n: 'Unit 2', t: 'Shoulder, elbow and hand', ids: ['joints', 'mmt', 'clinic'], note: 'Shoulder MMT practical. Taping check-offs stay hands-on in class.' },
+      { n: 'Unit 3', t: 'Hip, thigh and knee', ids: ['joints', 'mmt', 'clinic'], note: 'Lower body MMT practical.' },
+      { n: 'Unit 3', t: 'Ankle and foot', ids: ['joints', 'clinic'] }
+    ],
+    further: ['contraction', 'homeostasis'] }
 ];
+
+BioLab.setSections({extra:{0:'Science skills and data',9:'Human body systems',10:'Biotechnology lab',15:'Sports medicine',12:'Earth systems and climate',13:'Energy, land and resources',14:'Pollution and human health',11:'Go further'},order:[0,1,2,3,4,5,6,7,8,9,15,10,12,13,14,11]});
 
 /* "By topic" view: tools inside each section, in the order the topics are taught. */
 BioLab.TOPIC_ORDER = {
@@ -88,7 +115,8 @@ BioLab.TOPIC_ORDER = {
   6: ['replication', 'expression', 'lacoperon', 'virus'],
   7: ['evolution', 'beaks', 'hardyweinberg', 'cladogram', 'hominids'],
   8: ['productivity', 'energy', 'carboncycle', 'biomes', 'biodiversity', 'islandbio', 'succession', 'popgrowth', 'wolfmoose', 'predprey', 'humanpop'],
-  9: ['dissection', 'homeostasis'],
+  9: ['bodymap', 'homeostasis', 'skin', 'skeleton', 'muscles', 'contraction', 'heart', 'breathing', 'reaction', 'nsmap', 'dissection'],
+  15: ['movements', 'kineticchain', 'injury', 'joints', 'concussion', 'neuroexam', 'mmt', 'clinic'],
   10: ['pipette', 'gel', 'plasmid', 'pcr', 'blast', 'transformation'],
   12: ['soil', 'seasons', 'albedo', 'enso', 'climate'],
   13: ['commons', 'footprint', 'treecarbon', 'mining', 'energycalc', 'gridmix'],
