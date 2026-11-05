@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Teacher Guide · Raider BioLab</title>
+<meta name="description" content="How to use any Raider BioLab tool in class, with a student guide sheet to download and edit.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="biolab.css?v=202611041200">
+<style>
+.tg{max-width:760px;margin:0 auto}
+.tg h2{font-size:24px;margin:34px 0 8px;line-height:1.25}
+.tg h3{font-size:18px;margin:0 0 4px;line-height:1.3}
+.tg p,.tg li,.tg td,.tg th{font-size:16px;line-height:1.5}
+.tg .lede{font-size:18px;color:var(--muted);margin:6px 0 16px}
+.tg .back{display:inline-block;margin:0 0 14px;font-weight:600}
+.tg h1{font-size:32px;margin:0;line-height:1.2}
+.tg ul{padding-left:20px;margin:6px 0}.tg li{margin:4px 0}
+.tg-dl{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--rj);border-radius:10px;padding:16px 18px}
+.tg-dl h2{margin:0 0 4px;font-size:20px}.tg-dl p{margin:0 0 12px}
+.tg-row{display:flex;flex-wrap:wrap;gap:8px}
+.tg a.btn{display:inline-block;text-decoration:none;color:var(--fg)}.tg a.btn.primary{color:#fff}
+.tg-loop{list-style:none;padding:0;margin:10px 0;counter-reset:s;display:grid;gap:8px}
+.tg-loop li{counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px 10px 54px;position:relative;margin:0}
+.tg-loop li::before{content:counter(s);position:absolute;left:14px;top:10px;width:28px;height:28px;border-radius:50%;background:var(--rj);color:#fff;font-weight:700;text-align:center;line-height:28px}
+.tg-loop small{display:block;color:var(--muted);font-size:14px}
+.tg-step{display:grid;gap:8px;margin:0 0 26px;padding-top:4px}
+.tg-step h3 span{color:var(--rj-ink);margin-right:4px}
+.tg-step p{margin:0}
+.tg figure{margin:4px 0 0}
+.tg figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:8px}
+.tg figcaption{font-size:14px;color:var(--muted);margin-top:4px}
+.tg-scroll{overflow-x:auto;margin:6px 0;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.tg table{border-collapse:collapse;width:100%}
+.tg th{text-align:left;background:var(--card2);font-weight:700}
+.tg th,.tg td{white-space:normal;text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tg tr:last-child td{border-bottom:0}
+.tg-part{margin:0 0 26px}.tg-part p{margin:0 0 6px}
+.tg-key{list-style:none;padding:0;margin:10px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px 18px}
+.tg-key li{display:flex;gap:10px;margin:0;font-size:15px}
+.tg-n{flex:none;width:26px;height:26px;border-radius:50%;color:#fff;font-weight:700;font-size:14px;text-align:center;line-height:26px}
+.tg-foot{margin:36px 0 10px;color:var(--muted);font-size:14px;text-align:center}
+.tg a{color:var(--rj-ink)}
+@media (max-width:640px){
+.tg-modes thead{display:none}.tg-modes tr{display:block;padding:8px 0;border-bottom:1px solid var(--line)}.tg-modes tr:last-child{border-bottom:0}
+.tg-modes td{display:block;border:0;padding:3px 12px}.tg-modes td::before{content:attr(data-l);display:block;font-size:13px;font-weight:700;color:var(--muted)}
+}
+@media print{.tg-dl .tg-row,.back{display:none}.tg-step,.tg-loop li,tr{break-inside:avoid}.tg figure img{max-height:3.4in;width:auto;max-width:100%}}
+</style>
+</head>
+<body>
+<header class="rj-masthead">
+  <div class="hl">
+    <img class="rj-mark" src="data:image/png;base64,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" alt="RJ">
+    <div>
+      <h1>Raider BioLab</h1>
+      <p class="tagline">Biology · AP Bio · AP Environmental Science · Genetic Engineering</p>
+    </div>
+  </div>
+</header>
+<main class="wrap"><div class="tg">
+<a class="back" href="index.html">← All simulations</a>
+<h1>Teacher guide</h1>
+<p class="lede">The same plan works for all 78 tools on this site. See what each part does, choose a goal, give students the guide sheet, and collect their work.</p>
+
+<section class="tg-dl">
+<h2>Print or edit for your class</h2>
+<p><b>Parts of a tool:</b> labeled pictures that show what each part does.</p>
+<div class="tg-row" style="margin-bottom:14px"><a class="btn primary" href="parts-of-a-tool.docx" download>Word</a><a class="btn" href="parts-of-a-tool.pdf" target="_blank" rel="noopener">PDF</a></div>
+<p><b>Student guide sheet:</b> two pages students fill in with any tool.</p>
+<div class="tg-row"><a class="btn primary" href="student-guide-sheet.docx" download>Word</a><a class="btn" href="student-guide-sheet.pdf" target="_blank" rel="noopener">PDF</a></div>
+</section>
+
+<h2>Parts of a tool</h2>
+<p>Every tool on this site uses the same layout, so these pictures work for all of them. Some tools add or leave out a part.</p>
+<div class="tg-part"><h3>Guided mode</h3><p>Every tool opens here. Students see one step at a time, then answer predictions one at a time.</p><figure><a href="img/guide-parts-guided.jpg" target="_blank" rel="noopener"><img src="img/guide-parts-guided.jpg" alt="Guided mode, with numbered arrows pointing at each part described below." loading="lazy"></a><figcaption>Example: Enzyme activity. Select the picture to open it full size.</figcaption></figure><ol class="tg-key"><li><span class="tg-n" style="background:#1f6feb">1</span><div><b>Detail</b><br>Changes how many names, controls and how much math students see. Any student can choose any level.</div></li><li><span class="tg-n" style="background:#1b7a43">2</span><div><b>Mode buttons</b><br>Switch between Guided, Full lab and any other modes this tool has.</div></li><li><span class="tg-n" style="background:#7b3fe4">3</span><div><b>Simulation</b><br>The model running live. Guided mode dims the parts that are not being explained.</div></li><li><span class="tg-n" style="background:#b85a00">4</span><div><b>Step text</b><br>Explains this step. Step 1 is always the tool&#x27;s real-world question.</div></li><li><span class="tg-n" style="background:#0b7a8a">5</span><div><b>Back, Next and Skip to the full lab</b><br>Move through the steps, or leave the walkthrough and open every control.</div></li><li><span class="tg-n" style="background:#b5176e">6</span><div><b>Play, Step, Reset and Speed</b><br>Play or pause the model, step it forward a moment at a time, start over, or slow it down.</div></li></ol></div><div class="tg-part"><h3>Full lab: the bench</h3><p>Students change the variables and watch the model respond.</p><figure><a href="img/guide-parts-labtop.jpg" target="_blank" rel="noopener"><img src="img/guide-parts-labtop.jpg" alt="Full lab: the bench, with numbered arrows pointing at each part described below." loading="lazy"></a><figcaption>Example: Enzyme activity. Select the picture to open it full size.</figcaption></figure><ol class="tg-key"><li><span class="tg-n" style="background:#1f6feb">1</span><div><b>All simulations and tool menu</b><br>Go back to the home page or jump straight to another tool.</div></li><li><span class="tg-n" style="background:#1b7a43">2</span><div><b>Detail</b><br>Changes how many names, controls and how much math students see.</div></li><li><span class="tg-n" style="background:#7b3fe4">3</span><div><b>The question</b><br>The real-world question this tool answers. Where this shows up opens real uses of the idea.</div></li><li><span class="tg-n" style="background:#b85a00">4</span><div><b>Mode buttons</b><br>Switch between Guided, Full lab and any other modes this tool has.</div></li><li><span class="tg-n" style="background:#0b7a8a">5</span><div><b>Scale line</b><br>Says what students are looking at and how big it really is.</div></li><li><span class="tg-n" style="background:#b5176e">6</span><div><b>Simulation</b><br>The model running live. Students watch this respond when a variable changes.</div></li><li><span class="tg-n" style="background:#3a3a40">7</span><div><b>Live caption</b><br>Explains what is happening right now, and why. It changes with the variables.</div></li><li><span class="tg-n" style="background:#5b6b00">8</span><div><b>Pause, Reset, Speed and Walk me through it</b><br>Pause or restart the model, slow it down to 0.1×, or open the guided tour. When paused, Step moves it forward a moment at a time.</div></li><li><span class="tg-n" style="background:#8a3b12">9</span><div><b>Variables</b><br>The sliders and switches students change. The model responds right away.</div></li><li><span class="tg-n" style="background:#2f4fb0">10</span><div><b>Readouts</b><br>The live numbers from the model, with units. Students read their results here.</div></li></ol></div><div class="tg-part"><h3>Full lab: data and support</h3><p>Below the bench, students test predictions, collect data and check the model.</p><figure><a href="img/guide-parts-labbottom.jpg" target="_blank" rel="noopener"><img src="img/guide-parts-labbottom.jpg" alt="Full lab: data and support, with numbered arrows pointing at each part described below." loading="lazy"></a><figcaption>Example: Enzyme activity. Select the picture to open it full size.</figcaption></figure><ol class="tg-key"><li><span class="tg-n" style="background:#1f6feb">1</span><div><b>Graph and Plot</b><br>Graph shows the live plot, and Plot chooses which reading it shows. Trials plots your recorded trials, using the x and y you choose.</div></li><li><span class="tg-n" style="background:#1b7a43">2</span><div><b>Predict, then test</b><br>Students choose a prediction, then the tool runs the test and explains the result.</div></li><li><span class="tg-n" style="background:#7b3fe4">3</span><div><b>Investigation</b><br>A ready-made lab: the question, what to change and record, and what to explain.</div></li><li><span class="tg-n" style="background:#b85a00">4</span><div><b>Record trial, Copy as CSV and Clear</b><br>Record trial saves the current settings and readings as a row. Copy as CSV copies the table for Excel or Desmos. Clear empties it.</div></li><li><span class="tg-n" style="background:#0b7a8a">5</span><div><b>Data table</b><br>Every recorded trial. It stays in this browser on this device.</div></li><li><span class="tg-n" style="background:#b5176e">6</span><div><b>Key terms</b><br>Definitions of the words used in this tool.</div></li><li><span class="tg-n" style="background:#3a3a40">7</span><div><b>About this model</b><br>What the model calculates and what it simplifies.</div></li><li><span class="tg-n" style="background:#5b6b00">8</span><div><b>Report a bug or request a feature</b><br>Opens a short Microsoft Form with this tool already filled in.</div></li><li><span class="tg-n" style="background:#8a3b12">9</span><div><b>Embed this tool in Canvas</b><br>Creates the code or link for a Canvas page, with pictures of each step.</div></li></ol></div>
+
+<h2>The routine students follow</h2>
+<p>The guide sheet follows these five parts, in this order.</p>
+<ol class="tg-loop">
+<li><b>Ask.</b> Put the tool's real-world question in their own words.<small>Find it: step 1 of Guided, or the box at the top of Full lab.</small></li>
+<li><b>Predict, then test.</b> Commit to a prediction, then watch what happens.<small>Find it: Guided, after the walkthrough, or the Predict, then test box in Full lab.</small></li>
+<li><b>Test.</b> Change one variable at a time and record the trials.<small>Find it: the Investigation box and data table in Full lab.</small></li>
+<li><b>Explain.</b> Write a claim, the evidence from their data, and the reasoning.<small>Find it: the guide sheet, or the conclusion in a Virtual lab.</small></li>
+<li><b>Question the model.</b> Name what the simulation leaves out and connect it to the real world.<small>Find it: About this model and Where this shows up, both in Full lab.</small></li>
+</ol>
+<p>Short on time? Use parts 1, 2 and 5 with Guided mode.</p>
+
+<h2>Set up any tool in five steps</h2>
+
+<div class="tg-step"><h3><span>1.</span> Find the tool</h3>
+<p>On the home page, go to <b>Browse</b> and choose your course. Tools appear unit by unit, in the order your course teaches them. <b>Walk through this unit</b> opens a unit's tools in order.</p>
+<figure><a href="img/guide-browse.jpg" target="_blank" rel="noopener"><img src="img/guide-browse.jpg" alt="The Browse switch set to Biology, with Walk through this unit outlined above the first unit&#x27;s tools." loading="lazy"></a></figure></div>
+
+<div class="tg-step"><h3><span>2.</span> Set the detail level</h3>
+<p>Choose <b>Detail</b> at the top right. The model stays the same, but students see more names, controls and math at each level. Any student can switch levels.</p>
+<div class="tg-scroll"><table><thead><tr><th>Detail</th><th>Fits</th></tr></thead><tbody><tr><td><b>Big picture</b></td><td>Biology</td></tr><tr><td><b>Closer look</b></td><td>Honors Biology</td></tr><tr><td><b>Deep dive</b></td><td>AP Biology and AP Environmental Science</td></tr></tbody></table></div>
+<figure><a href="img/guide-setup.jpg" target="_blank" rel="noopener"><img src="img/guide-setup.jpg" alt="The Enzyme activity tool with the Detail switch and the mode buttons outlined." loading="lazy"></a><figcaption>Detail is at the top right. The mode buttons are under the title.</figcaption></figure></div>
+
+<div class="tg-step"><h3><span>3.</span> Choose where students start</h3>
+<p>Match the mode to your goal. Not every tool has every mode.</p>
+<div class="tg-scroll"><table class="tg-modes"><thead><tr><th>Your goal</th><th>Start in</th><th>Students</th><th>What you can collect</th></tr></thead><tbody>
+<tr><td data-l="Your goal">Introduce an idea</td><td data-l="Start in"><b>Guided</b><br>every tool</td><td data-l="Students">Follow the walkthrough, then answer predictions one at a time</td><td data-l="What you can collect">The guide sheet</td></tr>
+<tr><td data-l="Your goal">Run an investigation</td><td data-l="Start in"><b>Full lab</b><br>every tool</td><td data-l="Students">Change variables, record trials and graph the results</td><td data-l="What you can collect">The guide sheet, or data from <b>Copy as CSV</b></td></tr>
+<tr><td data-l="Your goal">Cover an absence, make-up or pre-lab</td><td data-l="Start in"><b>Virtual lab</b><br>13 tools</td><td data-l="Students">Work through an RJ lab, read the instruments, enter their own data and answer the questions</td><td data-l="What you can collect">A PDF or Word report uploaded to Canvas</td></tr>
+<tr><td data-l="Your goal">Review for a test</td><td data-l="Start in"><b>Review</b><br>so far on <a href="index.html#hardyweinberg">Hardy–Weinberg</a></td><td data-l="Students">Answer questions with worked steps, a button that sets the problem up in the lab, and links to released AP exam questions</td><td data-l="What you can collect">Nothing is sent to you. Use it as practice.</td></tr>
+<tr><td data-l="Your goal">Catch up on a missed class</td><td data-l="Start in"><b>Unit path</b><br>every course unit</td><td data-l="Students">Walk through the unit's tools in order</td><td data-l="What you can collect">The guide sheet, if you assign one</td></tr>
+
+</tbody></table></div>
+</div>
+
+<div class="tg-step"><h3><span>4.</span> Try it, then send it</h3>
+<p>Run what students will run, and open <b>About this model</b> in Full lab to see what it simplifies. Then open <b>Embed this tool in Canvas</b> at the bottom of the tool. Choose where it starts and its detail level, then copy the embed code or the link. The panel shows each Canvas step with a picture.</p>
+<figure><a href="img/guide-embed.jpg" target="_blank" rel="noopener"><img src="img/guide-embed.jpg" alt="The Embed this tool in Canvas panel, with Start in, Detail and Height menus, the embed code, and copy buttons." loading="lazy"></a></figure></div>
+
+<div class="tg-step"><h3><span>5.</span> Collect the work</h3>
+<p>Nothing reaches you automatically. There are no student accounts, class views or grade passback, so decide how work comes back before students start.</p>
+<ul>
+<li><b>Guided, Full lab or Review:</b> collect the guide sheet, as paper or as an upload to a Canvas assignment.</li>
+<li><b>Full lab data:</b> students use <b>Copy as CSV</b> and paste the table into Excel or Desmos.</li>
+<li><b>Virtual lab:</b> students finish at <b>Turn it in</b>, save a PDF or Word file, and upload it to your Canvas assignment.</li>
+</ul>
+<figure><a href="img/guide-lab.jpg" target="_blank" rel="noopener"><img src="img/guide-lab.jpg" alt="The Investigation box and data table in Full lab, with Copy as CSV outlined." loading="lazy"></a><figcaption>Full lab: students record trials, then copy the table.</figcaption></figure>
+<figure><a href="img/guide-turnin.jpg" target="_blank" rel="noopener"><img src="img/guide-turnin.jpg" alt="The Turn it in section of a Virtual lab, with Save as PDF and Download Word file outlined." loading="lazy"></a><figcaption>Virtual lab: students save the report, then upload it to Canvas.</figcaption></figure></div>
+
+<h2>Before you rely on it</h2>
+<ul>
+<li><b>Work stays on one device.</b> Trials and Virtual lab work save in that student's browser. They don't follow students to another computer, and clearing browser data erases them. Have students export a Virtual lab before they switch computers.</li>
+<li><b>The models are simplified.</b> Results come from teaching models, not recorded experiments. Each tool's <b>About this model</b> lists its assumptions. Check any schematic art yourself before using it for an assessment.</li>
+<li><b>Virtual labs support hands-on labs.</b> They help with absences, make-ups and practice, but students don't handle real equipment.</li>
+<li><b>Students can see the answers.</b> Predictions and Review questions explain the answer after each attempt, so treat them as practice and not as graded assessments.</li>
+<li><b>A few tools skip a part.</b> Some learning tools have no data table or Investigation box. Skip part 3 of the sheet for those.</li>
+
+<li><b>Student privacy.</b> There are no logins, and student work stays on the device until the student exports it.</li>
+</ul>
+<p><b>Found a problem?</b> <a href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=4SwuQZc-CEClZjjFdYLisQzihhIB-7hPp9L3AOSeJONUOVJaVTVMOE9YMFNSVVM3TUNOOFVQR1pYTi4u&amp;rc59cb41123d3497584d2ca10cb9e1c54=%22Raider%20BioLab%22" target="_blank" rel="noopener">Report a bug or request a feature</a> (Microsoft Form, RJ sign-in).</p>
+<p class="tg-foot">RJ Ed Tech · Raider BioLab</p>
+</div></main>
+</body>
+</html>
