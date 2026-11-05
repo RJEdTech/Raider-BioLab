@@ -53,7 +53,7 @@ const TESTS=[
  nerve:'Axillary nerve',root:'C5, C6',inj:'All three deltoid fibers weak on one side suggests the axillary nerve, which can be stretched in an anterior shoulder dislocation.'},
 {id:'deltL',g:'s',m:'Deltoid',f:'Lateral',pos:'Sitting with elbow flexed 90 degrees',hands:'One hand on lateral deltoid, one hand on distal humerus (providing resistance)',test:'Instruct patient to abduct shoulder',
  short:'Sitting',flip:'x',cx:480,ins:{v:'front',p:[[.128,.175,.14,.24,.024]]},
- why:'The lateral fibers run over the top of the shoulder, so they lift the arm out to the side. That movement is abduction. Her key lists shoulder abduction as the C5 myotome.',
+ why:'The lateral fibers run over the top of the shoulder, so they lift the arm out to the side. That movement is abduction. Your key lists shoulder abduction as the C5 myotome.',
  scene(u){const a=lerp(150,178,u),J=seatFront(a,a+6,.32);return {J,mus:[on(J.sA,J.eA,.0,.6,0,12)],P:[lp(J.sA,J.eA,.2)],R:[lp(J.sA,J.eA,.92)],mv:[{at:{x:J.eA.x-34,y:J.eA.y},ang:a+78,len:64}],rs:[{at:{x:lp(J.sA,J.eA,.92).x,y:lp(J.sA,J.eA,.92).y-16},ang:a-90,len:50,back:1}]};},
  nerve:'Axillary nerve',root:'C5, C6',inj:'Shoulder abduction is the C5 myotome on the course key. All three deltoid fibers weak on one side suggests the axillary nerve.'},
 {id:'deltP',g:'s',m:'Deltoid',f:'Posterior',pos:'Sitting with elbow flexed 90 degrees and shoulder abducted 90 degrees',hands:'One hand on posterior deltoid, one hand mid-shaft of humerus (providing resistance)',test:'Instruct patient to horizontally extend shoulder',
@@ -64,7 +64,7 @@ const TESTS=[
  nerve:'Axillary nerve',root:'C5, C6',inj:'All three deltoid fibers weak on one side suggests the axillary nerve.'},
 {id:'biceps',g:'s',m:'Biceps Brachii',f:'',pos:'Sitting with shoulder flexed 45 degrees and elbow flexed 90 degrees',hands:'One hand on biceps tendon, one hand on distal forearm (providing resistance)',test:'Instruct patient to perform a bicep curl',
  short:'Sitting',ins:{v:'front',p:[[.125,.25,.146,.335,.02]]},
- why:'The biceps crosses the front of the elbow, so it bends the elbow. You can feel its tendon tighten in the crease. Her key lists elbow flexion as the C6 myotome.',
+ why:'The biceps crosses the front of the elbow, so it bends the elbow. You can feel its tendon tighten in the crease. Your key lists elbow flexion as the C6 myotome.',
  scene(u){const f=lerp(-45,-75,u),J=seatSide(45,f);return {J,mus:[on(J.sA,J.eA,.2,.92,-8,10)],P:[off(J.sA,J.eA,.9,-9)],R:[lp(J.eA,J.wA,.85)],mv:[{at:off(J.eA,J.hA,.75,-30),ang:f-90,len:58}],rs:[{at:off(J.eA,J.wA,.85,18),ang:f+90,len:50,back:1}]};},
  nerve:'Musculocutaneous nerve',root:'C5, C6',inj:'Elbow flexion is the C6 myotome on the course key. Weakness with pain in the front of the shoulder points toward the biceps tendon.'},
 {id:'supra',g:'s',m:'Supraspinatus',f:'',pos:'Sitting or standing with shoulder in scaption (flexed 90 degrees and adducted 45 degrees with hands pronated 270 degrees)',hands:'One hand on supraspinatus, one hand mid shaft of humerus (providing resistance)',test:'Instruct patient to move into shoulder flexion',
@@ -89,7 +89,7 @@ const TESTS=[
  nerve:'Spinal accessory nerve',root:'Cranial nerve XI',inj:'All three trapezius fibers weak on one side suggests cranial nerve XI.'},
 {id:'triceps',g:'s',m:'Triceps Brachii',f:'',pos:'Supine with shoulder flexed 90 degrees and elbow flexed 90 degrees',hands:'One hand on triceps brachii, one hand on distal forearm (providing resistance)',test:'Instruct patient to extend their elbow',
  short:'Supine',ins:{v:'back',p:[[.125,.25,.148,.34,.022]]},
- why:'The triceps crosses the back of the elbow, so it straightens the elbow. Lying supine with the upper arm vertical makes it lift the forearm against gravity. Her key lists elbow extension as the C7 myotome.',
+ why:'The triceps crosses the back of the elbow, so it straightens the elbow. Lying supine with the upper arm vertical makes it lift the forearm against gravity. Your key lists elbow extension as the C7 myotome.',
  scene(u){const f=lerp(180,240,u),J=supSide({armA:[270,f]});return {J,mus:[on(J.sA,J.eA,.2,.92,-8,10)],P:[off(J.sA,J.eA,.55,-9)],R:[lp(J.eA,J.wA,.85)],mv:[{at:off(J.eA,J.hA,.75,18),ang:f+90,len:56}],rs:[{at:off(J.eA,J.wA,.72,-18),ang:f-90,len:46,back:1}]};},
  nerve:'Radial nerve',root:'C6 to C8',inj:'Elbow extension is the C7 myotome on the course key. Weakness here with neck or arm symptoms points toward the C7 root.'},
 /* lower body sheet */
@@ -100,12 +100,12 @@ const TESTS=[
  nerve:'Femoral nerve',root:'L2, L3',inj:'Pain high on the front of the hip with this test can point to a sartorius or hip flexor strain.'},
 {id:'vm',g:'h',m:'Vastus Medialis',f:'',pos:'Seated with knees flexed over table edge',hands:'Resistance downward over distal tibia',test:'Tell athlete to turn their toes out and straighten their knee',
  short:'Seated, toes out',toes:'Toes turned out',ty:418,ins:{v:'front',p:[[.03,.62,.04,.69,.02]]},
- why:'The vastus medialis is the inner quadriceps and it straightens the knee. Her sheet turns the toes out to bias the test toward the inner quadriceps.',
+ why:'The vastus medialis is the inner quadriceps and it straightens the knee. Your sheet turns the toes out to bias the test toward the inner quadriceps.',
  scene(u){const s=lerp(90,30,u),J=seatSide(92,70,1,0,s,s-80);return {J,mus:[on(J.hipA,J.kA,.55,.92,6,11)],P:[],R:[lp(J.kA,J.aA,.84)],mv:[{at:off(J.kA,J.tA,.92,-30),ang:s-90,len:58}],rs:[{at:off(J.kA,J.aA,.84,22),ang:90,len:48,back:1}]};},
  nerve:'Femoral nerve',root:'L2 to L4',inj:'Knee extension is the L3 myotome on the course key. Inner quad weakness often follows a knee injury or knee surgery.'},
 {id:'vl',g:'h',m:'Vastus Lateralis',f:'',pos:'Seated with knees flexed over table edge',hands:'Resistance downward over distal tibia',test:'Tell athlete to turn their toes in and straighten their knee',
  short:'Seated, toes in',toes:'Toes turned in',ty:418,ins:{v:'front',p:[[.095,.53,.082,.68,.02]]},
- why:'The vastus lateralis is the outer quadriceps and it straightens the knee. Her sheet turns the toes in to bias the test toward the outer quadriceps.',
+ why:'The vastus lateralis is the outer quadriceps and it straightens the knee. Your sheet turns the toes in to bias the test toward the outer quadriceps.',
  scene(u){const s=lerp(90,30,u),J=seatSide(92,70,1,0,s,s-80);return {J,mus:[on(J.hipA,J.kA,.2,.9,-8,11)],P:[],R:[lp(J.kA,J.aA,.84)],mv:[{at:off(J.kA,J.tA,.92,-30),ang:s-90,len:58}],rs:[{at:off(J.kA,J.aA,.84,22),ang:90,len:48,back:1}]};},
  nerve:'Femoral nerve',root:'L2 to L4',inj:'Knee extension is the L3 myotome on the course key. Pain with a firm lump in the outer thigh would make you think of a contusion.'},
 {id:'rf',g:'h',m:'Rectus Femoris',f:'',pos:'Seated with knee extended',hands:'Resistance downward on distal thigh',test:'Tell athlete to flex their hip while keeping their knee extended',
@@ -130,12 +130,12 @@ const TESTS=[
  nerve:'Superior gluteal nerve',root:'L4 to S1',inj:'Weakness on one side shows up as the pelvis dropping when the athlete stands on that leg, which is called a Trendelenburg sign.'},
 {id:'semi',g:'h',m:'Semitendinosus and Semimembranosus',f:'',pos:'Prone with knee flexed to 45, tibia IR',hands:'Encourage knee extension with resistance',test:'Tell athlete to bring their heel to their butt',
  short:'Prone, tibia IR',toes:'Tibia rotated in',ty:170,ins:{v:'back',p:[[.04,.54,.04,.7,.02]]},
- why:'These inner hamstrings bend the knee and they also rotate the tibia in. Her sheet starts the tibia in internal rotation to bias the test toward them.',
+ why:'These inner hamstrings bend the knee and they also rotate the tibia in. Your sheet starts the tibia in internal rotation to bias the test toward them.',
  scene(u){const s=lerp(-45,-80,u),J=proneSide({legA:[0,s,s+90]});return {J,mus:[on(J.hipA,J.kA,.2,.92,-7,10)],P:[],R:[lp(J.kA,J.aA,.84)],mv:[{at:off(J.kA,J.aA,.9,-26),ang:s-90,len:52}],rs:[{at:off(J.kA,J.aA,.84,26),ang:s+90,len:44,back:1}]};},
  nerve:'Sciatic nerve, tibial division',root:'L5 to S2',inj:'Pain with weakness on one side suggests a hamstring strain, common in sprinters.'},
 {id:'bf',g:'h',m:'Biceps Femoris',f:'',pos:'Prone with knee flexed to 45, tibia ER',hands:'Encourage knee extension with resistance',test:'Tell athlete to bring their heel to their butt',
  short:'Prone, tibia ER',toes:'Tibia rotated out',ty:170,ins:{v:'back',p:[[.076,.54,.072,.7,.02]]},
- why:'The biceps femoris is the outer hamstring. It bends the knee and rotates the tibia out, so her sheet starts the tibia in external rotation.',
+ why:'The biceps femoris is the outer hamstring. It bends the knee and rotates the tibia out, so your sheet starts the tibia in external rotation.',
  scene(u){const s=lerp(-45,-80,u),J=proneSide({legA:[0,s,s+90]});return {J,mus:[on(J.hipA,J.kA,.2,.92,-7,10)],P:[],R:[lp(J.kA,J.aA,.84)],mv:[{at:off(J.kA,J.aA,.9,-26),ang:s-90,len:52}],rs:[{at:off(J.kA,J.aA,.84,26),ang:s+90,len:44,back:1}]};},
  nerve:'Sciatic nerve (long head tibial division, short head common fibular division)',root:'L5 to S2',inj:'Pain with weakness on one side suggests a hamstring strain, and this head is strained most often.'},
 {id:'gas',g:'h',m:'Gastrocnemius',f:'',pos:'Standing on test leg',hands:'N/A',test:'Instruct patient to perform single-leg heel raises',
@@ -175,6 +175,7 @@ function outcome(tid,gr,load,pain){const gas=tid==='gas';
   return {reach:1,palp:true,held:true,text:load==='max'?'Holds maximal resistance':load==='mod'?'Holds moderate resistance':'Full range '+(load==='ge'?'with gravity eliminated':'against gravity'),pain:false,ok:true};}
 function athlete(sim){if(sim.vlab){const b=sim.vlab.bench;if(b.ai===undefined){const r=sim.vlab.rng(1);b.ai=2+Math.floor(r()*(ATHLETES.length-2));b.ws=r()<.5?'L':'R';}return {A:ATHLETES[b.ai],ws:b.ws};}
   return {A:ATHLETES[sim.st.ai],ws:sim.st.ws};}
+const sideLine=(A,ws)=>Object.keys(A.w).length?` The athlete points to the <b>${ws==='L'?'left':'right'}</b> side.`:'';
 function gradeOf(sim,tid,side){const {A,ws}=athlete(sim);return side===ws&&A.w[tid]!==undefined?A.w[tid]:A.base;}
 function painOf(sim,tid,side){const {A,ws}=athlete(sim);return side===ws&&A.pain.indexOf(tid)>=0;}
 function logOf(sim){if(sim.vlab){const b=sim.vlab.bench;return b.log||(b.log={});}return sim.st.log;}
@@ -297,7 +298,7 @@ const LAB={id:'mmt-practical',title:'Manual Muscle Testing Practical',course:'SP
  conclusion:{prompt:'<p>Write up your athlete like a short note to the team physician: what you tested, how the sides compared, and what you think the pattern means. Say what you would check next. You are not diagnosing. You are describing findings and passing them on.</p>'}};
 function vlNarrate(sim){const t=TBY[sim.p.tm],{A}=athlete(sim),R=sim.st.run;
   const res=s=>{const L=logOf(sim)[t.id];return L&&L[s]?L[s].last:'not tested';};
-  return `<b>${A.who}.</b> ${A.cc}<br><b>${nameOf(t)}:</b> ${t.pos}. <b>Hands:</b> ${t.hands}. <b>Test:</b> ${t.test}.<br><b>Left:</b> ${res('L')}. <b>Right:</b> ${res('R')}.`;}
+  return `<b>${A.who}.</b> ${A.cc}${sideLine(A,athlete(sim).ws)}<br><b>${nameOf(t)}:</b> ${t.pos}. <b>Hands:</b> ${t.hands}. <b>Test:</b> ${t.test}.<br><b>Left:</b> ${res('L')}. <b>Right:</b> ${res('R')}.`;}
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 function cardHtml(t,withNerve){const lower=t.g==='h';return `<div class="tbl-wrap" style="margin:0 0 10px"><table style="font-size:14px"><tbody>
 <tr><th scope="row" style="white-space:nowrap">Muscle</th><td style="white-space:normal;text-align:left">${t.m}</td></tr>${t.f?`<tr><th scope="row">Fibers</th><td style="white-space:normal;text-align:left">${t.f}</td></tr>`:''}
@@ -319,7 +320,7 @@ const SIM={id:'mmt',hash:'mmt',apUnit:15,order:8,tab:'Manual muscle testing',kin
   {id:'load',label:'Load',type:'select',def:'max',options:[{v:'ge',l:LOADS.ge},{v:'grav',l:LOADS.grav},{v:'mod',l:LOADS.mod},{v:'max',l:LOADS.max}],noTrial:true}],
  actions:[
   {id:'run',label:'Run the test',primary:true,run(sim){startRun(sim,[sim.p.side]);}},
-  {id:'both',label:'Test both sides',run(sim){const a=athlete(sim),first=a.ws==='L'?'R':'L';startRun(sim,sim.vlab?['L','R']:[first==='L'?'L':'R',first==='L'?'R':'L']);}},
+  {id:'both',label:'Test both sides',run(sim){const a=athlete(sim),first=a.ws==='L'?'R':'L';startRun(sim,[first,a.ws]);}},
   {id:'newath',label:'New athlete',run(sim){newAthlete(sim);}},
   {id:'newpr',label:'New muscle',primary:true,run(sim){const pool=TESTS.filter(t=>!sim.st.pr||t.id!==sim.st.pr.tid),t=pool[Math.floor(Math.random()*pool.length)];newPrac(sim,t.id);}},
   {id:'nextm',label:'Next muscle',run(sim){const i=TESTS.findIndex(t=>t.id===sim.p.tm);BioLab.setValues(sim,{tm:TESTS[(i+1)%TESTS.length].id});}}],
@@ -342,8 +343,8 @@ const SIM={id:'mmt',hash:'mmt',apUnit:15,order:8,tab:'Manual muscle testing',kin
   const pick=s=>`<div class="row" role="group" aria-label="Your grade for the ${s==='L'?'left':'right'} side" style="align-items:center"><b style="min-width:3em">${s==='L'?'Left':'Right'}</b>${[0,1,2,3,4,5].map(g=>{const on=(st.guess[t.id]||{})[s]===g;return `<button type="button" class="btn${on?' primary':''}" data-fk="g-${s}-${g}" data-g="${s}" data-v="${g}" aria-pressed="${on}">${g}</button>`;}).join('')}</div>`;
   const gv=st.guess[t.id]||{};const fb=s=>{if(gv[s]===undefined)return '';if(!L[s])return `<p class="status" style="margin:4px 0">Run this side first.</p>`;const g=gradeOf(sim,t.id,s);return gv[s]===g?`<p class="verdict ok" style="margin:4px 0">${s==='L'?'Left':'Right'}: that grade fits what the athlete did.</p>`:`<p class="verdict no" style="margin:4px 0">${s==='L'?'Left':'Right'}: find the load where this side last held, then read the ladder.</p>`;};
   let cmp='';if(gv.L!==undefined&&gv.R!==undefined&&L.L&&L.R){const a=gradeOf(sim,t.id,'L'),b=gradeOf(sim,t.id,'R');cmp=a===b?`<p style="margin:6px 0"><b>Both sides match.</b> ${a===5?'This test shows no side-to-side deficit.':'The grade is below 5, but it is the same on both sides, so it is likely this athlete’s normal. Ask about their history before you call it a finding.'}</p>`:`<p style="margin:6px 0"><b>The sides differ.</b> The weaker side is your finding. ${hon?'Test the neighboring muscles next: is it one muscle or a group that shares a nerve?':''}</p>`;}
-  let patt='';if(ap){const opts=ATHLETES.map((a,i)=>[i,a.pat.split('.')[0]]);patt=`<h4 style="margin:12px 0 6px">What pattern fits?</h4><label style="display:block;margin-bottom:6px">Your conclusion after testing: <select class="sel" data-fk="patt" data-patt="1"><option value="">Choose</option>${opts.map(o=>`<option value="${o[0]}"${st.patt===o[0]?' selected':''}>${o[1]}</option>`).join('')}</select></label>${st.patt!==null?(st.patt===st.ai?`<p class="verdict ok" style="margin:4px 0">That fits.</p><p style="margin:4px 0">${A.pat} A real clinician would pass this on as findings, not a diagnosis.</p>`:`<p class="verdict no" style="margin:4px 0">Not the best fit yet.</p><p style="margin:4px 0">Test the neighbors. Which muscles on your sheet share a nerve root? Does the weak test hurt?</p>`):''}`;}
-  return `<h3 style="margin:0 0 6px;font-size:16px">${A.who}</h3><p style="margin:0 0 8px">${A.cc}</p>`+ladderHtml()+`<h4 style="margin:10px 0 6px">${nameOf(t)}: your grade</h4>${pick('L')}${fb('L')}<div style="height:6px"></div>${pick('R')}${fb('R')}${cmp}<details style="margin-top:10px"><summary style="cursor:pointer;font-weight:600">The card for this test</summary><div style="margin-top:8px">${cardHtml(t,ap)}</div></details>`+patt;},
+  let patt='';if(ap){const seen={},opts=[];ATHLETES.forEach((a,i)=>{const l=a.pat.split('.')[0];if(!seen[l]){seen[l]=1;opts.push([i,l]);}});patt=`<h4 style="margin:12px 0 6px">What pattern fits?</h4><label style="display:block;margin-bottom:6px">Your conclusion after testing: <select class="sel" data-fk="patt" data-patt="1"><option value="">Choose</option>${opts.map(o=>`<option value="${o[0]}"${st.patt!==null&&ATHLETES[st.patt].pat.split('.')[0]===o[1]?' selected':''}>${o[1]}</option>`).join('')}</select></label>${st.patt!==null?(ATHLETES[st.patt].pat.split('.')[0]===A.pat.split('.')[0]?`<p class="verdict ok" style="margin:4px 0">That fits.</p><p style="margin:4px 0">${A.pat} A real clinician would pass this on as findings, not a diagnosis.</p>`:`<p class="verdict no" style="margin:4px 0">Not the best fit yet.</p><p style="margin:4px 0">Test the neighbors. Which muscles on your sheet share a nerve root? Does the weak test hurt?</p>`):''}`;}
+  return `<h3 style="margin:0 0 6px;font-size:16px">${A.who}</h3><p style="margin:0 0 8px">${A.cc}${sideLine(A,ws)}</p>`+ladderHtml()+`<h4 style="margin:10px 0 6px">${nameOf(t)}: your grade</h4>${pick('L')}${fb('L')}<div style="height:6px"></div>${pick('R')}${fb('R')}${cmp}<details style="margin-top:10px"><summary style="cursor:pointer;font-weight:600">The card for this test</summary><div style="margin-top:8px">${cardHtml(t,ap)}</div></details>`+patt;},
  bindInfo(sim,el){const st=sim.st,again=()=>{sim.infoDirty=true;};
   el.querySelectorAll('[data-pr]').forEach(b=>b.addEventListener('click',()=>{st.pr.pick[b.dataset.pr]=b.dataset.v;st.pr.checked=false;sim._fk=b.dataset.fk;again();}));
   el.querySelectorAll('[data-pa]').forEach(b=>b.addEventListener('click',()=>{const a=b.dataset.pa,r=st.pr,q=TBY[r.tid];sim._fk=b.dataset.fk;if(a==='check'){r.checked=true;if(['pos','hands','test'].every(k=>r.pick[k]===q[k]))r.show=true;}else if(a==='show')r.show=true;else{const pool=TESTS.filter(t=>t.id!==r.tid),t=pool[Math.floor(Math.random()*pool.length)];newPrac(sim,t.id);}again();}));
