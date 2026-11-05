@@ -49,6 +49,6 @@ contraction:{questions:[
   {id:'order',kind:'test',lvl:'ap',
     q:'At the start of an all-out sprint, in what order do the fast ATP sources step in?',
     choices:['Creatine phosphate, then anaerobic glycolysis, with aerobic supply rising slowly throughout','Aerobic first, then anaerobic, then creatine phosphate','Anaerobic first, then creatine phosphate','Only aerobic respiration, at a higher rate'],correct:0,
-    steps:['Creatine phosphate can remake ATP at once, and it lasts seconds.','Anaerobic glycolysis takes over the bulk of supply, building lactic acid.','Aerobic supply takes about a minute to ramp up, and is too slow for peak demand in fast fibers.'],
+    steps:['Creatine phosphate can remake ATP at once, and it lasts seconds.','Anaerobic glycolysis takes over the bulk of supply, building lactic acid.','Aerobic supply takes time to ramp up, and is too slow for peak demand in fast fibers.'],
     lab:{set:{scene:'energy',fiber:'fast',effort:100},look:'Open <b>Where ATP comes from</b> to see which source carries the load, and when.'}}
 ]}});

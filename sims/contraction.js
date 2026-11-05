@@ -333,7 +333,7 @@ const H={
       if(!p.o2&&s.eAer<.05)return '<b>No oxygen: only anaerobic ATP is left.</b> Glucose gives 2 ATP instead of 38, so lactic acid builds fast ('+T+' mmol/kg).';
       if(s.tFat!==null&&s.eF<.9*s.eT)return '<b>Fatigue: force has dropped to '+F+'%</b> even though you ask for '+pct+'%. The fiber cannot supply ATP fast enough, and acid buildup interferes with contraction.';
       if(s.eLac>=BURN)return '<b>The burn.</b> Anaerobic ATP can’t keep up without lactic acid building up ('+T+' mmol/kg). Force is still holding, but not for long at this pace.';
-      if(s.eAn>.1||s.ePc>.1)return 'Demand is above what oxygen can supply, so '+(s.ePc>.1?'creatine phosphate':'anaerobic ATP')+' is filling the gap.'+(atLeast('honors')?' Aerobic supply takes a minute or so to ramp up.':'');
+      if(s.eAn>.1||s.ePc>.1)return 'Demand is above what oxygen can supply, so '+(s.ePc>.1?'creatine phosphate':'anaerobic ATP')+' is filling the gap.'+(atLeast('honors')?' Aerobic supply takes time to ramp up.':'');
       return '<b>Aerobic ATP is covering the demand.</b> This pace can last a long time because oxygen keeps arriving and little lactic acid builds up.';}
     if(s.rig)return '<b>No ATP: rigor.</b> Without ATP, heads cannot let go of actin, and the pump cannot put calcium back. The muscle stays locked and cannot relax. This is why bodies stiffen after death.';
     if(!p.caOn)return '<b>The signal arrives, but no calcium is released.</b> Tropomyosin stays on the binding sites, so myosin has nothing to grab and force stays at zero.';

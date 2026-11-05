@@ -51,7 +51,7 @@ metacarpals:{n:'Metacarpals',g:AP,ct:'5 in each hand, 10 in the body',type:'Long
 metatarsals:{n:'Metatarsals',g:AP,ct:'5 in each foot, 10 in the body',type:'Long bones',where:'in the middle of the foot',
   job:'The five long bones of the foot. They form the arch and push you off the ground.',find:'Run your finger along the top of your foot, from the ankle toward the toes.',
   clue:'Meta means beyond. Metatarsals sit beyond the tarsals, on the way to the toes.',hint:'The five long bones between the ankle bones and the toes.',
-  deep:'The base of the fifth one, on the little-toe side, is where a Jones fracture happens.'},
+  deep:'Just past the base of the fifth one, on the little-toe side, is where a Jones fracture happens.'},
 patella:{n:'Patella',g:AP,ct:'2',type:'Sesamoid bone',where:'at the front of the knee',view:'front',
   job:'The kneecap. It shields the front of the knee and gives the thigh muscles better leverage.',find:'Straighten your leg and relax it. You can slide your kneecap gently side to side.',
   clue:'It is only visible from the front, because it sits inside a tendon on the front of the knee.',hint:'The small round bone at the front of the knee.',

@@ -390,7 +390,7 @@ const MUSCLES={
     {id:'scope',label:'Muscles to practice',type:'select',def:'all',lvl:'bio',noTrial:true,acts:['practice'],options:[{v:'all',l:'All 31'},{v:'upper',l:'Head, shoulder and arm'},{v:'trunk',l:'Chest, abdomen and back'},{v:'lower',l:'Hip and leg'}],onChange(sim){if(sim.st)newQ(sim);}},
     {id:'root',label:'Word root',type:'select',def:'rectus',lvl:'bio',noTrial:true,acts:['decoder'],options:ROOTS.map(r=>({v:r.id,l:r.w+' ('+r.m+')'})),onChange(sim){sim.infoDirty=true;}},
     {id:'mtype',label:'Muscle type',type:'seg',def:'skeletal',lvl:'bio',noTrial:true,acts:['types'],options:TYPES.map(t=>({v:t.id,l:t.n.split(' ')[0]})),onChange(sim){sim.infoDirty=true;}},
-    {id:'elbow',label:'Elbow flexion',type:'range',min:0,max:145,step:1,def:30,unit:'°',lvl:'bio',noTrial:true,acts:['pull'],help:'0° is a straight arm. Normal flexion reaches about 145°.',onChange(sim){if(sim.st)sim.st.pullTo=null;}}
+    {id:'elbow',label:'Elbow flexion',type:'range',min:0,max:145,step:1,def:30,unit:'°',lvl:'bio',noTrial:true,acts:['pull'],help:'0° is a straight arm. Normal flexion reaches about 150°. This model stops at 145°.',onChange(sim){if(sim.st)sim.st.pullTo=null;}}
   ],
   actions:[
     {id:'prev',label:'Previous muscle',acts:['explore'],run(sim){const i=ORDER.indexOf(sim.p.muscle);pickMuscle(sim,ORDER[(i+ORDER.length-1)%ORDER.length]);}},

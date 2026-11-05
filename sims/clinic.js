@@ -5,7 +5,7 @@
    {s} is the hurt side and {o} is the other side, filled in when a finding is shown. */
 const {clamp,lerp,rr,txt,pill,atLeast,PAL,FONT,RM}=BioLab.h;
 const STEPS=['History','Observation','Palpation','Special tests','Working diagnosis','Care and referral','Return to play'];
-const REF=['Call EMS now','Same-day urgent care: ED, urgent care or dentist, with an adult driving','Physician within a day or two for an exam or imaging','AT manages and monitors, and refers if it does not improve'];
+const REF=['Call EMS now','Same-day urgent care: ED, urgent care or dentist, with an adult driving','Physician within a day or two for an exam or imaging','AT manages and monitors, and refers if it does not improve','Emergency department now, with an adult driving'];
 const HQ=['How did it happen? (MOI)','Where does it hurt, and how bad is it?','Did you feel or hear anything?','Has this happened before?','Anything else going on? (other SxS)'];
 const GLOSS={MOI:'Mechanism of injury: how the injury happened.',SxS:'Signs and symptoms. Signs are what you can see or measure. Symptoms are what the athlete reports.',Tx:'Treatment.',WB:'Weight bearing.',NWB:'Non weight bearing: no weight on the injured leg.',TTP:'Tender to palpation: it hurts when you press on it.',ROM:'Range of motion.',WNL:'Within normal limits.',PRICE:'Protection, rest, ice, compression, elevation.',RTP:'Return to play.'};
 const REG={
@@ -65,7 +65,7 @@ const CASES=[
  palp:{orbit:'Mild TTP on the rim. You do not press on the eye itself.'},pos:{acuity:'Positive: {s} eye is blurry and cannot read far away. {o} eye is normal.',pupil:'{s} pupil is sluggish and irregular.'},key:['acuity','pupil'],
  dx:['Hyphema','Orbital blowout fracture','Epistaxis','Concussion only'],clue:'What you can see inside the eye itself.',
  why:'Blood collected in the front of the eye is a hyphema. It comes from a blow that tears small vessels. It threatens vision through pressure and rebleeding.',diff:'A blowout fracture limits eye movement and leaves the eye clear. A concussion can blur vision, but it does not put blood in the eye.',
- care:['Patch both eyes, keep her head up, avoid aspirin and ibuprofen, and send her now','Rinse the eye with water and let her rest','Patch only the hurt eye and let her walk to the bus'],cw:'Both eyes move together, so patching both limits movement of the hurt eye. Head up lets the blood settle. This is an immediate ED referral.',ref:1,
+ care:['Cover the eye with a rigid shield that puts no pressure on it, keep her head up, avoid aspirin and ibuprofen, and send her now','Rinse the eye with water and let her rest','Press a tight patch over the hurt eye and let her walk to the bus'],cw:'Never press on an injured eye: it could be ruptured. Some older protocols cover both eyes to limit eye movement, because both eyes move together. Head up lets the blood settle. This is an immediate ED referral.',ref:4,
  flip:'Vomiting, severe eye pain or an obvious globe injury makes this an EMS call, because they suggest rising pressure or a ruptured eye.',
  rtp:'Only when an eye physician clears her, usually with protective eyewear',say:'Tell her she must keep her head up and her eyes covered, and explain to her parents that this is a vision emergency.'},
 {id:'epistaxis',r:'head',who:'Wrestler',cc:'Bloody nose after a takedown',side:'M',
@@ -304,7 +304,7 @@ const CASES=[
  dx:['Jones fracture','Inversion ankle sprain','Plantar fasciitis','Eversion ankle sprain'],clue:'The exact spot of the bone tenderness, away from the ankle.',
  why:'Pivoting on the outer foot can break the 5th metatarsal just past its base. This area has a poor blood supply, so it often heals slowly.',diff:'An inversion sprain hurts under the lateral malleolus. Plantar fasciitis hurts at the heel. An eversion sprain hurts on the inner ankle.',
  care:['NWB on crutches, splint, cold pack, and send for an x-ray','Tape it and let him try to jog','Have him walk on it to loosen it up'],cw:'Ottawa rules say x-ray. Protect it from weight until you know. Jones fractures often need more than a walking boot in athletes, so a physician decides.',ref:2,
- flip:'Bone through the skin, a weak pulse or numbness makes this a same-day emergency.',
+ flip:'Bone through the skin, a weak pulse or numbness makes this an emergency: call EMS.',
  rtp:'After x-ray healing and clearance, which can take months, with a gradual return to pivoting',say:'Tell him the prior ache matters, and it goes in the note. Tell the coach this one is slow to heal.'},
 {id:'inversion',r:'ankle',who:'Volleyball middle blocker',cc:'Landed on someone’s foot and rolled the ankle',side:'R',
  h:['I landed on a foot and my ankle rolled in, with my toes pointed down.','Outer ankle. 5 out of 10.','Something stretched.','I rolled it last year.','It’s puffing up on the outside.'],
@@ -342,7 +342,7 @@ const CASES=[
  care:['Rest from running, cross-train, ice, check shoes and surfaces, and strengthen the lower leg','Run more miles to toughen the shin','Tape it and keep the same training'],cw:'The load caused it, so the load has to change. Pool and bike work keep fitness. Check for a stress fracture if pain becomes one spot.',ref:3,
  flip:'Sharp pain at one spot, or pain at rest or at night, suggests a stress fracture and earns a referral for imaging.',
  rtp:'When walking and hopping are pain free, with a gradual return to running on softer surfaces',say:'Tell the athlete and coach the training progression is part of the treatment.'},
-{id:'compartment',r:'ankle',who:'Football linebacker',cc:'Kicked in the shin, and pain keeps getting worse',side:'R',
+{id:'compartment',r:'ankle',who:'Football linebacker',cc:'Helmet to the shin, and pain keeps getting worse',side:'R',
  h:['I took a helmet to my shin an hour ago.','Front of my lower leg. 9 out of 10, and it’s getting worse.','Nothing.','No.','My foot feels numb between my first two toes. Ice isn’t helping.'],
  look:'The {s} lower leg looks swollen and shiny. The {o} leg looks normal.',fn:'Struggles to lift the foot. Pain is far greater than you would expect from the bruise.',show:[['ant','swell']],
  palp:{ant:'The whole front of the {s} lower leg feels tight, like a board, and very TTP.'},pos:{stretch:'Positive: severe pain when you gently point the toes.',nv:'Pulse is present but weaker than on the {o} side. Numb between the first two toes.',hop:'Hold off: you do not ask him to hop on this leg.'},key:['stretch','nv'],

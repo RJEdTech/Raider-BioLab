@@ -222,7 +222,7 @@ const SIM={id:'reaction',hash:'reaction',apUnit:9,order:9,kind:'Simulation',tab:
      explain:{ap:'Only about 19 ms of the 190 ms is signal travel along fibers. Doubling it adds about 19 ms. Most of a voluntary reaction goes to receptors, synapses, cortex and muscle contraction.'}},
     {lvl:'ap',instant:true,q:'One catch is at 5 cm and another at 20 cm. How do the two reaction times compare?',
      choices:['The 20 cm catch took 4 times as long','The 20 cm catch took 2 times as long','The 20 cm catch took 16 times as long'],correct:1,
-     explain:{ap:'t = √(2d ÷ g), so time grows with the square root of distance. Four times the distance is twice the time: 0.101 s against 0.202 s. That is why a ruler measures fast reactions well: most of its length is spent on slow ones.'}}
+     explain:{ap:'t = √(2d ÷ g), so time grows with the square root of distance. Four times the distance is twice the time: 0.101 s against 0.202 s. So the ruler spreads slower times out: the first 0.1 s covers only 5 cm, and the next 0.1 s covers 15 cm.'}}
   ],
   narrate(sim){const s=sim.st,tr=s.tr,hon=atLeast('honors');
     if(sim.vlab){const r=curRead(sim);return s.an&&sim.t-s.an.t0<s.an.rt?'The ruler is falling. The cue has started its trip through the nervous system.':(r!==null?'Caught. Read the magnifier at the top edge of the thumb and record the number.':'Press <b>Release the ruler</b> when you are ready.');}
