@@ -61,7 +61,6 @@ function fibers(pc){const pts=pc.poly,xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),x0
 function P(m,pts,fib,o){const pc=Object.assign({m,pts,fib},o||{});pc.poly=bspline(pts,6);pc.lines=fibers(pc);return pc;}
 function S(m,c,w,o){return P(m,strapPts(c,w),{a:c,w},o);}
 /* m:null shapes are real muscles or bones that are not on the study list. They are drawn muted and cannot be selected. */
-const PALE=[.0,0];
 const FRONT=[
   P(null,[[.003,.112],[.018,.112],[.013,.150],[.003,.156]],{d:[0,1]}),
   P('trapezius',[[.030,.122],[.036,.143],[.062,.152],[.094,.157],[.116,.164],[.085,.166],[.050,.161],[.026,.153]],{d:[1,.42]}),
@@ -69,7 +68,7 @@ const FRONT=[
   P('masseter',[[.031,.065],[.051,.063],[.050,.082],[.044,.098],[.033,.096],[.029,.08]],{d:[.12,1]}),
   P('lats',[[.108,.233],[.103,.262],[.101,.312],[.094,.312],[.092,.262]],{c:[.118,.215]}),
   P('extoblique',[[.046,.270],[.066,.284],[.082,.298],[.100,.318],[.099,.37],[.098,.408],[.072,.430],[.036,.452],[.033,.40],[.044,.35],[.049,.31]],{d:[-.55,1]},{pale:[.062,.375,.036,.445]}),
-  ...[.250,.2665,.283,.2995].map(y=>P('serratus',[[.100,y-.005],[.100,y+.010],[.086,y+.016],[.068,y+.026],[.074,y+.010]],{d:[-1,.42]})),
+  ...[.250,.2665,.283,.2995].map(y=>P('serratus',[[.095,y-.005],[.095,y+.010],[.084,y+.016],[.068,y+.026],[.074,y+.010]],{d:[-1,.42]})),
   P('rectusabd',[[.004,.260],[.025,.255],[.047,.260],[.051,.30],[.048,.36],[.037,.42],[.021,.476],[.004,.478]],{d:[0,1]},{bars:[.296,.334,.372],barx:.05}),
   P(null,[[.148,.295],[.157,.30],[.159,.34],[.150,.358]],{d:[.2,1]}),
   P('triceps',[[.104,.238],[.113,.25],[.122,.285],[.131,.325],[.134,.348],[.127,.348],[.118,.31],[.109,.275]],{d:[.25,1]}),
@@ -83,9 +82,9 @@ const FRONT=[
   P(null,[[.090,.418],[.106,.44],[.112,.50],[.102,.535],[.092,.50],[.085,.45]],{d:[.25,1]}),
   P('adductors',[[.014,.468],[.044,.478],[.060,.525],[.048,.575],[.036,.625],[.028,.668],[.018,.655],[.008,.58],[.002,.52]],{c:[.052,.70]}),
   P('vastlat',[[.097,.50],[.114,.515],[.112,.58],[.100,.66],[.090,.70],[.076,.716],[.072,.69],[.079,.62],[.084,.56],[.089,.52]],{d:[-.28,1]},{pale:[.080,.668,.075,.712]}),
-  P('vastmed',[[.049,.572],[.0475,.64],[.051,.695],[.047,.716],[.036,.714],[.027,.695],[.029,.66],[.039,.615]],{d:[.5,1]}),
-  S('rectusfem',[[.079,.44],[.074,.50],[.066,.57],[.060,.64],[.057,.70]],[.006,.017,.021,.016,.008],{pale:[.061,.645,.057,.70]}),
-  S('sartorius',[[.094,.412],[.083,.465],[.062,.535],[.044,.60],[.032,.665],[.026,.715],[.030,.762]],[.005,.0095,.0095,.009,.008,.006,.003]),
+  P('vastmed',[[.050,.572],[.050,.64],[.053,.695],[.048,.718],[.036,.716],[.026,.695],[.027,.66],[.038,.615]],{d:[.5,1]}),
+  S('rectusfem',[[.079,.44],[.074,.50],[.067,.57],[.0615,.64],[.058,.70]],[.006,.017,.021,.013,.006],{pale:[.061,.645,.057,.70]}),
+  S('sartorius',[[.094,.412],[.083,.465],[.062,.535],[.041,.60],[.028,.665],[.024,.715],[.030,.762]],[.005,.0095,.0095,.009,.008,.006,.003]),
   P(null,[[.038,.700],[.056,.694],[.074,.700],[.078,.735],[.066,.758],[.046,.758],[.034,.735]],null,{fascia:true}),
   P(null,[[.076,.755],[.092,.77],[.090,.82],[.080,.875],[.068,.93],[.060,.93],[.068,.87],[.076,.82],[.075,.79]],{d:[-.2,1]}),
   P('gastroc',[[.022,.750],[.033,.752],[.033,.80],[.031,.848],[.023,.846],[.015,.80]],{d:[.1,1]}),
@@ -176,10 +175,10 @@ function drawBody(ctx,f,deep){const o={cx:f.cx,top:f.top,h:f.h};
   ctx.restore();
   BioLab.body.path(ctx,o);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.6;ctx.stroke();}
 function highlight(ctx,f,id,deep,col){ctx.save();BioLab.body.path(ctx,f);ctx.clip();pieces(f.view,deep).forEach(p=>{if(p.m===id)paint(ctx,p,f,col||HI,{fiber:'rgba(90,50,0,.5)',edge:'#3a2500',pale:'255,244,214'});});
-  (BONES[f.view]||[]).forEach(p=>{if(p.fascia)return;if(id==='nope')paintBone(ctx,p,f);});ctx.restore();}
+  (BONES[f.view]||[]).forEach(p=>paintBone(ctx,p,f));ctx.restore();}
 /* label anchors: where each leader line lands, and which margin it comes from. x is signed on the viewer's side (negative = left of the screen). */
-const ANCHOR={front:{masseter:[-.041,.083],scm:[.018,.135],trapezius:[-.068,.158],deltoid:[-.125,.205],pec:[.062,.215],biceps:[-.135,.30],triceps:[.118,.285],brachiorad:[-.170,.385],flexors:[.150,.40],serratus:[.084,.268],rectusabd:[.026,.325],extoblique:[-.074,.36],lats:[.098,.285],gmed:[-.100,.432],adductors:[.030,.56],sartorius:[.062,.535],rectusfem:[.066,.60],vastlat:[-.094,.61],vastmed:[.038,.675],tibant:[-.066,.81],gastroc:[.024,.80],soleus:[-.082,.87]},
-  back:{trapezius:[-.040,.17],deltoid:[-.128,.215],infra:[-.088,.205],teres:[-.090,.232],triceps:[-.142,.31],rhomboids:[.040,.195],lats:[-.070,.31],erector:[.019,.385],extensors:[-.170,.43],flexors:[.150,.43],brachiorad:[-.172,.385],gmed:[.078,.42],gmax:[-.066,.49],adductors:[.014,.575],vastlat:[-.098,.62],bicfem:[-.070,.62],semiten:[.040,.62],semimem:[.024,.665],gastroc:[-.068,.80],soleus:[.038,.90]}};
+const ANCHOR={front:{masseter:[-.041,.083],scm:[.018,.135],trapezius:[-.068,.158],deltoid:[-.125,.205],pec:[.062,.215],biceps:[-.135,.30],triceps:[.118,.285],brachiorad:[-.170,.385],flexors:[.150,.40],serratus:[.084,.268],rectusabd:[.026,.325],extoblique:[-.074,.36],lats:[.0975,.275],gmed:[-.100,.432],adductors:[.030,.56],sartorius:[.062,.535],rectusfem:[.066,.60],vastlat:[-.094,.61],vastmed:[.043,.685],tibant:[-.066,.81],gastroc:[.024,.80],soleus:[-.082,.87]},
+  back:{trapezius:[-.040,.17],deltoid:[-.128,.215],infra:[-.088,.205],teres:[-.090,.232],triceps:[-.142,.31],rhomboids:[.040,.195],lats:[-.070,.31],erector:[.019,.385],extensors:[-.170,.43],flexors:[.150,.43],brachiorad:[-.172,.385],gmed:[.078,.42],gmax:[-.066,.49],adductors:[.0125,.558],vastlat:[-.098,.62],bicfem:[-.070,.62],semiten:[.040,.62],semimem:[.024,.665],gastroc:[-.068,.80],soleus:[.038,.90]}};
 /* ---------- layout ---------- */
 const LH=720;
 function layout(sim){const v=sim.p.view,z=sim.p.zoom;
@@ -203,7 +202,7 @@ const viewFor=(id,cur)=>onAny(id,cur)?cur:(cur==='front'?'back':'front');
 function onAny(id,v){return onView(id,v,false)||onView(id,v,true);}
 function newQ(sim){const s=sim.st,pool=SCOPES[sim.p.scope]||ORDER;let id;if(s.redo.length&&Math.random()<.5)id=s.redo.shift();else{if(!s.bag.length||s.bagScope!==sim.p.scope){s.bag=pool.slice().sort(()=>Math.random()-.5);s.bagScope=sim.p.scope;}id=s.bag.pop();}
   if(id===s.qid&&pool.length>1){id=pool[(pool.indexOf(id)+1)%pool.length];}
-  s.qid=id;s.qans=null;s.qmsg='';s.tries=0;s.picked=null;s.typed='';
+  s.qid=id;s.qans=null;s.qmsg='';s.tries=0;s.picked=null;s.typed='';zoomFor(sim,id);
   const v=M[id].deep===true?'back':null,cv=sim.p.view;if(cv!=='both'&&!onAny(id,cv))BioLab.setValues(sim,{view:cv==='front'?'back':'front'});else if(v&&cv==='front')BioLab.setValues(sim,{view:'back'});
   const needDeep=!onView(id,'front',false)&&!onView(id,'back',false);if(needDeep!==!!sim.p.deep)BioLab.setValues(sim,{deep:needDeep});
   const curV=sim.p.view==='both'?(onView(id,'front',sim.p.deep)?'front':'back'):sim.p.view;
@@ -302,12 +301,13 @@ function drawPull(sim,ctx,vdt,k){const s=sim.st,v=sim.vis;ctx.fillStyle=PAL['cv-
   const hot=(p,col)=>{ctx.fillStyle=col;ctx.strokeStyle=PAL['cv-bg'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,7,0,6.3);ctx.fill();ctx.stroke();};hot(g.bicO,PAL['s2']);hot(g.triO,PAL['s2']);hot(g.ins,PAL['s4']);hot(g.ol,PAL['s4']);
   /* callouts: fixed margin columns so they never sit on the moving arm */
   const lab=(t,sub,x,y,ax,ay,a)=>{ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.beginPath();const lx=a==='right'?x+6:x-6;ctx.moveTo(lx,y-4*k);ctx.lineTo(ax,ay);ctx.stroke();txt(ctx,t,x,y,{s:13.5*k,w:700,a:a==='right'?'right':'left'});if(sub)txt(ctx,sub,x,y+15*k,{s:12*k,c:PAL['cv-soft'],a:a==='right'?'right':'left'});};
-  lab('Origin','fixed bone',500,60,g.bicO.x,g.bicO.y,'left');
-  lab('Biceps Brachii','flexor: closes the joint',500,190,bb.x,bb.y,'left');
-  lab('Tendon','muscle to bone',k>1.4?560:620,110,g.bicO.x+((g.ins.x-g.bicO.x)*.06),g.bicO.y+((g.ins.y-g.bicO.y)*.06),'left');
-  lab('Triceps Brachii','extensor: opens the joint',196,200,tb.x,tb.y,'right');
-  lab('Origin','fixed bone',196,100,g.triO.x,g.triO.y,'right');
-  lab('Insertion','moving bone',196,LH-110,g.ol.x,g.ol.y,'right');
+  const sm=k>1.4,c=q=>60+q*46*k;
+  lab('Origin','fixed bone',500,c(0),g.bicO.x,g.bicO.y,'left');
+  lab('Tendon','muscle to bone',500,c(1),g.bicO.x+((g.ins.x-g.bicO.x)*.06),g.bicO.y+((g.ins.y-g.bicO.y)*.06),'left');
+  lab('Biceps Brachii',sm?'flexor':'flexor: closes the joint',500,c(2)+(sm?0:30),bb.x,bb.y,'left');
+  lab('Origin','fixed bone',230,100,g.triO.x,g.triO.y,'right');
+  lab('Triceps Brachii',sm?'extensor':'extensor: opens the joint',230,100+66*k,tb.x,tb.y,'right');
+  lab('Insertion','moving bone',230,LH-110,g.ol.x,g.ol.y,'right');
   lab('Insertion','moving bone',500,LH-190,g.ins.x,g.ins.y,'left');
   txt(ctx,'Elbow angle: '+Math.round(180-deg)+'°',500,LH-70,{s:16*k,w:700});txt(ctx,'Flexion: '+Math.round(deg)+'°',500,LH-70+19*k,{s:13*k,c:PAL['cv-soft']});
   txt(ctx,bActive?'Biceps Brachii shortens. Triceps Brachii relaxes.':tActive?'Triceps Brachii shortens. Biceps Brachii relaxes.':'',30,24,{s:13.5*k,w:600});
@@ -335,7 +335,7 @@ function drawChart(sim,ctx,k){const v=sim.vis,p=sim.p,s=sim.st,deep=!!p.deep,L=l
   if(wantNames){const labs=labelsFor(sim,L,k);labs.forEach(l=>{const on=l.id===p.muscle;ctx.font=(on?700:500)+' '+l.fs+'px '+FONT;const w=ctx.measureText(M[l.id].n).width,left=l.a==='left';
       const ex=left?l.x+w+4:l.x-w-4;ctx.strokeStyle=on?PAL['cv-ink']:PAL['cv-soft'];ctx.lineWidth=on?1.4:.9;ctx.beginPath();ctx.moveTo(ex,l.y-l.fs*.32);ctx.lineTo(l.ax,l.ay);ctx.stroke();ctx.fillStyle=on?PAL['cv-ink']:'rgba(20,10,8,.8)';ctx.beginPath();ctx.arc(l.ax,l.ay,1.7,0,6.3);ctx.fillStyle=PAL['cv-ink'];ctx.fill();
       txt(ctx,M[l.id].n,l.x,l.y,{s:l.fs,w:on?700:500,c:on?PAL['cv-ink']:PAL['cv-ink'],a:l.a});v.labs.push({id:l.id,x:left?l.x:l.x-w,y:l.y-l.fs,w,h:l.fs*1.3});});}
-  else if(!prac&&sel){pill(ctx,M[sel].n,L.both?400:400,L.both?LH-22:LH-22,PAL['rj']||'#8f1d2c','#fff',14*k);
+  else if(!prac&&sel&&!s.hideQ){pill(ctx,M[sel].n,L.both?400:400,L.both?LH-22:LH-22,PAL['rj']||'#8f1d2c','#fff',14*k);
     if(!L.figs.some(f=>onView(sel,f.view,deep)))txt(ctx,'Not visible in this view.',400,LH-46*k,{s:12.5*k,c:PAL['cv-soft'],a:'center'});}
   /* practice markers */
   if(prac&&s.qid){const fig=L.figs.find(f=>f.view===s.spotView)||L.figs[0],A=ANCHOR[fig.view];v.spotHits=[];
@@ -344,8 +344,9 @@ function drawChart(sim,ctx,k){const v=sim.vis,p=sim.p,s=sim.st,deep=!!p.deep,L=l
     if(s.qans){pill(ctx,M[s.qid].n,400,LH-22,'#8f1d2c','#fff',14*k);}}
 }
 function draw(sim,ctx,vdt,k,t){const a=sim.p.act;if(a==='decoder')return drawDecoder(sim,ctx,k);if(a==='types')return drawTypes(sim,ctx,k);if(a==='pull')return drawPull(sim,ctx,vdt,k);drawChart(sim,ctx,k);}
-function pickMuscle(sim,id){BioLab.setValues(sim,{muscle:id});sim.infoDirty=true;}
-function ensureVisible(sim){const id=sim.p.muscle,v=sim.p.view,deep=!!sim.p.deep;if(sim._syncing)return;sim._syncing=true;
+function pickMuscle(sim,id){if(sim.st)sim.st.hideQ=false;BioLab.setValues(sim,{muscle:id});sim.infoDirty=true;}
+function zoomFor(sim,id){const z=sim.p.zoom;if(z==='whole')return;const v=sim.p.view==='both'?'front':sim.p.view,A=ANCHOR[v][id]||ANCHOR[v==='front'?'back':'front'][id];if(!A)return;if((z==='upper'&&A[1]>.575)||(z==='lower'&&A[1]<.46))BioLab.setValues(sim,{zoom:A[1]>.575?'lower':'upper'});}
+function ensureVisible(sim){const id=sim.p.muscle,v=sim.p.view,deep=!!sim.p.deep;if(sim._syncing)return;sim._syncing=true;zoomFor(sim,id);
   if(!onView(id,'front',false)&&!onView(id,'back',false)){if(!deep)BioLab.setValues(sim,{deep:true});if(v==='front')BioLab.setValues(sim,{view:'back'});}
   else if(v!=='both'&&!onView(id,v,deep)){if(onView(id,v,!deep))BioLab.setValues(sim,{deep:!deep});else BioLab.setValues(sim,{view:v==='front'?'back':'front'});}
   else if(v==='both'&&deep&&!onView(id,'back',true)&&!onView(id,'front',true))BioLab.setValues(sim,{deep:false});
@@ -356,7 +357,7 @@ const CHART=['explore','practice'];
 /* ---------- info panel ---------- */
 const row=(k,v)=>`<p class="mm-r"><b>${k}:</b> ${v}</p>`;
 const TS='<style>.mm-r{margin:0 0 6px;overflow-wrap:anywhere}.mm-bank{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.mm-in{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);max-width:100%;width:240px}.mm-ok{color:var(--good,#1b7f4b);font-weight:700}.mm-no{font-weight:700}</style>';
-function infoExplore(sim){const m=M[sim.p.muscle];if(!m)return '';const hon=atLeast('honors'),ap=atLeast('ap');
+function infoExplore(sim){const m=M[sim.p.muscle];if(!m)return '';if(sim.st&&sim.st.hideQ)return '<p style="margin:0">Answer the question to see this muscle’s name and details.</p>';const hon=atLeast('honors'),ap=atLeast('ap');
   return TS+`<h3 class="p-t" style="margin:0 0 6px">${m.n}</h3><div>${row('Action',m.act)}${row('Origin',m.o)}${row('Insertion',m.i)}${row('Exercise',m.ex)}${row('Name',m.word)}${hon?row('Works against',m.ant):''}${ap?row('Landmarks',m.lm):''}${ap?row('Nerve',m.nv):''}</div>`+
   (m.deep===true?'<p style="margin:8px 0 0">The Rhomboids lie under the Trapezius. You cannot see them on a person without lifting that layer, so the chart lifts it for you.</p>':'');}
 function infoPractice(sim){const s=sim.st,p=sim.p,m=M[s.qid];if(!m)return '';const score=`<p style="margin:0 0 6px;color:var(--muted)">Right on the first try: <b>${s.right}</b> of ${s.done}. No timer. Muscles you miss come back.</p>`;
@@ -419,17 +420,17 @@ const MUSCLES={
     const nx=el.querySelector('[data-mm=next]');if(nx)nx.onclick=()=>newQ(sim);
     const ck=el.querySelector('[data-mm=check]'),inp=el.querySelector('#mm-type');if(ck&&inp){ck.onclick=()=>gradeTyped(sim,inp.value);inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();gradeTyped(sim,inp.value);}};}},
   narrate(sim){const a=sim.p.act,s=sim.st;
-    if(a==='practice'){if(!s.qid)return 'Press a practice mode to start.';return sim.p.pmode==='find'?'Find <b>'+M[s.qid].n+'</b> on the figure. Use the shape and the fiber direction as clues as well as the location.':'Name the marked muscle using its <b>full anatomical name</b>. Your quiz wants Latissimus Dorsi, not “lats.” Check both left and right copies if it helps.';}
+    if(a==='practice'){if(!s.qid)return 'Press a practice mode to start.';return sim.p.pmode==='find'?'Find <b>'+M[s.qid].n+'</b> on the figure. Use the shape and the fiber direction as clues as well as the location.':'Name the marked muscle using its <b>full anatomical name</b>. Your quiz wants Latissimus Dorsi, not “lats.”';}
     if(a==='decoder'){const r=rootOf(sim);return '<b>'+r.w+'</b> means '+r.m+'. Muscle names usually describe something you can see: fiber direction, size, length, heads, shape or location.';}
     if(a==='types'){const t=TYPES.find(x=>x.id===sim.p.mtype)||TYPES[0];return '<b>'+t.n+'</b> is '+t.c.toLowerCase()+'. '+t.f+' Only skeletal muscle is under your conscious control.';}
     if(a==='pull'){const d=Math.round(sim.p.elbow);return 'The elbow is flexed '+d+'°. <b>Muscles can only pull</b>, so each joint needs a pair: the flexor (Biceps Brachii) closes the joint, and the extensor (Triceps Brachii) opens it. Each pulls its insertion toward its origin.';}
-    const m=M[sim.p.muscle];if(!m)return '';const vis=onView(sim.p.muscle,'front',false),bk=onView(sim.p.muscle,'back',false);
+    const m=M[sim.p.muscle];if(!m)return '';if(s.hideQ)return 'Use the location and the fiber direction of the highlighted muscle to answer the question.';const vis=onView(sim.p.muscle,'front',false),bk=onView(sim.p.muscle,'back',false);
     if(m.deep===true)return '<b>'+m.n+'</b> are deep: they lie under the Trapezius and pull the shoulder blades together. The chart has lifted the surface layer so you can see them.';
     return '<b>'+m.n+'</b>: '+m.act+' You can see it from the '+(vis&&bk?'front and the back':vis?'front':'back')+'. The lines on the muscle show which way its fibers run, which is the direction it pulls.';},
-  onChallenge(sim,ch){if(ch&&ch.show){BioLab.setValues(sim,{act:'explore',muscle:ch.show});}},
+  onChallenge(sim,ch,phase){if(!ch||!ch.show)return;if(phase==='ask'){BioLab.setValues(sim,{act:'explore',muscle:ch.show,view:'both',zoom:'whole'});if(sim.st)sim.st.hideQ=!!ch.hide;}else if(sim.st)sim.st.hideQ=false;sim.infoDirty=true;},
   challenges:[
-    {lvl:'bio',instant:true,show:'pec',q:'The highlighted muscle fans across the chest. Which name does your quiz want?',choices:['Pectoralis Major','Pecs','Serratus Anterior','Deltoid'],correct:0,explain:{bio:'Pectoralis means of the chest, and Major means larger. “Pecs” is gym talk, and it will not earn the point on a labeling quiz.'}},
-    {lvl:'bio',instant:true,show:'lats',q:'A pull-up mostly trains the broad muscle highlighted on the back. What is it, and what does it do?',choices:['Latissimus Dorsi: pulls the arm down and back','Trapezius: shrugs the shoulders','Teres Major: straightens the elbow','Erector Spinae: bends the spine forward'],correct:0,explain:{bio:'Latissimus means widest and dorsi means of the back. It runs from the low back to the front of the upper humerus, so it pulls the arm down and back.'}},
+    {lvl:'bio',instant:true,show:'pec',hide:true,q:'A labeling quiz points to the large muscle that fans across the chest. Which name does your quiz want?',choices:['Pectoralis Major','Pecs','Serratus Anterior','Deltoid'],correct:0,explain:{bio:'Pectoralis means of the chest, and Major means larger. “Pecs” is gym talk, and it will not earn the point on a labeling quiz.'}},
+    {lvl:'bio',instant:true,show:'lats',hide:true,q:'A pull-up mostly trains the broadest muscle of the back. What is it, and what does it do?',choices:['Latissimus Dorsi: pulls the arm down and back','Trapezius: shrugs the shoulders','Teres Major: straightens the elbow','Erector Spinae: bends the spine forward'],correct:0,explain:{bio:'Latissimus means widest and dorsi means of the back. It runs from the low back to the front of the upper humerus, so it pulls the arm down and back.'}},
     {lvl:'bio',instant:true,show:'rectusabd',q:'Rectus means straight. Which way do the fibers of the Rectus Abdominis run?',choices:['Straight up and down','Straight across','On a slant, like hands in your pockets','In a circle'],correct:0,explain:{bio:'The fiber lines on the figure run straight up and down, from the pubic bone to the ribs. That is what Rectus tells you.'}},
     {lvl:'honors',instant:true,show:'rectusfem',q:'Three of the four quadriceps cross only the knee. Which one also crosses the hip?',choices:['Rectus Femoris','Vastus Lateralis','Vastus Medialis','Sartorius'],correct:0,explain:{honors:'Rectus Femoris starts on the hip bone, so it flexes the hip as well as extending the knee. The vastus muscles start on the femur. Sartorius crosses both joints, but it is not a quadriceps muscle.'}},
     {lvl:'honors',instant:true,show:'semiten',q:'Which pair of hamstrings is on the medial (inner) side of the thigh?',choices:['Semitendinosus and Semimembranosus','Biceps Femoris and Semitendinosus','Biceps Femoris and Vastus Lateralis','Semimembranosus and Biceps Femoris'],correct:0,explain:{honors:'Both “semi” muscles run to the inner tibia. Biceps Femoris is the outer hamstring and ends on the head of the fibula. Tip: S for semi, S for same side as the other leg.'}},

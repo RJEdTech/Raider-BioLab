@@ -78,13 +78,13 @@ function drawBench(sim,ctx,vdt,k,t){const b=bench(sim),u=b.cur,key=u?u.key:trial
   let say=null;if(running){if(late>10)say='I’m done.';else if(late>0&&part==='A')say='I can’t keep this pace.';else if(u.t>=P.burn)say='It’s starting to burn.';}
   if(say){ctx.font='600 '+13.5*k+'px '+FONT;const w=ctx.measureText(say).width+22,x=key[1]==='1'?60:210,y=key[1]==='1'?150:130,h=20*k+10;rr(ctx,x,y,w,h,10);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['s1'];ctx.lineWidth=1.6;ctx.stroke();txt(ctx,say,x+11,y+h/2,{s:13.5*k,w:600,b:'middle'});}
   /* stopwatch */
-  const X=470,Y=100,W=314,H=186;rr(ctx,X,Y,W,H,20);ctx.fillStyle='#2b2d33';ctx.fill();ctx.strokeStyle='#121316';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#2b2d33';rr(ctx,X+W/2-20,Y-16,40,20,5);ctx.fill();
-  rr(ctx,X+18,Y+18,W-36,92,8);ctx.fillStyle='#c7d5b6';ctx.fill();const tNow=running?u.t:(done?done.total:0),lap=running?u.lap:(done?done.lap:null);
-  txt(ctx,fmtW(tNow),X+W/2,Y+66,{s:52,w:700,c:'#1b2615',a:'center',b:'middle'});txt(ctx,'min : s',X+W-28,Y+98,{s:12,c:'#39452f',a:'right'});
-  txt(ctx,'Burn mark',X+22,Y+132,{s:13.5,w:600,c:'#e9eaec'});txt(ctx,lap===null||lap===undefined?'none':fmtW(lap),X+W-22,Y+132,{s:20,w:700,c:'#ffd27a',a:'right'});
-  txt(ctx,'Reps',X+22,Y+162,{s:13.5,w:600,c:'#e9eaec'});txt(ctx,String(running?u.reps:(done?done.reps:0)),X+W-22,Y+162,{s:20,w:700,c:'#fff',a:'right'});
+  const X=470,Y=96,W=314,rowH=25*k,H=112+2*rowH+8;rr(ctx,X,Y,W,H,20);ctx.fillStyle='#2b2d33';ctx.fill();ctx.strokeStyle='#121316';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#2b2d33';rr(ctx,X+W/2-20,Y-16,40,20,5);ctx.fill();
+  rr(ctx,X+18,Y+16,W-36,88,8);ctx.fillStyle='#c7d5b6';ctx.fill();const tNow=running?u.t:(done?done.total:0),lap=running?u.lap:(done?done.lap:null);
+  txt(ctx,fmtW(tNow),X+W/2,Y+54,{s:52,w:700,c:'#1b2615',a:'center',b:'middle'});
+  const r1=Y+112+rowH-6,r2=r1+rowH;txt(ctx,'Burn mark',X+22,r1,{s:13*k,w:600,c:'#e9eaec'});txt(ctx,lap===null||lap===undefined?'none':fmtW(lap),X+W-22,r1,{s:16*k,w:700,c:'#ffd27a',a:'right'});
+  txt(ctx,'Reps',X+22,r2,{s:13*k,w:600,c:'#e9eaec'});txt(ctx,String(running?u.reps:(done?done.reps:0)),X+W-22,r2,{s:16*k,w:700,c:'#fff',a:'right'});
   /* pace strip */
-  const px=470,py=300,pw=314,ph2=64;txt(ctx,'Pace',px,py-3,{s:13*k,w:600});if(running){txt(ctx,Math.round(u.r*60)+' reps per min',px+pw,py-3,{s:13*k,c:PAL['cv-soft'],a:'right'});}
+  const px=470,py=Y+H+8+13*k,pw=314,ph2=Math.max(36,438-py-8);txt(ctx,'Pace',px,py-3,{s:13*k,w:600});if(running){txt(ctx,Math.round(u.r*60)+' reps per min',px+pw,py-3,{s:13*k,c:PAL['cv-soft'],a:'right'});}
   rr(ctx,px,py+3,pw,ph2,6);ctx.fillStyle=PAL['card2'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();const sp=(sim.vis&&sim.vis.sp)||[];if(sp.length>1&&running){ctx.strokeStyle=PAL['s2'];ctx.lineWidth=2.4;ctx.beginPath();sp.forEach((q,i)=>{const x=px+4+(pw-8)*i/Math.max(60,sp.length-1),y=py+3+ph2-6-(ph2-12)*q;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();}
   txt(ctx,running?'Stopwatch running':done?'Trial finished. Read your times and record them.':'Press Start to begin this trial.',16,500-20,{s:13*k,w:600,c:PAL['cv-ink']});}
 function benchNarrate(sim){const b=bench(sim),u=b.cur;if(u){const P=trialParams(sim,u.key);return u.key[0]==='A'?'Your partner works at a steady pace that could last. <b>Mark the burn</b> as soon as your partner reports it. <b>Stop</b> when your partner cannot keep the pace. The bench runs 5 times faster than real time, but the stopwatch reads true seconds.':'Your partner works as fast as possible. <b>Mark the burn</b> when your partner reports it. Watch the pace strip and <b>Stop</b> as soon as the pace starts to slow.';}
@@ -170,27 +170,29 @@ function fiberDisc(ctx,x,y,R,type){const c=type==='slow';ctx.fillStyle=c?'#8e243
   const cap=c?7:3;ctx.fillStyle='#c22f3f';ctx.strokeStyle='#5a0e18';for(let i=0;i<cap;i++){const a=i/cap*6.3+.4;ctx.beginPath();ctx.arc(x+Math.cos(a)*(R+7),y+Math.sin(a)*(R+7),4,0,6.3);ctx.fill();ctx.stroke();}}
 function bar(ctx,x,y,w,h,frac,col){rr(ctx,x,y,w,h,5);ctx.fillStyle=PAL['card2'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();const q=clamp(frac,0,1);if(q>.002){rr(ctx,x,y,Math.max(4,w*q),h,5);ctx.fillStyle=col;ctx.fill();}}
 function drawEnergy(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,hon=atLeast('honors'),ap=atLeast('ap'),F=p.fiber;ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,500);
+  const sm=k>1.35;
   /* left: fibers */
   const lx=16;txt(ctx,F==='mixed'?'Mixed muscle':FT[F].n,lx,12+15*k,{s:15*k,w:700});
-  if(F==='mixed'){fiberDisc(ctx,lx+62,130,46,'slow');fiberDisc(ctx,lx+192,130,46,'fast');txt(ctx,'Slow',lx+62,198,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,'Fast',lx+192,198,{s:12*k,c:PAL['cv-soft'],a:'center'});}
-  else{fiberDisc(ctx,lx+120,130,58,F);}
+  if(F==='mixed'){const dy=sm?96:126,d2=sm?230:192;fiberDisc(ctx,lx+62,dy,44,'slow');fiberDisc(ctx,lx+d2,dy,44,'fast');[[62,'Slow'],[d2,'Fast']].forEach(q=>txt(ctx,q[1],lx+q[0],dy+52+12*k,{s:12*k,c:PAL['cv-soft'],a:'center'}));}
+  else{fiberDisc(ctx,lx+(sm?110:120),sm?104:130,sm?50:58,F);}
   const desc=F==='slow'?['Red: myoglobin','Many mitochondria','Many capillaries']:F==='fast'?['White: little myoglobin','Few mitochondria','Few capillaries']:['Slow fibers work first.','Fast fibers join at','higher effort.'];
-  desc.forEach((l,i)=>txt(ctx,l,lx,222+i*17*k+(k-1)*10,{s:12.5*k,c:PAL['cv-ink']}));
+  if(!sm)desc.forEach((l,i)=>txt(ctx,l,lx,222+i*17*k+(k-1)*10,{s:12.5*k,c:PAL['cv-ink']}));
   /* middle: the arm doing the work */
-  const mx=345,my=140,force=s.eF,vm=(s.vPh=(s.vPh||0)+vdt*(1+force*2.2));const swing=(RM?force*.5:force*(.5-.5*Math.cos(vm*2.2)));const ang=-.95+swing*2.1,ex=mx-40,ey=my+36,hx=ex+Math.cos(ang)*96,hy=ey-Math.sin(ang)*96;
-  ctx.lineCap='round';ctx.strokeStyle='#b4534a';ctx.lineWidth=20;ctx.beginPath();ctx.moveTo(ex-2,ey-96);ctx.lineTo(ex,ey);ctx.stroke();ctx.lineWidth=15;ctx.strokeStyle='#ad4f47';ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(hx,hy);ctx.stroke();ctx.lineCap='butt';
-  ctx.fillStyle=PAL['cv-soft'];rr(ctx,hx-20,hy-4,40,8,3);ctx.fill();rr(ctx,hx-24,hy-13,9,26,3);ctx.fill();rr(ctx,hx+15,hy-13,9,26,3);ctx.fill();
-  txt(ctx,'Force',mx-90,226,{s:13*k,w:600});txt(ctx,Math.round(s.eF*100)+'%',mx+90,226,{s:15*k,w:700,a:'right'});
-  bar(ctx,mx-90,232,180,18,s.eF,PAL['s1']);if(s.eT>0){const tx=mx-90+180*s.eT;ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx,228);ctx.lineTo(tx,254);ctx.stroke();}
-  txt(ctx,'Line marks the force you are asking for',mx-90,256+13*k,{s:(k>1.3?0:12)*k||.01,c:PAL['cv-soft']});
+  const mx=sm?240:345,my=140,force=s.eF,vm=(s.vPh=(s.vPh||0)+vdt*(1+force*2.2));
+  if(!sm){const swing=(RM?force*.5:force*(.5-.5*Math.cos(vm*2.2)));const ang=-.95+swing*2.1,ex=mx-40,ey=my+36,hx=ex+Math.cos(ang)*96,hy=ey-Math.sin(ang)*96;
+    ctx.lineCap='round';ctx.strokeStyle='#b4534a';ctx.lineWidth=20;ctx.beginPath();ctx.moveTo(ex-2,ey-96);ctx.lineTo(ex,ey);ctx.stroke();ctx.lineWidth=15;ctx.strokeStyle='#ad4f47';ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(hx,hy);ctx.stroke();ctx.lineCap='butt';
+    ctx.fillStyle=PAL['cv-soft'];rr(ctx,hx-20,hy-4,40,8,3);ctx.fill();rr(ctx,hx-24,hy-13,9,26,3);ctx.fill();rr(ctx,hx+15,hy-13,9,26,3);ctx.fill();}
+  const gx=sm?16:mx-90,gw=sm?430:180,gy=sm?190:226;txt(ctx,'Force',gx,gy,{s:13*k,w:600});txt(ctx,Math.round(s.eF*100)+'%',gx+gw,gy,{s:15*k,w:700,a:'right'});
+  bar(ctx,gx,gy+6,gw,18,s.eF,PAL['s1']);if(s.eT>0){const tx=gx+gw*s.eT;ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx,gy+2);ctx.lineTo(tx,gy+28);ctx.stroke();}
+  if(!sm)txt(ctx,'Line marks the force you are asking for',gx,gy+30+13*k,{s:12*k,c:PAL['cv-soft']});
   /* right: stores */
-  const rx=478,rw=306;let ry=14;const rows=[['ATP in the muscle',s.eATP/ATP0,PAL['cv-atp'],s.eATP.toFixed(1)+' mmol/kg']];if(hon)rows.push(['Creatine phosphate',s.ePCr/PCR0,PAL['s3'],s.ePCr.toFixed(0)+' mmol/kg']);rows.push(['Lactic acid',s.eLac/40,s.eLac>=BURN?PAL['s1']:PAL['s4'],s.eLac.toFixed(1)+' mmol/kg']);if(ap)rows.push(['Stored glycogen',s.eG/G0,PAL['s5'],s.eG.toFixed(0)+' mmol/kg']);
-  rows.forEach(r=>{txt(ctx,r[0],rx,ry+13*k,{s:13*k,w:600});txt(ctx,r[3],rx+rw,ry+13*k,{s:12*k,c:PAL['cv-soft'],a:'right'});bar(ctx,rx,ry+17*k,rw,14,r[1],r[2]);if(r[0]==='Lactic acid'){const bx=rx+rw*BURN/40;ctx.strokeStyle=PAL['cv-ink'];ctx.setLineDash([3,3]);ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(bx,ry+15*k);ctx.lineTo(bx,ry+19*k+14);ctx.stroke();ctx.setLineDash([]);}ry+=34+17*k;});
+  const rx=478,rw=306,un=sm?'':' mmol/kg';let ry=sm?4:14;const rows=[['ATP',s.eATP/ATP0,PAL['cv-atp'],s.eATP.toFixed(1)+un]];if(hon)rows.push(['Creatine phosphate',s.ePCr/PCR0,PAL['s3'],s.ePCr.toFixed(0)+un]);rows.push(['Lactic acid',s.eLac/40,s.eLac>=BURN?PAL['s1']:PAL['s4'],s.eLac.toFixed(1)+un]);if(ap)rows.push(['Glycogen',s.eG/G0,PAL['s5'],s.eG.toFixed(0)+un]);
+  rows.forEach(r=>{txt(ctx,r[0],rx,ry+13*k,{s:13*k,w:600});txt(ctx,r[3],rx+rw,ry+13*k,{s:12*k,c:PAL['cv-soft'],a:'right'});bar(ctx,rx,ry+17*k,rw,14,r[1],r[2]);if(r[0]==='Lactic acid'){const bx=rx+rw*BURN/40;ctx.strokeStyle=PAL['cv-ink'];ctx.setLineDash([3,3]);ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(bx,ry+15*k);ctx.lineTo(bx,ry+19*k+14);ctx.stroke();ctx.setLineDash([]);}ry+=(sm?26:34)+17*k;});
   /* status */
   const burn=s.eLac>=BURN,fatigued=s.eT>0&&s.eF<.9*s.eT-1e-4;let sx=rx,sy=Math.max(ry+6,0);const pp=(lab,col)=>{ctx.font='700 '+13*k+'px '+FONT;const w=ctx.measureText(lab).width+18;rr(ctx,sx,sy,w,20*k+4,8);ctx.fillStyle=col;ctx.fill();txt(ctx,lab,sx+9,sy+(20*k+4)/2,{s:13*k,w:700,c:'#fff',b:'middle'});sx+=w+8;};
   if(burn)pp('The burn','#b03a2e');if(fatigued)pp('Fatigue','#6a3d9a');if(!p.o2)pp('No oxygen','#2c5f8a');
   /* bottom: the two pathways */
-  const by=Math.max(306,sy+24*k+14),bh=(496-by-8)/2,tot=Math.max(.2,s.eAer+s.eAn+s.ePc),path=(y,t1,t2,rate,col)=>{rr(ctx,8,y,784,bh,8);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();txt(ctx,t1,20,y+4+13*k,{s:13*k,w:700});txt(ctx,t2,20,y+6+29*k,{s:12.5*k});const bw=320*(rate/5.5);rr(ctx,20,y+bh-16,Math.max(2,bw),10,3);ctx.fillStyle=col;ctx.fill();txt(ctx,rate.toFixed(1)+' ATP/s',k>1.4?772:360+0,y+(k>1.4?4+13*k:bh-7),{s:12*k,c:PAL['cv-soft'],a:k>1.4?'right':'left'});};
+  const by=Math.max(306,sy+24*k+14),bh=(496-by-8)/2,tot=Math.max(.2,s.eAer+s.eAn+s.ePc),path=(y,t1,t2,rate,col)=>{rr(ctx,8,y,784,bh,8);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();txt(ctx,t1,20,y+4+13*k,{s:13*k,w:700});txt(ctx,t2,20,y+6+29*k,{s:12.5*k});if(!sm){const bw=320*(rate/5.5);rr(ctx,20,y+bh-16,Math.max(2,bw),10,3);ctx.fillStyle=col;ctx.fill();}txt(ctx,rate.toFixed(1)+' ATP/s',sm?780:360,y+(sm?4+13*k:bh-7),{s:12*k,c:PAL['cv-soft'],a:sm?'right':'left'});};
   path(by,'Aerobic (needs oxygen)','glucose + oxygen → 38 ATP + water + CO₂',s.eAer,PAL['s2']);path(by+bh+8,'Anaerobic (no oxygen)','glucose → 2 ATP + lactic acid',s.eAn+(hon?0:s.ePc),PAL['s4']);}
 
 function drawAll(sim,ctx,vdt,k,t){sim.vis=sim.vis||{};const kd=stageKind(sim);if(kd==='bench')return drawBench(sim,ctx,vdt,k,t);if(kd==='energy')return drawEnergy(sim,ctx,vdt,k,t);drawSarcScene(sim,ctx,vdt,k,t);}
