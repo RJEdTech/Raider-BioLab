@@ -290,7 +290,7 @@ function thrCheck(ext){return (sim,rv,v)=>{const S=A_SITES.find(q=>q.n===rv);if(
   if(!at.some(e=>e.a==='two'))return 'Your log shows one point at '+p.n+' mm. The threshold is the first spacing that felt like two.';
   if(!ext&&log.some(e=>e.g<p.n&&e.a==='two'))return 'Check your log: a smaller spacing was already reported as two points.';
   return null;};}
-function locCheck(sim,rv,v){const S=B_SITES[['Palm','Hand','Arm A','Arm P','Sole','Calf'].indexOf(rv)];if(!S)return null;const L=sim.vlab.bench.loc[S.id]||[];if(!L.length)return 'Run this site on the bench first.';if(L.some(d=>Math.abs(d-v)<=1.5))return null;return 'That does not match the ruler. Read from the center of the blue dot to the center of the red dot.';}
+function locCheck(sim,rv,v){const S=B_SITES.find(q=>q.n===rv);if(!S)return null;const L=sim.vlab.bench.loc[S.id]||[];if(!L.length)return 'Run this site on the bench first.';if(L.some(d=>Math.abs(d-v)<=1.5))return null;return 'That does not match the ruler. Read from the center of the blue dot to the center of the red dot.';}
 function timeCheck(site,ph){return (sim,rv,v)=>{const L=sim.vlab.bench.coin[site][ph];if(!L.length)return 'Run this on the bench first.';return L.some(d=>Math.abs(d-v)<=.3)?null:'That does not match a stopwatch reading from this part. Look at the stopwatch again.';};}
 function coinChk(ph){return (sim,rv,v)=>{const site=rv==='Back of hand'?'hand':'arm';return timeCheck(site,ph)(sim,rv,v);};}
 function ribChk(sim,rv,v){const V=sim.vlab,b=V.bench,m=/^Trial (\d)$/.exec(rv);if(m){const i=+m[1]-1;if(b.rib[i]===undefined)return 'Run trial '+m[1]+' on the bench first.';return Math.abs(b.rib[i]-v)<=.15?null:'That does not match the stopwatch for this trial.';}
@@ -323,15 +323,14 @@ const LAB_TS={id:'touch-sense',title:'Physiology Lab: General Cutaneous Sensatio
     text:'<p>Press <b>Bend the hairs with the ribbon</b>. Hold the ribbon still. The stopwatch runs until your partner stops feeling it. Do 3 trials, record them in Table 2B, and work out the average.</p>',
     done:sim=>filledA(sim,'t2b','dur',4)<0,doneHint:'Fill in all three trials and the average in Table 2B.'},
    {title:'Compare your sites',controls:['tView'],setup(sim){BioLab.setValues(sim,{tView:'compare'});},
-    text:'<p>The bench now plots your Tables 1A and 1B side by side. An arrow on a bar means the card ran out, so the true value is higher than the bar. Look for the sites that are best and worst at each job.</p>'},
+    text:'<p>The bench now plots your Tables 1A and 1B, one above the other. An arrow on a bar means the card ran out, so the true value is higher than the bar. Look for the sites that are best and worst at each job.</p>'},
    {title:'Questions',controls:['tView'],text:'<p>Use your data to answer the questions below the bench, then save your report and turn it in.</p>'}],
   tables:[
    {id:'t1a',title:'Table 1A: Two-point discrimination',cols:[{id:'site',label:'Body site',rows:A_SITES.map(s=>s.n)},{id:'thr',label:'Two-point threshold on the card (mm, or 20+)',input:'text',check:thrCheck(false)},{id:'ext',label:'Extension card (mm, or 50+), optional',input:'text',check:thrCheck(true)}]},
-   {id:'t1b',title:'Table 1B: Tactile localization',cols:[{id:'site',label:'Body site',rows:['Palm','Hand','Arm A','Arm P','Sole','Calf'],rowLabels:B_SITES.map(s=>s.n)},{id:'dist',label:'Distance from the mark (mm)',input:'number',dp:0,check:locCheck}]},
+   {id:'t1b',title:'Table 1B: Tactile localization',cols:[{id:'site',label:'Body site',rows:B_SITES.map(s=>s.n)},{id:'dist',label:'Distance from the mark (mm)',input:'number',dp:0,check:locCheck}]},
    {id:'t2a',title:'Table 2A: Touch adaptation',cols:[{id:'site',label:'Body site',rows:['Back of hand','Forearm']},{id:'fade',label:'One coin: time until the feeling fades (s)',input:'number',dp:1,check:coinChk('one')},{id:'stack',label:'Two coins added: time the feeling lasts (s)',input:'number',dp:1,check:coinChk('stack')}]},
    {id:'t2b',title:'Table 2B: Hair receptors (forearm)',cols:[{id:'trial',label:'Trial',rows:['Trial 1','Trial 2','Trial 3','Average']},{id:'dur',label:'Time the feeling lasts (s)',input:'number',dp:1,check:ribChk}]}],
   observations:[{id:'limit',label:'Which sites hit the limit of your 20 mm card? What can you honestly claim about those sites from the card alone?'}],
-  graph:{type:'bar',title:'Distance from the mark by site',xl:'Body site (Hand = back of hand, Arm A and P = forearm anterior and posterior)',yl:'Distance (mm)',series:[{table:'t1b',x:'site',y:'dist',label:'Distance from the mark'}]},
   questions:[
    {id:'q1',n:'1',q:'<p>In your own words, define sensation. Then list the four things that must all be in place for a sensation to happen.</p>'},
    {id:'q2',n:'2',q:'<p>Which site had the smallest two-point threshold? What does that tell you about how many touch receptors are packed into that skin?</p>'},

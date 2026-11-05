@@ -131,7 +131,7 @@ function band(pts,w){const {o,W}=sample(pts,w),L=[],R=[];for(let i=0;i<o.length;
 /* outlines */
 const SKULL_F=sym([[0,3],[18,4],[32,11],[41,25],[44,40],[43,52],[41,58],[44,62],[41,70],[33,72],[29,73],[24,79],[18,85],[9,87],[0,87]]);
 const SKULL_B=sym([[0,3],[20,4],[34,12],[43,27],[46,42],[44,58],[38,70],[30,77],[20,81],[9,82],[0,80]]);
-const JAW=sym([[0,87],[12,87],[22,83],[28,71],[35,62],[40,68],[39,82],[33,93],[22,102],[10,106],[0,107]]);
+const JAW=sym([[0,87],[12,87],[20,84],[26,74],[33,62],[38,66],[38,78],[35,88],[27,96],[17,103],[8,107],[0,107]]);
 const STERN=sym([[0,170],[16,170],[21,177],[15,190],[12,197],[14,204],[17,228],[17,255],[13,272],[7,279],[5,284],[3,292],[0,296]]);
 const SCAP=[[53,180],[68,184],[84,187],[92,178],[102,186],[104,198],[98,212],[90,230],[79,254],[72,264],[65,254],[52,222],[45,196]];
 const HUM=[[106,175],[118,175],[128,181],[132,195],[129,215],[133,240],[144,300],[149,322],[155,332],[166,341],[162,353],[150,358],[140,360],[129,356],[124,345],[131,333],[134,320],[130,300],[120,240],[113,216],[109,204],[99,198],[95,187],[99,179]];
@@ -198,7 +198,7 @@ function buildArt(){
   ulna(F);radius(F);humerus(F,'front');hand(F);
   ribsAnt(F);cart(F);F.bone('sternum',STERN);F.line('sternum',[[-13,197],[13,197]]);F.line('sternum',[[-9,277],[9,277]]);
   clav(F);
-  F.bone('mandible',JAW);for(let i=-4;i<=4;i++)F.fillOnly([[i*4.2-1.7,87],[i*4.2+1.7,87],[i*4-1+1.4+1,93],[i*4-1.4,93]],'tooth');F.lines('mandible',[[9,103],[18,97],[27,88]]);
+  F.bone('mandible',JAW);for(let i=-4;i<=4;i++)F.fillOnly([[i*4.2-1.7,87],[i*4.2+1.7,87],[i*4-1+1.4+1,93],[i*4-1.4,93]],'tooth');F.lines('mandible',[[7,103],[15,97],[22,89]]);
   F.bone('cranium',SKULL_F);F.holes([[7,40],[14,37],[24,38],[29,44],[27,52],[20,56],[11,55],[6,49]],'dark');F.hole([[0,53],[4,58],[7,67],[4,71],[0,69],[-4,71],[-7,67],[-4,58]],'dark');
   for(let i=-4;i<=4;i++)F.fillOnly([[i*4-1.7,79],[i*4+1.7,79],[i*4+1.4,87],[i*4-1.4,87]],'tooth');
   F.lines('cranium',[[5,37],[14,33],[26,34],[31,40]]);F.lines('cranium',[[41,60],[33,62],[27,59]]);F.lines('cranium',[[0,8],[12,10],[26,17],[37,29]]);F.lines('cranium',[[20,66],[15,74]]);F.line('cranium',[[0,38],[0,52]]);
@@ -219,9 +219,9 @@ function buildArt(){
 let ART=null;const art=()=>ART||(ART=buildArt());
 /* ========== Labels ========== */
 const LAB={front:[['cranium',-26,26,-1],['mandible',-27,96,-1],['cervical',-9,128,-1],['sternum',-7,232,-1],['ribs',-70,262,-1],['thoracic',-10,300,-1],['lumbar',-14,340,-1],['pelvis',-68,400,-1],['sacrum',-14,410,-1],['coccyx',-3,453,-1],['femur',-76,600,-1],['tibia',-47,820,-1],['tarsals',-46,958,-1],
-    ['clavicle',70,170,1],['scapula',93,215,1],['humerus',131,270,1],['ulna',150,420,1],['radius',177,440,1],['carpals',186,488,1],['metacarpals',186,512,1],['phalanges',195,556,1],['patella',60,704,1],['fibula',72,850,1],['metatarsals',62,977,1],['phalanges',73,995,1]],
+    ['clavicle',70,170,1],['scapula',93,215,1],['humerus',131,270,1],['ulna',150,420,1],['radius',177,440,1],['carpals',186,488,1],['metacarpals',186,512,1],['phalanges',200,551,1],['humerus',146,345,1,'z'],['femur',34,700,1,'z'],['femur',92,478,1,'z'],['patella',60,704,1],['fibula',72,850,1],['metatarsals',62,977,1],['phalanges',73,995,1]],
   back:[['cranium',-26,26,-1],['mandible',-32,90,-1],['cervical',-5,128,-1],['thoracic',-6,226,-1],['ribs',-82,285,-1],['lumbar',-14,340,-1],['pelvis',-68,400,-1],['sacrum',-14,410,-1],['coccyx',-3,453,-1],['femur',-76,600,-1],['tibia',-47,820,-1],['tarsals',-46,962,-1],
-    ['clavicle',24,167,1],['scapula',75,225,1],['humerus',131,270,1],['ulna',150,420,1],['radius',177,440,1],['carpals',186,488,1],['metacarpals',186,512,1],['phalanges',195,556,1],['fibula',72,850,1],['metatarsals',78,981,1],['phalanges',88,992,1]]};
+    ['clavicle',24,167,1],['scapula',75,225,1],['humerus',131,270,1],['ulna',150,420,1],['radius',177,440,1],['carpals',186,488,1],['metacarpals',186,512,1],['phalanges',200,551,1],['humerus',146,345,1,'z'],['femur',34,700,1,'z'],['femur',92,478,1,'z'],['fibula',72,850,1],['metatarsals',78,981,1],['phalanges',88,992,1]]};
 const ZOOM={whole:null,
   head:{x0:-70,x1:70,y0:-6,y1:158,l:'Skull and neck'},chest:{x0:-132,x1:132,y0:150,y1:345,l:'Chest and shoulders'},
   hip:{x0:-112,x1:112,y0:370,y1:520,l:'Hips'},hand:{x0:118,x1:228,y0:335,y1:580,l:'Forearm and hand'},leg:{x0:12,x1:112,y0:685,y1:1005,l:'Knee to foot'}};
@@ -398,7 +398,7 @@ function colorFn(sim){const t=sim.p.task,hi=PAL['s1'],ax=PAL['s2'],ap=PAL['s4'];
   if(t==='practice'){const r=sim.st.pr,cur=prTarget(sim);if(sim.p.answer==='find')return id=>(r.done&&id===cur)?PAL['cv-atp']:null;return id=>id===cur?hi:null;}
   const b=sim.p.bone;return id=>id===b?hi:null;}
 function drawLabels(ctx,sim,T,k,opts){const size=12.5*k,gap=size*1.34,Z=T.zoom,list=[];opts=opts||{};sim.vis.rects=sim.vis.rects||[];
-  LAB[T.view].forEach(l=>{if(opts.only&&!opts.only(l[0]))return;if(Z&&!inZoom(l,Z))return;const x=Z&&Z.x0>=0?Math.abs(l[1]):(Z&&Z.x0<0?l[1]:l[1]);list.push({id:l[0],ax:toX(T,x),ay:toY(T,l[2]),col:Z?1:l[3],x});});
+  LAB[T.view].forEach(l=>{if(opts.only&&!opts.only(l[0]))return;if(l[4]==='z'&&!Z)return;if(Z&&!inZoom(l,Z))return;const x=Z?Math.abs(l[1]):l[1];list.push({id:l[0],ax:toX(T,x),ay:toY(T,l[2]),col:Z?1:l[3],x});});
   const cols=Z?[1]:[-1,1],top=opts.top||Math.max(14,size),bot=opts.bot||788;
   cols.forEach(c=>{const items=column(list.filter(i=>i.col===c),gap,top,bot);const tx=c<0?222:(Z?578:578);
     items.forEach(it=>{const sel=opts.sel===it.id,name=BONES[it.id].n,col=opts.color?opts.color(it.id):(sel?PAL['rj-ink']||PAL['s1']:PAL['cv-ink']);
@@ -432,8 +432,8 @@ function drawPractice(ctx,sim,T,k){const r=sim.st.pr,t=prTarget(sim),size=13.5*k
   const find=sim.p.answer==='find',head=find?'Find the '+BONES[t].n:'Bone '+(r.i+1)+' of '+r.order.length;
   pill(ctx,head,Math.max(10,0)+ctx.measureText?(()=>{ctx.font='700 '+size+'px '+FONT;return ctx.measureText(head).width/2+22;})():120,28,PAL['cv-ink'],PAL['card'],size);
   if(find&&!r.done)return;
-  const L=LAB[T.view].filter(l=>l[0]===t&&(!T.zoom||inZoom(l,T.zoom)));if(!L.length){const m=wrap(ctx,'This bone is out of view. Choose another zoom.',220,13*k);m.forEach((s,i)=>txt(ctx,s,12,70+i*17*k,{s:13*k}));return;}
-  const l=L[0],c=T.zoom?1:l[3],x=T.zoom&&T.zoom.x0>=0?Math.abs(l[1]):l[1],ax=toX(T,x),ay=toY(T,l[2]),tx=c<0?150:650,ty=clamp(ay,70,770),R=13*Math.max(1,k*.85);
+  const L=LAB[T.view].filter(l=>l[0]===t&&(T.zoom?inZoom(l,T.zoom):l[4]!=='z'));if(!L.length){const m=wrap(ctx,'This bone is out of view. Choose another zoom.',220,13*k);m.forEach((s,i)=>txt(ctx,s,12,70+i*17*k,{s:13*k}));return;}
+  const l=L[0],c=T.zoom?1:l[3],x=T.zoom?Math.abs(l[1]):l[1],ax=toX(T,x),ay=toY(T,l[2]),tx=c<0?150:650,ty=clamp(ay,70,770),R=13*Math.max(1,k*.85);
   ctx.strokeStyle=PAL['s1'];ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(ax,ay);ctx.stroke();ctx.fillStyle=PAL['s1'];ctx.beginPath();ctx.arc(ax,ay,3.6,0,6.3);ctx.fill();ctx.beginPath();ctx.arc(tx,ty,R,0,6.3);ctx.fill();
   txt(ctx,String(r.i+1),tx,ty+.5,{s:R*1.15,w:700,c:'#fff',a:'center',b:'middle'});
   if(r.done)txt(ctx,BONES[t].n,tx,ty+R+13*k*.8,{s:13*k,w:700,c:PAL['cv-ink'],a:'center',b:'middle'});}

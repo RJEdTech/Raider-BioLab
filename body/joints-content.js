@@ -40,7 +40,7 @@ joints:{
     lab:{set:{view:'explore',joint:'knee'},look:'Tap Patella, Medial meniscus and LCL and read each card.'}},
   {id:'scaphoid',kind:'real',lvl:'bio',
     q:'A snowboarder falls on an outstretched hand. Pressing on the hollow at the base of the thumb hurts. An early x-ray looks normal. What should she be treated for until proven otherwise?',
-    choices:['A boxer’s fracture of the 5th metacarpal','A scaphoid fracture','An olecranon bursitis','A UCL sprain of the elbow'],correct:1,
+    choices:['A boxer’s fracture of the 5th metacarpal','A scaphoid fracture','Olecranon bursitis','A UCL sprain of the elbow'],correct:1,
     steps:['The hollow at the base of the thumb is the anatomical snuff box, and the scaphoid lies at its floor.','A fall on an outstretched hand (FOOSH) is the classic way to break it.','Early x-rays often miss it, and its blood supply is poor, so it gets immobilized and rechecked rather than ignored.'],
     lab:{set:{view:'explore',joint:'hand'},look:'Choose Scaphoid, then Anatomical snuff box, and see where they sit.'}},
   {id:'shoulder',kind:'test',lvl:'bio',

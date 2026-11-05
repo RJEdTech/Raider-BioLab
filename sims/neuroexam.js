@@ -214,7 +214,7 @@ function drawAthlete(sim,ctx,k,t){const s=sim.st,p=s.pose,f=s.flags;const cx=240
   ctx.beginPath();ctx.ellipse(hx-rx-1,hy+4,8,20,0,0,6.2832);ctx.moveTo(hx+rx+9,hy+4);ctx.ellipse(hx+rx+1,hy+4,8,20,0,0,6.2832);ctx.fillStyle=PAL['card2'];ctx.fill();ctx.stroke();
   ctx.beginPath();ctx.ellipse(hx,hy,rx,ry,0,0,6.2832);ctx.fill();ctx.stroke();
   // hair
-  ctx.fillStyle=PAL['cv-soft'];ctx.beginPath();ctx.ellipse(hx,hy-ry+24,rx-6,28,0,Math.PI,0);ctx.quadraticCurveTo(hx,hy-ry+40,hx-rx+6,hy-ry+24);ctx.closePath();ctx.fill();
+  ctx.save();ctx.beginPath();ctx.ellipse(hx,hy,rx,ry,0,0,6.2832);ctx.clip();ctx.fillStyle=PAL['cv-soft'];ctx.beginPath();ctx.ellipse(hx,hy-ry-6,rx+14,46,0,0,6.2832);ctx.fill();ctx.restore();
   const eyeY=hy-22,exR=hx+fx-41,exL=hx+fx+41;
   drawEye(ctx,exR,eyeY,p.gxR+p.turn*.2,p.gyR,p.pupR,p.lidR,p.glR);drawEye(ctx,exL,eyeY,p.gxL+p.turn*.2,p.gyL,p.pupL,p.lidL,p.glL);
   // brows
@@ -243,9 +243,9 @@ function drawAthlete(sim,ctx,k,t){const s=sim.st,p=s.pose,f=s.flags;const cx=240
   if(f.push){const d=sign(f.push);const x=hx+d*(rx+24),y=hy+40;hand(ctx,x,y,11);arrowLine(ctx,x+d*42,y,x+d*16,y,PAL['s4']);}
   if(p.cup>.05){const x=mx+30+(1-p.cup)*90,y=my+6+(1-p.cup)*60;ctx.fillStyle=PAL['s2'];ctx.globalAlpha=.75;rr(ctx,x,y-20,30,38,4);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.6;rr(ctx,x,y-20,30,38,4);ctx.stroke();}
   // side labels
-  pill(ctx,'Athlete’s right',cx-162,20+6*k,PAL['card'],PAL['cv-ink'],12*k);pill(ctx,'Athlete’s left',cx+165,20+6*k,PAL['card'],PAL['cv-ink'],12*k);
+  pill(ctx,'Athlete’s right',cx-162,20+6*k,PAL['card'],PAL['cv-ink'],12*k);pill(ctx,'Athlete’s left',cx+158,20+6*k,PAL['card'],PAL['cv-ink'],12*k);
   // pupil gauges for the deeper levels
-  if(atLeast('honors')&&p.lightOn!==undefined){const yy=62+20*k;txt(ctx,p.pupR.toFixed(1)+' mm',cx-162,yy,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,p.pupL.toFixed(1)+' mm',cx+165,yy,{s:12*k,c:PAL['cv-soft'],a:'center'});}
+  if(atLeast('honors')&&p.lightOn!==undefined){const yy=62+20*k;txt(ctx,p.pupR.toFixed(1)+' mm',cx-162,yy,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,p.pupL.toFixed(1)+' mm',cx+158,yy,{s:12*k,c:PAL['cv-soft'],a:'center'});}
 }
 function drawCNPanel(sim,ctx,k){const s=sim.st,r=s.run,X=488,W=300;ctx.fillStyle=PAL['cv-bg2'];rr(ctx,X-8,8,W+16,517,12);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
   const t=testBy(sim.p.test);let y=14+15*k;const show=!concealed(sim);
@@ -256,15 +256,15 @@ function drawCNPanel(sim,ctx,k){const s=sim.st,r=s.run,X=488,W=300;ctx.fillStyle
   if(!r){y=wrap(ctx,'Press Run this test. Watch the eyes, face and shoulders, and compare the two sides.',X,y,W,{s:12.5*k,c:PAL['cv-soft']});}
   else if(!r.ok){y=wrap(ctx,'“'+r.say+'”',X,y,W,{s:12.5*k,w:600});y+=4;y=wrap(ctx,'This supply does not fit this test. Think about what the test has to stimulate.',X,y,W,{s:12*k,c:PAL['cv-soft']});}
   else{const beat=r.beats[Math.min(r.i,r.beats.length-1)];const say=!r.done&&beat&&beat.say;
-    if(say){y=wrap(ctx,'“'+say+'”',X,y,W,{s:12.5*k,w:600});y+=4;}
+    if(say){y=wrap(ctx,say[0]==='('?say:'“'+say+'”',X,y,W,{s:12.5*k,w:600});y+=4;}
     if(r.done){const f=r.find;
       if(f.R){txt(ctx,'Athlete’s right',X,y,{s:12*k,w:700,c:PAL['s2']});y+=14*k;y=wrap(ctx,f.R,X,y,W,{s:12*k});y+=4;}
       if(f.L){txt(ctx,'Athlete’s left',X,y,{s:12*k,w:700,c:PAL['s2']});y+=14*k;y=wrap(ctx,f.L,X,y,W,{s:12*k});y+=4;}
       if(f.both){txt(ctx,'Both sides',X,y,{s:12*k,w:700,c:PAL['s2']});y+=14*k;y=wrap(ctx,f.both,X,y,W,{s:12*k});y+=4;}
-      if(sim.p.ath==='shown'&&!sim.vlab)wrap(ctx,'Abnormal finding',X,y+2,W,{s:12.5*k,w:700,c:PAL['s1']});
-      else if(sim.p.ath==='healthy'&&!sim.vlab)wrap(ctx,'Normal finding',X,y+2,W,{s:12.5*k,w:700,c:PAL['s3']});
-    }else if(!say)wrap(ctx,'Watching the athlete…',X,y,W,{s:12*k,c:PAL['cv-soft']});}
-  if(s.fb&&sim.p.view==='cn'){const lines=[];ctx.font='600 '+12*k+'px '+FONT;const yb=Math.max(y+4,525-16-(s.fb.t.length/(W/(6.3*k))+1)*15*k);wrap(ctx,s.fb.t,X,yb+12*k,W,{s:12*k,w:600,c:PAL[s.fb.ok?'s3':'s1']});}}
+      if(sim.p.ath==='shown'&&!sim.vlab)y=wrap(ctx,'Abnormal finding',X,y+2,W,{s:12.5*k,w:700,c:PAL['s1']});
+      else if(sim.p.ath==='healthy'&&!sim.vlab)y=wrap(ctx,'Normal finding',X,y+2,W,{s:12.5*k,w:700,c:PAL['s3']});
+    }else if(!say)y=wrap(ctx,'Watching the athlete…',X,y,W,{s:12*k,c:PAL['cv-soft']});}
+  if(s.fb&&sim.p.view==='cn')wrap(ctx,s.fb.t,X,y+8+12*k,W,{s:12*k,w:600,c:PAL[s.fb.ok?'s3':'s1']});}
 
 /* ---------- drawing: myotomes and dermatomes ---------- */
 const FIG={cx:126,top:14,h:505};
@@ -283,7 +283,7 @@ function drawFigure(sim,ctx,k){const o=FIG,rid=sim.p.mtest,r=rtBy(rid),all=!!sim
   else{ctx.font=(12*k)+'px '+FONT;}
   pill(ctx,'R',o.cx-.17*o.h,o.top+.13*o.h,PAL['card'],PAL['cv-ink'],12*k);pill(ctx,'L',o.cx+.17*o.h,o.top+.13*o.h,PAL['card'],PAL['cv-ink'],12*k);}
 function drawChain(ctx,x,y,w,h,rid,ph,give,k,side){const pc=PIC[rid];const mirror=side==='L';ctx.save();ctx.translate(x,y);if(mirror){ctx.translate(w,0);ctx.scale(-1,1);}
-  const sc=Math.min(w/230,h/176),bx=pc.base[0]*w,by=pc.base[1]*h;
+  const sc=Math.min(w/230,h/190),bx=pc.base[0]*w,by=pc.base[1]*h;
   // pose blending. ph: [from pose, to pose, blend]
   const pa=pc.poses[ph[0]],pb=pc.poses[ph[1]],ang=pa.map((a,i)=>lerp(a,pb[i],ph[2]));
   const start=pc.poses[0];if(give>0)ang.forEach((a,i)=>{ang[i]=lerp(a,start[i],give);});
@@ -298,7 +298,7 @@ function drawChain(ctx,x,y,w,h,rid,ph,give,k,side){const pc=PIC[rid];const mirro
   ctx.lineCap='butt';ctx.restore();}
 function zoomO(x,y,w,h,id,sgn){const H=rtZoom[id]||1100,c=REGC[id];return {cx:x+w/2-sgn*c[0]*H,top:y+h/2-c[1]*H,h:H};}
 const rtZoom={C4:1300,C5:900,L1L2:800,L3:1200};
-function drawHandArt(ctx,x,y,w,h,rid,side){const sc=Math.min(w,h)/150,cx=x+w/2,cy=y+h/2+16*sc,lat=side==='R'?-1:1; /* thumb on the lateral side in anatomical position */
+function drawHandArt(ctx,x,y,w,h,rid,side){const sc=Math.min(w,h)/205,cx=x+w/2,cy=y+h/2+42*sc,lat=side==='R'?-1:1; /* thumb on the lateral side in anatomical position */
   ctx.save();ctx.translate(cx,cy);ctx.scale(sc,sc);ctx.lineCap='round';
   const fingers=[[lat*-28,-30,58],[lat*-10,-34,70],[lat*8,-34,76],[lat*25,-30,66]]; /* little, ring, middle, index from medial to lateral */
   ctx.fillStyle=PAL['card2'];ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;rr(ctx,-37,-34,74,64,12);ctx.fill();ctx.stroke();
@@ -344,7 +344,7 @@ function drawMyo(sim,ctx,k){const s=sim.st,X=292,W=498,rid=sim.p.mtest,r=rtBy(ri
   ctx.fillStyle=PAL['cv-bg2'];rr(ctx,X-6,8,W+10,517,12);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
   let y=14+15*k;y=wrap(ctx,(hide?'':r.root+': ')+r.mo,X+6,y,W-14,{s:13.5*k,w:700});
   y=wrap(ctx,'Skin area: '+(r.skin||'none listed on your key'),X+6,y,W-14,{s:12*k,c:PAL['cv-soft']});y+=4;
-  const h=Math.min(250,516-y-(s.fb?44*k:36*k)),cw=(W-20)/2;
+  const h=Math.min(330,516-y-(s.fb?64*k:40*k)),cw=(W-20)/2;
   drawMyoCell(sim,ctx,X+4,y,cw,h,rid,'R',k);drawMyoCell(sim,ctx,X+10+cw,y,cw,h,rid,'L',k);y+=h+6+13*k;
   const m=s.m;let line='';
   if(s.fb){wrap(ctx,s.fb.t,X+6,y,W-14,{s:12*k,w:600,c:PAL[s.fb.ok?'s3':'s1']});return;}

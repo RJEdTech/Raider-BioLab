@@ -63,7 +63,7 @@ const JT={
 const JINFO={
  shoulder:{t:'ball',s:'Ball and socket (glenohumeral joint)',w:'The large head of the humerus sits on the shallow glenoid of the scapula. The shallow socket gives the most range of any joint and the least bony stability, so muscles and ligaments hold it in place.'},
  elbow:{t:'hinge',s:'Hinge (humerus on ulna), plus a pivot (radius on ulna)',w:'The groove of the ulna wraps around a spool on the humerus, so it only opens and closes. Turning the palm over uses a separate pivot joint between the radius and ulna.'},
- wrist:{t:'saddle',s:'Condyloid (oval head in an oval cup)',w:'An oval carpal surface sits in an oval cup at the end of the radius. It tilts in two planes, and the oval shape blocks spinning, so palm rotation has to come from the forearm.'},
+ wrist:{t:'condyloid',s:'Condyloid (oval head in an oval cup)',w:'An oval carpal surface sits in an oval cup at the end of the radius. It tilts in two planes, and the oval shape blocks spinning, so palm rotation has to come from the forearm.'},
  hip:{t:'ball',s:'Ball and socket',w:'The head of the femur sits deep in the acetabulum of the pelvis. The deep socket and thick ligaments give less range than the shoulder and much more stability, because the hip carries your weight.'},
  knee:{t:'hinge',s:'Modified hinge',w:'The round femoral condyles roll and slide on a nearly flat tibia, so bone does little to hold it. Ligaments and menisci limit it to flexion and extension, with a little rotation when bent.'},
  ankle:{t:'hinge',s:'Hinge (talus in the tibia and fibula), plus the subtalar joint below it',w:'The talus sits in a slot formed by the tibia and fibula, which allows dorsiflexion and plantarflexion. Inversion and eversion come mostly from the subtalar joint below the talus.'}
@@ -105,9 +105,9 @@ function pose(j,mv,a){let Rs=I,eb=0,rho=0,Wr=I,Rh=I,kn=0,kr=0,An=I;
   P.pivot=P[key[0]];P.tip=P[key[1]];return P;}
 
 /* ---------- camera ---------- */
-const CAM={front:{yaw:0,pitch:0,n:'Front view'},side:{yaw:90,pitch:0,n:'Side view'},top:{yaw:0,pitch:60,n:'View from above'}};
+const CAM={front:{yaw:0,pitch:0,n:'Front view'},side:{yaw:90,pitch:0,n:'Side view'},top:{yaw:0,pitch:60,n:'View from above'},angled:{yaw:42,pitch:30,n:'View from the front and above'}};
 function viewFor(j,mv,plane){
-  if(j==='elbow'&&(mv==='pronation'||mv==='supination'))return {cam:'front',f:[-.125,.64,.145],s:1300};
+  if(j==='elbow'&&(mv==='pronation'||mv==='supination'))return {cam:'angled',f:[-.125,.64,.13],s:1100};
   if(j==='shoulder'&&(mv==='ir'||mv==='er'))return {cam:'top',f:[-.1,.66,.1],s:800};
   if(j==='shoulder'&&(mv==='hadd'||mv==='habd'))return {cam:'top',f:[-.08,.75,.05],s:560};
   if(j==='hip'&&(mv==='ir'||mv==='er'))return {cam:'top',f:[-.06,.02,.05],s:1250};
@@ -134,7 +134,7 @@ function drawFigure(ctx,P,pr,s,hotList,lite){const body=PAL['card2'],edge=PAL['c
   const hd=pr([0,.935,0]);items.push({d:hd.d,draw(){ctx.beginPath();ctx.arc(hd.x,hd.y,.062*s,0,6.3);ctx.fillStyle=body;ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=1.2;ctx.stroke();const n=pr([0,.93,.066]);ctx.beginPath();ctx.arc(n.x,n.y,.012*s,0,6.3);ctx.fillStyle=edge;ctx.fill();}});
   /* left limbs: still */
   cap(P.LS,P.LE,.027,'x',.006);cap(P.LE,P.LW,.021,'x',.006);cap(P.LW,[.14,.41,0],.018,'x',.006);
-  cap(P.LH,P.LK,.042,'x',.004);cap(P.LK,P.LA,.03,'x',.004);cap(P.LA,[.06,.008,.11],.022,'x',.004);
+  cap(P.LH,P.LK,.042,'x',.004);cap(P.LK,P.LA,.03,'x',.004);
   /* right limbs */
   cap(P.S,P.E,.027,'ua',.01);cap(P.E,P.W,.021,'fa',.012);
   const Rw=P.Rw,hc=[[-.034,0,0],[.03,0,0],[.03,-.09,0],[-.034,-.09,0]].map(q=>pr(add(P.W,ap(Rw,q))));const palmFaces=pr(add(P.W,P.palm)).d>pr(P.W).d;
@@ -144,7 +144,9 @@ function drawFigure(ctx,P,pr,s,hotList,lite){const body=PAL['card2'],edge=PAL['c
   cap(P.H,P.K,.042,'th',.008);cap(P.K,P.A,.03,'sh',.009);
   const Ra=P.Ra,box=[[-.033,-.05,-.035],[.03,-.05,-.035],[-.042,-.05,.115],[.034,-.05,.115],[-.022,.0,-.02],[.022,.0,-.02],[-.03,-.025,.1],[.026,-.025,.1]].map(q=>pr(add(P.A,ap(Ra,q))));
   items.push({d:(pr(P.Toe).d+pr(P.Heel).d)/2+.012,draw(){const on=hotList.includes('foot');const h=hull(box);ctx.beginPath();h.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.closePath();ctx.lineJoin='round';ctx.strokeStyle=on?hotC:edge;ctx.lineWidth=1.8;ctx.fillStyle=on?hotC:body;ctx.globalAlpha=on?.6:1;ctx.fill();ctx.globalAlpha=1;ctx.stroke();
-      const so=[box[0],box[1],box[3],box[2]];ctx.beginPath();so.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.closePath();ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.stroke();}});
+      if(!on)return;const so=[box[0],box[1],box[3],box[2]];ctx.beginPath();so.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.closePath();ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.stroke();}});
+  const lbox=[[.033,-.05,-.035],[-.03,-.05,-.035],[.042,-.05,.115],[-.034,-.05,.115],[.022,0,-.02],[-.022,0,-.02],[.03,-.025,.1],[-.026,-.025,.1]].map(q=>pr(add(P.LA,q)));
+  items.push({d:pr(add(P.LA,[0,-.03,.04])).d+.004,draw(){const h=hull(lbox);ctx.beginPath();h.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.closePath();ctx.lineJoin='round';ctx.strokeStyle=edge;ctx.lineWidth=1.8;ctx.fillStyle=body;ctx.fill();ctx.stroke();}});
   items.sort((a,b)=>a.d-b.d).forEach(it=>it.draw());}
 function drawSweep(ctx,j,mv,a,pr){const rom=M[j][mv].rom,piv=pr(pose(j,mv,0).pivot),n=28,pts=[];for(let i=0;i<=n;i++){pts.push(pr(pose(j,mv,rom*i/n).tip));}
   ctx.beginPath();ctx.moveTo(pr(pose(j,mv,0).pivot).x,piv.y);pts.forEach(q=>ctx.lineTo(q.x,q.y));ctx.closePath();ctx.fillStyle=PAL['s3'];ctx.globalAlpha=.14;ctx.fill();ctx.globalAlpha=1;
@@ -169,7 +171,7 @@ function drawType(ctx,id,cx,cy,t,k){const mo=RM?0.6:t;const ink=PAL['s2'];
     ctx.beginPath();ctx.arc(cx,cy-8,33,Math.PI*1.08,Math.PI*1.92);ctx.strokeStyle=ink;ctx.lineWidth=11;ctx.lineCap='butt';ctx.stroke();void th;}
   else if(id==='hinge'){const a=.2+1.05*(.5+.5*Math.sin(mo*1.1));
     ctx.setLineDash([5,4]);ctx.strokeStyle=PAL['s3'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy-8,80,Math.PI/2-1.25,Math.PI/2);ctx.stroke();ctx.setLineDash([]);
-    bar(ctx,cx,cy-8,86,22,-a);bar(ctx,cx,cy-8,-55,24,0);ctx.beginPath();ctx.arc(cx,cy-8,20,0,6.3);ctx.fillStyle=PAL['s2'];ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.stroke();ctx.beginPath();ctx.arc(cx,cy-8,5,0,6.3);ctx.fillStyle=PAL['card'];ctx.fill();}
+    bar(ctx,cx,cy-8,86,22,-a);bar(ctx,cx,cy-8,55,24,Math.PI);ctx.beginPath();ctx.arc(cx,cy-8,20,0,6.3);ctx.fillStyle=PAL['s2'];ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.stroke();ctx.beginPath();ctx.arc(cx,cy-8,5,0,6.3);ctx.fillStyle=PAL['card'];ctx.fill();}
   else if(id==='pivot'){const a=.9*Math.sin(mo*1.1);
     ctx.setLineDash([5,4]);ctx.strokeStyle=PAL['s3'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,68,-Math.PI/2-.9,-Math.PI/2+.9);ctx.stroke();ctx.setLineDash([]);
     ctx.save();ctx.translate(cx,cy);ctx.rotate(a);ctx.beginPath();ctx.arc(0,0,44,0,6.3);ctx.strokeStyle=PAL['s2'];ctx.lineWidth=16;ctx.stroke();ctx.beginPath();ctx.moveTo(0,-38);ctx.lineTo(0,-66);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=5;ctx.lineCap='round';ctx.stroke();ctx.restore();
@@ -238,12 +240,12 @@ const MOVEMENTS={
     {id:'view',label:'View',type:'seg',def:'move',lvl:'bio',noTrial:true,options:[{v:'move',l:'Move a joint'},{v:'types',l:'Joint types'},{v:'check',l:'What movement is this?'}],onChange(sim){sync(sim);}},
     {id:'joint',label:'Joint',type:'seg',def:'elbow',lvl:'bio',noTrial:true,options:JOINTORDER.map(j=>({v:j,l:j==='elbow'?'Elbow':JN[j]})),onChange(sim){sim.st&&(sim.st.play=false);const L=movesOf(sim.p.joint);const mv=L.includes(sim.p.move)?sim.p.move:L[0];sim.p.move=mv;if(sim.ui&&sim.ui.ctl&&sim.ui.ctl.move)sim.ui.ctl.move.set(mv);sync(sim);syncAngle(sim,mainDef(sim.p.joint,mv));}},
     {id:'move',label:'Movement',type:'seg',def:'flexion',lvl:'bio',noTrial:true,options:MOVEORDER.map(k=>({v:k,l:LBL[k],lvl:['hadd','habd','raddev','udev'].includes(k)?'ap':undefined})),onChange(sim){sim.st&&(sim.st.play=false);const L=movesOf(sim.p.joint);if(!L.includes(sim.p.move)){sim.p.move=L[0];if(sim.ui&&sim.ui.ctl&&sim.ui.ctl.move)sim.ui.ctl.move.set(L[0]);}syncAngle(sim,mainDef(sim.p.joint,sim.p.move));}},
-    {id:'angle',label:'Degrees moved',type:'range',min:0,max:180,step:1,def:90,unit:'°',d:0,lvl:'bio',noTrial:true,help:'The slider stops at the end of the normal range.'},
+    {id:'angle',label:'Degrees moved',type:'range',min:0,max:180,step:1,def:90,unit:'°',d:0,lvl:'bio',noTrial:true,help:'The slider stops at the end of the normal range.',onChange(sim){if(sim.st)sim.st.play=false;}},
     {id:'cam',label:'Camera',type:'seg',def:'auto',lvl:'bio',noTrial:true,options:[{v:'auto',l:'Best view'},{v:'front',l:'Front'},{v:'side',l:'Side'},{v:'top',l:'Above'}]},
     {id:'jtype',label:'Joint type',type:'seg',def:'ball',lvl:'bio',noTrial:true,options:TYPEORDER.map(k=>({v:k,l:JT[k].n})),help:'Or click a panel on the stage.'}
   ],
   actions:[
-    {id:'play',label:'Play the movement',primary:true,run(sim){sim.st.play=!sim.st.play;sim.st.ph=0;}},
+    {id:'play',label:'Play or stop the movement',primary:true,run(sim){sim.st.play=!sim.st.play;sim.st.ph=0;}},
     {id:'nextq',label:'Next movement',primary:true,run(sim){newQ(sim);}}
   ],
   init(){return {play:false,ph:0,q:null,refocus:null};},

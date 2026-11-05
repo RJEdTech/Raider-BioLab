@@ -310,6 +310,8 @@ function mechKey(sim){const p=sim.p,j=p.joint;if(j==='knee')return kneeMech(p);i
 function hasModel(j){return !!JOINTS[j].stress;}
 function stressRows(sim){if(sim.p.view!=='stress')return [];const m=MECH[mechKey(sim)];if(!m)return [];const F=sim.p.F;
   return m.rows(sim.p).filter(r=>atLeast(r.lvl)).map(r=>{const s=r.gain*Math.max(0,F-r.onset)/100*r.f;return {id:r.id,n:r.n||LIGS[r.id]||r.id,kind:r.kind,s,z:zone(s)};});}
+const STAGE_T={sant:'Arm forced back',er:'External rotation',att:'Anterior translation',ptt:'Posterior translation',rot:'Rotation, planted foot',pat:'Patella pushed lateral',sac:'Fall on the shoulder'};
+const PILL={aitfl:'AITFL',pitfl:'PITFL',iom:'IOM',labrum:'Labrum',capsule:'Capsule',deltoid:'Deltoid lig.',ulnarn:'Ulnar nerve',axnerve:'Axillary n.',mmen:'Med. meniscus',lmen:'Lat. meniscus'};
 /* The structure a real exam would report first: highest strain among ligaments, or, if none is loaded, anything else. */
 function topRow(sim){const rows=stressRows(sim);if(!rows.length)return null;const lig=rows.filter(r=>r.kind==='lig');return (lig.length?lig:rows).slice().sort((a,b)=>b.s-a.s)[0];}
 function rowResult(r){if(r.kind==='lig')return ['Normal','Grade I','Grade II','Grade III'][r.z];
@@ -343,6 +345,7 @@ function applyT(ctx,t){if(!t)return;if(t.dx||t.dy)ctx.translate(t.dx||0,t.dy||0)
 const colorOf=(a,strain)=>{if(strain!==undefined&&strain!==null)return strain>=10?PAL['s1']:strain>=4?PAL['s4']:PAL['s3'];return PAL[KIND[a.k].c];};
 function drawStruct(ctx,a,o){const T=o.T||{},sel=o.sel===a.id,faded=o.fade&&!sel,s=o.strain?o.strain[a.id]:undefined;ctx.save();
   const isLine=!!a.pts;ctx.globalAlpha=faded?.45:1;
+  if(o.mute&&a.k!=='bone'&&a.k!=='land'&&s===undefined){drawMuted(ctx,a,T);ctx.restore();return;}
   if(!isLine){const p=pathOf(a);applyT(ctx,T[a.g]);
     if(a.ring){ctx.strokeStyle=sel?PAL['cv-ink']:PAL[KIND[a.k].c];ctx.lineWidth=sel?3.5:2.2;ctx.setLineDash([5,4]);if(sel){ctx.fillStyle=PAL['s6'];ctx.globalAlpha=.25;ctx.fill(p);ctx.globalAlpha=1;}ctx.stroke(p);}
     else if(a.k==='bone'||a.k==='land'){ctx.fillStyle=sel?PAL['cv-e']:a.dash?'transparent':PAL['cv-tail'];if(a.k==='land'&&!sel){ctx.fillStyle=PAL['s6'];ctx.globalAlpha=.55;}
@@ -360,6 +363,9 @@ function drawStruct(ctx,a,o){const T=o.T||{},sel=o.sel===a.id,faded=o.fade&&!sel
     else strokePts(ctx,pts);
     ctx.setLineDash([]);});
   ctx.restore();}
+function drawMuted(ctx,a,T){ctx.globalAlpha=a.k==='lig'?.55:.18;
+  if(a.pts){const pg=a.pg||[];[a.pts,a.alt,a.alt2].forEach(ln=>{if(!ln)return;const pts=ln.map((q,i)=>xf(q,T[pg[Math.min(i,pg.length-1)]]));ctx.lineCap='round';ctx.lineJoin='round';if(a.dash)ctx.setLineDash([7,6]);ctx.strokeStyle=a.k==='lig'?PAL['cv-soft']:PAL[KIND[a.k].c];ctx.lineWidth=a.w;strokePts(ctx,pts);ctx.setLineDash([]);});}
+  else{applyT(ctx,T[a.g]);ctx.fillStyle=PAL[KIND[a.k].c];ctx.fill(pathOf(a));}}
 function strokePts(ctx,pts){ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);if(pts.length<3)ctx.lineTo(pts[1][0],pts[1][1]);else{for(let i=1;i<pts.length-1;i++){const m=[(pts[i][0]+pts[i+1][0])/2,(pts[i][1]+pts[i+1][1])/2];if(i===pts.length-2)ctx.quadraticCurveTo(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1]);else ctx.quadraticCurveTo(pts[i][0],pts[i][1],m[0],m[1]);}}ctx.stroke();}
 
 /* Full name when it fits the column, the real abbreviation when it does not. */
@@ -413,11 +419,11 @@ function forceArrow(ctx,sim,mk,T,F,k){if(F<=0)return;const p=sim.p,c=PAL['s1'],L
     else if(mk==='rot'){arcArrow(ctx,400,120,62,Math.PI*.15,Math.PI*.85,w*.9,c);ctx.save();ctx.restore();}
     else if(mk==='pat'){const base=xf([434,135],T.pat);arrow(ctx,base[0]+L,base[1],base[0]+3,base[1],w,c);}}
   else if(p.joint==='ankle'){if(mk==='inv')arcArrow(ctx,400,395,92,Math.PI*.95,Math.PI*.35,w*.9,c);else if(mk==='ev')arcArrow(ctx,400,395,92,Math.PI*.05,Math.PI*.65,w*.9,c);else arcArrow(ctx,400,460,50,Math.PI*.95,Math.PI*.05,w*.9,c);}
-  else if(p.joint==='elbow'){const fromMed=mk==='evar',base=xf([fromMed?438:328,440],T.dist);arrow(ctx,base[0]+(fromMed?L:-L)*-1*-1,base[1],base[0]+(fromMed?3:-3),base[1],w,c);}
+  else if(p.joint==='elbow'){const onMed=mk==='eval',base=xf([onMed?440:322,440],T.dist);arrow(ctx,base[0]+(onMed?L:-L),base[1],base[0]+(onMed?3:-3),base[1],w,c);}
   else if(p.joint==='shoulder'){if(mk==='sant'){const base=xf([215,330],T.hum);arrow(ctx,base[0]-L*.8,base[1]+L*.6,base[0],base[1],w,c);}else{const base=xf([268,70],T.scap);arrow(ctx,base[0],base[1]-L,base[0],base[1]-3,w,c);}}}
 
-function footInset(ctx,sim,k){const pf=sim.p.pf,cx=62,cy=412,a=pf*Math.PI/180;ctx.save();ctx.translate(cx,cy);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(0,-34);ctx.lineTo(0,0);ctx.stroke();ctx.rotate(a);ctx.strokeStyle=PAL['s2'];ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(44,0);ctx.stroke();ctx.restore();
-  const lab=pf>0?pf+'° plantar':pf<0?(-pf)+'° dorsi':'Neutral';txt(ctx,lab,8,476,{s:12*k,w:600,c:PAL['cv-soft']});txt(ctx,'Foot, side',8,476-14*k,{s:12*k,c:PAL['muted']});}
+function footInset(ctx,sim,k){const pf=sim.p.pf,cx=405,cy=400,a=pf*Math.PI/180;ctx.save();ctx.translate(cx,cy);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(0,-34);ctx.lineTo(0,0);ctx.stroke();ctx.rotate(a);ctx.strokeStyle=PAL['s2'];ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(44,0);ctx.stroke();ctx.restore();
+  const lab=pf>0?pf+'° plantar':pf<0?(-pf)+'° dorsi':'Neutral';txt(ctx,lab,476,490,{s:12*k,w:600,c:PAL['cv-soft'],a:'right'});txt(ctx,'Foot, side view',476,490-14*k,{s:12*k,c:PAL['muted'],a:'right'});}
 
 function drawBars(ctx,sim,k,rows){const x0=490,x1=790,W=x1-x0,size=13*k,max=14,X=v=>x0+Math.min(v,max)/max*W;let y=26*k*.8+6;
   txt(ctx,'Strain',x0,y,{s:size,w:700,c:PAL['cv-ink']});
@@ -441,22 +447,22 @@ function drawStress(sim,ctx,vdt,k){const j=sim.p.joint;
   const art=M.art.filter(a=>atLeast(a.lvl)||M.art===KNEE_SIDE||strain[a.id]!==undefined),side=M.art===KNEE_SIDE;
   const s=j==='shoulder'?.8:side?1:.96,cx=side?300:(j==='shoulder'?250:240),ox=side?(cx-KC[0]):(cx-400*s),oy=side?30:(j==='shoulder'?45:18);
   ctx.save();ctx.beginPath();ctx.rect(0,0,484,500);ctx.clip();ctx.translate(ox,oy);ctx.scale(s,s);
-  art.forEach(a=>{const loaded=strain[a.id]!==undefined;if(a.k==='lig'&&!loaded)drawStruct(ctx,a,{T,sel:null});else if(a.k!=='lig')drawStruct(ctx,a,{T,sel:null,strain:a.k==='cart'||a.k==='nerve'?strain:undefined});});
-  art.forEach(a=>{if(a.k==='lig'&&strain[a.id]!==undefined)drawStruct(ctx,a,{T,sel:null,strain});});
+  art.forEach(a=>{if(strain[a.id]===undefined)drawStruct(ctx,a,{T,sel:null,mute:true});});
+  art.forEach(a=>{if(strain[a.id]!==undefined)drawStruct(ctx,a,{T,sel:null,strain});});
   forceArrow(ctx,sim,mk,T,sim.p.F,k);ctx.restore();
   /* labels on the art */
   const tagSize=13*k,sc=(pt,gr)=>{const q=xf(pt,T[gr]);return [q[0]*s+ox,q[1]*s+oy];};
-  txt(ctx,M.t,8,tagSize+2,{s:tagSize,w:700,c:PAL['cv-ink']});
+  ctx.font='700 '+tagSize+'px '+BioLab.h.FONT;txt(ctx,ctx.measureText(M.t).width>468?(STAGE_T[mk]||M.t):M.t,8,tagSize+2,{s:tagSize,w:700,c:PAL['cv-ink']});
   if(side){txt(ctx,'Anterior',476,tagSize*2+10,{s:12*k,w:700,c:PAL['muted'],a:'right'});txt(ctx,'Posterior',8,tagSize*2+10,{s:12*k,w:700,c:PAL['muted']});
     const a=sc([290,40],'prox');pill(ctx,'Femur',a[0],a[1]+6,'#5a5a62','#fff',12*k);const b=sc([292,400],'dist');pill(ctx,'Tibia',b[0],b[1],'#5a5a62','#fff',12*k);}
   else{const J=JOINTS[j];txt(ctx,J.left,8,tagSize*2+10,{s:12*k,w:700,c:PAL['muted']});txt(ctx,J.right,476,tagSize*2+10,{s:12*k,w:700,c:PAL['muted'],a:'right'});
     const tags={knee:[['Femur',[400,50],'prox'],['Tibia',[400,440],'dist']],ankle:[['Tibia',[400,80],'prox'],['Calcaneus',[400,400],'dist'],['Talus',[400,285],'dist']],elbow:[['Humerus',[400,70],'prox'],['Ulna',[408,420],'dist']],shoulder:[['Humerus',[250,420],'hum'],['Scapula',[410,270],'scap'],['Clavicle',[430,100],'clav']]}[j];
     tags.forEach(g=>{const q=sc(g[1],g[2]);pill(ctx,g[0],q[0],q[1],'#5a5a62','#fff',12*k);});}
   /* name the loaded ligaments right on the art */
-  const placed=[];rows.forEach(r=>{const a=art.find(q=>q.id===r.id);if(!a||!a.pts)return;const pg=a.pg||[],pts=a.pts,last=pts.length-1,mid=[(pts[0][0]+pts[last][0])/2,(pts[0][1]+pts[last][1])/2],q0=xf(pts[0],T[pg[0]]),q1=xf(pts[last],T[pg[Math.min(last,pg.length-1)]]),m=[(q0[0]+q1[0])/2*s+ox,(q0[1]+q1[1])/2*s+oy];
-    let nm=a.sh||a.n;if(nm.length>14)nm=nm.split(' ')[0];ctx.font='700 '+(12*k)+'px '+BioLab.h.FONT;const w=ctx.measureText(nm).width+12*k*1.1;
-    let x=m[0],y=m[1];const push=(side&&r.id==='pcl')?1:0;x=clamp(x+(side?(push?-w*.7:w*.7):0),w/2+2,482-w/2);while(placed.some(b=>Math.abs(b.x-x)<(b.w+w)/2&&Math.abs(b.y-y)<12*k*1.8))y+=12*k*1.8;placed.push({x,y,w});
-    pill(ctx,nm,x,y,PAL['card'],PAL['cv-ink'],12*k);});
+  const placed=[],acx=(side?KC[0]+10:(j==='shoulder'?330:400))*s+ox;rows.forEach(r=>{const a=art.find(q=>q.id===r.id);if(!a||!a.pts)return;const pg=a.pg||[],pts=a.pts,last=pts.length-1,q0=xf(pts[0],T[pg[0]]),q1=xf(pts[last],T[pg[Math.min(last,pg.length-1)]]),m=[(q0[0]+q1[0])/2*s+ox,(q0[1]+q1[1])/2*s+oy];
+    const nm=PILL[r.id]||a.sh||a.n,fs=12*k;ctx.font='700 '+fs+'px '+BioLab.h.FONT;const w=ctx.measureText(nm).width+fs*1.1;
+    const dir=side?(r.id==='pcl'?-1:1):(m[0]<acx?-1:1);let x=clamp(m[0]+dir*(w/2+34),w/2+2,482-w/2),y=m[1];while(placed.some(b=>Math.abs(b.x-x)<(b.w+w)/2+2&&Math.abs(b.y-y)<fs*1.85))y+=fs*1.85;placed.push({x,y,w,nm,m});});
+  placed.forEach(g=>{ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(g.x,g.y);ctx.lineTo(g.m[0],g.m[1]);ctx.stroke();pill(ctx,g.nm,g.x,g.y,PAL['card'],PAL['cv-ink'],12*k);});
   if(j==='ankle')footInset(ctx,sim,k);
   if((j==='knee'||j==='elbow')&&!side)txt(ctx,sim.p.flex+'° flexion',8,490,{s:12*k,w:600,c:PAL['cv-soft']});
   if(side)txt(ctx,sim.p.flex+'° flexion',476,490,{s:12*k,w:600,c:PAL['cv-soft'],a:'right'});
@@ -495,7 +501,7 @@ function infoPanel(sim){const p=sim.p,j=p.joint,J=JOINTS[j];
     if(mk==='sant'&&topRow(sim)&&topRow(sim).z===3)h+='<p>The humeral head has left the glenoid: an anterior inferior dislocation.</p>';
     h+=`<p class="help">Educational model. Athletes with a joint injury need evaluation by an athletic trainer or physician.</p>`;return h;}
   const sel=currentSel(sim),a=visArt(j).find(q=>q.id===sel);let h='';
-  if(a){h+=`<h3>${a.n}${a.sh&&a.sh!==a.n?' ('+a.sh+')':''}</h3><p><b style="color:var(--${KIND[a.k].c})">${KIND[a.k].l.replace(/s and .*$/,'').replace(/s$/,'')}.</b> ${a.i}</p>`;if(a.x&&atLeast('honors'))h+=`<p>${a.x}</p>`;}
+  if(a){h+=`<h3>${a.n}${a.sh&&a.sh!==a.n?' ('+a.sh+')':''}</h3><p><b style="color:var(--${KIND[a.k].c})">${KIND[a.k].l.replace(/s and .*$/,'').replace(/s$/,'')}.</b> ${a.i}</p>`;if(a.x)h+=`<p>${a.x}</p>`;}
   const list=orderedList(sim),groups=[];list.forEach(q=>{const l=KIND[q.k].l,g=groups.find(x=>x.l===l);if(g)g.items.push(q);else groups.push({l,items:[q],c:KIND[q.k].c});});
   groups.forEach(g=>{h+=`<p style="margin:8px 0 4px;font-size:14px;font-weight:700;color:var(--${g.c})">${g.l}</p><div class="row" style="flex-wrap:wrap;gap:4px">${g.items.map(q=>`<button type="button" class="btn" data-sel="${q.id}"${q.id===sel?' aria-pressed="true" style="font-size:14px;padding:3px 9px;border-color:var(--fg)"':' style="font-size:14px;padding:3px 9px"'}>${q.sh&&q.n.length>18?q.sh:q.n}</button>`).join('')}</div>`;});
   return h;}
@@ -518,7 +524,7 @@ const SIM={
   lede:{bio:'Learn the bones, ligaments and muscles of each joint, then push the knee or ankle and see which structure takes the load.',
         honors:'Connect each mechanism of injury to the structure it stresses and the special test that checks it.',
         ap:'Reason through position as well as direction: joint angle changes which structure is tight, so the same force can injure a different ligament.'},
-  scale:'Each joint is a schematic of the right side of the body, drawn about life size on a laptop.',
+  scale:'Each joint is a schematic of the right side of the body.',
   aspect:1.6,timeless:true,graph:false,thumbFrames:1,
   controls:[
     {id:'joint',label:'Joint',type:'seg',def:'knee',lvl:'bio',options:JK.map(k=>({v:k,l:JOINTS[k].n})),onChange(sim){sync(sim);}},
@@ -610,7 +616,7 @@ const SIM={
     {t:'Valgus',d:'The joint bends inward, opening the medial side. Think of a knock-kneed knee.'},{t:'Varus',d:'The joint bows outward, opening the lateral side.'},{t:'Inversion and eversion',d:'The sole turns inward (inversion) or outward (eversion).'},{t:'Grades I, II, III',d:'Stretch, partial tear and complete tear.'},
     {lvl:'honors',t:'Sesamoid bone',d:'A bone that forms inside a tendon. The patella is the largest.'},{lvl:'honors',t:'Avulsion',d:'A tendon or ligament pulls off a piece of bone.'},{lvl:'honors',t:'Stress test',d:'A clinician moves the joint in one direction to feel for laxity and pain in one ligament, always comparing both sides.'},{lvl:'honors',t:'WB, ROM, WNL',d:'Weight bearing, range of motion, within normal limits.'},
     {lvl:'ap',t:'Antalgic gait',d:'A limp that avoids putting weight on the painful side.'},{lvl:'ap',t:'Mortise',d:'The socket formed by the tibia and fibula that holds the talus.'}],
-  about:'<p><b>Educational use only.</b> This is a teaching model, not a way to diagnose yourself or anyone else. A joint injury needs evaluation by an athletic trainer or physician.</p><p><b>Model:</b> strain = gain × (force − onset) ÷ 100 × a position factor. Each mechanism has a primary structure with onset 0 and secondary structures that load only at higher force. The gains are set so the order of failure matches the classic teaching: ATFL then CFL then PTFL, MCL before ACL under valgus, PCL stronger than ACL, deltoid stronger than ATFL.</p><p><b>Strain zones:</b> connective tissue stretches elastically up to about 4%, gets microscopic damage from about 4 to 6%, fails in part from about 6 to 10%, and fails fully above about 10%. Matching those zones to Grades I, II and III is our simplification. Real ligaments vary with age, rate of loading and training.</p><p><b>Force level</b> is a relative scale with no newtons, because the real force depends on body size, speed and lever length.</p><p><b>Simplified:</b> the art is schematic and not to scale, motion is exaggerated so you can see it, and structures that sit behind the joint are dashed. The ankle front view spreads the three lateral ligaments out so you can see all of them. The menisci, labrum and nerves use the same scale as a rough load indicator. They do not have sprain grades. Real injuries usually combine forces, and muscles add active protection that this model leaves out. Ankle percentages (almost 90% inversion, 3-4% eversion) are from your course notes and other sources vary somewhat.</p>',
+  about:'<p><b>Educational use only.</b> This is a teaching model, not a way to diagnose yourself or anyone else. A joint injury needs evaluation by an athletic trainer or physician.</p><p><b>Model:</b> strain = gain × (force − onset) ÷ 100 × a position factor. Each mechanism has a primary structure with onset 0 and secondary structures that load only at higher force. The gains are set so the order of failure matches the classic teaching: ATFL then CFL then PTFL, MCL before ACL under valgus, PCL stronger than ACL, deltoid stronger than ATFL.</p><p><b>Strain zones:</b> connective tissue stretches elastically up to about 4%, gets microscopic damage from about 4 to 6%, fails in part from about 6 to 10%, and fails fully above about 10%. Matching those zones to Grades I, II and III is our simplification. Real ligaments vary with age, rate of loading and training.</p><p><b>Force level</b> is a relative scale with no newtons, because the real force depends on body size, speed and lever length.</p><p><b>Simplified:</b> the art is schematic and not to scale, motion is exaggerated so you can see it, and structures that sit behind the joint are dashed. The ankle front view spreads the three lateral ligaments out so you can see all of them. The menisci, labrum and nerves use the same scale as a rough load indicator. They do not have sprain grades. The shoulder is drawn with the arm at the side even when the force needs the arm raised. Real injuries usually combine forces, and muscles add active protection that this model leaves out. Ankle percentages (almost 90% inversion, 3-4% eversion) are from your course notes and other sources vary somewhat.</p>',
   thumbSetup(sim){BioLab.setValues(sim,{view:'explore',joint:'knee'});}
 };
 let _hc=null;function hitCtx(){if(!_hc)_hc=document.createElement('canvas').getContext('2d');return _hc;}
