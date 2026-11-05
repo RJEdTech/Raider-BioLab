@@ -111,7 +111,7 @@ const CASES=[
  palp:{gt:'TTP on the front and side of the joint.',delt:'Sensation on the outer shoulder feels normal on both sides.'},pos:{appr:'Positive: she stops you and says it feels like it will come out.',sulcus:'Positive: a dimple under the acromion, deeper than on the {o} side.'},key:['appr','sulcus'],
  dx:['Anterior shoulder dislocation','AC joint sprain','Clavicle fracture','Rotator cuff strain'],clue:'The arm position when it happened, and what she says during the test.',
  why:'Forced external rotation with the arm abducted pushes the humerus out the front and bottom of the joint. That is why the apprehension test, not just pain, is the key finding.',diff:'An AC sprain hurts on top. A clavicle fracture hurts along the bone. A cuff strain does not make her fear the joint coming out.',
- care:['Sling with a towel between the arm and body, cold pack, check pulse and sensation, and send for an x-ray','Have her do push-ups to test the joint','Tape it and return her to the next set'],cw:'The towel holds the arm in a comfortable, slightly open position. An x-ray rules out a fracture, which can happen with a dislocation. If it were still out, you would not run these tests: you would splint it as found and refer it. Your AT does not reduce it unless trained and allowed.',ref:1,
+ care:['Sling with a towel between the arm and body, cold pack, check pulse and sensation, and send for an x-ray','Have her do push-ups to test the joint','Tape it and return her to the next set'],cw:'The towel holds the arm in a comfortable, slightly open position. An x-ray rules out a fracture, which can happen with a dislocation. If it were still out, you would not run these tests: you would splint it as found and refer it. An AT does not reduce it unless trained and allowed to.',ref:1,
  flip:'A shoulder still out, or a numb patch on the outer shoulder or a weak pulse, moves this up to EMS or the ED.',
  rtp:'When a physician clears her and she has full ROM and strength, and no apprehension compared with the other side',say:'Tell her a first dislocation raises the risk of another, so finishing rehab matters. Tell the coach she is out until cleared.'},
 {id:'cuff',r:'shoulder',who:'Baseball pitcher',cc:'Sharp shoulder pain on one pitch',side:'R',
@@ -240,7 +240,7 @@ const CASES=[
  dx:['Patellar dislocation','ACL sprain','MCL sprain','Meniscus tear'],clue:'Which way the kneecap went, and what she does during the test.',
  why:'A plant-and-turn with the knee bent can push the patella out the lateral side. Inner edge tenderness comes from the tissues that tore as it left.',diff:'An ACL sprain gives a positive Lachman. An MCL sprain hurts at the medial joint line with valgus stress. A meniscus tear gives catching and joint line pain.',
  care:['Cold, compression, a knee immobilizer, crutches, and send for an x-ray','Have her walk it off','Massage the kneecap back and forth'],cw:'Support the knee and protect it from another dislocation. An x-ray checks for a piece of bone or cartilage that may have chipped off.',ref:2,
- flip:'A patella still out, or any numbness or weak pulse, moves this to the ED or EMS. You do not force it back unless trained and allowed.',
+ flip:'A patella still out, or any numbness or weak pulse, moves this to the ED or EMS. You do not force it back unless trained and allowed to.',
  rtp:'After clearance, with quadriceps and hip strength and balance matching the other side and no apprehension',say:'Tell her a first dislocation raises the risk of another, so rehab really matters.'},
 {id:'mcl',r:'knee',who:'Football offensive lineman',cc:'Someone rolled up on the outside of the knee',side:'L',
  h:['A player fell into the outside of my knee while my foot was planted. The knee bent inward.','Inner side of my knee. 6 out of 10.','I felt a pull.','No.','Stiff, but it doesn’t lock.'],
@@ -320,7 +320,7 @@ const CASES=[
  look:'Swelling below the {s} medial malleolus.',fn:'Limps, and can barely take four steps.',show:[['delt','swell']],
  palp:{delt:'TTP below the medial malleolus.',medm:'TTP along the tip of the medial malleolus.'},pos:{tilte:'Positive: pain with the heel turned out.',ott:'Positive: bone tenderness at the medial malleolus.'},key:['tilte','ott'],
  dx:['Eversion ankle sprain','Inversion ankle sprain','High ankle sprain','Jones fracture'],clue:'Which side hurts, and whether the bone is tender.',
- why:'Eversion stresses the deltoid ligament on the inner ankle. It makes up only a small share of sprains, because the deltoid is so strong. It can pull a piece of the tibia off first.',diff:'An inversion sprain hurts on the outer side. A high ankle sprain hurts above the joint with squeeze and rotation. A Jones fracture is on the outer foot.',
+ why:'Eversion stresses the deltoid ligament on the inner ankle. It makes up only about 3 to 4% of ankle sprains, because the deltoid is so strong. It can pull a piece of the tibia off first.',diff:'An inversion sprain hurts on the outer side. A high ankle sprain hurts above the joint with squeeze and rotation. A Jones fracture is on the outer foot.',
  care:['PRICE, crutches, splint, and send for an x-ray to rule out an avulsion','Tape it and return next series','Stretch the foot outward to test it'],cw:'The deltoid is strong enough that the bone may give before the ligament. An x-ray rules out an avulsion fracture. Expect a longer recovery than a typical sprain.',ref:2,
  flip:'A deformity, numbness or a weak pulse moves this to the ED or EMS.',
  rtp:'After x-ray and clearance, when strength, balance and sport movements match the other side',say:'Tell him this is not an ordinary rolled ankle, and the timeline is often longer.'},
@@ -383,8 +383,8 @@ const SIM={id:'clinic',hash:'clinic',apUnit:15,order:9,tab:'Injury evaluation cl
  card:'Work through 36 injury cases the way an athletic trainer does: history, observation, palpation, special tests, a working diagnosis, care and return to play.',
  title:'Injury evaluation clinic',
  lede:{bio:'Take an athlete through a full evaluation, one step at a time. Reason from the findings instead of guessing. Hints point you to the most useful questions and tests.',honors:'Take an athlete through a full evaluation. You get general prompts, and you pick the tests.',ap:'Run the whole evaluation with no hints, and then say what finding would change your referral.'},
- scale:'One athlete and one body region. The map is schematic, and each case gives you the same findings a table would.',
- aspect:1.6,timeless:true,animated:true,graph:false,trials:false,prereq:['joints','mmt'],next:['injury'],
+ scale:'One athlete and one body region at a time. The map is schematic, and the athletes are fictional.',
+ aspect:1.6,timeless:true,graph:false,trials:false,prereq:['joints','mmt'],next:['injury'],
  controlsTitle:'Cases',
  controls:[{id:'region',label:'Region',type:'select',def:'all',options:[{v:'all',l:'All regions'}].concat(Object.keys(REG).map(k=>({v:k,l:REG[k].l}))),noTrial:true,onChange(sim){if(!sim.st)return;const L=pickList(sim);if(!L.some(c=>c.i===sim.st.ci))setCase(sim,L[0].i);}}],
  actions:[{id:'back',label:'Back a step',run(sim){stepTo(sim,sim.st.w.step-1);}},
@@ -411,7 +411,7 @@ const SIM={id:'clinic',hash:'clinic',apUnit:15,order:9,tab:'Injury evaluation cl
   /* the key on the right */
   const lx=w.bw+18,dy=Math.min(30*k,(420)/R.spots.length);let ly=78;txt(ctx,'Palpation points',lx,ly-12,{s:12*k,c:PAL['cv-soft'],w:700});
   R.spots.forEach((sp,i)=>{const any=Object.keys(st.palp).some(q=>q.split(':')[0]===sp.id);txt(ctx,(i+1)+'  '+sp.l+(sp.back?' (back)':''),lx,ly+8+i*dy,{s:12*k,c:any?PAL['cv-ink']:PAL['cv-soft'],w:any?700:400,b:'middle'});});
-  txt(ctx,c.side==='M'?'Viewed from the front':'Athlete’s right is on your left',w.cx,492,{s:12*k,c:PAL['cv-soft'],a:'center',b:'alphabetic'});},
+  txt(ctx,c.side==='M'?'Viewed from the front':'Athlete’s right is on your left',w.bw+18,488,{s:12*k,c:PAL['cv-soft'],b:'alphabetic'});},
  infoPanel(sim){const c=cur(sim),R=REG[c.r],w=sim.st.w,bio=!atLeast('honors'),hon=atLeast('honors')&&!atLeast('ap'),ap=atLeast('ap'),L=pickList(sim);
   const rail=`<nav class="ck-rail" aria-label="Evaluation steps">${STEPS.map((s,i)=>`<button type="button" class="btn" data-fk="st${i}" data-st="${i}"${i===w.step?' aria-current="step"':''}>${i+1}. ${s}</button>`).join('')}</nav>`;
   const hint=!ap?`<p class="ck-hint">${gl(NEXT_HINT[w.step])}</p>`:'';
