@@ -468,3 +468,6 @@ select.vl-in{width:auto;max-width:100%}
 .unitpage .ap-res,.unitpage .embed-box{margin-top:14px}.u-note{margin-top:12px}.linkbtn{border:0;background:none;padding:0;color:var(--rj-ink);font:inherit;text-decoration:underline;cursor:pointer}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 html.embed .u-back,html.embed .pb-back+.none{display:none!important}
+
+.vl-an{margin:8px 0 4px}
+.vl-an-msg{margin-left:10px;color:var(--muted);font-size:14px}

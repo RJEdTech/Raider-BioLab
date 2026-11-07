@@ -150,7 +150,7 @@ function buildSim(sim){
   </div>
   ${d.trials===false?'':`<div class="panel trials">
     ${d.lab?'<div class="lab"></div>':''}
-    <div class="p-head"><h3>Data table</h3><div class="row"><span class="toast" hidden></span><button type="button" class="btn primary" data-act="record">Record trial</button><button type="button" class="btn" data-act="copy">Copy as CSV</button><button type="button" class="btn" data-act="clear">Clear</button></div></div>
+    <div class="p-head"><h3>Data table</h3><div class="row"><span class="toast" hidden></span><button type="button" class="btn primary" data-act="record">Record trial</button><button type="button" class="btn" data-act="copy">Copy as CSV</button><button type="button" class="btn" data-act="analyze" title="Open this table in a guided spreadsheet: average, spread, slope and a graph, then download it for Excel">Analyze in a spreadsheet</button><button type="button" class="btn" data-act="clear">Clear</button></div></div>
     <div class="tbl"></div>
   </div>`}
   ${d.terms?`<details class="about terms"><summary>Key terms</summary><dl class="about-b">${d.terms.map(t=>`<div data-lvl="${t.lvl||'bio'}"><dt>${t.t}</dt><dd>${t.d}</dd></div>`).join('')}</dl></details>`:''}
@@ -165,7 +165,7 @@ function buildSim(sim){
   ui.speedSel=sec.querySelector('#'+id+'-speed');ui.stepBtn=sec.querySelector('[data-act=step]');ui.tourbar=sec.querySelector('.tourbar');
   ui.donecard=el('div',{class:'donecard','aria-live':'polite'});ui.donecard.hidden=true;ui.gamecard=el('div',{class:'gamecard','aria-live':'polite'});ui.gamecard.hidden=true;ui.gamebtns=el('div',{class:'gamebtns row'});ui.gamebtns.hidden=true;ui.tourbar.after(ui.donecard,ui.gamecard);
   ui.vstep=el('div',{class:'vstep','aria-live':'polite'});ui.vstep.hidden=true;ui.gamecard.after(ui.vstep);
-  ui.nb=el('div',{class:'vlab-nb'});ui.nb.hidden=true;sec.querySelector('.bench').after(ui.nb);ui.resetBtn=sec.querySelector('[data-act=reset]');ui.ctrlsHome=ui.ctrls.parentNode;
+  ui.nb=el('div',{class:'vlab-nb'});ui.nb.hidden=true;{const anB=e=>e.target.closest&&e.target.closest('[data-an]');ui.nb.addEventListener('mousedown',e=>{if(anB(e))e.preventDefault();});ui.nb.addEventListener('click',e=>{const b=anB(e);if(!b)return;const tid=b.getAttribute('data-an'),f=document.activeElement;if(f&&ui.nb.contains(f)&&/^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName))f.dispatchEvent(new Event('change',{bubbles:true}));analyzeNotebookTable(sim,tid,[...ui.nb.querySelectorAll('[data-an]')].find(x=>x.getAttribute('data-an')===tid)||b);});}sec.querySelector('.bench').after(ui.nb);ui.resetBtn=sec.querySelector('[data-act=reset]');ui.ctrlsHome=ui.ctrls.parentNode;
   if(d.timeless){ui.clock.hidden=true;sec.querySelector('[data-act=play]').hidden=!d.animated;sec.querySelector('label[for='+id+'-speed]').hidden=!d.animated;}
   // controls
   (d.controls||[]).forEach(c=>{const cid=id+'-'+c.id;let w;const changed=()=>{if(c.onChange)c.onChange(sim);sim.infoDirty=true;};
@@ -208,6 +208,7 @@ function buildSim(sim){
     sec.querySelector('[data-act=record]').addEventListener('click',()=>{const row={_n:sim.trials.length+1};(d.controls||[]).forEach(c=>row[c.id]=sim.p[c.id]);allMetrics(sim).forEach(m=>row[m.id]=m.get(sim));
       sim.trials.push(row);saveTrials(sim);renderTable(sim);flash(sim,'Trial '+row._n+' recorded');if(sim.gmode==='trials')drawGraph(sim);});
     sec.querySelector('[data-act=clear]').addEventListener('click',()=>{sim.trials=[];saveTrials(sim);renderTable(sim);drawGraph(sim);});
+    {const ab=sec.querySelector('[data-act=analyze]');if(ab)ab.addEventListener('click',()=>analyzeTrials(sim));}
     sec.querySelector('[data-act=copy]').addEventListener('click',()=>{const csv=toCSV(sim);if(!csv){flash(sim,'Record a trial first');return;}
       const fallback=()=>{let ta=sec.querySelector('.csv-fallback');if(!ta){ta=el('textarea',{class:'csv-fallback',readonly:'',id:id+'-csv','aria-label':'CSV data'});ui.tbl.after(ta);}ta.value=csv;ta.focus();ta.select();flash(sim,'Selected. Press Ctrl+C to copy');};
       try{navigator.clipboard.writeText(csv).then(()=>flash(sim,'Copied to clipboard'),fallback);}catch(e){fallback();}});
@@ -403,7 +404,7 @@ function vlRender(sim){const V=sim.vlab,L=V.lab,u=sim.ui,sid=sim.def.id,labs=vlL
     if(c.input==='text')return `<input class="vl-in vl-cell vl-wide" type="text" data-k="${k}" id="${fid(k)}" value="${val(k)}" aria-label="${esc(aria)}" autocomplete="off">`;
     return `<input class="vl-in vl-cell vl-num" type="text" inputmode="decimal" data-k="${k}" id="${fid(k)}" value="${val(k)}" aria-label="${esc(aria)}" autocomplete="off">`;};
   const table=tb=>{const rows=vlRows(tb);return `<div class="vl-tb" data-t="${tb.id}">${tb.title?`<p class="vl-cap">${tb.title}</p>`:''}<div class="tbl-wrap"><table class="vl-table"><thead><tr>${tb.cols.map(c=>`<th scope="col">${c.label}</th>`).join('')}</tr></thead>
-    <tbody>${rows.map((rv,r)=>`<tr>${tb.cols.map(c=>c.rows?`<th scope="row">${esc(vlRowLabel(c,r))}</th>`:`<td>${cell(tb,c,r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div><ul class="vl-notes" data-nt="${tb.id}" hidden></ul></div>`;};
+    <tbody>${rows.map((rv,r)=>`<tr>${tb.cols.map(c=>c.rows?`<th scope="row">${esc(vlRowLabel(c,r))}</th>`:`<td>${cell(tb,c,r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div><ul class="vl-notes" data-nt="${tb.id}" hidden></ul><p class="vl-an"><button type="button" class="btn" data-an="${tb.id}">Analyze this table in a spreadsheet</button></p></div>`;};
   let h=`<header class="vl-head"><p class="eyebrow">Virtual lab${L.course?' · '+esc(L.course):''}</p><h3 class="vl-title">${L.title}</h3>
     <p class="vl-src">${L.teachers?'Teachers: '+esc(L.teachers):''}${L.source?(L.teachers?' · ':'')+'Handout: '+(L.source.href?`<a href="${esc(L.source.href)}" target="_blank" rel="noopener">${esc(L.source.label||'on Canvas')}</a>`:esc(L.source.label||'')):''}</p>
     <div class="vl-who">${line('name','Name')}${line('period','Class period')}${line('date','Date')}</div>
@@ -606,6 +607,31 @@ function renderTable(sim){if(!sim.ui.tbl)return;const cols=trialCols(sim);
   if(!sim.trials.length){sim.ui.tbl.innerHTML='<p class="empty">No trials yet. Set the variables, let the readings settle, then press Record trial.</p>';return;}
   sim.ui.tbl.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>Trial</th>${cols.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead><tbody>${
     sim.trials.map(r=>`<tr><td>${r._n!==undefined?r._n:r.n}</td>${cols.map(c=>`<td>${esc(cellText(c,r[c.id]))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
+/* ---------- Analyze in a spreadsheet: hand a table to Raider MathLab's "Analyze your lab data" ---------- */
+const RJ_ANALYZE_URL='https://rjedtech.github.io/Raider-MathLab/excel.html';
+function rjNum(t){const s=String(t===undefined||t===null?'':t).trim().replace(/,/g,'');if(s==='')return '';const n=Number(s);return isFinite(n)?n:String(t).trim();}
+function rjSplitUnit(label){const s=stripTags(label).trim(),m=/^(.*?)\s*\(([^()]*)\)\s*$/.exec(s);return m?{name:m[1].trim(),unit:m[2].trim()}:{name:s,unit:''};}
+function rjNote(sim,el,msg){if(!el){flash(sim,msg);return;}let m=el.parentNode.querySelector('.vl-an-msg');if(!m){m=document.createElement('span');m.className='vl-an-msg';m.setAttribute('role','status');el.after(m);}m.textContent=msg;}
+function rjAnalyzeSend(sim,payload,el){payload.v=1;payload.created=Date.now();
+  payload.source=Object.assign({site:LAB_NAME,tool:stripTags(sim.def.title||sim.def.id),url:location.href.split('#')[0]+'#'+sim.def.id},payload.source||{});
+  if(payload.columns.length>12){payload.columns=payload.columns.slice(0,12);payload.rows=payload.rows.map(r=>r.slice(0,12));}
+  const j=JSON.stringify(payload);let url=null;
+  try{localStorage.setItem('rjlabs-analyze',j);if(localStorage.getItem('rjlabs-analyze')===j)url=RJ_ANALYZE_URL+'#analyze-in';}catch(e){}
+  if(!url){const h=btoa(unescape(encodeURIComponent(j))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    if(h.length>6000){rjNote(sim,el,'This table is too big to send. Use Copy as CSV, then paste it on the Analyze page.');return;}
+    url=RJ_ANALYZE_URL+'#analyze-in='+h;}
+  const w=window.open(url,'_blank');if(w){try{w.opener=null;}catch(e){}rjNote(sim,el,'Opened your data in a new tab.');}else location.href=url;}
+function analyzeTrials(sim){if(!sim.trials.length){flash(sim,'Record a trial first');return;}
+  const cols=trialCols(sim),nm=c=>stripTags(c.ctl?c.ctl.label:c.m.label),un=c=>stripTags(c.ctl?(c.ctl.unit||'').trim():(c.m.unit||'')).trim();
+  const columns=[{name:'Trial',unit:''},...cols.map(c=>({name:nm(c),unit:un(c)}))];
+  const rows=sim.trials.slice(0,500).map(r=>[r._n!==undefined?r._n:r.n,...cols.map(c=>{const t=cellText(c,r[c.id]);return c.num?rjNum(t):String(t);})]);
+  const xc=cols.find(c=>c.ctl&&c.num),yc=cols.find(c=>c.m&&c.num);
+  rjAnalyzeSend(sim,{columns,rows,accepted:null,suggest:xc&&yc?{x:nm(xc),y:nm(yc)}:null});}
+function analyzeNotebookTable(sim,tid,el){const V=sim.vlab;if(!V)return;const tb=(V.lab.tables||[]).find(t=>t.id===tid);if(!tb)return;
+  const heads=tb.cols.map(c=>rjSplitUnit(c.label)),rows=vlRows(tb).map((_,r)=>tb.cols.map(c=>c.rows?rjNum(vlRowLabel(c,r)):rjNum(V.raw('c:'+tb.id+':'+c.id+':'+r))));
+  if(!rows.some(rw=>tb.cols.some((c,i)=>!c.rows&&rw[i]!==''))){rjNote(sim,el,'Fill in some of the table first.');return;}
+  let suggest=null;try{const s=vlGs(V.lab).flatMap(g=>g.series||[]).find(x=>x.table===tb.id);if(s){const xi=tb.cols.findIndex(c=>c.id===s.x),yi=tb.cols.findIndex(c=>c.id===s.y);if(xi>=0&&yi>=0)suggest={x:heads[xi].name,y:heads[yi].name};}}catch(e){}
+  rjAnalyzeSend(sim,{source:{tool:stripTags(sim.def.title||sim.def.id)+': '+stripTags(V.lab.title||tb.title||'notebook')},columns:heads,rows,accepted:null,suggest},el);}
 function toCSV(sim){if(!sim.trials.length)return '';const cols=trialCols(sim),q=s=>/[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
   return [['Trial',...cols.map(c=>c.label)].map(q).join(','),...sim.trials.map(r=>[r._n!==undefined?r._n:r.n,...cols.map(c=>cellText(c,r[c.id]))].map(x=>q(String(x))).join(','))].join('\n');}
 
