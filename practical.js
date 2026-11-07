@@ -1349,3 +1349,18 @@ phlife: {
   takeaway: 'Each step on the pH scale means ten times more or less H⁺. A buffer keeps pH steady by taking up extra H⁺ or OH⁻, and your lungs help blood’s buffer by removing CO₂. Enzymes depend on it: away from their best pH they lose their shape and stop working.'
 }
 });
+
+/* lifebonds (added Nov 7) */
+BioLab.addPractical({
+lifebonds: {
+  hook: 'Your blood carries dissolved salt to every cell, but the fat from lunch cannot dissolve in it and has to ride inside protein-coated packages. Drop salt into water, then a C–H chain like the tail of a fat. Which bonds let the salt come apart while the chain stays out?',
+  hookSet: { view: 'mol', mol: 'salt', wet: true },
+  answer: 'Salt is held by ionic bonds between Na⁺ and Cl⁻. In water, the δ− oxygen ends of water molecules surround each Na⁺ and the δ+ hydrogen ends surround each Cl⁻, so the ions pull apart and dissolve. A C–H chain has only nonpolar bonds and no charged ends, so water molecules hydrogen-bond to each other and leave it out.',
+  uses: [
+    'IV bags: normal saline is 0.9% sodium chloride in water. The Na⁺ and Cl⁻ ions stay dissolved, so they mix straight into your blood.',
+    'Tracking atoms: in 1952 Hershey and Chase tagged virus DNA with phosphorus-32 and virus protein with sulfur-35. Most of the P-32 went into the bacteria while most of the S-35 stayed outside, which showed that DNA carries the genes.',
+    'PCR and DNA tests: heating DNA to about 95 °C separates the two strands. No covalent bonds break: the hydrogen bonds between the bases come apart, and each strand’s backbone stays whole.'
+  ],
+  takeaway: 'Atoms bond by sharing or handing over valence electrons. Even sharing (C–H) makes nonpolar parts that water leaves out; uneven sharing (O–H, N–H, C=O) makes polar parts that water grabs. Hydrogen bonds are about 20 times weaker than a covalent bond, weak enough to unzip DNA but so numerous they hold water together.'
+}
+});

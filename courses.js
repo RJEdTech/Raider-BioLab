@@ -8,7 +8,7 @@ BioLab.COURSES = [
     units: [
       { n: 'Unit 1', t: 'Nature of science', ids: ['expdesign', 'pillbug'] },
       { n: 'New', t: 'Ecology', ids: ['energy', 'carboncycle', 'popgrowth', 'wolfmoose', 'predprey', 'biodiversity'], note: 'Ecology is being added to Biology. These are the tools Honors Biology uses for it.' },
-      { n: 'Unit 2', t: 'Chemistry of life', ids: ['waterprops', 'water', 'macromolecules', 'phlife', 'foodtests'] },
+      { n: 'Unit 2', t: 'Chemistry of life', ids: ['lifebonds', 'waterprops', 'water', 'macromolecules', 'phlife', 'foodtests'] },
       { n: 'Unit 3', t: 'Cells and microscopes', ids: ['cellexplorer', 'microscope', 'transport', 'potato'] },
       { n: 'Unit 4', t: 'Cell energy', ids: ['enz', 'photo', 'chloroplast', 'glycolysis', 'resp'] },
       { n: 'Unit 5', t: 'Cell cycle and cancer', ids: ['cellcycle', 'division', 'roottip'] },
@@ -23,7 +23,7 @@ BioLab.COURSES = [
     units: [
       { n: 'Fall 1', t: 'Science skills: experimental design and data', ids: ['expdesign', 'pillbug'] },
       { n: 'Fall 2', t: 'Ecology', ids: ['energy', 'carboncycle', 'popgrowth', 'wolfmoose', 'predprey', 'biodiversity'] },
-      { n: 'Fall 3', t: 'Biochemistry and water', ids: ['waterprops', 'water', 'macromolecules', 'phlife', 'protein', 'foodtests'] },
+      { n: 'Fall 3', t: 'Biochemistry and water', ids: ['lifebonds', 'waterprops', 'water', 'macromolecules', 'phlife', 'protein', 'foodtests'] },
       { n: 'Fall 4', t: 'Cells', ids: ['cellexplorer', 'microscope', 'sav'] },
       { n: 'Fall 5', t: 'Membranes and transport', ids: ['transport', 'potato'] },
       { n: 'Fall 6', t: 'Enzymes', ids: ['enz'] },
@@ -40,7 +40,7 @@ BioLab.COURSES = [
     blurb: 'Tools in the order AP Biology covers them, starting with the summer ecology unit.',
     units: [
       { n: 'Summer', t: 'Ecology (AP Unit 8) and science practices', ids: ['pillbug', 'popgrowth', 'wolfmoose', 'predprey', 'biodiversity', 'energy', 'carboncycle'], note: 'Chi-square, population growth, communities and ecosystems.' },
-      { n: 'Unit 1', t: 'Chemistry of life', ids: ['waterprops', 'water', 'macromolecules', 'phlife', 'protein', 'foodtests'] },
+      { n: 'Unit 1', t: 'Chemistry of life', ids: ['lifebonds', 'waterprops', 'water', 'macromolecules', 'phlife', 'protein', 'foodtests'] },
       { n: 'Unit 2', t: 'Cells, membranes and water potential', ids: ['cellexplorer', 'sav', 'transport', 'potato', 'wpotential', 'transpiration'] },
       { n: 'Unit 4', t: 'Cell communication and neurons', ids: ['signaling', 'neuron'] },
       { n: 'Unit 3', t: 'Enzymes, respiration and photosynthesis', ids: ['enz', 'glycolysis', 'resp', 'chloroplast', 'photo'] },
@@ -80,7 +80,7 @@ BioLab.COURSES = [
 /* "By topic" view: tools inside each section, in the order the topics are taught. */
 BioLab.TOPIC_ORDER = {
   0: ['expdesign', 'pillbug'],
-  1: ['waterprops', 'water', 'macromolecules', 'phlife', 'protein', 'foodtests'],
+  1: ['lifebonds', 'waterprops', 'water', 'macromolecules', 'phlife', 'protein', 'foodtests'],
   2: ['cellexplorer', 'microscope', 'sav', 'transport', 'potato', 'wpotential', 'transpiration'],
   3: ['enz', 'glycolysis', 'resp', 'chloroplast', 'photo'],
   4: ['signaling', 'neuron', 'cellcycle', 'division', 'roottip'],
