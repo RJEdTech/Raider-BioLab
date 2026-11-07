@@ -103,7 +103,7 @@ const GEOM={};function geom(cell){return GEOM[cell]||(GEOM[cell]=staticGeom(cell
 /* dynamic shapes (vesicles, streaming chloroplasts, flagellum) for the current frame */
 function dynamic(sim,cell,t){const G=geom(cell),D={sh:{},an:{}},add=(p,s)=>{(D.sh[p]=D.sh[p]||[]).push(s);};const mv=RM?0:1;
   const ribs=G.free.map((d,i)=>[d[0]+Math.sin(t*0.5+d[2])*3*mv,d[1]+Math.cos(t*0.4+d[2])*3*mv]);
-  add('ribosome',{k:'dots',pts:ribs.concat(G.erRib),r:2.6});D.an.ribosome=ribs[3];
+  add('ribosome',{k:'dots',pts:ribs.concat(G.erRib||[]),r:2.6});D.an.ribosome=ribs[3];
   if(cell==='animal'){const ves=[];const ends=[-0.9,-0.45,0.05,-1.35];
     for(let i=0;i<4;i++){const u=((t*0.09*mv+i/4)%1+1)%1,e=memPt(ends[i],0.95),x=474+(e[0]-474)*u,y=150+(e[1]-150)*u;ves.push([x,y,u>0.92?7*(1-(u-0.92)/0.08):7]);}
     for(let i=0;i<2;i++){const u=((t*0.13*mv+i/2)%1+1)%1;ves.push([362+(392-362)*u,150+(168-150)*u+Math.sin(u*3.14)*-10,6]);}

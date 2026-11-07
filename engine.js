@@ -19,11 +19,11 @@ const LAB_META=n=>{const m=document.querySelector('meta[name="'+n+'"]');return m
 const FB_FORM='https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=4SwuQZc-CEClZjjFdYLisQzihhIB-7hPp9L3AOSeJONUOVJaVTVMOE9YMFNSVVM3TUNOOFVQR1pYTi4u';
 const fbUrl=tool=>FB_FORM+'&rba3eb377e6854b15b9a02aadcdd38deb='+encodeURIComponent(tool||'')+'&rc59cb41123d3497584d2ca10cb9e1c54='+encodeURIComponent('"'+LAB_NAME+'"');
 let level=store.get(LAB_KEY+'-level');if(!(level in LV))level='bio';
-/* Embedding (e.g. in a Canvas page): ?embed=1 hides the site chrome; ?mode=guided|game|lab|vlab picks the starting view (&lab=<id> picks the virtual lab);
+/* Embedding (e.g. in a Canvas page): ?embed=1 hides the site chrome; ?mode=guided|game|lab|vlab|review|frq picks the starting view (&lab=<id> picks the virtual lab);
    ?level=bio|honors|ap picks the starting detail level for this visit only. */
 const QS=(()=>{try{return new URLSearchParams(location.search);}catch(e){return new URLSearchParams('');}})();
 const EMBED=QS.has('embed'),QMODE=QS.get('mode'),QLVL=QS.get('level'),QLAB=QS.get('lab');
-const MODES=['guided','game','lab','vlab','review'];
+const MODES=['guided','game','lab','vlab','review','frq'];
 if(QLVL&&(QLVL in LV))level=QLVL;
 BL.embed=EMBED;
 const atLeast=l=>LV[level]>=LV[l||'bio'];
@@ -119,7 +119,7 @@ function buildSim(sim){
   const d=sim.def,id=d.id,asp=d.aspect||16/9,sec=el('section',{class:'sim',id:'sim-'+id,'aria-labelledby':'h-'+id});
   const hasGraph=d.graph!==false,hasPredict=!!d.challenges;
   sec.innerHTML=`<div class="pathbar" hidden></div><div class="sim-head"><p class="eyebrow">${secLabel(d.apUnit)}</p><h2 id="h-${id}">${d.title}</h2><p class="lede"></p><div class="real-uses" hidden></div><div class="modebar" role="group" aria-label="How do you want to use this tool?"></div></div>
-  <div class="panel review" aria-live="polite"></div><div class="rv-note"></div>
+  <div class="panel review" aria-live="polite"></div><div class="rv-note"></div>${d.frq?'<div class="panel frq"></div><div class="fq-note"></div>':''}
   <div class="bench">
     <div class="stage">${d.scale?`<p class="scale"></p>`:''}<canvas id="${id}-stage" style="aspect-ratio:${asp};--asp:${asp}" role="img" aria-label="${d.title} simulation"></canvas>
       <div class="tourbar" hidden><div class="tb-h"><span class="tb-n"></span><b class="tb-t"></b></div><p class="tb-x"></p>
@@ -158,7 +158,7 @@ function buildSim(sim){
   <div class="related" hidden></div>
   <p class="fb-line"><a class="fb-link" href="${fbUrl(d.tab)}" target="_blank" rel="noopener" data-tool="${d.tab}">Report a bug or request a feature</a><span class="fb-hint">Opens a short Microsoft Form with this tool already filled in. Sign in with your RJ account.</span></p>
   <details class="about embed-box"><summary>Embed this tool in Canvas</summary><div class="about-b embed-b"></div></details>`;
-  const ui=sim.ui;ui.sec=sec;ui.review=sec.querySelector('.review');ui.rvNote=sec.querySelector('.rv-note');ui.lede=sec.querySelector('.lede');ui.uses=sec.querySelector('.real-uses');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
+  const ui=sim.ui;ui.sec=sec;ui.review=sec.querySelector('.review');ui.rvNote=sec.querySelector('.rv-note');ui.frq=sec.querySelector('.panel.frq');ui.fqNote=sec.querySelector('.fq-note');ui.lede=sec.querySelector('.lede');ui.uses=sec.querySelector('.real-uses');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
   ui.clock=sec.querySelector('.clock');ui.play=sec.querySelector('[data-act=play]');ui.ctrls=sec.querySelector('.controls');ui.read=sec.querySelector('.readouts');
   ui.pred=sec.querySelector('.predict');ui.info=sec.querySelector('.info');ui.tbl=sec.querySelector('.tbl');ui.gm=sec.querySelector('#'+id+'-gm');ui.gx=sec.querySelector('#'+id+'-gx');ui.gy=sec.querySelector('#'+id+'-gy');
   ui.toast=sec.querySelector('.toast');ui.ctl={};ui.ctlW={};ui.actB={};ui.tiles={};ui.cap=sec.querySelector('.cap');ui.scale=sec.querySelector('.scale');ui.lab=sec.querySelector('.lab');
@@ -240,18 +240,18 @@ BL.h.lvText=lvText;
 const modeKey=sim=>LAB_KEY+'-mode-'+sim.def.id;
 function hasGuide(sim){return tourSteps(sim).length>0;}
 function buildModebar(sim){const bar=sim.ui.sec.querySelector('.modebar');if(!bar)return;const d=sim.def,opts=[];
-  if(d.tour)opts.push(['guided','Guided']);if(d.game)opts.push(['game',d.game.label||'Challenge']);opts.push(['lab','Full lab']);if(d.labs&&d.labs.length)opts.push(['vlab','Virtual lab']);if(d.review)opts.push(['review','Review']);
+  if(d.tour)opts.push(['guided','Guided']);if(d.game)opts.push(['game',d.game.label||'Challenge']);opts.push(['lab','Full lab']);if(d.labs&&d.labs.length)opts.push(['vlab','Virtual lab']);if(d.review)opts.push(['review','Review']);if(d.frq)opts.push(['frq','Free response']);
   if(opts.length<2){bar.hidden=true;return;}
   bar.innerHTML=opts.map(([m,l])=>`<button type="button" data-mode="${m}">${l}</button>`).join('');
   bar.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setMode(sim,b.dataset.mode,true)));}
 function restoreVisibility(sim){const d=sim.def;sim.ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl)||(!!e.dataset.vlab&&sim.mode!=='vlab');});if(d.onLevel)d.onLevel(sim);}
-function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(sim))mode='lab';if(mode==='game'&&!d.game)mode='lab';if(mode==='vlab'&&!(d.labs&&d.labs.length))mode='lab';if(mode==='review'&&!d.review)mode='lab';if(!MODES.includes(mode))mode='lab';
+function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(sim))mode='lab';if(mode==='game'&&!d.game)mode='lab';if(mode==='vlab'&&!(d.labs&&d.labs.length))mode='lab';if(mode==='review'&&!d.review)mode='lab';if(mode==='frq'&&!d.frq)mode='lab';if(!MODES.includes(mode))mode='lab';
   const was=sim.mode;
   if(sim.game&&mode!=='game')gameStop(sim);
   if(sim.tour&&sim.tour.on)tourExit(sim,'mode');
   if(was==='vlab'&&mode!=='vlab')vlabExit(sim);
   sim.mode=mode;if(user)store.set(modeKey(sim),mode);
-  const sec=sim.ui.sec;MODES.forEach(m=>sec.classList.toggle('m-'+m,m===mode));sec.classList.remove('g-try','g-done','rv-see');
+  const sec=sim.ui.sec;MODES.forEach(m=>sec.classList.toggle('m-'+m,m===mode));sec.classList.remove('g-try','g-done','rv-see','fq-see');
   sec.querySelectorAll('.modebar button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
   sim.ui.donecard.hidden=true;sim.ui.gamecard.hidden=true;sim.guide=null;
   const ex=sim.ui.tourbar&&sim.ui.tourbar.querySelector('[data-tour=exit]');if(ex)ex.textContent=mode==='guided'?'Skip to the full lab':'Exit walkthrough';
@@ -259,6 +259,7 @@ function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(si
   else if(mode==='game'){gameStart(sim);}
   else if(mode==='vlab'){restoreVisibility(sim);vlabEnter(sim,was==='vlab');}
   else if(mode==='review'){restoreVisibility(sim);renderReview(sim);}
+  else if(mode==='frq'){restoreVisibility(sim);renderFRQ(sim);}
   else restoreVisibility(sim);
   if(user&&sim.ui.sec.scrollIntoView)window.scrollTo(0,0);
   updateReadouts(sim);drawGraph(sim);}
@@ -576,7 +577,7 @@ BL.openLab=openLab;BL.vlab={save:vlSave,report:sim=>sim.vlab?{html:vlReportHTML(
 /* ---------- "Embed this tool in Canvas" panel ---------- */
 function embedUrl(sim,o){let base=location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');const q=new URLSearchParams();q.set('embed','1');if(o.mode)q.set('mode',o.mode);if(o.mode==='vlab'&&o.lab)q.set('lab',o.lab);if(o.level)q.set('level',o.level);return base+'?'+q.toString()+'#'+sim.def.hash;}
 function buildEmbed(sim){const box=sim.ui.sec.querySelector('.embed-b');if(!box||EMBED){const d=sim.ui.sec.querySelector('.embed-box');if(d&&EMBED)d.hidden=true;return;}const d=sim.def,id=d.id;
-  const modes=[d.tour?['guided','Guided (walkthrough, then predictions)']:null,d.game?['game',(d.game.label||'Challenge')+' game']:null,['lab','Full lab'],d.labs&&d.labs.length?['vlab','Virtual lab (a teacher’s handout on the bench)']:null,d.review?['review','Review questions']:null].filter(Boolean),labs=d.labs||[];
+  const modes=[d.tour?['guided','Guided (walkthrough, then predictions)']:null,d.game?['game',(d.game.label||'Challenge')+' game']:null,['lab','Full lab'],d.labs&&d.labs.length?['vlab','Virtual lab (a teacher’s handout on the bench)']:null,d.review?['review','Review questions']:null,d.frq?['frq','Free-response practice']:null].filter(Boolean),labs=d.labs||[];
   box.innerHTML=`<p>Put this tool right inside a Canvas page, assignment or discussion. Students use it there with no login, and nothing they do leaves their device.</p>
   <div class="emb-opts"><label>Start in <select class="sel" data-e="mode">${modes.map(m=>`<option value="${m[0]}">${m[1]}</option>`).join('')}</select></label>
   ${labs.length>1?`<label data-e-lab hidden>Lab <select class="sel" data-e="lab"><option value="">Students choose</option>${labs.map(l=>`<option value="${esc(l.id)}">${esc(l.title)}</option>`).join('')}</select></label>`:''}
@@ -774,11 +775,137 @@ function rvOpenLab(sim,q){const L=q.lab,base={};(sim.def.controls||[]).forEach(c
   n.querySelector('[data-rv=back]').addEventListener('click',()=>{sim.ui.sec.classList.remove('rv-see');window.scrollTo(0,Math.max(0,sim.ui.review.getBoundingClientRect().top+window.scrollY-12));});
   window.dispatchEvent(new Event('resize'));updateReadouts(sim);drawGraph(sim);window.scrollTo(0,Math.max(0,n.getBoundingClientRect().top+window.scrollY-8));}
 BL.rvOpenLab=rvOpenLab;
+/* ---------- Free-response practice (frq.js): AP-style written questions, self-scored against a scoring guide ----------
+   BioLab.addFRQ({<toolId>:[{id,kind,type,title,minutes,stem,parts:[{label,q,pts,kind:'explain'|'calc'|'sketch',num:{ans,tol,unit},guide:[...],model,mistakes:[...]}],lab:{set,act,look}}]})
+   gives that tool a Free response mode (#<hash>@frq). With no frq.js, or no entry for a tool, nothing changes.
+   Answers stay in this tab's sessionStorage, so a reload keeps them; nothing is sent anywhere. */
+const FRQS={};BL.addFRQ=o=>{Object.keys(o||{}).forEach(k=>{const have=FRQS[k]||[];(o[k]||[]).forEach(f=>{if(f&&f.id&&!have.some(x=>x.id===f.id))have.push(f);});FRQS[k]=have;});};
+const sstore={get(k){try{return sessionStorage.getItem(k)}catch(e){return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}},del(k){try{sessionStorage.removeItem(k)}catch(e){}}};
+const fqKey=id=>LAB_KEY+'-frq-'+id;
+function fqLoad(id){try{const o=JSON.parse(sstore.get(fqKey(id))||'{}');return o&&typeof o==='object'?o:{};}catch(e){return {};}}
+function fqSave(id,S){sstore.set(fqKey(id),JSON.stringify(S));}
+function fqList(d){return (d.frq||[]).filter(f=>atLeast(f.lvl));}
+const fqPP=p=>p.pts!==undefined?p.pts:(p.guide||[]).length;
+const fqTotal=f=>(f.parts||[]).reduce((s,p)=>s+fqPP(p),0);
+const fqPS=(Q,p)=>{const a=Q&&Q.p&&Q.p[p.label];return a&&a.c?Math.min(fqPP(p),(a.k||[]).length):0;};
+function fqScore(f,Q){let got=0,done=0;(f.parts||[]).forEach(p=>{const a=Q&&Q.p&&Q.p[p.label];if(a&&a.c){done++;got+=fqPS(Q,p);}});return {got,done,n:(f.parts||[]).length,tot:fqTotal(f)};}
+const fqPts=n=>n+' point'+(n===1?'':'s');
+const fqPl=p=>'('+p.label+')';
+/* Read a typed number. Accepts 2.45, -3, .5, 1,250, 2,45, 3.1e-2, 3.1 × 10^-2 and 10⁻², with or without the expected unit after it. */
+const SUP={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-','⁺':'+'};
+const fqUnitNorm=u=>String(u||'').replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺]/g,c=>SUP[c]).replace(/[\s^*·⋅]/g,'').replace(/µ/g,'μ').replace(/^deg(rees?)?$/i,'°');
+function fqParseNum(raw,unit){let s=String(raw===undefined||raw===null?'':raw).trim();if(!s)return {err:'empty'};
+  s=s.replace(/[−‒–—]/g,'-').replace(/ /g,' ');
+  const m=/^([+-]?\s*(?:\d[\d,]*(?:\.\d*)?|\.\d+))\s*(?:[eE]\s*([+-]?\d+)|(?:[x×*·⋅]\s*)?10\s*(?:\^\s*\(?\s*([+-]?\d+)\s*\)?|([⁻⁺]?[⁰¹²³⁴⁵⁶⁷⁸⁹]+)))?\s*(.*)$/.exec(s);
+  if(!m)return {err:'format'};
+  let n=m[1].replace(/\s+/g,'');
+  if(/^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(n))n=n.replace(/,/g,'');else if(/^[+-]?\d+,\d+$/.test(n))n=n.replace(',','.');else if(n.indexOf(',')>=0)return {err:'format'};
+  let v=parseFloat(n);const ex=m[2]!==undefined?m[2]:m[3]!==undefined?m[3]:m[4]!==undefined?m[4].replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺]/g,c=>SUP[c]):null;
+  if(ex!==null)v*=Math.pow(10,parseInt(ex,10));if(!isFinite(v))return {err:'format'};
+  const rest=(m[5]||'').trim();if(!rest)return {v};
+  if(unit&&fqUnitNorm(rest)===fqUnitNorm(unit))return {v};
+  return {err:/[A-Za-zµμΩ°%]/.test(rest)?'unit':'format',rest};}
+function fqFmt(v){const a=Math.abs(v);if(a>=1e5||(a>0&&a<1e-3))return v.toExponential(2).replace('e',' × 10^').replace('+','');return String(+v.toPrecision(4));}
+/* the order "Try another" walks: by section, then by topic order */
+function fqTools(){const order=d=>{const s=SECTIONS.indexOf(d.apUnit),t=((BL.TOPIC_ORDER||{})[d.apUnit]||[]).indexOf(d.id);return (s<0?99:s)*1000+(t<0?500+(d.order||0):t);};
+  return DEFS.filter(d=>d.frq&&fqList(d).length).sort((a,b)=>order(a)-order(b));}
+function fqNext(sim,f){const d=sim.def,list=fqList(d),i=list.indexOf(f);if(i>=0&&i<list.length-1)return {d,f:list[i+1]};
+  const T=fqTools(),j=T.indexOf(d),nd=T.length>1?T[(j+1)%T.length]:d;return {d:nd,f:fqList(nd)[0]};}
+let fqTick=null;
+function fqTimerHtml(sim,f){const T=sim.fqT;if(!T||T.id!==f.id)return `<button type="button" class="btn" data-fq="tstart">Start a ${f.minutes}-minute timer</button>`;
+  return `<span class="fq-clock${T.left<=0?' up':''}" role="timer" aria-label="Time left">${fqClock(T)}</span><button type="button" class="btn" data-fq="tpause">${T.run?'Pause timer':'Resume timer'}</button><button type="button" class="btn" data-fq="tstop">Stop timer</button>`;}
+function fqClock(T){const ms=T.run?Math.max(0,T.end-Date.now()):T.left;if(ms<=0)return 'Time is up';const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' left';}
+function fqTimerRun(){if(fqTick)return;fqTick=setInterval(()=>{let any=false;DEFS.forEach(d=>{const sim=sims[d.id],T=sim&&sim.fqT;if(!T||!T.run)return;any=true;const c=sim.ui.frq&&sim.ui.frq.querySelector('.fq-clock');
+    if(Date.now()>=T.end){T.run=false;T.left=0;if(c){c.textContent=fqClock(T);c.classList.add('up');const b=sim.ui.frq.querySelector('[data-fq=tpause]');if(b)b.hidden=true;const m=sim.ui.frq.querySelector('.fq-tmsg');if(m)m.textContent='Time is up. On the exam you would move on to the next question.';}}
+    else if(c)c.textContent=fqClock(T);});if(!any){clearInterval(fqTick);fqTick=null;}},1000);}
+function fqPartHtml(sim,f,p,Q){const id=sim.def.id+'-'+f.id+'-'+String(p.label).replace(/[^A-Za-z0-9]/g,''),a=(Q.p&&Q.p[p.label])||{},done=!!a.c,n=fqPP(p),u=p.num&&p.num.unit?p.num.unit:'';
+  const taL=p.kind==='calc'?`Your work for ${fqPl(p)}: the equation you start from, what you substitute, and the result`:p.kind==='sketch'?`Describe your sketch for ${fqPl(p)} (optional)`:`Your answer to ${fqPl(p)}`;
+  let h=`<li class="fq-part${done?' done':''}" id="${id}"><div class="fq-ph"><span class="fq-pl">${fqPl(p)}</span><span class="fq-pp">${fqPts(n)}</span>${done?`<span class="fq-pg">${fqPS(Q,p)} of ${n}</span>`:''}</div><div class="fq-q">${p.q}</div>`;
+  if(p.kind==='sketch')h+=`<p class="fq-hint">Draw this on paper, the way you would in the exam booklet. Then check it against the scoring guide.</p>`;
+  h+=`<label class="fq-l" for="${id}-t">${taL}</label><textarea class="vl-in vl-ta fq-ta" id="${id}-t" rows="${p.kind==='sketch'?2:4}" data-fq-t="${esc(p.label)}"${done?' readonly':''}>${esc(a.t||'')}</textarea>`;
+  if(p.kind==='calc'&&p.num)h+=`<div class="fq-num"><label class="fq-l" for="${id}-n">Your final number for ${fqPl(p)}${u?`, in ${u}`:''}</label><div class="vl-cin"><input class="vl-in" id="${id}-n" inputmode="decimal" autocomplete="off" spellcheck="false" data-fq-n="${esc(p.label)}" value="${esc(a.n||'')}"${done?' disabled':''}>${u?`<span class="vl-u" aria-hidden="true">${u}</span>`:''}</div></div>`;
+  if(!done)h+=`<div class="row fq-act"><button type="button" class="btn primary" data-fq-check="${esc(p.label)}">Check my answer</button></div><p class="fq-msg" role="status">${a.msg?esc(a.msg):''}</p>`;
+  else{let nv='';if(p.kind==='calc'&&p.num&&a.ok!==undefined&&a.ok!==null){const lo=fqFmt(p.num.ans-p.num.tol),hi=fqFmt(p.num.ans+p.num.tol);
+      nv=a.ok?`<p class="verdict ok">Your number, ${esc(a.n)}${u?' '+u:''}, is in the accepted range (${lo} to ${hi}${u?' '+u:''}). Now check your work against each point below.</p>`:`<p class="verdict no">Your number, ${esc(a.n)}${u?' '+u:''}, is outside the accepted range (${lo} to ${hi}${u?' '+u:''}). Compare your work with the model answer to find where it went off.</p>`;}
+    h+=`<div class="fq-fb"><h4 class="fq-gh" tabindex="-1">Score ${fqPl(p)}</h4>${nv}<fieldset class="fq-guide"><legend>Scoring guide. Tick each point your written answer earns, the way an AP reader would.</legend>${(p.guide||[]).map((g,k)=>`<label class="fq-g"><input type="checkbox" data-fq-g="${esc(p.label)}" value="${k}"${(a.k||[]).includes(k)?' checked':''}><span>${g}</span></label>`).join('')}</fieldset>
+      <p class="fq-ps" aria-live="polite">You gave yourself ${fqPS(Q,p)} of ${fqPts(n)} for ${fqPl(p)}.</p>
+      ${p.model?`<div class="fq-model"><p class="fq-mh">A full-credit answer</p>${p.model}</div>`:''}
+      ${p.mistakes&&p.mistakes.length?`<div class="fq-mis"><p class="fq-mh">Common ways to lose points</p><ul>${p.mistakes.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}
+      <div class="row"><button type="button" class="btn" data-fq-redo="${esc(p.label)}">Try this part again</button></div></div>`;}
+  return h+'</li>';}
+function fqSumHtml(f,Q){const sc=fqScore(f,Q);if(sc.done<sc.n)return '';const nx=f._next;
+  return `<div class="fq-sum"><h4 tabindex="-1">Your score: ${sc.got} of ${sc.tot} points</h4><table class="fq-st"><thead><tr><th scope="col">Part</th><th scope="col">Points</th></tr></thead><tbody>${f.parts.map(p=>`<tr><th scope="row">${fqPl(p)}</th><td>${fqPS(Q,p)} of ${fqPP(p)}</td></tr>`).join('')}</tbody><tfoot><tr><th scope="row">Total</th><td>${sc.got} of ${sc.tot}</td></tr></tfoot></table>
+    <p class="help">${sc.got===sc.tot?'Full credit. Try the next one under the timer.':'Go back to any part you missed, read the model answer, and press Try this part again to rewrite it.'}</p>
+    <div class="row"><button type="button" class="btn primary" data-fq="next">Try another</button></div>${nx?`<p class="help fq-nx">Next up: <b>${nx.f.title}</b>${nx.d!==f._d?` (${nx.d.tab})`:''}</p>`:''}</div>`;}
+function renderFRQ(sim,focus){const box=sim.ui.frq,d=sim.def;if(!box||!d.frq)return;const list=fqList(d),S=fqLoad(d.id);S.q=S.q||{};
+  const f=list.find(x=>x.id===S.cur);
+  if(!f){const rows=list.map(x=>{const Q=S.q[x.id],sc=fqScore(x,Q);const st=sc.done?(sc.done===sc.n?`Done: ${sc.got} of ${sc.tot} points`:`Started: ${sc.done} of ${sc.n} parts checked`):'';
+      return `<li><button type="button" class="fq-item" data-fq-open="${esc(x.id)}"><span class="fq-it">${x.title}</span><span class="fq-im"><span class="fq-type">${x.type||'Free response'}</span><span>${fqPts(fqTotal(x))}${x.minutes?` · about ${x.minutes} minutes`:''}</span></span>${st?`<span class="fq-is">${st}</span>`:''}</button></li>`;}).join('');
+    box.innerHTML=`<div class="fq-head"><h3 tabindex="-1">Free-response practice</h3><p class="help">${list.length===1?'One question':list.length+' questions'} in the style of the AP exam. Write your answer, check it, then score yourself point by point with the scoring guide, the way AP readers score the exam. Your answers stay in this browser tab. Nothing is sent anywhere.</p></div>${list.length?`<ul class="fq-pick">${rows}</ul>`:'<p class="help">No free-response questions here yet.</p>'}`;
+    box.querySelectorAll('[data-fq-open]').forEach(b=>b.addEventListener('click',()=>{const S2=fqLoad(d.id);S2.cur=b.dataset.fqOpen;fqSave(d.id,S2);renderFRQ(sim,'title');}));
+    if(focus){const h=box.querySelector('h3');if(h)h.focus({preventScroll:true});window.scrollTo(0,Math.max(0,box.getBoundingClientRect().top+window.scrollY-12));}
+    return;}
+  const Q=S.q[f.id]=S.q[f.id]||{p:{}};Q.p=Q.p||{};const save=()=>fqSave(d.id,S);
+  const i=list.indexOf(f),sc=fqScore(f,Q);f._d=d;f._next=fqNext(sim,f);
+  box.innerHTML=`<div class="fq-top"><button type="button" class="linkbtn" data-fq="list">← All free-response questions</button>${list.length>1?`<span class="fq-n">Question ${i+1} of ${list.length}</span>`:''}</div>
+    <p class="fq-type">${f.type||'Free response'}</p><h3 class="fq-title" tabindex="-1">${f.title}</h3>
+    <p class="fq-meta">${fqPts(sc.tot)}${f.minutes?` · suggested time about ${f.minutes} minutes`:''}</p>
+    <div class="fq-bar"><p class="fq-score" aria-live="polite"><b>${sc.got} of ${sc.tot} points</b> so far <span>(${sc.done} of ${sc.n} parts checked)</span></p>${f.minutes?`<div class="fq-timer row">${fqTimerHtml(sim,f)}</div>`:''}</div><p class="fq-tmsg" role="status"></p>
+    <div class="fq-stem">${f.stem||''}</div>
+    <ol class="fq-parts">${f.parts.map(p=>fqPartHtml(sim,f,p,Q)).join('')}</ol>
+    ${f.lab?`<div class="fq-lab"><p>Check your thinking in the simulation once you have written your answers.</p><button type="button" class="btn" data-fq="lab">See it in the lab</button></div>`:''}
+    ${fqSumHtml(f,Q)}
+    <div class="row fq-foot"><button type="button" class="btn" data-fq="clear">Clear my answers to this question</button></div>`;
+  const part=lb=>f.parts.find(p=>String(p.label)===lb),ans=lb=>(Q.p[lb]=Q.p[lb]||{});
+  const upd=()=>{const s=fqScore(f,Q),b=box.querySelector('.fq-score');if(b)b.innerHTML=`<b>${s.got} of ${s.tot} points</b> so far <span>(${s.done} of ${s.n} parts checked)</span>`;
+    f.parts.forEach(p=>{const a=Q.p[p.label];if(!a||!a.c)return;const li=[...box.querySelectorAll('.fq-part')][f.parts.indexOf(p)];if(!li)return;const g=li.querySelector('.fq-pg');if(g)g.textContent=fqPS(Q,p)+' of '+fqPP(p);const ps=li.querySelector('.fq-ps');if(ps)ps.textContent=`You gave yourself ${fqPS(Q,p)} of ${fqPts(fqPP(p))} for ${fqPl(p)}.`;});
+    const old=box.querySelector('.fq-sum');if(old){const t=document.createElement('div');t.innerHTML=fqSumHtml(f,Q);const nw=t.firstElementChild;if(nw){old.replaceWith(nw);bindNext();}}};
+  box.querySelectorAll('[data-fq-t]').forEach(t=>t.addEventListener('input',()=>{ans(t.dataset.fqT).t=t.value;save();}));
+  box.querySelectorAll('[data-fq-n]').forEach(t=>{t.addEventListener('input',()=>{const a=ans(t.dataset.fqN);a.n=t.value;a.msg='';save();});
+    t.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const b=box.querySelector(`[data-fq-check="${CSS.escape(t.dataset.fqN)}"]`);if(b)b.click();}});});
+  box.querySelectorAll('[data-fq-check]').forEach(b=>b.addEventListener('click',()=>{const lb=b.dataset.fqCheck,p=part(lb),a=ans(lb),li=b.closest('.fq-part');
+    const ta=li.querySelector('textarea');if(ta)a.t=ta.value;
+    if(p.kind==='calc'&&p.num){const inp=li.querySelector('[data-fq-n]'),u=p.num.unit||'';a.n=(inp.value||'').trim();const r=fqParseNum(a.n,u),msg=li.querySelector('.fq-msg');
+      if(r.err){a.msg=r.err==='empty'?`Type your final number first${u?`, in ${u}`:''}.`:r.err==='unit'?(u?`This box takes the number in ${u}, and the unit is already filled in. You typed “${r.rest}” after the number. Convert to ${u} if you need to, then type just the number.`:`Type just the number. This answer has no unit.`):`That is not a number this box can read. Type it like 2.45, -3.1 or 4.2e-3${u?`, in ${u}`:''}.`;
+        save();msg.textContent=a.msg;inp.setAttribute('aria-invalid','true');inp.focus();return;}
+      inp.removeAttribute('aria-invalid');a.v=r.v;a.ok=Math.abs(r.v-p.num.ans)<=p.num.tol+1e-9;}
+    a.c=true;a.k=a.k||[];a.msg='';save();renderFRQ(sim,'part:'+lb);}));
+  box.querySelectorAll('[data-fq-g]').forEach(c=>c.addEventListener('change',()=>{const a=ans(c.dataset.fqG),k=+c.value;a.k=(a.k||[]).filter(x=>x!==k);if(c.checked)a.k.push(k);a.k.sort((x,y)=>x-y);save();upd();}));
+  box.querySelectorAll('[data-fq-redo]').forEach(b=>b.addEventListener('click',()=>{const a=ans(b.dataset.fqRedo);a.c=false;a.k=[];a.ok=null;save();renderFRQ(sim,'input:'+b.dataset.fqRedo);}));
+  const act=(k,fn)=>{const b=box.querySelector(`[data-fq=${k}]`);if(b)b.addEventListener('click',fn);};
+  act('list',()=>{S.cur=null;save();renderFRQ(sim,true);});
+  act('lab',()=>fqOpenLab(sim,f));
+  const clr=box.querySelector('[data-fq=clear]');if(clr)clr.addEventListener('click',()=>{if(!clr._arm){clr._arm=true;clr.textContent='Press again to clear every answer to this question';clearTimeout(clr._h);clr._h=setTimeout(()=>{clr._arm=false;clr.textContent='Clear my answers to this question';},5000);return;}
+    delete S.q[f.id];save();if(sim.fqT&&sim.fqT.id===f.id)sim.fqT=null;renderFRQ(sim,'title');});
+  const bindNext=()=>{const b=box.querySelector('[data-fq=next]');if(b&&!b._on){b._on=true;b.addEventListener('click',()=>fqGo(sim,f));}};bindNext();
+  act('tstart',()=>{sim.fqT={id:f.id,end:Date.now()+f.minutes*60000,left:f.minutes*60000,run:true};fqTimerRun();fqTimerPaint(sim,f,'tpause');});
+  act('tpause',()=>{const T=sim.fqT;if(!T)return;if(T.run){T.left=Math.max(0,T.end-Date.now());T.run=false;}else{T.end=Date.now()+T.left;T.run=true;fqTimerRun();}fqTimerPaint(sim,f,'tpause');});
+  act('tstop',()=>{sim.fqT=null;fqTimerPaint(sim,f,'tstart');});
+  if(focus){let t=null;if(focus==='title')t=box.querySelector('.fq-title');else if(typeof focus==='string'&&focus.indexOf('part:')===0){const li=[...box.querySelectorAll('.fq-part')][f.parts.findIndex(p=>String(p.label)===focus.slice(5))];t=li&&li.querySelector('.fq-gh');}
+    else if(typeof focus==='string'&&focus.indexOf('input:')===0){const li=[...box.querySelectorAll('.fq-part')][f.parts.findIndex(p=>String(p.label)===focus.slice(6))];t=li&&li.querySelector('textarea');}
+    if(t){t.focus({preventScroll:true});const r=t.getBoundingClientRect();if(r.top<0||r.bottom>window.innerHeight)window.scrollTo(0,Math.max(0,r.top+window.scrollY-(focus==='title'?60:90)));}
+    else window.scrollTo(0,Math.max(0,box.getBoundingClientRect().top+window.scrollY-12));}}
+function fqTimerPaint(sim,f,focusK){const w=sim.ui.frq.querySelector('.fq-timer');if(!w)return;w.innerHTML=fqTimerHtml(sim,f);const m=sim.ui.frq.querySelector('.fq-tmsg');if(m)m.textContent='';
+  const b=(k,fn)=>{const x=w.querySelector(`[data-fq=${k}]`);if(x)x.addEventListener('click',fn);};
+  b('tstart',()=>{sim.fqT={id:f.id,end:Date.now()+f.minutes*60000,left:f.minutes*60000,run:true};fqTimerRun();fqTimerPaint(sim,f,'tpause');});
+  b('tpause',()=>{const T=sim.fqT;if(!T)return;if(T.run){T.left=Math.max(0,T.end-Date.now());T.run=false;}else{T.end=Date.now()+T.left;T.run=true;fqTimerRun();}fqTimerPaint(sim,f,'tpause');});
+  b('tstop',()=>{sim.fqT=null;fqTimerPaint(sim,f,'tstart');});
+  if(sim.fqT&&sim.fqT.left<=0){const p=w.querySelector('[data-fq=tpause]');if(p)p.hidden=true;}
+  const x=w.querySelector(`[data-fq=${focusK}]`)||w.querySelector('button');if(x)x.focus();}
+function fqGo(sim,f){const nx=f._next||fqNext(sim,f);if(!nx||!nx.f)return;const S=fqLoad(nx.d.id);S.cur=nx.f.id;fqSave(nx.d.id,S);
+  if(nx.d===sim.def){renderFRQ(sim,'title');return;}const ns=sims[nx.d.id];if(ns)ns.fqFocus=true;location.hash='#'+nx.d.hash+'@frq';}
+function fqOpenLab(sim,f){if(f.kind==='ap'&&('ap' in LV)&&level!=='ap'&&setLevelFn)setLevelFn('ap');const L=f.lab,base={};(sim.def.controls||[]).forEach(c=>base[c.id]=c.def);BL.setValues(sim,Object.assign(base,L.set||{}));BL.reset(sim);restoreVisibility(sim);
+  sim.ui.sec.classList.add('fq-see');setRunning(sim,true);
+  if(L.act){const a=(sim.def.actions||[]).find(x=>x.id===L.act);if(a)a.run(sim);}
+  const n=sim.ui.fqNote;n.innerHTML=`<p><b>Set up for you.</b> ${L.look||''}</p><button type="button" class="btn" data-fq="back">Back to the question</button>`;
+  n.querySelector('[data-fq=back]').addEventListener('click',()=>{sim.ui.sec.classList.remove('fq-see');const b=sim.ui.frq.querySelector('[data-fq=lab]');if(b)b.focus({preventScroll:true});window.scrollTo(0,Math.max(0,(b||sim.ui.frq).getBoundingClientRect().top+window.scrollY-80));});
+  window.dispatchEvent(new Event('resize'));updateReadouts(sim);drawGraph(sim);n.querySelector('button').focus({preventScroll:true});window.scrollTo(0,Math.max(0,n.getBoundingClientRect().top+window.scrollY-8));}
+BL.frq={parse:fqParseNum,load:fqLoad,score:fqScore,openLab:fqOpenLab,list:fqList};
 
 const unitFor=(cid,i)=>{const c=(BL.COURSES||[]).find(x=>x.id===cid),u=c&&c.units[+i];return u?{c,u,i:+i,id:'u-'+cid+'-'+i}:null;};
 function parseUnit(id){const m=/^u-(.+)-(\d+)$/.exec(id||'');return m?unitFor(m[1],m[2]):null;}
 function unitTools(U){return linkList(U.u.ids);}
-function toolSteps(d){const s=[];if(d.tour&&d.tour.length)s.push(['guided','Guided walkthrough']);if(d.review)s.push(['review','Review questions']);if(!s.length)s.push(['lab','Full lab']);return s;}
+function toolSteps(d){const s=[];if(d.tour&&d.tour.length)s.push(['guided','Guided walkthrough']);if(d.review)s.push(['review','Review questions']);if(d.frq)s.push(['frq','Free-response practice']);if(!s.length)s.push(['lab','Full lab']);return s;}
 function unitPath(U){const out=[];unitTools(U).forEach(d=>toolSteps(d).forEach(([m,l])=>out.push({d,m,l})));return out;}
 const unitUrl=(d,m,U)=>'#'+d.hash+'@'+m+'@'+U.id;
 const seenKey=()=>LAB_KEY+'-unit-seen';
@@ -796,6 +923,7 @@ function canvasSteps(what,copyWord,img5){return `<ol class="emb-steps">
 let unitEl=null,curUnit=null;
 function renderUnit(U){curUnit=U;const tools=unitTools(U),seen=seenLoad();let stepN=0;
   const rows=tools.map(d=>{const steps=toolSteps(d).map(([m,l])=>{stepN++;const ok=!!seen[d.id+'@'+m];let extra='';if(m==='review'){const list=(d.review.questions||[]).filter(q=>atLeast(q.lvl)),a=rvLoad(d.id),did=list.filter(q=>a[q.id]&&a[q.id].done).length,got=list.filter(q=>a[q.id]&&a[q.id].ok).length;extra=did?` <span class="u-score">${got} of ${list.length} right</span>`:` <span class="u-score">${list.length} questions</span>`;}
+      if(m==='frq'){const L=fqList(d),S=fqLoad(d.id),q=S.q||{};let got=0,tot=0,done=0;L.forEach(f=>{const sc=fqScore(f,q[f.id]);tot+=sc.tot;if(sc.done){done++;got+=sc.got;}});extra=done?` <span class="u-score">${got} points so far</span>`:` <span class="u-score">${L.length} question${L.length===1?'':'s'}, ${tot} points</span>`;}
       return `<a class="u-step${ok?' seen':''}" href="${unitUrl(d,m,U)}"><span class="u-n" aria-hidden="true">${ok?'✓':stepN}</span><span>${l}${extra}${ok?'<span class="vh"> (opened)</span>':''}</span></a>`;}).join('');
     const lab=toolSteps(d).some(s=>s[0]==='lab')?'':`<a class="u-opt" href="${unitUrl(d,'lab',U)}">Full lab (optional)</a>`;
     return `<li class="u-tool"><h3>${d.tab}</h3><p>${d.card||''}</p><div class="u-steps">${steps}</div>${lab}</li>`;}).join('');
@@ -830,12 +958,13 @@ let homeEl,simsEl,jumpEl,backEl;
 function ensureBuilt(id){const sim=sims[id];if(sim.ui.sec)return sim;simsEl.appendChild(buildSim(sim));resetSim(sim);applyLevel(sim);buildModebar(sim);setMode(sim,(QMODE&&MODES.includes(QMODE)?QMODE:null)||store.get(modeKey(sim))||(hasGuide(sim)?'guided':'lab'));buildEmbed(sim);return sim;}
 function show(hash){const hp=(hash||'').split('@');hash=hp[0];const qm=hp[1],qc=hp[2];if(unitEl){unitEl.hidden=true;}curUnit=null;
   const UQ=parseUnit(hash);if(UQ){active=null;homeEl.hidden=true;backEl.hidden=false;jumpEl.value='';DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=true;});renderUnit(UQ);unitEl.hidden=false;document.title=UQ.u.t+' · '+LAB_NAME;window.scrollTo(0,0);return;}
+  if(hash&&/^c-/.test(hash)&&(BL.COURSES||[]).some(c=>c.id===hash.slice(2))&&!DEFS.some(d=>d.hash===hash))hash='path-'+hash.slice(2);
   if(hash&&hash.indexOf('path-')===0){const id=hash.slice(5);if((BL.COURSES||[]).some(c=>c.id===id)||id==='topic'){browse=id;store.set(LAB_KEY+'-browse',browse);buildHome();}hash='';}
   const def=DEFS.find(d=>d.hash===hash);
   if(!def){active=null;homeEl.hidden=false;backEl.hidden=true;jumpEl.value='';DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=true;});document.title=LAB_NAME;drawThumbs();return;}
   const sim=ensureBuilt(def.id);if(qm&&MODES.includes(qm))setMode(sim,qm);renderPathbar(sim,qc,sim.mode);active=sim;homeEl.hidden=true;backEl.hidden=false;jumpEl.value=def.hash;renderRelated(sim);
   DEFS.forEach(d=>{if(sims[d.id].ui.sec)sims[d.id].ui.sec.hidden=d.id!==def.id;});document.title=def.tab+' · '+LAB_NAME;
-  window.scrollTo(0,0);requestAnimationFrame(()=>{updateReadouts(sim);drawGraph(sim);});}
+  window.scrollTo(0,0);if(sim.fqFocus){sim.fqFocus=false;const t=sim.mode==='frq'&&sim.ui.frq&&sim.ui.frq.querySelector('.fq-title');if(t)t.focus({preventScroll:true});}requestAnimationFrame(()=>{updateReadouts(sim);drawGraph(sim);});}
 function linkList(ids){return (ids||[]).map(id=>DEFS.find(d=>d.id===id||d.hash===id)).filter(Boolean);}
 function renderRelated(sim){const box=sim.ui.sec.querySelector('.related');if(!box)return;const d=sim.def;
   const back=linkList(d.prereq),fwd=linkList(d.next),also=DEFS.filter(x=>x!==d&&(x.prereq||[]).includes(d.id)&&!(d.next||[]).includes(x.id));
@@ -860,9 +989,11 @@ function drawThumbs(force){const cvs=[...document.querySelectorAll('canvas.thumb
 const thumbCanvas=document.createElement('canvas');
 let browse=store.get(LAB_KEY+'-browse')||'topic';
 function sortSec(list,u){const ord=(BL.TOPIC_ORDER||{})[u]||[];const ix=d=>{const i=ord.indexOf(d.id);return i<0?1000+(d.order||0):i;};return list.slice().sort((a,b)=>ix(a)-ix(b));}
-function card(d){return `<a class="card${d.apUnit===FURTHER?' adv':''}" href="#${d.hash}"><canvas class="thumb" data-sim="${d.id}" aria-hidden="true"></canvas><span class="card-b"><span class="card-t">${d.tab}</span><span class="card-d">${d.card||''}</span>${d.kind?`<span class="kind">${d.kind}</span>`:''}</span></a>`;}
+function card(d){return `<a class="card${d.apUnit===FURTHER?' adv':''}" href="#${d.hash}"><canvas class="thumb" data-sim="${d.id}" aria-hidden="true"></canvas><span class="card-b"><span class="card-t">${d.tab}</span><span class="card-d">${d.card||''}</span>${d.frq?`<span class="tags">${d.kind?`<span class="kind">${d.kind}</span>`:''}<span class="kind fq-tag">Free response</span></span>`:d.kind?`<span class="kind">${d.kind}</span>`:''}</span></a>`;}
 /* A card that links to another site (e.g. a sister lab): {href,title,text,kind,label} */
 function extCard(x){return `<a class="card adv ext${x.lesson?' lesson':''}" href="${x.href}"${x.lesson?' target="_blank" rel="noopener"':''}><span class="thumb ext-thumb" aria-hidden="true"><span>${x.label||x.title}</span></span><span class="card-b"><span class="card-t">${x.title} ↗</span><span class="card-d">${x.text||''}</span>${x.kind?`<span class="kind">${x.kind}</span>`:''}</span></a>`;}
+function fqUnitLinks(list,cid,i){const L=list.filter(d=>d.frq&&fqList(d).length);if(!L.length)return '';
+  return `<p class="unit-frq"><span class="unit-frq-l">Free-response practice</span>${L.map(d=>{const n=fqList(d).length;return `<a class="chip" href="#${d.hash}@frq@u-${cid}-${i}">${d.tab}${n>1?` (${n})`:''}</a>`;}).join('')}</p>`;}
 function buildHome(){const units=document.getElementById('units');units.innerHTML='';const courses=BL.COURSES||[];
   const bw=document.getElementById('browse');
   if(bw){bw.innerHTML=['<button type="button" data-b="topic">By topic</button>'].concat(courses.map(c=>`<button type="button" data-b="${c.id}">${c.name}</button>`)).join('');
@@ -870,7 +1001,7 @@ function buildHome(){const units=document.getElementById('units');units.innerHTM
   const course=courses.find(c=>c.id===browse);
   if(course){const intro=el('p',{class:'lede course-lede'},course.blurb||'');units.appendChild(intro);
     course.units.forEach((u,i)=>{const list=linkList(u.ids),ext=u.links||[];if(!list.length&&!ext.length)return;const sec=el('section',{class:'unit'});
-      sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${u.n||('Step '+(i+1))}</span> ${u.t}</h3>${u.note?`<p class="unit-note">${u.note}</p>`:''}${list.length?`<a class="unit-go" href="#u-${course.id}-${i}">Walk through this unit →</a>`:''}<div class="cards">${ext.map(extCard).join('')}${list.map(card).join('')}</div>`;units.appendChild(sec);});
+      sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${u.n||('Step '+(i+1))}</span> ${u.t}</h3>${u.note?`<p class="unit-note">${u.note}</p>`:''}${list.length?`<a class="unit-go" href="#u-${course.id}-${i}">Walk through this unit →</a>`:''}${fqUnitLinks(list,course.id,i)}<div class="cards">${ext.map(extCard).join('')}${list.map(card).join('')}</div>`;units.appendChild(sec);});
     const adv=linkList(course.further),ext=course.furtherLinks||[];if(adv.length||ext.length){const sec=el('section',{class:'unit further'});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">Go further</span> For students who want more</h3><p class="unit-note">Optional tools that go past what class time allows.</p><div class="cards">${adv.map(card).join('')}${ext.map(extCard).join('')}</div>`;units.appendChild(sec);}}
   else{const groups={};DEFS.forEach(d=>{(groups[d.apUnit]=groups[d.apUnit]||[]).push(d);});
     SECTIONS.forEach(u=>{const list=sortSec(groups[u]||[],u);if(!list.length)return;
@@ -881,7 +1012,7 @@ function buildHome(){const units=document.getElementById('units');units.innerHTM
 BL.start=function(){
   if(EMBED)document.documentElement.classList.add('embed');
   homeEl=document.getElementById('home');simsEl=document.getElementById('sims');jumpEl=document.getElementById('jump');backEl=document.getElementById('back');
-  DEFS.forEach(d=>{applyPractical(d);if(REVIEWS[d.id])d.review=REVIEWS[d.id];sims[d.id]=makeSim(d);});
+  DEFS.forEach(d=>{applyPractical(d);if(REVIEWS[d.id])d.review=REVIEWS[d.id];if(FRQS[d.id]&&FRQS[d.id].length)d.frq=FRQS[d.id];sims[d.id]=makeSim(d);});
   unitEl=el('section',{id:'unitpage',class:'unitpage'});unitEl.hidden=true;simsEl.parentNode.insertBefore(unitEl,simsEl);
   readPal();buildHome();
   const lvlBtns=[...document.querySelectorAll('#lvl button')];

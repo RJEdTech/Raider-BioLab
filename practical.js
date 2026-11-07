@@ -1334,3 +1334,18 @@ dissection: {
   takeaway: 'Organs sit in a fixed, logical layout: the diaphragm splits chest from abdomen, the digestive organs fill the front of the abdomen, and the kidneys lie behind them against the back wall. Knowing the layout lets you find any organ, in a pig or a person.'
 }
 });
+
+/* phlife (added Nov 7) */
+BioLab.addPractical({
+phlife: {
+  hook: 'Your stomach holds acid at about pH 2, yet your blood stays close to pH 7.4 and quickly returns there, even after a hard sprint dumps acid into it. Add 5 drops of acid to 50 mL of pure water, then to 50 mL of blood-strength bicarbonate buffer. How far does each pH fall, and what changes when breathing carries the CO₂ away?',
+  hookSet: { sol: 'blood' },
+  answer: 'Pure water falls from 7.00 to 3.30, about 5,000 times more H⁺. The blood buffer in a sealed beaker only falls from 7.40 to 7.24, because HCO₃⁻ catches the H⁺ and turns it into CO₂. With breathing on, the CO₂ is carried away and the pH stays at 7.39.',
+  uses: [
+    'Antacids: calcium carbonate tablets react with stomach acid and use up some of the H⁺, which can ease heartburn.',
+    'Aquariums: most tropical fish need water between about pH 6.5 and 7.5, so fish keepers test it regularly and add a carbonate buffer, such as crushed coral, to stop it drifting.',
+    'Hard exercise: muscles release acid into your blood, and you breathe harder partly to blow off CO₂, which pulls blood pH back toward 7.4.'
+  ],
+  takeaway: 'Each step on the pH scale means ten times more or less H⁺. A buffer keeps pH steady by taking up extra H⁺ or OH⁻, and your lungs help blood’s buffer by removing CO₂. Enzymes depend on it: away from their best pH they lose their shape and stop working.'
+}
+});

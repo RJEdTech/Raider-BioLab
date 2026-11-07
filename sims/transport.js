@@ -9,6 +9,49 @@ const OSM_PER_PCT=342;           // 1% NaCl ≈ 171 mM NaCl ≈ 342 mOsm/L (i = 
 const LYSE=1.5;                  // red blood cell bursts above 150% volume
 const WALL_E=8;                  // plant wall elastic modulus, MPa
 const CX=240,CY=232;
+/* "Zoom follows" a solute other than water. Outside is a large bath (fixed); inside changes.
+   O₂: simple diffusion through the bilayer, dCi/dt = 0.5·(Co − Ci).
+   Glucose: facilitated diffusion through carrier proteins, dCi/dt = 3·(Co/(5+Co) − Ci/(5+Ci)), so it saturates.
+   Na⁺: leak channels, dCi/dt = 0.1·(Co − Ci), plus the Na⁺/K⁺ pump (uses ATP) pushing out at 24·Ci/(10+Ci) mM/s. */
+const MOL={o2:{name:'O₂',long:'oxygen (O₂)',hi:10,lo:1,per:3},glucose:{name:'Glucose',long:'glucose',hi:10,lo:1,per:3},na:{name:'Na⁺',long:'sodium ions (Na⁺)',hi:145,lo:12,per:0.2}};
+const MOL_METRICS=['route','atp','dir','cout','cin'];
+function molFlux(p,co,ci){const m=p.mol;if(m==='o2')return {j:0.5*(co-ci),pump:0};if(m==='glucose')return {j:3*(co/(5+co)-ci/(5+ci)),pump:0};
+  const leak=0.1*(co-ci),pump=p.pump?24*ci/(10+ci):0;return {j:leak-pump,leak,pump};}
+function molStart(p){const M=MOL[p.mol];if(!M)return {co:0,ci:0};return p.side==='in'?{co:M.lo,ci:M.hi}:{co:M.hi,ci:M.lo};}
+function applyMol(sim){if(!sim.ui||!sim.ui.sec)return;const on=sim.p.mol!=='water';
+  MOL_METRICS.forEach(id=>{const t=sim.ui.tiles&&sim.ui.tiles[id];const w=t&&t.num.closest('.tile');if(w)w.hidden=!on;});
+  const w=sim.ui.ctlW&&sim.ui.ctlW.side;if(w)w.hidden=!on;}
+function molRoute(p){return p.mol==='o2'?'Straight through the lipid bilayer (simple diffusion)':p.mol==='glucose'?'Through carrier proteins (facilitated diffusion)':p.pump?'Pushed out by the Na⁺/K⁺ pump (active transport)':'Through leak channels (facilitated diffusion)';}
+function molDir(p,s){if(p.mol==='na'&&p.pump)return s.co>s.ci?'Out of the cell, against its gradient':'Out of the cell, down its gradient';
+  const j=s.mj;if(Math.abs(j)<0.02||Math.abs(s.co-s.ci)<0.05*Math.max(s.co,1))return 'No net movement: both sides match';return (j>0?'Into':'Out of')+' the cell, down its gradient';}
+function drawMol(sim,ctx,vdt,k,t,X0,Y0,MX){const p=sim.p,s=sim.st,v=sim.vis,M=MOL[p.mol],R=Math.random,hon=atLeast('honors');
+  const col=p.mol==='o2'?PAL['s1']:p.mol==='glucose'?PAL['s4']:PAL['cv-inn'];
+  const moveP=(a,x0,x1)=>{a.vx+=(R()-.5)*500*vdt;a.vy+=(R()-.5)*500*vdt;const sp=Math.hypot(a.vx,a.vy);if(sp>45){a.vx*=45/sp;a.vy*=45/sp;}a.x+=a.vx*vdt;a.y+=a.vy*vdt;
+    if(a.x<x0||a.x>x1)a.vx*=-1;if(a.y<62||a.y>392)a.vy*=-1;a.x=clamp(a.x,x0,x1);a.y=clamp(a.y,62,392);};
+  const dot=(a,r)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(a.x,a.y,r,0,6.29);ctx.fill();};
+  const nO=Math.round(clamp(s.co*M.per,0,30)),nI=Math.round(clamp(s.ci*M.per,0,30));
+  v.mL.forEach(a=>moveP(a,503,628));v.mR.forEach(a=>moveP(a,672,783));v.mL.slice(0,nO).forEach(a=>dot(a,4.2));v.mR.slice(0,nI).forEach(a=>dot(a,4.2));
+  /* proteins in the membrane */
+  const carY=[150,320],pumpY=226,leakY=320;
+  if(p.mol==='glucose')carY.forEach((y,i)=>{const open=RM?0:Math.sin(t*3+i*2)>0;ctx.fillStyle='#2f8a7a';rr(ctx,MX-16,y-26,32,52,9);ctx.fill();ctx.fillStyle=PAL['cv-bg2'];
+    ctx.beginPath();if(open){ctx.moveTo(MX-16,y-12);ctx.lineTo(MX+2,y);ctx.lineTo(MX-16,y+12);}else{ctx.moveTo(MX+16,y-12);ctx.lineTo(MX-2,y);ctx.lineTo(MX+16,y+12);}ctx.closePath();ctx.fill();});
+  if(p.mol==='na'){ctx.fillStyle=p.pump?'#7a4fa6':'#8a8a92';rr(ctx,MX-16,pumpY-20,32,40,8);ctx.fill();txt(ctx,'pump',MX,pumpY+36,{s:11*k,w:700,a:'center',c:PAL['cv-soft']});
+    ctx.fillStyle='#3f6fb0';rr(ctx,MX-17,leakY-20,12,40,5);ctx.fill();rr(ctx,MX+5,leakY-20,12,40,5);ctx.fill();txt(ctx,'channel',MX,leakY+36,{s:11*k,w:700,a:'center',c:PAL['cv-soft']});}
+  /* crossing molecules: net flow sets the main stream, plus a little traffic the other way */
+  const F=molFlux(p,s.co,s.ci),passIn=p.mol==='na'?Math.max(0,F.leak):Math.max(0,F.j),passOut=p.mol==='na'?Math.max(0,-F.leak):Math.max(0,-F.j);
+  const rate=x=>clamp(x*M.per*0.6,0,5);
+  v.mAcc+=vdt*(rate(passIn)+(s.ci>0.1?0.4:0));v.bAcc+=vdt*(rate(passOut)+(s.co>0.1?0.4:0));
+  const yFor=()=>p.mol==='o2'?75+R()*300:p.mol==='glucose'?carY[R()<.5?0:1]+(R()-.5)*10:leakY+(R()-.5)*10;
+  while(v.mAcc>=1){v.mAcc--;if(s.co>0.1)v.mc.push({x:MX-38,y:yFor(),dir:1});}
+  while(v.bAcc>=1){v.bAcc--;if(s.ci>0.1)v.mc.push({x:MX+38,y:yFor(),dir:-1});}
+  if(p.mol==='na'&&p.pump&&F.pump>0){v.pumpAcc+=vdt*clamp(F.pump*M.per*0.6,0,4);while(v.pumpAcc>=1){v.pumpAcc--;v.mc.push({x:MX+30,y:pumpY+(R()-.5)*14,dir:-1,pump:true});v.ions.push({x:MX+22,y:pumpY+50,atp:true,life:1.2});}}
+  v.mc.forEach(c=>{c.x+=c.dir*(p.mol==='o2'?40:28)*vdt;dot(c,4.4);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1;ctx.stroke();});
+  v.mc=v.mc.filter(c=>Math.abs(c.x-MX)<42);if(v.mc.length>40)v.mc.splice(0,v.mc.length-40);
+  v.ions=v.ions.filter(o=>o.atp);v.ions.forEach(o=>{o.life-=vdt;ctx.globalAlpha=clamp(o.life,0,1);txt(ctx,'ATP → ADP',o.x,o.y,{s:11*k,w:700,c:PAL['cv-atp']});});ctx.globalAlpha=1;v.ions=v.ions.filter(o=>o.life>0);
+  /* readouts and legend */
+  txt(ctx,(s.co).toFixed(p.mol==='na'?0:1)+' mM',X0+70,Y0+392,{s:12*k,w:700,a:'center'});txt(ctx,(s.ci).toFixed(p.mol==='na'?0:1)+' mM',X0+232,Y0+392,{s:12*k,w:700,a:'center'});
+  const ly=Y0+410;dot({x:X0+16,y:ly-4},4.2);txt(ctx,M.name,X0+26,ly,{s:11.5*k,c:PAL['cv-soft']});
+  txt(ctx,p.mol==='o2'?'no protein needed':p.mol==='glucose'?'carrier protein':'pump and channel',X0+290,ly,{s:11.5*k,c:PAL['cv-soft'],a:'right'});}
 const TR={
   id:'transport',hash:'transport',apUnit:2,order:4,kind:'Simulation',tab:'Membrane transport and osmosis',
   card:'Drop a red blood cell or a plant cell into salt water and watch water rush in or out.',
@@ -22,12 +65,15 @@ const TR={
   controls:[
     {id:'cell',label:'Cell',type:'seg',def:'rbc',lvl:'bio',options:[{v:'rbc',l:'Red blood cell'},{v:'plant',l:'Plant cell'}]},
     {id:'salt',label:'Salt outside',type:'range',min:0,max:3,step:0.05,def:0.9,unit:'% NaCl',lvl:'bio',help:'0.9% is the saltiness of blood (saline drip). 0% is pure water.'},
+    {id:'mol',label:'Zoom follows',type:'seg',def:'water',lvl:'bio',options:[{v:'water',l:'Water'},{v:'o2',l:'Oxygen'},{v:'glucose',l:'Glucose'},{v:'na',l:'Sodium ion'}],help:'Pick a molecule to see how it crosses the membrane.',onChange(sim){applyMol(sim);BioLab.reset(sim);}},
+    {id:'side',label:'Starts with more of it',type:'seg',def:'out',lvl:'bio',options:[{v:'out',l:'Outside the cell'},{v:'in',l:'Inside the cell'}],onChange(sim){BioLab.reset(sim);}},
     {id:'aqua',label:'Aquaporins',help:'Protein channels that let water through quickly',type:'toggle',def:true,lvl:'bio'},
     {id:'inside',label:'Solutes inside the cell',type:'range',min:100,max:900,step:10,def:300,unit:' mOsm/L',lvl:'honors',help:'Dissolved particles trapped inside the cell'},
     {id:'pump',label:'Na⁺/K⁺ pump',help:'Uses ATP to push Na⁺ back out of the cell',type:'toggle',def:true,lvl:'honors'}
   ],
-  init(){return {V:1,extra:0,lysed:false,lysedT:0,flow:0,Ci:300,psiOut:0,psiIn:0,psiP:0,psiS:0,n:300};},
+  init(sim){const m=molStart(sim.p);return {V:1,extra:0,lysed:false,lysedT:0,flow:0,Ci:300,psiOut:0,psiIn:0,psiP:0,psiS:0,n:300,co:m.co,ci:m.ci,mj:0};},
   step(sim,dt){const p=sim.p,s=sim.st,plant=p.cell==='plant',Vb=plant?0.1:0.4,Co=p.salt*OSM_PER_PCT;
+    if(p.mol!=='water'&&sim.t>=0){const f=molFlux(p,s.co,s.ci);s.mj=f.j;s.ci=Math.max(0,s.ci+f.j*dt);}
     if(!p.pump)s.extra+=0.015*Math.max(Co,40)*dt;              // Na⁺ leaks in when the pump stops
     s.n=p.inside+s.extra;
     if(s.lysed){s.flow=0;s.psiOut=-Co*RT;s.lysedT+=dt;return;}
@@ -45,10 +91,17 @@ const TR={
     {id:'ci',label:'Solutes inside now',unit:'mOsm/L',lvl:'honors',min:0,max:1000,d:0,get:s=>s.st.lysed?NaN:s.st.Ci},
     {id:'psiOut',label:'ψ outside',unit:'MPa',lvl:'ap',min:-2.6,max:0,d:2,get:s=>s.st.psiOut},
     {id:'psiIn',label:'ψ inside (ψs + ψp)',unit:'MPa',lvl:'ap',min:-2.6,max:0,d:2,get:s=>s.st.lysed?NaN:s.st.psiIn},
+    {id:'route',label:'How it crosses',unit:'',lvl:'bio',text:true,noTrial:true,get:s=>s.p.mol==='water'?'Through aquaporins and the bilayer (osmosis)':molRoute(s.p)},
+    {id:'atp',label:'Uses ATP?',unit:'',lvl:'bio',text:true,noTrial:true,get:s=>s.p.mol==='na'&&s.p.pump?'Yes: 1 ATP for every 3 Na⁺ pumped out':'No: it moves on its own, down its gradient'},
+    {id:'dir',label:'Net movement',unit:'',lvl:'bio',text:true,noTrial:true,get:s=>s.p.mol==='water'?'—':molDir(s.p,s.st)},
+    {id:'cout',label:'Outside the cell',unit:'mM',lvl:'bio',min:0,max:null,d:1,get:s=>s.p.mol==='water'?0:s.st.co},
+    {id:'cin',label:'Inside the cell',unit:'mM',lvl:'bio',min:0,max:null,d:1,get:s=>s.p.mol==='water'?0:s.st.ci},
     {id:'psiP',label:'Turgor pressure ψp',unit:'MPa',lvl:'ap',min:0,max:1.5,d:2,get:s=>s.st.lysed?NaN:s.st.psiP}
   ],
   graphs:[{id:'vol',label:'Cell volume',lines:['vol']},{id:'flow',label:'Water flow',lvl:'honors',lines:['flow']},
-          {id:'psi',label:'Water potential in vs. out',lvl:'ap',lines:['psiIn','psiOut'],yl:'Water potential (MPa)'}],
+          {id:'psi',label:'Water potential in vs. out',lvl:'ap',lines:['psiIn','psiOut'],yl:'Water potential (MPa)'},
+          {id:'mol',label:'Followed molecule: inside vs. outside',lines:['cin','cout'],yl:'Concentration (mM)'}],
+  onLevel(sim){applyMol(sim);},
   defaultGraph:'vol',
   challenges:[
     {lvl:'bio',q:'A red blood cell goes from 0.9% salt water into pure water. What happens?',
@@ -60,6 +113,14 @@ const TR={
      choices:['It swells','It shrinks and wrinkles','It stays the same'],correct:1,
      baseline:{cell:'rbc',salt:0.9},change:{salt:3},changeText:'Moved into 3% salt water',watch:'vol',
      explain:{bio:'Now the outside has more dissolved salt than the inside, so water leaves the cell. The cell shrinks and its surface wrinkles into spikes (crenation). Drinking seawater dehydrates you for the same reason.'}},
+    {lvl:'bio',q:'There is more oxygen (O₂) outside a cell than inside. Which way does O₂ move, and does the cell spend energy on it?',
+     choices:['Into the cell, with no energy spent','Into the cell, using ATP','Out of the cell, using ATP'],correct:0,
+     baseline:{mol:'o2',side:'out'},change:{},changeText:'Watching O₂ cross',watch:'mol',at:0.2,reveal:6,
+     explain:'O₂ is small and nonpolar, so it diffuses straight through the lipid bilayer from more to less. That is simple diffusion: passive, no ATP. It stops when inside matches outside.'},
+    {lvl:'bio',q:'Sodium ions (Na⁺) are at 145 mM outside a cell and only 12 mM inside. Which way does the Na⁺/K⁺ pump move them?',
+     choices:['In, down the gradient, with no energy','Out, against the gradient, using ATP','Nowhere: ions can’t cross a membrane'],correct:1,
+     baseline:{mol:'na',side:'out'},change:{},changeText:'Watching the pump',watch:'mol',at:0.2,reveal:6,
+     explain:'Moving something from less to more is uphill, so it costs energy. The pump spends 1 ATP to move 3 Na⁺ out (and 2 K⁺ in). That is active transport. The inside stays near 12 mM because the pump keeps up with Na⁺ leaking back in.'},
     {lvl:'honors',q:'A plant cell goes from salt water into pure water. Does it burst like a red blood cell?',
      choices:['Yes, it bursts','No, it swells until the cell wall pushes back'],correct:1,
      baseline:{cell:'plant',salt:0.9},change:{salt:0},changeText:'Moved into pure water',watch:'vol',
@@ -73,6 +134,14 @@ const TR={
      choices:['It slowly swells','It slowly shrinks','Nothing'],correct:0,
      baseline:{cell:'rbc',salt:0.9,pump:true},change:{pump:false},changeText:'Pump switched off',watch:'vol',
      explain:{honors:'Na⁺ constantly leaks into the cell. The pump uses ATP to throw it back out. With the pump stopped, Na⁺ builds up inside, water follows it in by osmosis, and the cell swells. Cells spend a large share of their ATP just to avoid this.'}},
+    {lvl:'honors',q:'The cell is following Na⁺ with the pump running. A poison stops the Na⁺/K⁺ pump. What happens to the Na⁺ inside?',
+     choices:['It stays at 12 mM','It climbs toward the outside level, 145 mM','It drops to 0'],correct:1,
+     baseline:{mol:'na',side:'out',pump:true},change:{pump:false},changeText:'Pump switched off',watch:'mol',reveal:14,
+     explain:{honors:'Na⁺ always leaks in through channels, down its gradient. Only the pump, spending ATP, holds the inside low. Without it, the leak wins and the two sides even out. That is also why the cell swells: water follows the Na⁺ in.'}},
+    {lvl:'honors',q:'Glucose starts at 10 mM inside the cell and 1 mM outside. Which way does it move?',
+     choices:['Out of the cell, through carrier proteins','Into the cell, because cells always take in glucose','Nowhere, because glucose can’t cross the bilayer'],correct:0,
+     baseline:{mol:'glucose',side:'in'},change:{},changeText:'Watching glucose cross',watch:'mol',at:0.2,reveal:8,
+     explain:{honors:'Facilitated diffusion is still diffusion: it only goes from more to less. Carrier proteins let glucose cross, but they don’t choose the direction. The gradient does. Cells keep glucose coming in by using it up, which keeps the inside low.'}},
     {lvl:'ap',q:'A turgid plant cell (ψ = 0 MPa) is moved into 0.9% salt water (ψ ≈ −0.76 MPa). Which way does water move?',
      choices:['Into the cell','Out of the cell','Neither way'],correct:1,
      baseline:{cell:'plant',salt:0},change:{salt:0.9},changeText:'Moved into 0.9% salt water',watch:'psi',
@@ -84,6 +153,10 @@ const TR={
   ],
   narrate(sim){const p=sim.p,s=sim.st,plant=p.cell==='plant',hon=atLeast('honors');
     const slow=p.aqua?'':' Without aquaporins, water squeezes through the lipid bilayer slowly, so this takes much longer.';
+    if(p.mol!=='water'){const M=MOL[p.mol],co=s.co.toFixed(p.mol==='na'?0:1),ci=s.ci.toFixed(p.mol==='na'?0:1),eq=Math.abs(s.co-s.ci)<0.05*Math.max(s.co,1);
+      if(p.mol==='o2')return eq?'<b>Simple diffusion has evened out.</b> O₂ still crosses both ways, but now just as much goes in as comes out, so there is no net movement.':'<b>Simple diffusion.</b> O₂ is small and nonpolar, so it slips straight through the lipid bilayer, from '+(s.co>s.ci?co+' mM outside to '+ci+' mM inside':ci+' mM inside to '+co+' mM outside')+'. No ATP: it only moves down its gradient, and stops when both sides match.';
+      if(p.mol==='glucose')return eq?'<b>Inside now matches outside,</b> so net movement has stopped, even though glucose still rides the carriers both ways.':'<b>Facilitated diffusion.</b> Glucose is too big and polar to pass between the lipid tails, so it rides through carrier proteins, from more to less ('+(s.co>s.ci?'outside '+co+' mM, inside '+ci+' mM':'inside '+ci+' mM, outside '+co+' mM')+'). Still no ATP.';
+      return p.pump?'<b>Active transport.</b> The Na⁺/K⁺ pump spends ATP to push Na⁺ out'+(s.co>s.ci?', against its gradient: '+co+' mM outside, only '+ci+' mM inside.':'.')+' Na⁺ keeps leaking back in through channels, and the pump keeps up with the leak.':'<b>The pump is off.</b> Na⁺ leaks through channels, down its gradient, so the inside ('+ci+' mM) drifts toward the outside ('+co+' mM).';}
     if(s.lysed)return '<b>The cell burst (lysis).</b> Water rushed in until the stretched membrane tore and the hemoglobin spilled out. A red blood cell has no wall to hold it together.';
     if(!p.pump&&hon&&s.flow>0.25)return '<b>The Na⁺/K⁺ pump is off.</b> Na⁺ leaks in and stays, water follows it, and the cell slowly swells.';
     if(plant&&s.psiP>0.05)return '<b>Turgid.</b> Water moved in, so the vacuole presses the membrane against the cell wall. The wall pushes back (turgor pressure), and the cell becomes firm instead of bursting.'+(s.flow>0.25?' Water is still entering.':'');
@@ -101,20 +174,21 @@ const TR={
     {title:'Salty water',text:'A fresh cell goes into 3% salt water. Now there is more solute outside, so water leaves. The cell shrinks and wrinkles (crenation).',focus:[60,40,370,380],speed:1,setup(sim){BioLab.setValues(sim,{salt:3});BioLab.reset(sim);BioLab.setValues(sim,{salt:3});}},
     {lvl:'honors',title:'A plant cell in pure water',text:'A plant cell in pure water also takes in water, but its stiff cell wall pushes back. The cell becomes firm (turgid) instead of bursting.',focus:[60,40,370,380],speed:1,setup(sim){BioLab.setValues(sim,{cell:'plant',salt:0.9});BioLab.reset(sim);BioLab.setValues(sim,{salt:0});}},
     {lvl:'honors',title:'A plant cell in salt water',text:'In 3% salt water the plant cell loses water. The membrane and cytoplasm pull away from the wall (plasmolysis). This is wilting at the cellular level.',focus:[60,40,370,380],speed:1,setup(sim){BioLab.setValues(sim,{salt:3});}},
+    {title:'Other molecules cross other ways',text:'Switch the zoom to oxygen. O₂ is small and nonpolar, so it slips straight through the lipid bilayer (simple diffusion). Glucose needs a carrier protein (facilitated diffusion). Na⁺ is pumped out with ATP (active transport). Use <b>Zoom follows</b> to watch each one.',focus:[493,15,300,420],speed:1,setup(sim){BioLab.setValues(sim,{cell:'rbc',salt:0.9,mol:'o2',side:'out'});applyMol(sim);BioLab.reset(sim);}},
     {lvl:'ap',title:'Water potential',text:'Water moves from higher ψ to lower ψ. Pure water is 0 MPa, solutes lower ψ (ψs = −iCRT), and wall pressure raises it (ψp). Watch the ψ readouts below: flow stops when ψ inside equals ψ outside.',focus:[0,0,480,60],pause:true}
   ],
-  onTourExit(sim){BioLab.setValues(sim,{cell:'rbc',salt:0.9});BioLab.reset(sim);},
+  onTourExit(sim){BioLab.setValues(sim,{cell:'rbc',salt:0.9,mol:'water',side:'out'});applyMol(sim);BioLab.reset(sim);},
   lab:{bio:'<p><b>Question:</b> At what salt concentration does a red blood cell burst?</p><ol><li>Set the salt outside to 0.9% and record a trial.</li><li>Press Reset, then try 0.7, 0.6, 0.5, 0.4 and 0.3%. Wait until the volume stops changing, then record each trial.</li><li>Plot salt outside (x) against cell volume (y).</li></ol><p>Write a claim: what is the lowest salt concentration a red blood cell can survive? Use your data.</p>',
        honors:'<p><b>Question:</b> How do red blood cells and plant cells respond differently to the same solutions?</p><ol><li>For each cell type, record trials at 0, 0.5, 0.9, 1.5 and 3% salt (Reset before each).</li><li>Plot salt (x) against volume (y) for both.</li></ol><p>Explain the difference at 0% using the words cell wall, turgor and lysis.</p>',
        ap:'<p><b>Question:</b> What is the solute potential of this plant cell? (This is the classic potato-core lab.)</p><ol><li>Choose Plant cell and set solutes inside to 400 mOsm/L.</li><li>Record the equilibrium volume at outside salt concentrations from 0 to 2%.</li><li>Plot ψ outside (x) against volume (y), and find where the volume starts dropping below 100%.</li></ol><p><b>Claim–evidence–reasoning:</b> Estimate the cell’s ψs from your graph, and explain why volume barely changes above 0 MPa.</p>'},
-  terms:[{t:'Osmosis',d:'Diffusion of water across a membrane toward the side with more dissolved solute.'},{t:'Hypotonic / hypertonic / isotonic',d:'Less, more, or the same solute outside compared with inside the cell.'},{t:'Lysis',d:'A cell bursting after taking in too much water.'},{t:'Selectively permeable',d:'A membrane that lets some things through (water) but not others (salt ions).'},
+  terms:[{t:'Osmosis',d:'Diffusion of water across a membrane toward the side with more dissolved solute.'},{t:'Hypotonic / hypertonic / isotonic',d:'Less, more, or the same solute outside compared with inside the cell.'},{t:'Lysis',d:'A cell bursting after taking in too much water.'},{t:'Selectively permeable',d:'A membrane that lets some things through (water) but not others (salt ions).'},{t:'Diffusion',d:'Particles spreading from where they are more concentrated to where they are less. Solutes diffuse toward less solute; water moves toward more solute.'},{t:'Lipid bilayer',d:'Two layers of phospholipids: water-loving heads face out, oily tails face in. Small nonpolar molecules like O₂ pass; ions and big polar molecules don’t.'},{t:'Passive vs. active transport',d:'Passive (simple or facilitated diffusion) goes down the gradient with no ATP. Active transport goes against it and uses ATP.'},{t:'Facilitated diffusion',d:'Diffusion through a channel or carrier protein, for molecules that can’t cross the bilayer. Still no ATP.'},
     {lvl:'honors',t:'Aquaporin',d:'A protein channel that lets water cross the membrane quickly.'},{lvl:'honors',t:'Turgor pressure',d:'The pressure of a full vacuole pushing the membrane against the cell wall.'},{lvl:'honors',t:'Plasmolysis',d:'The membrane pulling away from the cell wall as a plant cell loses water.'},{lvl:'honors',t:'Na⁺/K⁺ pump',d:'Active transport: uses ATP to move 3 Na⁺ out and 2 K⁺ in.'},
     {lvl:'ap',t:'Water potential (ψ)',d:'ψ = ψs + ψp, in MPa. Water flows from higher ψ to lower ψ.'},{lvl:'ap',t:'Solute potential (ψs)',d:'ψs = −iCRT. Always ≤ 0; more solute makes it more negative.'}],
-  about:'<p>Water flow is proportional to the water-potential difference: dV/dt = k·(ψout − ψin), with k six times larger when aquaporins are present. Solute potential uses ψs = −iCRT at 22 °C, with 1% NaCl counted as 342 mOsm/L (i = 2).</p><p>Inside osmolarity follows the Boyle–van ’t Hoff relation: the dissolved particles stay in the cell while its water volume changes. 40% of a red blood cell’s volume (mostly hemoglobin) and 10% of a plant cell’s cannot change. A red blood cell bursts above 150% of its normal volume (around 0.48% NaCl, close to the real value). The plant wall resists stretching with an elastic modulus of 8 MPa.</p><p>Simplifications: real osmotic changes in red blood cells take seconds, and plant plasmolysis takes minutes. The pump-off swelling is sped up from hours to seconds. Membrane surface area is treated as constant.</p>',
+  about:'<p>Water flow is proportional to the water-potential difference: dV/dt = k·(ψout − ψin), with k six times larger when aquaporins are present. Solute potential uses ψs = −iCRT at 22 °C, with 1% NaCl counted as 342 mOsm/L (i = 2).</p><p>Inside osmolarity follows the Boyle–van ’t Hoff relation: the dissolved particles stay in the cell while its water volume changes. 40% of a red blood cell’s volume (mostly hemoglobin) and 10% of a plant cell’s cannot change. A red blood cell bursts above 150% of its normal volume (around 0.48% NaCl, close to the real value). The plant wall resists stretching with an elastic modulus of 8 MPa.</p><p><b>Zoom follows</b> a solute in a bath that stays fixed outside the cell. O₂: dC<sub>in</sub>/dt = 0.5(C<sub>out</sub> − C<sub>in</sub>). Glucose through carriers: 3[C<sub>out</sub>/(5 + C<sub>out</sub>) − C<sub>in</sub>/(5 + C<sub>in</sub>)] mM/s, which levels off when the carriers are busy. Na⁺: leak channels at 0.1(C<sub>out</sub> − C<sub>in</sub>), minus the pump at 24C<sub>in</sub>/(10 + C<sub>in</sub>) mM/s, which settles near the real 12 mM inside. Rates are sped up so each runs in seconds, and these solutes do not change the cell’s volume here.</p><p>Simplifications: real osmotic changes in red blood cells take seconds, and plant plasmolysis takes minutes. The pump-off swelling is sped up from hours to seconds. Membrane surface area is treated as constant.</p>',
   initVis(sim){const r=rng(21),v=sim.vis;v.salt=[];for(let i=0;i<90;i++)v.salt.push([10+r()*460,70+r()*370,r()*6.28,r()<.5]);
     v.inner=[];for(let i=0;i<40;i++){const a=r()*6.283,d=Math.sqrt(r());v.inner.push([Math.cos(a)*d,Math.sin(a)*d,r()*6.28]);}
     const half=(x0,x1,n)=>{const a=[];for(let i=0;i<n;i++)a.push({x:x0+r()*(x1-x0),y:60+r()*350,vx:0,vy:0});return a;};
-    v.wL=half(505,630,26);v.wR=half(670,782,26);v.sL=half(505,630,30);v.sR=half(670,782,30);v.cross=[];v.inAcc=0;v.outAcc=0;v.pumpAcc=0;v.ions=[];v.frag=null;},
+    v.wL=half(505,630,26);v.wR=half(670,782,26);v.sL=half(505,630,30);v.sR=half(670,782,30);v.cross=[];v.inAcc=0;v.outAcc=0;v.pumpAcc=0;v.ions=[];v.frag=null;v.mL=half(505,630,30);v.mR=half(670,782,30);v.mc=[];v.mAcc=0;v.bAcc=0;},
   draw(sim,ctx,vdt,k,t){
     const p=sim.p,s=sim.st,v=sim.vis,hon=atLeast('honors'),ap=atLeast('ap'),plant=p.cell==='plant',R=Math.random;
     // ---- left: the cell in its solution
@@ -160,11 +234,13 @@ const TR={
     // ---- right: zoom on the membrane
     const X0=493,Y0=15,MX=650;
     ctx.fillStyle=PAL['cv-bg2'];rr(ctx,X0,Y0,300,420,12);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
-    txt(ctx,'Zoom: the membrane',X0+150,Y0+22,{s:13*k,w:700,a:'center'});
+    txt(ctx,p.mol==='water'?'Zoom: the membrane':'Zoom: how '+MOL[p.mol].name+' crosses',X0+150,Y0+22,{s:13*k,w:700,a:'center'});
     txt(ctx,'Outside',X0+12,Y0+46,{s:12*k,w:700,c:PAL['cv-soft']});txt(ctx,'Inside',X0+288,Y0+46,{s:12*k,w:700,c:PAL['cv-soft'],a:'right'});
     // bilayer
     ctx.strokeStyle=PAL['cv-head'];ctx.globalAlpha=.6;ctx.lineWidth=1.3;ctx.beginPath();for(let y=64;y<396;y+=10){ctx.moveTo(MX-6,y);ctx.lineTo(MX-1,y);ctx.moveTo(MX+1,y);ctx.lineTo(MX+6,y);}ctx.stroke();ctx.globalAlpha=1;
     ctx.fillStyle=PAL['cv-head'];for(let y=64;y<396;y+=10){ctx.beginPath();ctx.arc(MX-9,y,4,0,6.29);ctx.fill();ctx.beginPath();ctx.arc(MX+9,y,4,0,6.29);ctx.fill();}
+    txt(ctx,hon?'phospholipid bilayer':'lipid bilayer',MX,58,{s:11*k,c:PAL['cv-soft'],a:'center'});
+    if(p.mol!=='water'){drawMol(sim,ctx,vdt,k,t,X0,Y0,MX);return;}
     const chY=[135,325];
     if(p.aqua)chY.forEach(y=>{ctx.fillStyle='#3f6fb0';rr(ctx,MX-17,y-24,12,48,5);ctx.fill();rr(ctx,MX+5,y-24,12,48,5);ctx.fill();});
     const pumpOn=hon&&p.pump;if(hon){ctx.fillStyle=p.pump?'#7a4fa6':'#8a8a92';rr(ctx,MX-16,206,32,40,8);ctx.fill();txt(ctx,'pump',MX,262,{s:11*k,w:700,a:'center',c:PAL['cv-soft']});}
