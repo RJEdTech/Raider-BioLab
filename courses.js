@@ -35,7 +35,7 @@ BioLab.COURSES = [
       { n: 'Spring 5', t: 'Evolution', ids: ['evolution', 'beaks', 'hardyweinberg', 'cladogram', 'hominids'] },
       { n: 'Spring 6', t: 'Anatomy, dissection and homeostasis', ids: ['dissection', 'homeostasis'] }
     ],
-    further: ['sanger', 'crispr', 'synthbio', 'epidemic', 'antibiotic', 'molclock'] },
+    further: ['sanger', 'crispr', 'synthbio', 'epidemic', 'antibiotic', 'molclock', 'whogetscare'] },
   { id: 'ap', name: 'AP Biology',
     blurb: 'Tools in the order AP Biology covers them, starting with the summer ecology unit.',
     units: [
