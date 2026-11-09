@@ -43,3 +43,7 @@ See `ENGINE.md` to add a tool.
 Static files only. Everything runs in the browser, with no logins and no data collection. Trial data stays in the student's own browser.
 
 The models are simplified for instruction; each tool's "About this model" section lists its assumptions.
+
+## License
+
+© 2026 Jason Beyer, RJ Ed Tech. Licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/): free to share and adapt for non-commercial use with credit. See [LICENSE](LICENSE).
