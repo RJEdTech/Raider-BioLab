@@ -132,11 +132,12 @@ if(location.hash){var tgt=document.getElementById(location.hash.slice(1));if(tgt
 })();
 </script>
 <!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents.
-     Each tool (#id) counts as its own page; anything after = or @ in the address is never sent. -->
+     Each tool (#id) counts as its own page; anything after = or @ in the address is never sent.
+     A visit through the school's Securly filter (?scrlybrkr in the address) adds ?sd = school device; nothing else about the visitor is sent. -->
 <script>
 window.goatcounter={no_onload:true};
 (function(){var last=null,tries=0;
-function route(){var h=(location.hash||'').slice(1).split(/[=@?&]/)[0].replace(/[^A-Za-z0-9_-]/g,'').slice(0,40);return location.pathname.replace(/index\.html$/,'')+(h?'#'+h:'');}
+function route(){var h=(location.hash||'').slice(1).split(/[=@?&]/)[0].replace(/[^A-Za-z0-9_-]/g,'').slice(0,40);return location.pathname.replace(/index\.html$/,'')+(h?'#'+h:'')+(/scrlybrkr/.test(location.search)?'?sd':'');}
 function go(){var p=route();if(p===last)return;var g=window.goatcounter;if(!g||typeof g.count!=='function'){if(tries++<40)setTimeout(go,250);return;}last=p;try{g.count({path:p});}catch(e){}}
 window.addEventListener('hashchange',go);if(document.readyState==='complete')go();else window.addEventListener('load',go);})();
 </script>
