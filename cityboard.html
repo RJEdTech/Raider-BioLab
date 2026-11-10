@@ -73,12 +73,13 @@
 <li><b>Different scoreboard:</b> the code was made with weights that differ from yours.</li>
 <li><b>Not from your link:</b> the code does not carry your assignment code.</li>
 <li><b>Code edited:</b> the code was changed after the tool made it.</li>
+<li><b>Different depth:</b> you locked a depth (Basic, Standard or Advanced), but the code was made at another one.</li>
 </ul>
 <p class="help">Flags are clues to talk about, not proof. A student could use another device, or a classmate’s screen, and no flag would show.</p>
 </section>
 </div></main>
 
-<script src="city-model.js?v=202611101800"></script>
+<script src="city-model.js?v=202611102100"></script>
 <script>
 (function(){'use strict';
 const C=window.CityModel,$=id=>document.getElementById(id);
@@ -86,30 +87,31 @@ let B=C.parseQS(location.search);let rows=[];
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const f1=v=>(Math.round(v*10)/10).toFixed(1);
 const wText=w=>C.M.map((m,i)=>w[i]>0?m.s+' ×'+w[i]:null).filter(Boolean).join(', ');
-const name=w=>{const p=C.presetOf(w);return p?p.l:'Custom scoreboard';};
+const name=w=>{const p=C.presetOf(w);if(p)return p.l;const r=C.roleOf(w);return r?'Resident: '+r.l:'Custom scoreboard';};
+const roleName=k=>{const r=C.ROLES.find(x=>x.k===k);return r?r.l:'';};
 function boardW(){if(B.w)return B.w;const c={};rows.forEach(r=>{const k=C.wKey(r.w);c[k]=(c[k]||0)+1;});const k=Object.keys(c).sort((a,b)=>c[b]-c[a])[0];return k?k.split(',').map(Number):C.PRESETS[0].w;}
-function desc(){const w=boardW();$('board-desc').innerHTML=`<b>${esc(name(w))}</b>: ${esc(wText(w))}. Scoring: <b>${B.calc==='hand'?'By hand (locked)':B.calc==='auto'?'Automatic':'not set'}</b>${B.a?`. Assignment code <b>${esc(B.a)}</b>`:''}${B.w?'':' (taken from the most common scoreboard in the codes)'}.`;}
+function desc(){const w=boardW();$('board-desc').innerHTML=`<b>${esc(name(w))}</b>: ${esc(wText(w))}. Scoring: <b>${B.calc==='hand'?'By hand (locked)':B.calc==='auto'?'Automatic':'not set'}</b>${B.lv?`. Depth: <b>${({bio:'Basic',honors:'Standard',ap:'Advanced'})[B.lv]}${B.dl?' (locked)':''}</b>`:''}${B.role?`. Resident: <b>${esc(roleName(B.role))}</b>`:''}${B.a?`. Assignment code <b>${esc(B.a)}</b>`:''}${B.w?'':' (taken from the most common scoreboard in the codes)'}.`;}
 const opt=(j,v)=>C.opt(j,v).l;
 function flags(o,w){const f=[];if(!o.ok)f.push('Code edited');if(B.calc==='hand'&&o.m!=='hand')f.push('Automatic mode');if(o.m==='hand'&&o.as)f.push('Saw automatic scores first');
- if(C.wKey(o.w)!==C.wKey(w))f.push('Different scoreboard');if(B.a&&o.a!==B.a)f.push('Not from your link');return f;}
+ if(C.wKey(o.w)!==C.wKey(w))f.push('Different scoreboard');if(B.a&&o.a!==B.a)f.push('Not from your link');if(B.dl&&B.lv&&o.lv&&o.lv!==B.lv)f.push('Different depth');return f;}
 function handNote(o){if(o.m!=='hand'||!o.hd)return o.m==='auto'?'Automatic':'';const v=Object.values(o.hd);const first=v.filter(x=>x.first).length,sh=v.filter(x=>x.sh).length;return `By hand: ${first} of ${v.length} right the first time${sh?`, ${sh} shown`:''}`;}
 function render(){desc();if(!rows.length){$('out').hidden=true;return;}$('out').hidden=false;const w=boardW();
  const P=C.PRESETS.filter(p=>C.wKey(p.w)!==C.wKey(w));
  rows.forEach(r=>{r.s=C.score(r.b,w);r.ps=P.map(p=>C.score(r.b,p.w));});
  const L=rows.slice().sort((a,b)=>b.s-a.s);const top=Math.max(...L.map(r=>r.s)),ptop=P.map((p,i)=>Math.max(...L.map(r=>r.ps[i])));
- $('lb').innerHTML=`<thead><tr><th class="n">#</th><th>Name</th><th>Group</th><th>City</th><th class="n">Score</th><th>Flags</th><th>How scored</th>${P.map(p=>`<th class="n">${esc(p.l)}</th>`).join('')}</tr></thead><tbody>`+
-  L.map(r=>{const rk=C.rankAmong(r.s,L.map(x=>x.s)),fl=flags(r,w);return `<tr><td class="n">${rk}</td><td><b>${esc(r.n||'(no name)')}</b></td><td>${esc(r.g)}</td><td class="city">${r.b.map((v,j)=>esc(opt(j,v))).join('<br>')}</td><td class="n${Math.abs(r.s-top)<1e-9?' top':''}">${f1(r.s)}</td><td>${fl.length?fl.map(x=>`<span class="flag">⚑ ${esc(x)}</span>`).join(''):'<span class="ok">none</span>'}</td><td class="ok">${esc(handNote(r))}${r.tm!=null?`<br>${r.tm} min · ${esc(r.d||'')}`:''}</td>${r.ps.map((s,i)=>`<td class="n${Math.abs(s-ptop[i])<1e-9?' top':''}">${f1(s)}</td>`).join('')}</tr>`;}).join('')+'</tbody>';
+ $('lb').innerHTML=`<thead><tr><th class="n">#</th><th>Name</th><th>Group</th><th>Resident</th><th>City</th><th class="n">Score</th><th>Flags</th><th>How scored</th>${P.map(p=>`<th class="n">${esc(p.l)}</th>`).join('')}</tr></thead><tbody>`+
+  L.map(r=>{const rk=C.rankAmong(r.s,L.map(x=>x.s)),fl=flags(r,w);return `<tr><td class="n">${rk}</td><td><b>${esc(r.n||'(no name)')}</b></td><td>${esc(r.g)}</td><td>${esc(roleName(r.ro))}</td><td class="city">${r.b.map((v,j)=>esc(opt(j,v))).join('<br>')}</td><td class="n${Math.abs(r.s-top)<1e-9?' top':''}">${f1(r.s)}</td><td>${fl.length?fl.map(x=>`<span class="flag">⚑ ${esc(x)}</span>`).join(''):'<span class="ok">none</span>'}</td><td class="ok">${esc(handNote(r))}${r.tm!=null?`<br>${r.tm} min · ${esc(r.d||'')}`:''}</td>${r.ps.map((s,i)=>`<td class="n${Math.abs(s-ptop[i])<1e-9?' top':''}">${f1(s)}</td>`).join('')}</tr>`;}).join('')+'</tbody>';
  const G={};rows.forEach(r=>{const g=r.g||'(no group)';(G[g]=G[g]||[]).push(r);});
  const gl=Object.keys(G).map(g=>{const a=G[g],avg=a.reduce((x,r)=>x+r.s,0)/a.length,b=a.slice().sort((x,y)=>y.s-x.s)[0];return {g,a,avg,b};}).sort((x,y)=>y.avg-x.avg);
- $('groups').innerHTML='<thead><tr><th>Group</th><th class="n">Students</th><th class="n">Average score</th><th>Best city in the group</th></tr></thead><tbody>'+gl.map(x=>`<tr><td><b>${esc(x.g)}</b></td><td class="n">${x.a.length}</td><td class="n">${f1(x.avg)}</td><td>${esc(x.b.n)}: ${esc(C.bLabel(x.b.b))} (${f1(x.b.s)})</td></tr>`).join('')+'</tbody>';
+ $('groups').innerHTML='<thead><tr><th>Group</th><th class="n">Students</th><th class="n">Average score</th><th>Best city in the group</th><th>Residents in the group</th><th>Group compromise (members’ weights averaged, rounded)</th></tr></thead><tbody>'+gl.map(x=>{const roles=[...new Set(x.a.map(r=>roleName(r.ro)).filter(Boolean))];const aw=C.fixW(C.M.map((m,i)=>x.a.reduce((t,r)=>t+(+r.w[i]||0),0)/x.a.length));const avgW=C.M.map((m,i)=>x.a.reduce((t,r)=>t+(+r.w[i]||0),0)/x.a.length);const ps=C.PLANS.map(p=>C.score(p.b,avgW.map(v=>v))),mx=Math.max(...ps),pick=C.PLANS[ps.indexOf(mx)];return `<tr><td><b>${esc(x.g)}</b></td><td class="n">${x.a.length}</td><td class="n">${f1(x.avg)}</td><td>${esc(x.b.n)}: ${esc(C.bLabel(x.b.b))} (${f1(x.b.s)})</td><td>${esc(roles.join(', ')||'none chosen')}</td><td>${C.wsum(aw)?esc(pick.n)+' wins among the four plans':'–'}</td></tr>`;}).join('')+'</tbody>';
  $('choices').innerHTML=C.DEC.map((d,j)=>`<p><b>${esc(d.l)}:</b> ${d.o.map(o=>`${esc(o.l)} ${rows.filter(r=>r.b[j]===o.v).length}`).join(' · ')}</p>`).join('')+`<p class="help">Best possible city for your scoreboard: ${esc(C.bLabel(C.best(w).b))} (${f1(C.best(w).s)}).</p>`;}
-function read(){const seen=new Set();rows=[];C.findCodes($('codes').value).forEach(c=>{if(seen.has(c))return;seen.add(c);const o=C.decode(c);if(o&&Array.isArray(o.b)&&o.b.length===4&&Array.isArray(o.w)&&o.w.length===8)rows.push(o);});
+function read(){const seen=new Set();rows=[];C.findCodes($('codes').value).forEach(c=>{if(seen.has(c))return;seen.add(c);const o=C.decode(c);if(o&&Array.isArray(o.b)&&o.b.length===4&&Array.isArray(o.w))rows.push(o);});
  $('count').textContent=rows.length?rows.length+' code'+(rows.length===1?'':'s')+' read':'No codes found';render();}
 $('read').onclick=read;$('clear').onclick=()=>{$('codes').value='';rows=[];$('count').textContent='';render();};
 $('tlink-go').onclick=()=>{const t=$('tlink').value.trim();let q='';try{q=new URL(t).search;}catch(e){q=t.includes('?')?t.slice(t.indexOf('?')):t;}const nb=C.parseQS(q);if(nb.w){B=nb;render();}else $('board-desc').innerHTML+=' <b>That link has no scoreboard in it.</b>';};
 $('csv').onclick=()=>{const w=boardW();const P=C.PRESETS.filter(p=>C.wKey(p.w)!==C.wKey(w));const L=rows.slice().sort((a,b)=>b.s-a.s);
- const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';const lines=[['Rank','Name','Group',...C.DEC.map(d=>d.l),'Score ('+name(w)+')',...P.map(p=>p.l),'How scored','Minutes','Date','Flags'].map(q).join(',')];
- L.forEach(r=>lines.push([C.rankAmong(r.s,L.map(x=>x.s)),r.n,r.g,...r.b.map((v,j)=>opt(j,v)),f1(r.s),...r.ps.map(f1),handNote(r),r.tm,r.d,flags(r,w).join('; ')].map(q).join(',')));
+ const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';const lines=[['Rank','Name','Group','Resident',...C.DEC.map(d=>d.l),'Score ('+name(w)+')',...P.map(p=>p.l),'How scored','Minutes','Date','Flags'].map(q).join(',')];
+ L.forEach(r=>lines.push([C.rankAmong(r.s,L.map(x=>x.s)),r.n,r.g,roleName(r.ro),...r.b.map((v,j)=>opt(j,v)),f1(r.s),...r.ps.map(f1),handNote(r),r.tm,r.d,flags(r,w).join('; ')].map(q).join(',')));
  const t=lines.join('\n'),done=()=>{$('csv-t').hidden=false;setTimeout(()=>$('csv-t').hidden=true,1500);};try{navigator.clipboard.writeText(t).then(done);}catch(e){}};
 desc();})();
 </script>
