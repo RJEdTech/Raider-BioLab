@@ -64,6 +64,7 @@
 <p class="help">Scores are recalculated here from each student’s build, under your scoreboard. The columns after Flags show the same city under each preset scoreboard; the top score in each column is in red.</p>
 <div class="cb-scroll"><table id="lb"></table></div>
 <div class="cb-row"><button type="button" class="btn" id="csv">Copy as CSV (paste into Excel)</button><span id="csv-t" class="help" hidden>Copied</span></div>
+<h2>Reflections</h2><div id="refl"></div>
 <h2>Groups</h2><div class="cb-scroll"><table id="groups"></table></div>
 <h2>What the class chose</h2><div id="choices"></div>
 <h2>About the flags</h2>
@@ -79,7 +80,7 @@
 </section>
 </div></main>
 
-<script src="city-model.js?v=202611102100"></script>
+<script src="city-model.js?v=202611110100"></script>
 <script>
 (function(){'use strict';
 const C=window.CityModel,$=id=>document.getElementById(id);
@@ -104,14 +105,16 @@ function render(){desc();if(!rows.length){$('out').hidden=true;return;}$('out').
  const G={};rows.forEach(r=>{const g=r.g||'(no group)';(G[g]=G[g]||[]).push(r);});
  const gl=Object.keys(G).map(g=>{const a=G[g],avg=a.reduce((x,r)=>x+r.s,0)/a.length,b=a.slice().sort((x,y)=>y.s-x.s)[0];return {g,a,avg,b};}).sort((x,y)=>y.avg-x.avg);
  $('groups').innerHTML='<thead><tr><th>Group</th><th class="n">Students</th><th class="n">Average score</th><th>Best city in the group</th><th>Residents in the group</th><th>Group compromise (members’ weights averaged, rounded)</th></tr></thead><tbody>'+gl.map(x=>{const roles=[...new Set(x.a.map(r=>roleName(r.ro)).filter(Boolean))];const aw=C.fixW(C.M.map((m,i)=>x.a.reduce((t,r)=>t+(+r.w[i]||0),0)/x.a.length));const avgW=C.M.map((m,i)=>x.a.reduce((t,r)=>t+(+r.w[i]||0),0)/x.a.length);const ps=C.PLANS.map(p=>C.score(p.b,avgW.map(v=>v))),mx=Math.max(...ps),pick=C.PLANS[ps.indexOf(mx)];return `<tr><td><b>${esc(x.g)}</b></td><td class="n">${x.a.length}</td><td class="n">${f1(x.avg)}</td><td>${esc(x.b.n)}: ${esc(C.bLabel(x.b.b))} (${f1(x.b.s)})</td><td>${esc(roles.join(', ')||'none chosen')}</td><td>${C.wsum(aw)?esc(pick.n)+' wins among the four plans':'–'}</td></tr>`;}).join('')+'</tbody>';
+ const RQ=[['v','What values or opinions shaped your choices?'],['i','How might your city affect the environment around it?'],['l','What is one thing you learned?']];
+ $('refl').innerHTML=L.filter(r=>r.rf&&(r.rf.v||r.rf.i||r.rf.l)).map(r=>`<details class="cb-box" style="border-left-width:3px"><summary><b>${esc(r.n||'(no name)')}</b>${r.g?' · '+esc(r.g):''}</summary>${RQ.map(([k,q],i)=>`<p><b>${i+1}. ${esc(q)}</b><br>${esc(r.rf[k]||'(no answer)')}</p>`).join('')}</details>`).join('')||'<p class="help">No reflections in these codes yet.</p>';
  $('choices').innerHTML=C.DEC.map((d,j)=>`<p><b>${esc(d.l)}:</b> ${d.o.map(o=>`${esc(o.l)} ${rows.filter(r=>r.b[j]===o.v).length}`).join(' · ')}</p>`).join('')+`<p class="help">Best possible city for your scoreboard: ${esc(C.bLabel(C.best(w).b))} (${f1(C.best(w).s)}).</p>`;}
-function read(){const seen=new Set();rows=[];C.findCodes($('codes').value).forEach(c=>{if(seen.has(c))return;seen.add(c);const o=C.decode(c);if(o&&Array.isArray(o.b)&&o.b.length===4&&Array.isArray(o.w))rows.push(o);});
+function read(){const seen=new Set();rows=[];C.findCodes($('codes').value).forEach(c=>{if(seen.has(c))return;seen.add(c);const o=C.decode(c);if(o&&Array.isArray(o.b)&&o.b.length>=4&&Array.isArray(o.w))rows.push(o);});
  $('count').textContent=rows.length?rows.length+' code'+(rows.length===1?'':'s')+' read':'No codes found';render();}
 $('read').onclick=read;$('clear').onclick=()=>{$('codes').value='';rows=[];$('count').textContent='';render();};
 $('tlink-go').onclick=()=>{const t=$('tlink').value.trim();let q='';try{q=new URL(t).search;}catch(e){q=t.includes('?')?t.slice(t.indexOf('?')):t;}const nb=C.parseQS(q);if(nb.w){B=nb;render();}else $('board-desc').innerHTML+=' <b>That link has no scoreboard in it.</b>';};
 $('csv').onclick=()=>{const w=boardW();const P=C.PRESETS.filter(p=>C.wKey(p.w)!==C.wKey(w));const L=rows.slice().sort((a,b)=>b.s-a.s);
- const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';const lines=[['Rank','Name','Group','Resident',...C.DEC.map(d=>d.l),'Score ('+name(w)+')',...P.map(p=>p.l),'How scored','Minutes','Date','Flags'].map(q).join(',')];
- L.forEach(r=>lines.push([C.rankAmong(r.s,L.map(x=>x.s)),r.n,r.g,roleName(r.ro),...r.b.map((v,j)=>opt(j,v)),f1(r.s),...r.ps.map(f1),handNote(r),r.tm,r.d,flags(r,w).join('; ')].map(q).join(',')));
+ const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';const lines=[['Rank','Name','Group','Resident',...C.DEC.map(d=>d.l),'Score ('+name(w)+')',...P.map(p=>p.l),'How scored','Minutes','Date','Flags','Values','Impact','Learned'].map(q).join(',')];
+ L.forEach(r=>lines.push([C.rankAmong(r.s,L.map(x=>x.s)),r.n,r.g,roleName(r.ro),...r.b.map((v,j)=>opt(j,v)),f1(r.s),...r.ps.map(f1),handNote(r),r.tm,r.d,flags(r,w).join('; '),(r.rf||{}).v,(r.rf||{}).i,(r.rf||{}).l].map(q).join(',')));
  const t=lines.join('\n'),done=()=>{$('csv-t').hidden=false;setTimeout(()=>$('csv-t').hidden=true,1500);};try{navigator.clipboard.writeText(t).then(done);}catch(e){}};
 desc();})();
 </script>

@@ -36,17 +36,25 @@ const DEC=[
   {v:'factory',l:'Factories and warehouses',d:[18,18,-2,4,0,8,3,-0.2],harm:0,spread:0.3,up:0,yr:0,pv:14},
   {v:'office',l:'Offices and tech',d:[28,14,6,10,-2,1,1,0],harm:0,spread:0.02,up:0,yr:0,pv:10},
   {v:'local',l:'Local shops and services',d:[8,10,1,-4,4,1,0.5,0.6],harm:0,spread:0,up:0,yr:0,pv:4},
-  {v:'parks',l:'Parks and recreation',d:[4,6,3,6,8,-3,0,0.3],harm:0,spread:-0.05,up:0,yr:0,pv:-12}]}];
+  {v:'parks',l:'Parks and recreation',d:[4,6,3,6,8,-3,0,0.3],harm:0,spread:-0.05,up:0,yr:0,pv:-12}]},
+ {k:'roofs',l:'Rooftops',o:[
+  {v:'plain',l:'Plain roofs',d:[0,0,0,0,0,0,0,0],harm:0,spread:0,up:0,yr:0,pv:0},
+  {v:'solar',l:'Solar panels',d:[1,1,0,0,0,-1,-1.5,0.05],harm:0,spread:0,up:4,yr:-0.3,pv:0},
+  {v:'green',l:'Green roofs (plants)',d:[0,0.5,0,0,0,-1,-0.3,0.1],harm:0,spread:0,up:5,yr:0.2,pv:-6}]},
+ {k:'food',l:'Food',o:[
+  {v:'trucked',l:'Trucked in from far away',d:[0,0,0,0,0,0,0,0],harm:0,spread:0,up:0,yr:0,pv:0},
+  {v:'local',l:'Local farms and gardens',d:[1,2,0,0,2,0,-0.8,0.2],harm:0,spread:0,up:2,yr:0,pv:-2}]}];
 /* Choices that work together (or against each other). The score is no longer a sum of separate decisions. */
 const SYN=[
+ {when:{roofs:'solar',power:'renew'},d:[0,0,0,0,0,0,1,0],l:'Rooftop solar cuts less CO₂ when the grid is already wind and solar.'},
  {when:{travel:'rail',homes:'mixed'},d:[2,0,0,-4,3,0,-0.6,0],l:'Light rail works best with apartments over shops: more riders live near each stop.'},
  {when:{travel:'bus',homes:'mixed'},d:[0,0,0,-2,2,0,-0.3,0],l:'Buses run more often where more people live close together.'},
  {when:{travel:'cars',homes:'lots'},d:[0,0,0,4,-1,0,1,0],l:'Big lots spread homes out, so every car trip gets longer.'}];
 const PLANS=[
- {k:'A',n:'Wide Roads',b:['cars','fossil','lots','factory']},
- {k:'B',n:'Main Street',b:['bus','mix','mixed','local']},
- {k:'C',n:'Tech Park',b:['cars','mix','town','office']},
- {k:'D',n:'Green Belt',b:['rail','renew','mixed','parks']}];
+ {k:'A',n:'Wide Roads',b:['cars','fossil','lots','factory','plain','trucked']},
+ {k:'B',n:'Main Street',b:['bus','mix','mixed','local','solar','local']},
+ {k:'C',n:'Tech Park',b:['cars','mix','town','office','solar','trucked']},
+ {k:'D',n:'Green Belt',b:['rail','renew','mixed','parks','green','local']}];
 /* Weights for: GDP, Jobs, Housing, Commute, Active, Bad air, CO₂, Happy, Worst block, Paved (missing ones count as 0) */
 const PRESETS=[
  {k:'gdp',l:'GDP only',w:[1,0,0,0,0,0,0,0,0]},
@@ -67,18 +75,19 @@ const ROLES=[
  {k:'teen',l:'High school student (you)',w:[0,2,0,2,2,1,2,3,0],why:'A first job, getting around without a ride, staying active, the future climate and liking where you live.'},
  {k:'highway',l:'Family next to the highway',w:[0,1,3,0,0,2,0,1,5],why:'They live on the block that gets the most traffic and smoke. Cheap rent is why they are there.'}];
 const opt=(j,v)=>DEC[j].o.find(o=>o.v===v)||DEC[j].o[0];
-const bObj=b=>({travel:b[0],power:b[1],homes:b[2],jobs:b[3]});
+const fixB=b=>{const a=(b||[]).slice(0,DEC.length);while(a.length<DEC.length)a.push(DEC[a.length].o[0].v);return a;};
+const bObj=b=>{const o={};DEC.forEach((d,j)=>o[d.k]=b[j]);return o;};
 const synOf=b=>{const o=bObj(b);return SYN.filter(s=>Object.keys(s.when).every(k=>o[k]===s.when[k]));};
 function spread(b){return Math.max(0,0.1+DEC.reduce((a,dc,j)=>a+opt(j,b[j]).spread,0));}
 /* Five blocks share the neighborhood's bad air unevenly. Weights add to 5, so the average stays the same. */
 const BLK=[1,1/3,-1/6,-1/2,-2/3];
 function blocks(b,air){const S=spread(b);return BLK.map(x=>Math.max(0,air*(1+S*x)));}
-function ind(b){const v=BASE.slice(0,8).map((x,i)=>DEC.reduce((a,dc,j)=>a+opt(j,b[j]).d[i],x));synOf(b).forEach(s=>s.d.forEach((x,i)=>v[i]+=x));v.push(Math.max(...blocks(b,v[5])));v.push(DEC.reduce((a,dc,j)=>a+opt(j,b[j]).pv,BASE[9]));return v;}
+function ind(b){b=fixB(b);const v=BASE.slice(0,8).map((x,i)=>DEC.reduce((a,dc,j)=>a+opt(j,b[j]).d[i],x));synOf(b).forEach(s=>s.d.forEach((x,i)=>v[i]+=x));v.push(Math.max(...blocks(b,v[5])));v.push(DEC.reduce((a,dc,j)=>a+opt(j,b[j]).pv,BASE[9]));return v;}
 /* "Spending on harms" inside GDP: car costs (fuel, repairs, crashes) plus health care tied to bad air, $k per person. */
 function harm(b){const v=ind(b);return opt(0,b[0]).harm+0.2*v[5];}
 /* Pay now or pay later: up-front cost, then yearly upkeep plus spending on harms. */
 function costs(b){const up=DEC.reduce((a,dc,j)=>a+opt(j,b[j]).up,0),yr=DEC.reduce((a,dc,j)=>a+opt(j,b[j]).yr,0)+harm(b);return {up,yr,t25:up+25*yr};}
-const ALL=[];DEC[0].o.forEach(a=>DEC[1].o.forEach(p=>DEC[2].o.forEach(h=>DEC[3].o.forEach(j=>ALL.push([a.v,p.v,h.v,j.v])))));
+const ALL=[[]];DEC.forEach(d=>{const n=[];ALL.forEach(b=>d.o.forEach(o=>n.push(b.concat(o.v))));ALL.length=0;n.forEach(x=>ALL.push(x));});
 const IND_ALL=ALL.map(ind);
 const MIN=M.map((m,i)=>Math.min(...IND_ALL.map(r=>r[i]))),MAX=M.map((m,i)=>Math.max(...IND_ALL.map(r=>r[i])));
 /* Points: the best possible neighborhood gets 100 on a measure, the worst possible gets 0. Lower-is-better measures are flipped. */
@@ -177,7 +186,7 @@ function hsh(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);
 function b64e(s){const u=new TextEncoder().encode(s);let bin='';u.forEach(c=>bin+=String.fromCharCode(c));return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function b64d(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder().decode(u);}
 function encode(o){const body=JSON.stringify(o);return 'CITY-'+b64e(JSON.stringify({o,h:hsh(SALT+body)}));}
-function decode(code){try{const x=JSON.parse(b64d(String(code).replace(/^CITY-/,'')));if(!x||!x.o)return null;x.o.ok=hsh(SALT+JSON.stringify(x.o))===x.h;if(Array.isArray(x.o.w))x.o.w=fixW(x.o.w);return x.o;}catch(e){return null;}}
+function decode(code){try{const x=JSON.parse(b64d(String(code).replace(/^CITY-/,'')));if(!x||!x.o)return null;x.o.ok=hsh(SALT+JSON.stringify(x.o))===x.h;if(Array.isArray(x.o.w))x.o.w=fixW(x.o.w);if(Array.isArray(x.o.b))x.o.b=fixB(x.o.b);return x.o;}catch(e){return null;}}
 const findCodes=t=>(String(t).match(/CITY-[A-Za-z0-9_-]{20,}/g)||[]);
 /* Teacher links: ?cw=w1,...,w9 sets the scoreboard (8 numbers still work); &calc=hand locks By hand mode; &a=TOKEN names the assignment;
    &level=bio|honors|ap&dl=1 sets and locks the depth; &role=key assigns a resident role. */
@@ -189,6 +198,6 @@ function parseQS(qs){const q=qs instanceof URLSearchParams?qs:new URLSearchParam
 const wKey=w=>fixW(w).join(',');
 const presetOf=w=>PRESETS.find(p=>wKey(p.w)===wKey(w))||null;
 const roleOf=w=>ROLES.find(r=>wKey(r.w)===wKey(w))||null;
-window.CityModel={SMART,smartCheck,M,NM,BASE,DEC,SYN,PLANS,PRESETS,ROLES,ALL,MIN,MAX,ind,harm,costs,blocks,spread,synOf,pts,ptsOf,score,best,rankAmong,beatenBy,breakPoint,bLabel,planOf,opt,wsum,fixW,r1,
+window.CityModel={fixB,SMART,smartCheck,M,NM,BASE,DEC,SYN,PLANS,PRESETS,ROLES,ALL,MIN,MAX,ind,harm,costs,blocks,spread,synOf,pts,ptsOf,score,best,rankAmong,beatenBy,breakPoint,bLabel,planOf,opt,wsum,fixW,r1,
  COUNTIES,RM,countyScores,CITIES,SOURCES,encode,decode,findCodes,parseQS,wKey,presetOf,roleOf};
 })();

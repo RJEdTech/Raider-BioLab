@@ -7,7 +7,7 @@ const {M,NM,DEC,PLANS,PRESETS,ROLES}=C;
 const Q=C.parseQS((()=>{try{return location.search;}catch(e){return '';}})());
 const LOCK=Q.calc==='hand';
 const W0=C.fixW(Q.w||(Q.role?ROLES.find(r=>r.k===Q.role).w:PRESETS[0].w));
-const DEFB=['cars','mix','town','local'];
+const DEFB=['cars','mix','town','local','plain','trucked'];
 /* First visit: open in Full lab, where the Start here walkthrough sits on top. Guided stays one click away. */
 try{const mk=((document.querySelector('meta[name="lab-key"]')||{}).content||'rjbiolab')+'-mode-cityscore';if(!new URLSearchParams(location.search).get('mode')&&!localStorage.getItem(mk))localStorage.setItem(mk,'lab');}catch(e){}
 const ROWS=[...PLANS.map(p=>({k:p.k,n:p.n})),{k:'Y',n:'Your build'}];
@@ -18,7 +18,7 @@ const f1=v=>fmtNum(v,1),f0=v=>fmtNum(v,0);
 /* Teacher-set depth: hide the site's detail switch so students stay at the level the teacher chose. */
 if(Q.dl&&Q.lv){try{const hide=()=>{const l=document.getElementById('lvl');const box=l&&l.closest('.lvl');if(box)box.hidden=true;else if(l)l.hidden=true;};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hide);else hide();}catch(e){}}
 
-function cs(sim){if(!sim.cs)sim.cs={step:1,chosen:{},mode:Q.calc||'auto',tab:'score',role:Q.role||null,guess:null,revealed:false,hand:{},name:'',group:'',code:'',t0:Date.now(),teach:{calc:'auto',depth:'',dl:false,role:''}};return sim.cs;}
+function cs(sim){if(!sim.cs)sim.cs={rf:{values:'',impact:'',learned:''},step:1,chosen:{},mode:Q.calc||'auto',tab:'score',role:Q.role||null,guess:null,revealed:false,hand:{},name:'',group:'',code:'',t0:Date.now(),teach:{calc:'auto',depth:'',dl:false,role:''}};return sim.cs;}
 const W=sim=>M.map((m,i)=>Math.max(0,Math.round(+sim.p['w'+i]||0)));
 const build=sim=>DEC.map(d=>sim.p[d.k]);
 const rowB=(sim,k)=>k==='Y'?build(sim):PLANS.find(p=>p.k===k).b;
@@ -74,6 +74,13 @@ function drawCity(sim,ctx,k,t){const b=build(sim),v=C.ind(b),g=146,H=168,blk=C.b
  else if(b[3]==='office'){[[440,104,'#5d7fa8'],[492,128,'#4f6f96'],[548,96,'#6a8bb3']].forEach(([x,h,c])=>{ctx.fillStyle=c;ctx.fillRect(x,g-h,48,h);windows(ctx,x,g-h,48,h,3,7);});ctx.fillStyle='#8a8d93';ctx.fillRect(600,g-3,40,3);}
  else if(b[3]==='local'){for(let i=0;i<4;i++){const x=436+i*44;ctx.fillStyle=['#c98b5b','#9b8fb8','#c9b26b','#8fa6c4'][i];ctx.fillRect(x,g-40,40,40);ctx.fillStyle=[PAL['s1'],PAL['s3'],PAL['s2'],PAL['s4']][i];ctx.fillRect(x-2,g-28,44,7);ctx.fillStyle='rgba(255,255,255,.7)';ctx.fillRect(x+8,g-18,24,12);}}
  else{ctx.fillStyle=PAL['cv-water'];ctx.beginPath();ctx.ellipse(520,g-10,46,9,0,0,7);ctx.fill();[446,470,580,606,630].forEach((x,i)=>tree(ctx,x,g,10+(i%2)*3));}
+ /* rooftops */
+ const roofs=b[4];if(roofs!=='plain'){const col=roofs==='solar'?'#2f5f9e':PAL['cv-leaf'];const tops=b[2]==='lots'?[[192,g-44,42],[268,g-44,42],[344,g-44,42]]:b[2]==='town'?[[188,g-58,26],[252,g-58,26],[316,g-58,26],[380,g-58,26]]:[[188,g-92,62],[264,g-92,62],[340,g-92,62]];
+  tops.forEach(([x,y,w])=>{ctx.fillStyle=col;ctx.fillRect(x+4,y,w-8,4);if(roofs==='solar'){ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=1;for(let i=x+8;i<x+w-6;i+=7){ctx.beginPath();ctx.moveTo(i,y);ctx.lineTo(i,y+4);ctx.stroke();}}});
+  if(b[3]==='office')[[440,104],[492,128],[548,96]].forEach(([x,h])=>{ctx.fillStyle=col;ctx.fillRect(x+3,g-h-4,42,4);});
+  if(b[3]==='factory'){ctx.fillStyle=col;ctx.fillRect(440,g-48,160,4);}}
+ /* food: garden plots, or a delivery truck */
+ if(b[5]==='local'){for(let i=0;i<4;i++){ctx.fillStyle='#7a5a3a';ctx.fillRect(612+i*12,g-6,10,6);ctx.fillStyle=PAL['cv-leaf'];ctx.fillRect(613+i*12,g-9,8,3);}}
  /* people out walking: more where people are active */
  const np=Math.round(1+9*clamp(v[4]/41,0,1));for(let i=0;i<np;i++){const x=((i*83+(RM?0:t*9*(i%2?1:-1)))%800+800)%800;person(ctx,x,g,PAL['cv-ink']);}
  const nt=Math.round(2+5*clamp(v[4]/41,0,1));for(let i=0;i<nt;i++)tree(ctx,660+i*20,g,8+(i%3)*2);
@@ -83,7 +90,8 @@ function drawCity(sim,ctx,k,t){const b=build(sim),v=C.ind(b),g=146,H=168,blk=C.b
  if(b[0]==='cars'){for(let i=0;i<11;i++){const x=mv(70+(i%3)*12,i),y=i%2?g+4:g+11;ctx.fillStyle=['#c0392b','#2e86c1','#d4ac0d','#7f8c8d','#8e44ad'][i%5];rr(ctx,x,y,16,6,2);ctx.fill();}}
  else if(b[0]==='bus'){ctx.fillStyle=PAL['s4'];rr(ctx,mv(40,0),g+3,44,8,2);ctx.fill();ctx.fillStyle='#2e86c1';rr(ctx,mv(70,4),g+11,16,6,2);ctx.fill();ctx.strokeStyle=PAL['s3'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,g+18);ctx.lineTo(800,g+18);ctx.stroke();
   for(let i=0;i<5;i++){const x=mv(28,i*1.7);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,g+20,2.5,0,7);ctx.arc(x+8,g+20,2.5,0,7);ctx.stroke();}}
- else{ctx.strokeStyle='#9a9a9a';ctx.lineWidth=1;for(let x=0;x<800;x+=10){ctx.beginPath();ctx.moveTo(x,g+4);ctx.lineTo(x,g+16);ctx.stroke();}ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,g+6);ctx.lineTo(800,g+6);ctx.moveTo(0,g+14);ctx.lineTo(800,g+14);ctx.stroke();
+ if(b[5]==='trucked'){const tx=mv(50,7);ctx.fillStyle='#e0e0e0';rr(ctx,tx,g+2,30,9,2);ctx.fill();ctx.fillStyle=PAL['s1'];rr(ctx,tx+30,g+4,9,7,2);ctx.fill();}
+ if(b[0]==='rail'){ctx.strokeStyle='#9a9a9a';ctx.lineWidth=1;for(let x=0;x<800;x+=10){ctx.beginPath();ctx.moveTo(x,g+4);ctx.lineTo(x,g+16);ctx.stroke();}ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,g+6);ctx.lineTo(800,g+6);ctx.moveTo(0,g+14);ctx.lineTo(800,g+14);ctx.stroke();
   ctx.fillStyle=PAL['s1'];const x0=mv(55,0);for(let i=0;i<3;i++){rr(ctx,x0+i*34,g+3,32,11,3);ctx.fill();}}
  /* captions */
  const cap=(s,x)=>txt(ctx,s,x,6,{s:12*k,w:700,c:PAL['cv-ink'],b:'top'});
@@ -170,8 +178,8 @@ function howTab(){const D=[
   ['Worst block','Unhealthy-air days on the block that gets the most. Lower is better.','In the model, bad air is split over 5 blocks; the spread grows with car roads, fossil power and factories. Real counterpart: neighborhood-level exposure maps such as Colorado EnviroScreen.'],
   ['Paved ground','Share of land covered by roads, roofs and parking, which rain cannot soak into. Lower is better.','Real counterpart: impervious cover from satellite land-cover data. Stream damage begins around 10% of a watershed and is serious above about 25%.']];
  let s=`<h3>How each score is built</h3><ol style="margin:4px 0 0 18px;padding:0">`;
- s+=`<li><b>Each choice adds fixed amounts.</b> A build’s value on each measure = a starting value + the amounts from its four choices + any “work together” bonus (rail with apartments, buses with apartments, cars with big lots). These amounts are an illustrative model, chosen so each trend points the way research points.</li>`;
- s+=`<li><b>Points.</b> Each measure becomes points: 100 × (value − worst possible) ÷ (best possible − worst possible), across all 108 possible builds, rounded to 0.1. Measures where lower is better are flipped (100 − points).</li>`;
+ s+=`<li><b>Each choice adds fixed amounts.</b> A build’s value on each measure = a starting value + the amounts from its six choices + any “work together” bonus (rail with apartments, buses with apartments, cars with big lots, rooftop solar on an already clean grid). These amounts are an illustrative model, chosen so each trend points the way research points.</li>`;
+ s+=`<li><b>Points.</b> Each measure becomes points: 100 × (value − worst possible) ÷ (best possible − worst possible), across all 648 possible builds, rounded to 0.1. Measures where lower is better are flipped (100 − points).</li>`;
  s+=`<li><b>Score.</b> A weighted average: (sum of weight × points) ÷ (sum of weights). The weights are the scoreboard: someone’s opinion about what matters.</li>`;
  s+=`<li><b>Spending on harms</b> (inside GDP) = car costs ($10k per person for a car-centered build, $2k buses, $1k rail) + $0.2k per bad-air day. <b>Pay now or later</b> = up-front cost + 25 × (yearly upkeep + spending on harms). Both are illustrative.</li>`;
  s+=`<li><b>Real counties</b> use the same points-and-weights method on real measures, with points from 0 (worst county) to 100 (best county). A county missing a measure is scored on the others.</li></ol>`;
@@ -199,6 +207,7 @@ function scoreTab(sim){const c=cs(sim),w=W(sim),W1=C.wsum(w),h=hand(sim);let s='
  s+=`<h3 style="margin-top:14px">Send to my teacher</h3>`;
  if(!ready)s+=`<p style="color:var(--muted)">${h?'Work out every score first.':'Make your guess first.'} Then you can make a result code for your teacher.</p>`;
  else{s+=`<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><input type="text" data-name value="${esc(c.name)}" placeholder="Your name" aria-label="Your name" style="padding:4px 6px"><input type="text" data-group value="${esc(c.group)}" placeholder="Group (optional)" aria-label="Group" style="padding:4px 6px;width:9em"><button type="button" class="btn primary" data-mkcode>Make my result code</button></div>`;
+  s+=`<p style="margin:6px 0 0;color:var(--muted)">Answer the three Reflect questions in <b>Start here</b> (step 5) first: your answers go into the code.</p>`;
   if(c.code)s+=`<p style="margin:6px 0 2px">Copy this and paste it where your teacher said (a Canvas assignment or discussion):</p><textarea readonly rows="3" style="width:100%;font-family:monospace;font-size:.85em" data-codebox>${esc(c.code)}</textarea><div class="row" style="gap:6px"><button type="button" class="btn" data-copycode>Copy</button><span class="toast" data-ctoast hidden>Copied</span></div>`;}
  /* teacher share */
  const t=c.teach;
@@ -221,17 +230,17 @@ function infoPanel(sim){const c=cs(sim);const tabs=[['score','Score the plans'],
 function makeCode(sim){const c=cs(sim),w=W(sim),b=build(sim),sc=allScores(sim);
  const hd={};ROWS.forEach(r=>{const x=c.hand[r.k];if(x)hd[r.k]={v:x.v===undefined?null:x.v,ok:!!x.ok,first:!!x.first,sh:!!x.shown,tr:x.tries||0};});
  const o={v:2,n:c.name.trim().slice(0,40),g:c.group.trim().slice(0,24),b,w,m:c.mode,lk:LOCK,a:Q.a||null,qw:Q.w?C.wKey(Q.w):null,gs:c.guess,ro:c.role||null,lv:BioLab.h.level||null,
-  sc:C.r1(sc[4]),hd:hand(sim)?hd:null,as:store.get().includes(C.wKey(w)),tm:Math.round((Date.now()-c.t0)/60000),d:new Date().toISOString().slice(0,10)};
+  sc:C.r1(sc[4]),hd:hand(sim)?hd:null,rf:{v:(c.rf.values||'').slice(0,1500),i:(c.rf.impact||'').slice(0,1500),l:(c.rf.learned||'').slice(0,1500)},as:store.get().includes(C.wKey(w)),tm:Math.round((Date.now()-c.t0)/60000),d:new Date().toISOString().slice(0,10)};
  c.code=C.encode(o);}
 const PLAIN=['GDP (money)','jobs','low housing cost','short commute','active minutes','clean air','low CO₂','life satisfaction','clean air on the worst-off block','least paved ground'];
-const QS4=['How will people get around?','Where will the electricity come from?','What kind of homes will people live in?','Where will people work?'];
+const QS4=['How will people get around?','Where will the electricity come from?','What kind of homes will people live in?','Where will people work?','What will be on the rooftops?','Where will most of the food come from?'];
 function startHTML(sim){const c=cs(sim),st=c.step,w=W(sim),b=build(sim),h=hand(sim),done=DEC.every(d=>c.chosen[d.k]);
- const dots=['Plan your city','How it compares','What matters','Guess and check','Go deeper'].map((l,i)=>`<button type="button" class="btn${st===i+1?' primary':''}" data-sgo="${i+1}" ${i+1>1&&!done?'disabled':''} style="padding:4px 10px">${i+1}. ${l}</button>`).join('');
+ const dots=['Plan your city','How it compares','What matters','Guess and check','Reflect and send','Go deeper'].map((l,i)=>`<button type="button" class="btn${st===i+1?' primary':''}" data-sgo="${i+1}" ${i+1>1&&!done?'disabled':''} style="padding:4px 10px">${i+1}. ${l}</button>`).join('');
  let s=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px"><h3 style="margin:0">Start here</h3><div class="row" style="gap:4px;flex-wrap:wrap">${dots}</div></div>`;
  const next=(lbl,go)=>`<p style="margin:10px 0 0"><button type="button" class="btn primary" data-sgo="${go}">${lbl} →</button></p>`;
  if(st===1){s+=`<p style="margin:8px 0">You are planning a new neighborhood for 10,000 people on Colorado’s Front Range. Make one choice for each question. Your city appears in the picture just below this box, and it changes as you choose.</p>`;
   DEC.forEach((d,j)=>{s+=`<div style="margin:8px 0"><b>${j+1}. ${QS4[j]}</b><div class="row" style="gap:6px;flex-wrap:wrap;margin-top:4px">${d.o.map(o=>`<button type="button" class="btn${c.chosen[d.k]&&b[j]===o.v?' primary':''}" data-pick="${d.k}" data-v="${o.v}">${esc(o.l)}</button>`).join('')}</div></div>`;});
-  s+=done?next('See how your city compares',2):`<p style="margin:10px 0 0;color:var(--muted)">${4-DEC.filter(d=>c.chosen[d.k]).length} more to choose.</p>`;}
+  s+=done?next('See how your city compares',2):`<p style="margin:10px 0 0;color:var(--muted)">${DEC.length-DEC.filter(d=>c.chosen[d.k]).length} more to choose.</p>`;}
  else if(st===2){const v=C.ind(b),best=[],worst=[];
   M.forEach((m,i)=>{const all=[...PLANS.map(p=>C.ind(p.b)[i]),v[i]],bv=m.low?Math.min(...all):Math.max(...all),wv=m.low?Math.max(...all):Math.min(...all);if(Math.abs(v[i]-bv)<1e-9)best.push(PLAIN[i]);else if(Math.abs(v[i]-wv)<1e-9)worst.push(PLAIN[i]);});
   s+=`<p style="margin:8px 0">Look at the table under the picture. Your city is the bottom row (<b>★ Your build</b>). Above it are four ready-made plans. Each column measures something different. The shaded cells show which plan is best on that measure: <b>no plan wins them all</b>.</p>`;
@@ -246,10 +255,34 @@ function startHTML(sim){const c=cs(sim),st=c.step,w=W(sim),b=build(sim),h=hand(s
  else if(st===4){if(!c.guess){s+=`<p style="margin:8px 0">Under <b>${esc(boardName(w))}</b>, which one scores highest? Go with your gut before you see any scores.</p><div class="row" style="flex-wrap:wrap;gap:6px">${ROWS.map(r=>`<button type="button" class="btn" data-guess="${r.k}">${r.k==='Y'?'Your city':r.n}</button>`).join('')}</div>`;}
   else if(!h){const sc=allScores(sim),rk=ranks(sim),ti=rk.indexOf(1),gi=ROWS.findIndex(r=>r.k===c.guess);
    s+=`<p style="margin:8px 0"><b>${ROWS[ti].k==='Y'?'Your city':ROWS[ti].n}</b> is #1 under ${esc(boardName(w))} with ${f1(sc[ti])} points. ${c.guess===ROWS[ti].k?'Your gut was right.':`Your gut picked ${ROWS[gi].k==='Y'?'your city':ROWS[gi].n} (#${rk[gi]}).`} Your city scores ${f1(sc[4])} (#${rk[4]} of 5). The scores are in the right-hand column of the table.</p>`;
-   s+=`<p style="margin:0">Try another scoreboard in step 3, or change your city in step 1, and guess again.</p>`+next('Go deeper',5);}
-  else{s+=`<p style="margin:8px 0">Your guess is locked: <b>${c.guess==='Y'?'your city':ROWS.find(r=>r.k===c.guess).n}</b>. Now work out each score yourself in <b>Score the plans</b> below the graph.</p><p><button type="button" class="btn primary" data-sjump>Work out the scores ↓</button></p>`;if(allDone(sim))s+=next('Go deeper',5);}}
- else{s+=`<p style="margin:8px 0">The panel below the graph has three tabs:</p><ul style="margin:4px 0 0 18px;padding:0"><li><b>Score the plans:</b> every scoreboard side by side${atLeast('honors')?', who breathes the worst air, the smart growth check and runoff':''}${atLeast('ap')?', plus trade-offs and pay now or later':''}, and <b>Send to my teacher</b>.</li><li><b>Real places:</b> score real Front Range counties, and compare real cities around the world.</li><li><b>How it’s built and sources:</b> exactly how every number is made, and where the real data comes from.</li></ul><p><button type="button" class="btn primary" data-sjump>Go to the panel ↓</button> <button type="button" class="btn" data-sgo="1">Plan another city</button></p>`;}
+   s+=`<p style="margin:0">Try another scoreboard in step 3, or change your city in step 1, and guess again.</p>`+next('Reflect and send',5);}
+  else{s+=`<p style="margin:8px 0">Your guess is locked: <b>${c.guess==='Y'?'your city':ROWS.find(r=>r.k===c.guess).n}</b>. Now work out each score yourself in <b>Score the plans</b> below the graph.</p><p><button type="button" class="btn primary" data-sjump>Work out the scores ↓</button></p>`;if(allDone(sim))s+=next('Reflect and send',5);}}
+ else if(st===5){s+=reflectHTML(sim);}
+ else{s+=`<p style="margin:8px 0">The panel below the graph has three tabs:</p><ul style="margin:4px 0 0 18px;padding:0"><li><b>Score the plans:</b> every scoreboard side by side${atLeast('honors')?', who breathes the worst air, the smart growth check and runoff':''}${atLeast('ap')?', plus trade-offs and pay now or later':''}.</li><li><b>Real places:</b> score real Front Range counties, and compare real cities around the world.</li><li><b>How it’s built and sources:</b> exactly how every number is made, and where the real data comes from.</li></ul><p><button type="button" class="btn primary" data-sjump>Go to the panel ↓</button> <button type="button" class="btn" data-sgo="1">Plan another city</button></p>`;}
  return s;}
+function topW(w){const m=Math.max(...w);return m>0?M.filter((x,i)=>w[i]===m).map(x=>x.s).join(' and ')+' (×'+m+')':'nothing';}
+function reflectHTML(sim){const c=cs(sim),w=W(sim),b=build(sim),v=C.ind(b),ready=hand(sim)?allDone(sim):!!c.revealed;
+ const choices=DEC.map((d,j)=>C.opt(j,b[j]).l.toLowerCase()).join(', ');
+ const Qs=[
+  ['values','What values or opinions shaped your choices?',`You chose: ${choices}. Your scoreboard counted ${topW(w)} most. What did you value when you made those choices, and whose needs were you thinking about?`],
+  ['impact','How might your city affect the environment around it?',`Your city: ${f0(v[5])} unhealthy-air days a year${atLeast('honors')?` (${f0(v[8])} on the worst-off block)`:''}, ${f1(v[6])} tons of CO₂ per person, and ${f0(v[9])}% of its land paved or roofed (streams are harmed above about 25%). Which of these reach past your city’s borders, through air, water or climate?`],
+  ['learned','What is one thing you learned?','Did the winner change when the scoreboard changed? Did anything in Real places surprise you?']];
+ let s=`<p style="margin:8px 0">Answer in a few sentences each. Use your numbers.</p>`;
+ Qs.forEach(([k,q,hint],i)=>{s+=`<div style="margin:10px 0"><b>${i+1}. ${q}</b><p style="margin:2px 0 4px;color:var(--muted)">${esc(hint)}</p><textarea rows="3" data-rf="${k}" style="width:100%;box-sizing:border-box;padding:6px;font:inherit" aria-label="${esc(q)}">${esc(c.rf[k])}</textarea></div>`;});
+ s+=`<h3 style="margin:12px 0 4px">Send to my teacher</h3>`;
+ if(!ready)s+=`<p style="color:var(--muted)">${hand(sim)?'Work out every score first (step 4).':'Make your guess first (step 4).'} Then you can make your result code.</p>`;
+ else{s+=`<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center"><input type="text" data-name value="${esc(c.name)}" placeholder="Your name" aria-label="Your name" style="padding:4px 6px"><input type="text" data-group value="${esc(c.group)}" placeholder="Group (optional)" aria-label="Group" style="padding:4px 6px;width:9em"><button type="button" class="btn primary" data-mkcode>Make my result code</button><button type="button" class="btn" data-copyword>Copy for Word</button><span class="toast" data-wtoast hidden>Copied: paste it into Word</span></div>`;
+  if(c.code)s+=`<p style="margin:6px 0 2px">Copy this code and paste it where your teacher said (a Canvas assignment or discussion). It includes your answers.</p><textarea readonly rows="3" style="width:100%;font-family:monospace;font-size:.85em" data-codebox>${esc(c.code)}</textarea><div class="row" style="gap:6px"><button type="button" class="btn" data-copycode>Copy</button><span class="toast" data-ctoast hidden>Copied</span></div>`;}
+ s+=`<p style="margin:10px 0 0"><button type="button" class="btn" data-sgo="6">Go deeper →</button></p>`;
+ return s;}
+function wordText(sim){const c=cs(sim),w=W(sim),b=build(sim),v=C.ind(b),sc=allScores(sim),rk=ranks(sim),showS=hand(sim)?allDone(sim):!!c.revealed;
+ const L=[];L.push('Score the city (Raider BioLab)');L.push('Name: '+(c.name||'')+(c.group?'   Group: '+c.group:''));L.push('');
+ L.push('My city:');DEC.forEach((d,j)=>L.push('  '+d.l+': '+C.opt(j,b[j]).l));L.push('');
+ L.push('How my city measures up:');M.forEach((m,i)=>L.push('  '+m.l+': '+m.f(v[i])));L.push('');
+ L.push('Scoreboard: '+boardName(w)+' ('+wText(w)+')'+(c.role?'. Resident: '+ROLES.find(r=>r.k===c.role).l:''));
+ if(showS){L.push('Scores:');ROWS.forEach((r,j)=>L.push('  '+(r.k==='Y'?'My city':r.n)+': '+f1(sc[j])+' (#'+rk[j]+')'));}
+ L.push('');[['values','What values or opinions shaped your choices?'],['impact','How might your city affect the environment around it?'],['learned','What is one thing you learned?']].forEach(([k,q],i)=>{L.push((i+1)+'. '+q);L.push(c.rf[k]||'');L.push('');});
+ return L.join('\n');}
 function ensureStart(sim,el){const sec=el.closest('.sim');if(!sec)return;let card=sec.querySelector('.city-start');
  if(!card){card=document.createElement('div');card.className='panel city-start';card.style.cssText='margin-top:14px;border-left:5px solid var(--rj)';const bench=sec.querySelector('.bench');if(!bench)return;bench.parentNode.insertBefore(card,bench);
   if(!document.getElementById('city-start-css')){const st=document.createElement('style');st.id='city-start-css';st.textContent='.sim.m-guided:not(.g-done) .city-start,.sim.m-review .city-start,.sim.m-game .city-start{display:none}.city-start .btn[disabled]{opacity:.45;cursor:default}';document.head.appendChild(st);}}
@@ -261,6 +294,12 @@ function ensureStart(sim,el){const sec=el.closest('.sim');if(!sec)return;let car
  bindShared(sim,card);}
 /* Buttons that work the same in the Start card and the panel. */
 function bindShared(sim,el){const c=cs(sim);
+ el.querySelectorAll('[data-rf]').forEach(t=>t.oninput=()=>{c.rf[t.dataset.rf]=t.value;c.code='';});
+ const cw=el.querySelector('[data-copyword]');if(cw)cw.onclick=()=>{const t=wordText(sim),tt=el.querySelector('[data-wtoast]');const done=()=>{if(tt){tt.hidden=false;setTimeout(()=>tt.hidden=true,2500);}};try{navigator.clipboard.writeText(t).then(done,done);}catch(e){done();}};
+ const nm=el.querySelector('[data-name]'),gr=el.querySelector('[data-group]');if(nm)nm.oninput=()=>{c.name=nm.value;};if(gr)gr.oninput=()=>{c.group=gr.value;};
+ const mk=el.querySelector('[data-mkcode]');if(mk)mk.onclick=()=>{if(!c.name.trim()){if(nm){nm.focus();nm.placeholder='Type your name first';}return;}makeCode(sim);sim.infoDirty=true;};
+ const cp=el.querySelector('[data-copycode]');if(cp)cp.onclick=()=>{const ta=el.querySelector('[data-codebox]'),tt=el.querySelector('[data-ctoast]');const done=()=>{if(tt){tt.hidden=false;setTimeout(()=>tt.hidden=true,1500);}};
+  try{navigator.clipboard.writeText(c.code).then(done,()=>{ta.select();document.execCommand('copy');done();});}catch(e){ta.select();try{document.execCommand('copy');}catch(_){}done();}};
  el.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{if(LOCK)return;const r=ROLES.find(x=>x.k===b.dataset.role);setW(sim,r.w);c.role=r.k;sim.infoDirty=true;BioLab.refresh(sim);});
  el.querySelectorAll('[data-guess]').forEach(b=>b.onclick=()=>{const g=b.dataset.guess;c.guess=g==='-'?null:g;if(!hand(sim)){c.revealed=true;markAuto(sim);}sim.infoDirty=true;BioLab.refresh(sim);});}
 function bindInfo(sim,el){const c=cs(sim);
@@ -275,10 +314,6 @@ function bindInfo(sim,el){const c=cs(sim);
   const v=parseFloat(raw);if(!Number.isFinite(v)){if(inp)inp.focus();return;}x.v=v;const ans=rowScore(sim,k),ok=Math.abs(v-ans)<=0.2+0.002*Math.abs(ans);
   if(ok){x.ok=true;x.first=!x.tries;}else{x.tries=(x.tries||0)+1;if(x.tries>=2)x.shown=true;}c.code='';sim.infoDirty=true;BioLab.refresh(sim);});
  el.querySelectorAll('[data-show]').forEach(b=>b.onclick=()=>{const k=b.dataset.show,x=c.hand[k]=c.hand[k]||{};x.shown=true;c.code='';sim.infoDirty=true;BioLab.refresh(sim);});
- const nm=el.querySelector('[data-name]'),gr=el.querySelector('[data-group]');if(nm)nm.oninput=()=>{c.name=nm.value;};if(gr)gr.oninput=()=>{c.group=gr.value;};
- const mk=el.querySelector('[data-mkcode]');if(mk)mk.onclick=()=>{if(!c.name.trim()){if(nm){nm.focus();nm.placeholder='Type your name first';}return;}makeCode(sim);sim.infoDirty=true;};
- const cp=el.querySelector('[data-copycode]');if(cp)cp.onclick=()=>{const ta=el.querySelector('[data-codebox]'),tt=el.querySelector('[data-ctoast]');const done=()=>{if(tt){tt.hidden=false;setTimeout(()=>tt.hidden=true,1500);}};
-  try{navigator.clipboard.writeText(c.code).then(done,()=>{ta.select();document.execCommand('copy');done();});}catch(e){ta.select();try{document.execCommand('copy');}catch(_){}done();}};
  const det=el.querySelector('[data-tdet]');if(det)det.addEventListener('toggle',()=>{c.teach.open=det.open;});
  el.querySelectorAll('[data-tcalc]').forEach(b=>b.onclick=()=>{c.teach.calc=b.dataset.tcalc;c.teach.link='';sim.infoDirty=true;});
  el.querySelectorAll('[data-tdepth]').forEach(b=>b.onclick=()=>{c.teach.depth=b.dataset.tdepth;if(!c.teach.depth)c.teach.dl=false;c.teach.link='';sim.infoDirty=true;});
@@ -379,13 +414,13 @@ const SIM={
 /* The tour and the quick questions name the winners of the preset scoreboards, so an assignment locked to By hand leaves them out. */
 if(!LOCK){
  SIM.tour=[
-  {title:'Your neighborhood',text:'This is the neighborhood you are building for 10,000 people: how they get around, where the electricity comes from, what homes look like and where people work. Change any choice and the picture and numbers change.',focus:[0,0,800,170],pause:true,setup:sim=>{const v={};DEC.forEach((d,j)=>v[d.k]=DEFB[j]);BioLab.setValues(sim,v);}},
+  {title:'Your neighborhood',text:'This is the neighborhood you are building for 10,000 people: how they get around, where the electricity comes from, what homes look like, where people work, what is on the rooftops and where the food comes from. Change any choice and the picture and numbers change.',focus:[0,0,800,170],pause:true,setup:sim=>{const v={};DEC.forEach((d,j)=>v[d.k]=DEFB[j]);BioLab.setValues(sim,v);}},
   {title:'Ten measures',text:'Each column measures something different: money (GDP), jobs, housing cost, commute, active minutes, unhealthy-air days, CO₂, life satisfaction, the worst-off block’s air, and paved ground. Four ready-made plans sit above your build.',focus:[0,170,800,60],pause:true},
   {title:'Each measure has its own #1',text:'The shaded cells mark the best of the four plans on each measure. Tech Park has the highest GDP. Wide Roads has the most jobs and the cheapest housing. Main Street has the shortest commute and the happiest residents. Green Belt has the most activity, the cleanest air, the least CO₂ and the least pavement.',focus:[0,170,800,280],pause:true},
   {title:'A scoreboard is a choice',text:'GDP only puts weight 1 on GDP and 0 on everything else. Under it, Tech Park wins, even though it is near the bottom on commute, activity and happiness.',focus:[700,170,100,280],pause:true,setup:sim=>preset(sim,'gdp')},
   {title:'Change what counts',text:'Public health weights commute, activity and air. Now Green Belt is #1 and Wide Roads is last. The plans did not change. The scoreboard did.',focus:[700,170,100,280],pause:true,setup:sim=>preset(sim,'health')},
-  {lvl:'honors',title:'Who breathes it?',text:'Averages hide who carries the cost. In Wide Roads, the average resident gets 44 unhealthy-air days a year, but the block next to the plant and the busiest road gets 88. Rent is cheapest there.',focus:[0,0,800,170],pause:true,setup:sim=>{BioLab.setValues(sim,{travel:'cars',power:'fossil',homes:'lots',jobs:'factory'});preset(sim,'fair');}},
-  {lvl:'honors',title:'GDP counts spending on harms',text:'Wide Roads’ $89k GDP includes about $18.8k per person of spending on car costs and health care tied to bad air. Read <b>GDP minus spending on harms</b>: money spent fixing problems raises GDP but does not make life better.',pause:true,setup:sim=>{BioLab.setValues(sim,{travel:'cars',power:'fossil',homes:'lots',jobs:'factory'});preset(sim,'gdp');}}
+  {lvl:'honors',title:'Who breathes it?',text:'Averages hide who carries the cost. In Wide Roads, the average resident gets 44 unhealthy-air days a year, but the block next to the plant and the busiest road gets 88. Rent is cheapest there.',focus:[0,0,800,170],pause:true,setup:sim=>{BioLab.setValues(sim,{travel:'cars',power:'fossil',homes:'lots',jobs:'factory',roofs:'plain',food:'trucked'});preset(sim,'fair');}},
+  {lvl:'honors',title:'GDP counts spending on harms',text:'Wide Roads’ $89k GDP includes about $18.8k per person of spending on car costs and health care tied to bad air. Read <b>GDP minus spending on harms</b>: money spent fixing problems raises GDP but does not make life better.',pause:true,setup:sim=>{BioLab.setValues(sim,{travel:'cars',power:'fossil',homes:'lots',jobs:'factory',roofs:'plain',food:'trucked'});preset(sim,'gdp');}}
  ];
  SIM.onTourExit=sim=>{const v={};M.forEach((m,i)=>v['w'+i]=W0[i]);DEC.forEach((d,j)=>v[d.k]=DEFB[j]);BioLab.setValues(sim,v);};
  SIM.challenges=function(){const g=PRESETS.find(p=>p.k==='gdp').w,hl=PRESETS.find(p=>p.k==='health').w,wb=PRESETS.find(p=>p.k==='wellbeing').w,names=PLANS.map(p=>p.n);
