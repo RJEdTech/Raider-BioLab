@@ -46,7 +46,7 @@ waterprops: {
     'Trees: water rises from roots to leaves through tubes thinner than a hair. Cohesion holds the water column together and adhesion holds it to the tube walls.'
   ],
   takeaway: 'Water takes more heat to warm up than almost any common liquid, over twice as much as cooking oil. Anything that is mostly water, like a lake, a pot of soup or your body, heats slowly and cools slowly.',
-  lede: 'Run eight quick stations with water, alcohol and oil: drops on a penny, a floating paperclip, a boiling race and more. Then zoom in to see how hydrogen bonds between water molecules cause every result.',
+  lede: 'Pick a property from the tabs above the bench: drops on a penny, a floating paperclip, a boiling race, sweat-like cooling and more. Each tab zooms in to show how hydrogen bonds between water molecules cause the result.',
   tour: [
     'Start with one water molecule, H₂O. Oxygen pulls the shared electrons toward itself, so the oxygen end is slightly negative (δ−) and the two hydrogen ends are slightly positive (δ+). That uneven sharing is what <b>polar</b> means.',
     'The δ+ hydrogen of one molecule is attracted to the δ− oxygen of a neighbor. That attraction is a <b>hydrogen bond</b> (dashed line), much weaker than the bonds inside the molecule. Every station today comes back to these bonds.',
@@ -55,6 +55,7 @@ waterprops: {
     'Water also sticks to other polar materials, like the cellulose in a paper towel (<b>adhesion</b>). Adhesion pulls water up the fibers and cohesion drags more along behind: capillary action, the reason a towel soaks up a spill.',
     'Hydrogen bonds pull the surface tight, like a stretched sheet. This is <b>surface tension</b>. A steel paperclip is denser than water, yet it rests on that skin, the same way water striders walk on a pond.',
     'Same heat, three liquids, 100 g each. Water warms slowest because much of the energy goes into hydrogen bonds instead of speeding up molecules. That is <b>high specific heat</b>. Alcohol boils first, at 78 °C.',
+    'Wet cloths on two thermometers, fan on. To evaporate, a molecule must break all its hydrogen bonds, so it carries heat away. Alcohol cools fast but dries out in under 2 minutes; each gram of water carries off 2,260 J, 2.7 times as much. That is <b>high heat of evaporation</b>, the reason sweat cools you.',
     'Water molecules surround each ion and pull the salt crystal apart, the way salt vanishes into pasta water. Oil is nonpolar, so it stays in its own layer, like salad dressing that separates.'
   ]
 },
