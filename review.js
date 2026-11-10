@@ -522,3 +522,20 @@ lifebonds:{
     lab:{set:{view:'hb',hb:'protein'},act:'heat',look:'The β-sheet after heating. Read <b>Hydrogen bonds between the strands</b> and <b>Covalent bonds broken</b>.'},verify:[['hbt',0,0],['cov',0,0]]}
   ]}
 });
+
+/* cityscore (Nov 10, 2026) */
+BioLab.addReview({
+cityscore:{
+ questions:[
+  {id:'wavg',kind:'test',lvl:'bio',q:'A scoreboard weights clean air ×3 and jobs ×1. A plan earns 80 points for clean air and 40 points for jobs. What is its score?',num:{ans:70,tol:0.05,unit:'points'},
+   steps:['Score = (sum of weight × points) ÷ (sum of weights).','= (3 × 80 + 1 × 40) ÷ (3 + 1) = 280 ÷ 4.','= 70 points.']},
+  {id:'health',kind:'real',lvl:'bio',q:'Public health weights commute ×1, active minutes ×3 and unhealthy air ×3. Main Street earns 90.5, 72.2 and 64.7 points on those. What is its score?',num:{ans:71.6,tol:0.15,unit:'points'},
+   steps:['1 × 90.5 + 3 × 72.2 + 3 × 64.7 = 90.5 + 216.6 + 194.1 = 501.2.','Total weight: 1 + 3 + 3 = 7.','501.2 ÷ 7 ≈ 71.6. Main Street is #2 under Public health, behind Green Belt (96.6).']},
+  {id:'harms',kind:'real',lvl:'honors',q:'Wide Roads has a GDP of $89k per person, and $18.8k of it is spending on harms (car costs and health care tied to bad air). What is its GDP minus spending on harms, in $k?',num:{ans:70.2,tol:0.05,unit:'$k'},
+   steps:['89 − 18.8 = 70.2.','That money counts in GDP because it is spent, even though it pays for problems.','Main Street: 69 − 6.4 = 62.6. The gap between the two plans shrinks from $20k to about $7.6k.']},
+  {id:'points',kind:'test',lvl:'honors',q:'Commute times across every possible build run from 26 minutes (best) to 68 minutes (worst). Lower is better. How many points does a 48-minute commute earn on the 0 to 100 scale?',num:{ans:47.6,tol:0.15,unit:'points'},
+   steps:['Points before flipping: 100 × (48 − 26) ÷ (68 − 26) = 100 × 22 ÷ 42 ≈ 52.4.','Lower is better, so flip: 100 − 52.4 = 47.6.','A 26-minute commute gets 100 points and a 68-minute commute gets 0.']},
+  {id:'separable',kind:'test',lvl:'ap',q:'Why can the tool find the best possible build by choosing the best option for each decision on its own?',choices:['Because the decisions do not affect any of the same measures','Because each option adds a fixed amount to each measure, so the score is a sum of one part per decision and each part can be maximized separately','Because the weights always add up to 1','It cannot: it has to try every build'],correct:1,
+   steps:['In this model, each measure = base + the amounts from the four choices.','Points and the weighted average are linear, so the score splits into four separate parts, one per decision.','Maximizing a sum of independent parts means maximizing each part. Real cities have interactions (rail works better with dense homes), which this simple model leaves out.']}
+ ]}
+});

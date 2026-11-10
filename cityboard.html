@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Class board · Score the city · Raider BioLab</title>
+<meta name="description" content="Leaderboard, groups and flags for the Score the city tool, from students' result codes.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="biolab.css?v=202611071730">
+<style>
+.cb{max-width:1100px;margin:0 auto}
+.cb h1{font-size:32px;margin:0;line-height:1.2}.cb h2{font-size:22px;margin:26px 0 8px}
+.cb p,.cb li,.cb td,.cb th{font-size:16px;line-height:1.5}
+.cb .lede{font-size:18px;color:var(--muted);margin:6px 0 16px}.cb .back{display:inline-block;margin:0 0 14px;font-weight:600}
+.cb .help,.cb .help-list li{font-size:14px;color:var(--muted)}
+.cb-box{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--rj);border-radius:10px;padding:14px 18px;margin:14px 0}
+.cb-box h2{margin:0 0 6px;font-size:20px}
+.cb-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.cb input[type=text]{flex:1;min-width:240px;padding:7px 9px;font-size:15px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.cb textarea{width:100%;box-sizing:border-box;padding:8px;font-family:ui-monospace,Consolas,monospace;font-size:13px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.cb-scroll{overflow-x:auto}
+.cb table{border-collapse:collapse;width:100%;min-width:720px}
+.cb th,.cb td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.cb th{font-size:14px;color:var(--muted)}
+.cb td.n,.cb th.n{text-align:right;font-variant-numeric:tabular-nums}
+.cb td.top{color:var(--rj);font-weight:700}
+.cb .flag{display:inline-block;margin:0 4px 4px 0;padding:1px 7px;border-radius:999px;background:var(--card2);border:1px solid var(--rj);color:var(--fg);font-size:13px}
+.cb .ok{color:var(--muted);font-size:13px}
+.cb .city{font-size:14px}
+</style>
+</head>
+<body>
+<header class="rj-masthead">
+  <div class="hl">
+    <img class="rj-mark" src="data:image/png;base64,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" alt="RJ">
+    <div>
+      <h1>Raider BioLab</h1>
+      <p class="tagline">Biology · AP Bio · AP Environmental Science · Genetic Engineering</p>
+    </div>
+  </div>
+</header>
+<main class="wrap"><div class="cb">
+<a class="back" href="index.html#cityscore">← Score the city</a>
+<h1>Class board: Score the city</h1>
+<p class="lede">Paste your students’ result codes to see a leaderboard, how each city does on every scoreboard, group results and flags. Nothing leaves this page: the codes are read in your browser.</p>
+
+<section class="cb-box">
+<h2>1. Your scoreboard</h2>
+<p id="board-desc"></p>
+<p class="help">To use a different one, paste the link you gave students (from “For teachers: assign this scoreboard” in the tool).</p>
+<div class="cb-row"><input type="text" id="tlink" placeholder="Paste your assignment link (optional)" aria-label="Assignment link"><button type="button" class="btn" id="tlink-go">Use this link</button></div>
+</section>
+
+<section class="cb-box">
+<h2>2. Paste the result codes</h2>
+<p class="help">Copy everything from the Canvas discussion, or from each submission in SpeedGrader, and paste it here. Extra text is fine: the board finds every code that starts with CITY-.</p>
+<textarea id="codes" rows="6" aria-label="Result codes" placeholder="CITY-…"></textarea>
+<div class="cb-row"><button type="button" class="btn primary" id="read">Read the codes</button><button type="button" class="btn" id="clear">Clear</button><span id="count" class="help"></span></div>
+</section>
+
+<section id="out" hidden>
+<h2>Leaderboard</h2>
+<p class="help">Scores are recalculated here from each student’s build, under your scoreboard. The columns after Flags show the same city under each preset scoreboard; the top score in each column is in red.</p>
+<div class="cb-scroll"><table id="lb"></table></div>
+<div class="cb-row"><button type="button" class="btn" id="csv">Copy as CSV (paste into Excel)</button><span id="csv-t" class="help" hidden>Copied</span></div>
+<h2>Groups</h2><div class="cb-scroll"><table id="groups"></table></div>
+<h2>What the class chose</h2><div id="choices"></div>
+<h2>About the flags</h2>
+<ul class="help-list">
+<li><b>Automatic mode:</b> you assigned By hand, but this code was made in Automatic mode (the student opened the tool without your link).</li>
+<li><b>Saw automatic scores first:</b> the student calculated by hand, but this browser had already shown the automatic scores for the same scoreboard.</li>
+<li><b>Different scoreboard:</b> the code was made with weights that differ from yours.</li>
+<li><b>Not from your link:</b> the code does not carry your assignment code.</li>
+<li><b>Code edited:</b> the code was changed after the tool made it.</li>
+</ul>
+<p class="help">Flags are clues to talk about, not proof. A student could use another device, or a classmate’s screen, and no flag would show.</p>
+</section>
+</div></main>
+
+<script src="city-model.js?v=202611101800"></script>
+<script>
+(function(){'use strict';
+const C=window.CityModel,$=id=>document.getElementById(id);
+let B=C.parseQS(location.search);let rows=[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const f1=v=>(Math.round(v*10)/10).toFixed(1);
+const wText=w=>C.M.map((m,i)=>w[i]>0?m.s+' ×'+w[i]:null).filter(Boolean).join(', ');
+const name=w=>{const p=C.presetOf(w);return p?p.l:'Custom scoreboard';};
+function boardW(){if(B.w)return B.w;const c={};rows.forEach(r=>{const k=C.wKey(r.w);c[k]=(c[k]||0)+1;});const k=Object.keys(c).sort((a,b)=>c[b]-c[a])[0];return k?k.split(',').map(Number):C.PRESETS[0].w;}
+function desc(){const w=boardW();$('board-desc').innerHTML=`<b>${esc(name(w))}</b>: ${esc(wText(w))}. Scoring: <b>${B.calc==='hand'?'By hand (locked)':B.calc==='auto'?'Automatic':'not set'}</b>${B.a?`. Assignment code <b>${esc(B.a)}</b>`:''}${B.w?'':' (taken from the most common scoreboard in the codes)'}.`;}
+const opt=(j,v)=>C.opt(j,v).l;
+function flags(o,w){const f=[];if(!o.ok)f.push('Code edited');if(B.calc==='hand'&&o.m!=='hand')f.push('Automatic mode');if(o.m==='hand'&&o.as)f.push('Saw automatic scores first');
+ if(C.wKey(o.w)!==C.wKey(w))f.push('Different scoreboard');if(B.a&&o.a!==B.a)f.push('Not from your link');return f;}
+function handNote(o){if(o.m!=='hand'||!o.hd)return o.m==='auto'?'Automatic':'';const v=Object.values(o.hd);const first=v.filter(x=>x.first).length,sh=v.filter(x=>x.sh).length;return `By hand: ${first} of ${v.length} right the first time${sh?`, ${sh} shown`:''}`;}
+function render(){desc();if(!rows.length){$('out').hidden=true;return;}$('out').hidden=false;const w=boardW();
+ const P=C.PRESETS.filter(p=>C.wKey(p.w)!==C.wKey(w));
+ rows.forEach(r=>{r.s=C.score(r.b,w);r.ps=P.map(p=>C.score(r.b,p.w));});
+ const L=rows.slice().sort((a,b)=>b.s-a.s);const top=Math.max(...L.map(r=>r.s)),ptop=P.map((p,i)=>Math.max(...L.map(r=>r.ps[i])));
+ $('lb').innerHTML=`<thead><tr><th class="n">#</th><th>Name</th><th>Group</th><th>City</th><th class="n">Score</th><th>Flags</th><th>How scored</th>${P.map(p=>`<th class="n">${esc(p.l)}</th>`).join('')}</tr></thead><tbody>`+
+  L.map(r=>{const rk=C.rankAmong(r.s,L.map(x=>x.s)),fl=flags(r,w);return `<tr><td class="n">${rk}</td><td><b>${esc(r.n||'(no name)')}</b></td><td>${esc(r.g)}</td><td class="city">${r.b.map((v,j)=>esc(opt(j,v))).join('<br>')}</td><td class="n${Math.abs(r.s-top)<1e-9?' top':''}">${f1(r.s)}</td><td>${fl.length?fl.map(x=>`<span class="flag">⚑ ${esc(x)}</span>`).join(''):'<span class="ok">none</span>'}</td><td class="ok">${esc(handNote(r))}${r.tm!=null?`<br>${r.tm} min · ${esc(r.d||'')}`:''}</td>${r.ps.map((s,i)=>`<td class="n${Math.abs(s-ptop[i])<1e-9?' top':''}">${f1(s)}</td>`).join('')}</tr>`;}).join('')+'</tbody>';
+ const G={};rows.forEach(r=>{const g=r.g||'(no group)';(G[g]=G[g]||[]).push(r);});
+ const gl=Object.keys(G).map(g=>{const a=G[g],avg=a.reduce((x,r)=>x+r.s,0)/a.length,b=a.slice().sort((x,y)=>y.s-x.s)[0];return {g,a,avg,b};}).sort((x,y)=>y.avg-x.avg);
+ $('groups').innerHTML='<thead><tr><th>Group</th><th class="n">Students</th><th class="n">Average score</th><th>Best city in the group</th></tr></thead><tbody>'+gl.map(x=>`<tr><td><b>${esc(x.g)}</b></td><td class="n">${x.a.length}</td><td class="n">${f1(x.avg)}</td><td>${esc(x.b.n)}: ${esc(C.bLabel(x.b.b))} (${f1(x.b.s)})</td></tr>`).join('')+'</tbody>';
+ $('choices').innerHTML=C.DEC.map((d,j)=>`<p><b>${esc(d.l)}:</b> ${d.o.map(o=>`${esc(o.l)} ${rows.filter(r=>r.b[j]===o.v).length}`).join(' · ')}</p>`).join('')+`<p class="help">Best possible city for your scoreboard: ${esc(C.bLabel(C.best(w).b))} (${f1(C.best(w).s)}).</p>`;}
+function read(){const seen=new Set();rows=[];C.findCodes($('codes').value).forEach(c=>{if(seen.has(c))return;seen.add(c);const o=C.decode(c);if(o&&Array.isArray(o.b)&&o.b.length===4&&Array.isArray(o.w)&&o.w.length===8)rows.push(o);});
+ $('count').textContent=rows.length?rows.length+' code'+(rows.length===1?'':'s')+' read':'No codes found';render();}
+$('read').onclick=read;$('clear').onclick=()=>{$('codes').value='';rows=[];$('count').textContent='';render();};
+$('tlink-go').onclick=()=>{const t=$('tlink').value.trim();let q='';try{q=new URL(t).search;}catch(e){q=t.includes('?')?t.slice(t.indexOf('?')):t;}const nb=C.parseQS(q);if(nb.w){B=nb;render();}else $('board-desc').innerHTML+=' <b>That link has no scoreboard in it.</b>';};
+$('csv').onclick=()=>{const w=boardW();const P=C.PRESETS.filter(p=>C.wKey(p.w)!==C.wKey(w));const L=rows.slice().sort((a,b)=>b.s-a.s);
+ const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';const lines=[['Rank','Name','Group',...C.DEC.map(d=>d.l),'Score ('+name(w)+')',...P.map(p=>p.l),'How scored','Minutes','Date','Flags'].map(q).join(',')];
+ L.forEach(r=>lines.push([C.rankAmong(r.s,L.map(x=>x.s)),r.n,r.g,...r.b.map((v,j)=>opt(j,v)),f1(r.s),...r.ps.map(f1),handNote(r),r.tm,r.d,flags(r,w).join('; ')].map(q).join(',')));
+ const t=lines.join('\n'),done=()=>{$('csv-t').hidden=false;setTimeout(()=>$('csv-t').hidden=true,1500);};try{navigator.clipboard.writeText(t).then(done);}catch(e){}};
+desc();})();
+</script>
+<script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

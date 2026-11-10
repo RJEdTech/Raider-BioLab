@@ -1364,3 +1364,16 @@ lifebonds: {
   takeaway: 'Atoms bond by sharing or handing over valence electrons. Even sharing (C–H) makes nonpolar parts that water leaves out; uneven sharing (O–H, N–H, C=O) makes polar parts that water grabs. Hydrogen bonds are about 20 times weaker than a covalent bond, weak enough to unzip DNA but so numerous they hold water together.'
 }
 });
+/* cityscore (Nov 10, 2026) */
+BioLab.addPractical({
+cityscore: {
+  hook: 'Your city is planning a new neighborhood for 10,000 people on the edge of the metro and is asking residents, students included, to comment on four plans. One report says the plan with the highest GDP is the best. Is the place that makes the most money the best place to live?',
+  answer: 'Not by itself. Tech Park has the highest GDP, $96k per person, but it ties Wide Roads for the longest commute (62 minutes a day) and has the second-lowest life satisfaction. Score the plans another way and the winner changes: Jobs and growth picks Wide Roads, Public health picks Green Belt (96.6, with Wide Roads last at 4.4), and Well-being picks Main Street (65.4). Each measure answers a different question, so “best” depends on what you count.',
+  uses: [
+    'Front Range air: the Denver Metro/North Front Range area is classified as a Severe nonattainment area for the 2008 ozone standard (EPA, 2022). How a neighborhood gets around and makes its power shows up as unhealthy-air days for the people who live there.',
+    'Beyond GDP: Simon Kuznets, who built the first U.S. national income accounts, warned Congress in 1934 that a nation’s welfare can scarcely be inferred from national income. Bhutan measures Gross National Happiness across nine domains, including health, time use and ecological diversity.',
+    'Your own scoreboards: where your family lives, how you get to school and how a school or city ranks itself all depend on which measures count. Ask what each number measures and what it leaves out.'
+  ],
+  takeaway: 'Different measures measure different things. GDP counts spending, including spending on problems. Before you accept “best,” ask: best by which measure, and who chose the weights?'
+}
+});
