@@ -627,17 +627,22 @@ function syncMode(sim){const p=sim.p;if(sim.st&&p.mode==='practical')ensurePract
   const btns=[...sim.ui.sec.querySelectorAll('.actions button')];d.actions.forEach(a=>{const b=btns.find(x=>x.textContent===a.label);if(b)b.hidden=!vis(a);});
   sim.infoDirty=true;}
 const say=(sim,ok,t)=>{sim.st.msg={ok,t};sim.infoDirty=true;};
+/* the tool check, shared by Make the cut and by dragging the tool along the line */
+function toolOK(sim){const p=sim.p,s=sim.st;
+  if(p.cutwith==='none'){say(sim,false,'Choose a tool under <b>Cut with</b> first.');return false;}
+  if(p.mode==='hopper'){if(p.cutwith!=='dsc'){s.wrong++;say(sim,false,(p.cutwith==='scalpel'?'A scalpel slices too deep and cuts the gut underneath. Use the fine tips of the dissecting scissors, lifting the exoskeleton as you cut.':TOOL_NO[p.cutwith])+(s.wrong>=2?' Hint: use the dissecting scissors.':''));return false;}return true;}
+  const need=CUTS[s.cuts],okTools=need.tools||['dsc'];
+  if(!okTools.includes(p.cutwith)){s.wrong++;say(sim,false,(TOOL_NO[p.cutwith]||'That tool will not work here.')+(s.wrong>=2?' Hint: use the '+(need.tools?'forceps to lift the sac and the dissecting scissors to snip it':'dissecting scissors')+'.':''));return false;}
+  return true;}
 function doCut(sim){const p=sim.p,s=sim.st;
   if(!cutPending(sim)){say(sim,false,'No cut is needed at this step. Press Next step.');return;}
-  if(p.cutwith==='none'){say(sim,false,'Choose a tool to cut with first.');return;}
+  if(!toolOK(sim))return;
   if(p.mode==='hopper'){
-    if(p.cutwith!=='dsc'){s.wrong++;say(sim,false,(p.cutwith==='scalpel'?'A scalpel slices too deep and cuts the gut underneath. Use the fine tips of the dissecting scissors, lifting the exoskeleton as you cut.':TOOL_NO[p.cutwith])+(s.wrong>=2?' Hint: use the dissecting scissors.':''));return;}
     if(p.hpath==='none'){say(sim,false,'Now choose where to cut.');return;}
     const hp=HPATHS[p.hpath];if(!hp.ok){s.wrong++;say(sim,false,hp.msg+(s.wrong>=2?' Hint: cut along the back, just to one side of the midline, from the tip of the abdomen to the head.':''));return;}
     s.hcut=true;s.wrong=0;say(sim,true,'Cut made. Spread the body wall flaps and pin them out at an angle, then put one pin through the thorax. The organs are now in view: press Next step.');
     BioLab.setValues(sim,{cutwith:'none',hpath:'none'});syncMode(sim);return;}
-  const need=CUTS[s.cuts],okTools=need.tools||['dsc'];
-  if(!okTools.includes(p.cutwith)){s.wrong++;say(sim,false,(TOOL_NO[p.cutwith]||'That tool will not work here.')+(s.wrong>=2?' Hint: use the '+(need.tools?'forceps to lift the sac and the dissecting scissors to snip it':'dissecting scissors')+'.':''));return;}
+  const need=CUTS[s.cuts];
   if(p.path==='none'){say(sim,false,'Now choose where to cut.');return;}
   if(p.path!==need.id){s.wrong++;let m;const ix=CUTS.findIndex(c=>c.id===p.path);
     if(WRONG_PATHS[p.path])m=WRONG_PATHS[p.path].msg;else if(ix>=0&&ix<s.cuts)m='You already made that cut.';else m='Not yet: that cut comes later. The cuts go in order.';
@@ -647,6 +652,63 @@ function doCut(sim){const p=sim.p,s=sim.st;
 function autoCut(sim){if(!cutPending(sim)){say(sim,false,'No cut is needed at this step. Press Next step.');return;}
   if(sim.p.mode==='hopper')BioLab.setValues(sim,{cutwith:'dsc',hpath:'hdors'});else{const need=CUTS[sim.st.cuts];BioLab.setValues(sim,{cutwith:need.tools?need.tools[0]:'dsc',path:need.id});}
   sim.st.wrong=0;doCut(sim);if(sim.st.msg&&sim.st.msg.ok)sim.st.msg.t='Shown for you: '+sim.st.msg.t;}
+/* ---------- drag the tool along the cut line ---------- */
+const TIP={scalpel:[-92,3],dsc:[-82,0],osc:[-90,0],forceps:[-82,3],probe:[-85,-11],needle:[-92,0]};
+const plLen=pts=>{let L=0;for(let i=1;i<pts.length;i++)L+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);return L;};
+function plAt(pts,d){let acc=0;for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],l=Math.hypot(b[0]-a[0],b[1]-a[1]);
+    if(acc+l>=d||i===pts.length-1){const t=l?clamp((d-acc)/l,0,1):0;return {pt:[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t],ang:Math.atan2(b[1]-a[1],b[0]-a[0])};}acc+=l;}
+  return {pt:pts[0],ang:0};}
+function plProj(pts,x,y,cur){let best=null,acc=0;for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],dx=b[0]-a[0],dy=b[1]-a[1],L2=dx*dx+dy*dy,l=Math.sqrt(L2);
+    const t=L2?clamp(((x-a[0])*dx+(y-a[1])*dy)/L2,0,1):0,d=Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy),at=acc+t*l,sc=d+Math.abs(at-cur)*0.04;
+    if(!best||sc<best.sc)best={d,s:at,sc};acc+=l;}return best;}
+function plSlice(pts,d){const out=[pts[0]];let acc=0;for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],l=Math.hypot(b[0]-a[0],b[1]-a[1]);
+    if(acc+l>=d){const t=l?(d-acc)/l:0;out.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);return out;}out.push(b);acc+=l;}return out;}
+/* the cut to trace now: polylines in model space, and how to get there from canvas space */
+function cutGuide(sim){const p=sim.p,s=sim.st;if(!s||!cutPending(sim)||(sim.tour&&sim.tour.on))return null;
+  if(p.mode==='hopper')return {key:'h',pls:[HCUT.hdors],toM:(x,y)=>hinv(x,y),toC:hfwd,sc:HS,path:'hdors'};
+  const c=CUTS[s.cuts];return {key:'p'+s.cuts,pls:CUTP[c.id],toM:(x,y)=>[x,y],toC:q=>q,sc:1,path:c.id};}
+function dgState(sim,g){let d=sim.st.dg;if(!d||d.key!==g.key)d=sim.st.dg={key:g.key,i:0,prog:0,on:false,hover:false,ptr:null,ang:0};return d;}
+function cutStroke(ctx,pts,sc){if(pts.length<2)return;line(ctx,pts,'#f6efe9',4/sc);line(ctx,pts,'#6a3f36',1.8/sc);}
+/* drawn in model space (inside the grasshopper transform when there is one) */
+function drawGuide(ctx,sim,g){const d=dgState(sim,g),sc=g.sc,pulse=1+0.18*Math.sin(performance.now()/180);
+  g.pls.forEach((pts,j)=>{if(j<d.i){cutStroke(ctx,pts,sc);return;}
+    line(ctx,pts,'rgba(40,24,18,.55)',6/sc);line(ctx,pts,'#f2c94c',3/sc,[8/sc,6/sc]);
+    const e=pts[pts.length-1],q=pts[pts.length-2],a=Math.atan2(e[1]-q[1],e[0]-q[0]),r=9/sc;
+    ctx.save();ctx.beginPath();ctx.moveTo(e[0]+Math.cos(a)*r,e[1]+Math.sin(a)*r);ctx.lineTo(e[0]+Math.cos(a+2.5)*r,e[1]+Math.sin(a+2.5)*r);ctx.lineTo(e[0]+Math.cos(a-2.5)*r,e[1]+Math.sin(a-2.5)*r);ctx.closePath();
+    ctx.fillStyle='#f2c94c';ctx.fill();ctx.strokeStyle='rgba(40,24,18,.7)';ctx.lineWidth=1.2/sc;ctx.stroke();ctx.restore();
+    if(j===d.i&&d.prog>0)cutStroke(ctx,plSlice(pts,d.prog),sc);});
+  const cur=g.pls[d.i];if(!cur||d.on)return;const at=plAt(cur,d.prog).pt;
+  ell(ctx,at[0],at[1],9*pulse/sc,9*pulse/sc,'#2e7d4f','#fff',2.5/sc);}
+/* drawn in canvas space: the "start here" label and the tool following the pointer */
+function drawGuideTop(ctx,sim,g,k){const d=dgState(sim,g),cur=g.pls[d.i],tool=sim.p.cutwith;if(!cur)return;
+  if(!d.on){const at=g.toC(plAt(cur,d.prog).pt),up=at[1]>90;
+    pill(ctx,tool==='none'?'Choose a tool, then drag from here':(d.prog>0?'Keep going from here':'Drag from here'),clamp(at[0],150,650),at[1]+(up?-30:30)*Math.min(k,1.3),'#2e7d4f','#fff',12*k);}
+  if(tool!=='none'&&d.ptr&&(d.on||d.hover)&&TIP[tool]){const tp=TIP[tool];ctx.save();ctx.translate(d.ptr[0],d.ptr[1]);ctx.rotate(d.ang+Math.PI-0.35);ctx.scale(0.6,0.6);
+    ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=6;ctx.shadowOffsetY=3;drawTool(ctx,tool,-tp[0],-tp[1]+10,0,0);ctx.restore();}}
+function finishCut(sim,g){const tool=sim.p.cutwith;sim.st.dg=null;
+  BioLab.setValues(sim,sim.p.mode==='hopper'?{hpath:'hdors'}:{path:g.path});doCut(sim);
+  if(sim.st.msg&&sim.st.msg.ok&&cutPending(sim))BioLab.setValues(sim,{cutwith:tool});}
+function bindDrag(sim){const cv=sim.ui&&sim.ui.stage;if(!cv||sim._dragBound)return;sim._dragBound=true;
+  const pos=e=>{const r=cv.getBoundingClientRect();return [(e.clientX-r.left)/r.width*800,(e.clientY-r.top)/r.width*800];};
+  const done=()=>{sim.infoDirty=true;BioLab.refresh(sim);};
+  cv.addEventListener('pointerdown',e=>{sim.st.swallow=false;const g=cutGuide(sim);if(!g)return;const xy=pos(e),m=g.toM(xy[0],xy[1]),d=dgState(sim,g),pts=g.pls[d.i];if(!pts)return;
+    const tol=(e.pointerType==='touch'?30:18)/g.sc,at=plAt(pts,d.prog).pt,nearStart=Math.hypot(m[0]-at[0],m[1]-at[1])<=tol*1.4,onLine=plProj(pts,m[0],m[1],d.prog).d<=tol;
+    if(!nearStart&&!onLine)return;
+    sim.st.swallow=true;d.ptr=xy;
+    if(!toolOK(sim)){done();return;}
+    if(!nearStart){const end=pts[pts.length-1];
+      say(sim,false,d.prog===0&&g.path==='throat'&&Math.hypot(m[0]-end[0],m[1]-end[1])<=tol*2?WRONG_PATHS.tailup.msg+' Start at the green dot.':(d.prog>0?'Pick up where your cut ends, at the green dot, and keep dragging.':'Start at the green dot, then drag along the yellow line.'));done();return;}
+    d.on=true;d.tol=tol;d.ang=plAt(pts,d.prog).ang;sim.st.msg=null;try{cv.setPointerCapture(e.pointerId);}catch(_){}e.preventDefault();done();});
+  cv.addEventListener('pointermove',e=>{const g=cutGuide(sim);if(!g)return;const xy=pos(e),d=dgState(sim,g);d.ptr=xy;d.hover=true;const pts=g.pls[d.i];if(!pts)return;
+    if(!d.on){d.ang=plAt(pts,d.prog).ang;return;}
+    const m=g.toM(xy[0],xy[1]),pr=plProj(pts,m[0],m[1],d.prog);
+    if(pr.d>d.tol){d.on=false;say(sim,false,'Off the line, so the cut stopped. Put the tool back on the green dot and keep going along the yellow line.');done();return;}
+    if(pr.s>d.prog)d.prog=Math.min(pr.s,d.prog+50/g.sc);d.ang=plAt(pts,d.prog).ang;
+    if(d.prog>=plLen(pts)-3/g.sc){d.on=false;d.i++;d.prog=0;
+      if(d.i>=g.pls.length)finishCut(sim,g);else say(sim,true,'One side done. Now the other side: start at the green dot.');done();}});
+  const up=()=>{const g=cutGuide(sim);if(!g)return;const d=dgState(sim,g);if(d.on){d.on=false;if(d.prog>0)say(sim,false,'You lifted the tool. Start again at the green dot to finish the cut.');done();}};
+  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+  cv.addEventListener('pointerleave',()=>{const g=cutGuide(sim);if(g){const d=dgState(sim,g);if(!d.on)d.hover=false;}});}
 function goStep(sim,dir){const p=sim.p;if(p.mode==='hopper'){const list=HSTEPS.map(s=>s.v),i=list.indexOf(p.hstep);
     if(dir>0&&cutPending(sim)){say(sim,false,'Make the cut first, or jump ahead with the Step list.');return;}
     const j=clamp(i+dir,0,list.length-1);if(j===i){say(sim,false,dir>0?'This is the last step.':'This is the first step.');return;}BioLab.setValues(sim,{hstep:list[j]});return;}
@@ -662,7 +724,7 @@ const STEP_TXT={
  ext:{bio:'Before you cut, find the external structures: the <b>umbilical cord</b>, the <b>urogenital opening</b> and, on a female, the <b>genital papilla</b>. Click each one.'},
  sex:{bio:'Look between the hind legs. A <b>female</b> has a genital papilla and urogenital opening just below the anus. A <b>male</b> has his urogenital opening just behind the umbilical cord, and scrotal sacs below the anus. Switch the specimen to compare.'},
  tie:{bio:'Lay the pig on its back, ventral side up, in the tray. Tie a string around one front leg, pass it under the tray and tie it to the other front leg. Do the same with the hind legs, so the belly stays open to you.'},
- cut:{bio:'Make five cuts, working from the head toward the tail. Lift the skin with the scissor tips as you cut, so you cut only the body wall and not the organs underneath. Choose a tool and where to cut, then press <b>Make the cut</b>.'},
+ cut:{bio:'Make five cuts, working from the head toward the tail. Lift the skin with the scissor tips as you cut, so you cut only the body wall and not the organs underneath. Choose a tool under <b>Cut with</b>, then drag it along the yellow line, starting at the green dot.'},
  pin:{bio:'Fold the belly flaps out and pin them to the tray, pins angled away from the pig. The umbilical cord stays on its own flap, held in place by the umbilical vein. Cut the umbilical vein so the flap folds back toward the tail, then pin it.'},
  five:{bio:'Without moving anything, five organs are in view: the <b>liver</b>, <b>stomach</b>, <b>spleen</b>, <b>small intestine</b> and <b>large intestine</b>. The urinary bladder and the umbilical arteries lie on the folded-back umbilical flap.'},
  liver:{bio:'Gently lift the liver toward the head with a blunt probe. The green <b>gallbladder</b> sits on its underside, on the pig’s right. The <b>pancreas</b> lies in the loop between the stomach and the small intestine.'},
@@ -672,7 +734,7 @@ const STEP_TXT={
  brain:{honors:'In a separate dissection, the top of the skull is carefully removed to show the brain from above. Find the <b>cerebrum</b> and the <b>cerebellum</b>.'},
  circ:{ap:'Before birth the lungs are filled with fluid, so the placenta does their job. Follow the blood: umbilical vein → ductus venosus → caudal vena cava → right atrium → foramen ovale → left atrium → left ventricle → aorta. Blood the right ventricle pumps mostly skips the lungs through the ductus arteriosus.'}};
 const HSTEP_TXT={hext:'Before cutting, find six external structures: the <b>antennae</b>, <b>compound eyes</b>, <b>mandibles</b>, <b>wings</b>, <b>legs</b> and <b>spiracles</b>. The body has three regions: head, thorax and abdomen.',
- hcut:'Remove the wings and legs first. Then, with the grasshopper on its side or belly, choose the tool and where to cut, and press <b>Make the cut</b>.',
+ hcut:'Remove the wings and legs first. Then, with the grasshopper on its side or belly, choose a tool under <b>Cut with</b> and drag it along the yellow line, starting at the green dot.',
  hint:'With the body wall pinned back, find the organs: the <b>crop</b>, <b>gizzard</b>, <b>gastric caeca</b>, <b>stomach</b> (midgut), <b>Malpighian tubules</b>, <b>intestine and rectum</b>, the dorsal <b>heart</b>, and the <b>ovaries</b> or testes.',
  hcomp:'The grasshopper and the pig solve the same problems in different ways. The five numbered structures differ most from the pig: compare them in the table.'};
 function checklist(sim,view,sex){const p=sim.p;let ids=[];
@@ -713,7 +775,7 @@ function infoPanel(sim){const p=sim.p,s=sim.st,sex=p.sex,view=curView(sim);let h
     if(p.hpart!=='none'&&H[p.hpart]){const vis=shapesFor(sim,view,sex).some(x=>x.id===p.hpart);h+='<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:8px">'+(vis?'':'<p class="pick"><b>Not visible in this view.</b> '+(H[p.hpart].six||['head','thorax','abdomen','tympanum','ovipositor'].includes(p.hpart)?'It is on the outside: go to step 1.':'It is inside: make the cut first.')+'</p>')+structBlock(p.hpart,sex,true)+'</div>';}
     return h+chips(sim,checklist(sim,view,sex),true,sex);}
   const st=STEPS.find(x=>x.v===p.step);h='<div class="p-head"><h3>Step '+(STEP_IX[p.step]+1)+' · '+st.t+'</h3></div><p>'+lvText(STEP_TXT[p.step])+'</p>';
-  if(cutPending(sim)){const c=CUTS[s.cuts];h+='<p><b>Your move: '+c.n+(NEEDS[p.step]-START[p.step]>1?' of '+NEEDS[p.step]:'')+'.</b> Choose the tool and where to cut under <b>Lab bench</b>, then press <b>Make the cut</b>.</p>';}
+  if(cutPending(sim)){const c=CUTS[s.cuts];h+='<p><b>Your move: '+c.n+(NEEDS[p.step]-START[p.step]>1?' of '+NEEDS[p.step]:'')+'.</b> Choose a tool under <b>Cut with</b>, then drag it along the yellow line from the green dot. (Or choose <b>Where to cut</b> and press <b>Make the cut</b>.)</p>';}
   h+=msg;
   if(p.part!=='none'&&P[p.part]){const vis=pigShapes(view,sex).some(x=>x.id===p.part);let pre='';
     if(P[p.part].sex&&P[p.part].sex!==sex)pre='<p class="pick"><b>Only in a '+SEXN[P[p.part].sex]+' pig.</b> Switch the specimen to see it.</p>';
@@ -739,12 +801,15 @@ function drawTags(ctx,sim,S,k){const pr=sim.st.prac,sc=sim.st.score;tagLayout(si
   if(sim.st.flash===o.i){o.q&&o.q.forEach(q=>outlinePrim(ctx,q,'#f2c94c',3));lab=t.n+' · '+P[t.id].n;}
   pill(ctx,lab,o.lp[0],o.lp[1],bg,fg,13*k);});}
 function draw(sim,ctx,vdt,k,t){const p=sim.p,s=sim.st,sex=p.sex,view=curView(sim);ctx.fillStyle=PAL['card'];ctx.fillRect(0,0,800,450);
-  const touring=sim.tour&&sim.tour.on;
+  const touring=sim.tour&&sim.tour.on;bindDrag(sim);const guide=cutGuide(sim);
+  if(sim.ui&&sim.ui.stage){const st=sim.ui.stage.style;st.touchAction=guide?'none':'';st.cursor=guide?(p.cutwith!=='none'&&s.dg&&s.dg.hover?'none':'crosshair'):'pointer';}
   if(p.mode==='tools'){drawTools(ctx,p.tool,p.names,k);return;}
   if(p.mode==='hopper'){drawTray(ctx);const list=shapesFor(sim,view,sex),sel=p.hpart!=='none'&&H[p.hpart]?list.find(x=>x.id===p.hpart):null;
     ctx.save();ctx.translate(400,210);ctx.scale(HS,HS);ctx.translate(-400,-210);drawHopper(ctx,view==='hcut'?'hcut':view,sex,{});
     if(view==='hcut'&&p.hpath!=='none'&&HCUT[p.hpath])line(ctx,HCUT[p.hpath],PAL['rj'],2.5,[6,4]);
+    if(guide)drawGuide(ctx,sim,guide);
     if(sel)sel.q.forEach(q=>outlinePrim(ctx,q,PAL['rj'],2.5));ctx.restore();
+    if(guide)drawGuideTop(ctx,sim,guide,k);
     if(view==='hcomp'){COMPARE.forEach((c,i)=>{const e=list.find(x=>x.id===c.k);if(!e)return;const a=hfwd(primCenter(e.q[0]));pill(ctx,String(i+1),a[0],a[1]+(c.k==='hheart'?-24:c.k==='ncord'?24:c.k==='spiracle'?22:0),PAL['rj'],'#fff',14*k);});}
     if(sel)labelAt(ctx,hName(p.hpart,sex),hfwd(primCenter(sel.q[0])),k,PAL['rj'],'#fff');
     pill(ctx,(sex==='f'?'Female':'Male')+' grasshopper',112*Math.min(k,1.3),22*k,PAL['card'],PAL['cv-ink'],12*k);return;}
@@ -752,13 +817,15 @@ function draw(sim,ctx,vdt,k,t){const p=sim.p,s=sim.st,sex=p.sex,view=curView(sim
     const pr=s.prac,si=pr.stations.indexOf(S);pill(ctx,S.ec?'Extra credit':'Station '+(si+1)+(S.view==='heart'||S.view==='brain'?'':' · '+(S.sex==='f'?'female':'male')),108*Math.min(k,1.3),20*k,PAL['card'],PAL['cv-ink'],13*k);return;}
   drawPigScene(ctx,view,sex,{cuts:s.cuts,strings:p.step!=='ext'&&p.step!=='sex',peri:!(s.cuts>=8),t,k,sel:p.part});
   if(cutPending(sim)&&p.path!=='none'&&!touring)drawPreview(ctx,p.path,PAL['rj']);
+  if(guide)drawGuide(ctx,sim,guide);
   if(touring&&p.step==='cut')for(let i=s.cuts;i<5;i++)drawPreview(ctx,CUTS[i].id,'#f2c94c');
   const list=pigShapes(view,sex);
   if(p.part!=='none'&&P[p.part]&&!touring)drawSel(ctx,sim,list,p.part,P[p.part].n,k);
   if(p.step==='sex'&&!touring){const a=sex==='f'?[660,225]:[503,225];ctx.save();ctx.setLineDash([6,4]);ell(ctx,a[0],a[1],sex==='f'?30:22,22,null,PAL['rj'],2.5);ctx.restore();}
   if(view!=='heart'&&view!=='brain'&&view!=='circ')pill(ctx,(sex==='f'?'Female':'Male')+' pig',70*Math.min(k,1.4),26*Math.min(k,1.2),PAL['card'],PAL['cv-ink'],12*k);
-  if(view==='heart')pill(ctx,'Close-up of the heart',110*Math.min(k,1.4),20*k,PAL['card'],PAL['cv-ink'],12*k);}
-function onClick(sim,x,y){const p=sim.p,view=curView(sim);
+  if(view==='heart')pill(ctx,'Close-up of the heart',110*Math.min(k,1.4),20*k,PAL['card'],PAL['cv-ink'],12*k);
+  if(guide)drawGuideTop(ctx,sim,guide,k);}
+function onClick(sim,x,y){const p=sim.p,view=curView(sim);if(sim.st&&sim.st.swallow){sim.st.swallow=false;return;}
   if(p.mode==='practical'){const S=station(sim);const o=tagLayout(sim,S).find(o=>Math.hypot(o.lp[0]-x,o.lp[1]-y)<26||Math.hypot(o.a[0]-x,o.a[1]-y)<12);
     if(o){const inp=document.getElementById('dsx-a-'+o.i);if(inp)inp.focus();}return;}
   const list=shapesFor(sim,view,p.sex),hit=list.find(e=>e.q.some(q=>hitPrim(q,x,y)));sim.found=sim.found||{};
