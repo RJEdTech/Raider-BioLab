@@ -8,6 +8,8 @@ const Q=C.parseQS((()=>{try{return location.search;}catch(e){return '';}})());
 const LOCK=Q.calc==='hand';
 const W0=C.fixW(Q.w||(Q.role?ROLES.find(r=>r.k===Q.role).w:PRESETS[0].w));
 const DEFB=['cars','mix','town','local'];
+/* First visit: open in Full lab, where the Start here walkthrough sits on top. Guided stays one click away. */
+try{const mk=((document.querySelector('meta[name="lab-key"]')||{}).content||'rjbiolab')+'-mode-cityscore';if(!new URLSearchParams(location.search).get('mode')&&!localStorage.getItem(mk))localStorage.setItem(mk,'lab');}catch(e){}
 const ROWS=[...PLANS.map(p=>({k:p.k,n:p.n})),{k:'Y',n:'Your build'}];
 const LS='rjcity-autoseen';
 const store={get(){try{return JSON.parse(localStorage.getItem(LS)||'[]');}catch(e){return [];}},add(k){try{const a=store.get();if(!a.includes(k)){a.push(k);localStorage.setItem(LS,JSON.stringify(a.slice(-40)));}}catch(e){}}};
@@ -16,7 +18,7 @@ const f1=v=>fmtNum(v,1),f0=v=>fmtNum(v,0);
 /* Teacher-set depth: hide the site's detail switch so students stay at the level the teacher chose. */
 if(Q.dl&&Q.lv){try{const hide=()=>{const l=document.getElementById('lvl');const box=l&&l.closest('.lvl');if(box)box.hidden=true;else if(l)l.hidden=true;};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hide);else hide();}catch(e){}}
 
-function cs(sim){if(!sim.cs)sim.cs={mode:Q.calc||'auto',tab:'score',role:Q.role||null,guess:null,revealed:false,hand:{},name:'',group:'',code:'',t0:Date.now(),teach:{calc:'auto',depth:'',dl:false,role:''}};return sim.cs;}
+function cs(sim){if(!sim.cs)sim.cs={step:1,chosen:{},mode:Q.calc||'auto',tab:'score',role:Q.role||null,guess:null,revealed:false,hand:{},name:'',group:'',code:'',t0:Date.now(),teach:{calc:'auto',depth:'',dl:false,role:''}};return sim.cs;}
 const W=sim=>M.map((m,i)=>Math.max(0,Math.round(+sim.p['w'+i]||0)));
 const build=sim=>DEC.map(d=>sim.p[d.k]);
 const rowB=(sim,k)=>k==='Y'?build(sim):PLANS.find(p=>p.k===k).b;
@@ -182,7 +184,7 @@ function scoreTab(sim){const c=cs(sim),w=W(sim),W1=C.wsum(w),h=hand(sim);let s='
   s+=`<details style="margin:0 0 8px"${c.role?' open':''}><summary><b>Play a resident</b> (sets the weights to what that person might care about)</summary><div class="row" style="flex-wrap:wrap;gap:6px;margin-top:6px">${ROLES.map(r=>`<button type="button" class="btn${c.role===r.k?' primary':''}" data-role="${r.k}">${esc(r.l)}</button>`).join('')}</div>${c.role?`<p style="margin:6px 0 0">${esc(ROLES.find(r=>r.k===c.role).why)}</p>`:''}</details>`;}
  else{s+=`<p style="margin:.2em 0 .6em"><b>By hand:</b> your teacher wants you to work out every score yourself.</p>`;if(c.role)s+=`<p><b>Your resident:</b> ${esc(ROLES.find(r=>r.k===c.role).l)}. ${esc(ROLES.find(r=>r.k===c.role).why)}</p>`;}
  if(W1<=0)return s+'<p>Set at least one weight to make a scoreboard.</p>';
- if(!c.guess){s+=`<p><b>Step 1, your gut:</b> under this scoreboard, which one scores highest? Pick before you see any scores.</p><div class="row" style="flex-wrap:wrap;gap:6px">${ROWS.map(r=>`<button type="button" class="btn" data-guess="${r.k}">${r.k==='Y'?'Your build':r.k+': '+r.n}</button>`).join('')}</div>`;
+ if(!c.guess){s+=`<p><b>Your gut:</b> under this scoreboard, which one scores highest? Pick here or in <b>Start here</b> above, before you see any scores.</p><div class="row" style="flex-wrap:wrap;gap:6px">${ROWS.map(r=>`<button type="button" class="btn" data-guess="${r.k}">${r.k==='Y'?'Your build':r.k+': '+r.n}</button>`).join('')}</div>`;
   if(!h)s+=`<p style="margin-top:6px"><button type="button" class="btn" data-guess="-">Skip the guess and show the scores</button></p>`;}
  else if(!h){s+=resultLine(sim);}
  else{s+=`<p><b>Step 2, work it out:</b> score = (sum of weight × points) ÷ (sum of weights). Points run from 0 (worst possible neighborhood) to 100 (best possible). Round to one decimal.</p>`;
@@ -221,13 +223,53 @@ function makeCode(sim){const c=cs(sim),w=W(sim),b=build(sim),sc=allScores(sim);
  const o={v:2,n:c.name.trim().slice(0,40),g:c.group.trim().slice(0,24),b,w,m:c.mode,lk:LOCK,a:Q.a||null,qw:Q.w?C.wKey(Q.w):null,gs:c.guess,ro:c.role||null,lv:BioLab.h.level||null,
   sc:C.r1(sc[4]),hd:hand(sim)?hd:null,as:store.get().includes(C.wKey(w)),tm:Math.round((Date.now()-c.t0)/60000),d:new Date().toISOString().slice(0,10)};
  c.code=C.encode(o);}
+const PLAIN=['GDP (money)','jobs','low housing cost','short commute','active minutes','clean air','low CO₂','life satisfaction','clean air on the worst-off block','least paved ground'];
+const QS4=['How will people get around?','Where will the electricity come from?','What kind of homes will people live in?','Where will people work?'];
+function startHTML(sim){const c=cs(sim),st=c.step,w=W(sim),b=build(sim),h=hand(sim),done=DEC.every(d=>c.chosen[d.k]);
+ const dots=['Plan your city','How it compares','What matters','Guess and check','Go deeper'].map((l,i)=>`<button type="button" class="btn${st===i+1?' primary':''}" data-sgo="${i+1}" ${i+1>1&&!done?'disabled':''} style="padding:4px 10px">${i+1}. ${l}</button>`).join('');
+ let s=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px"><h3 style="margin:0">Start here</h3><div class="row" style="gap:4px;flex-wrap:wrap">${dots}</div></div>`;
+ const next=(lbl,go)=>`<p style="margin:10px 0 0"><button type="button" class="btn primary" data-sgo="${go}">${lbl} →</button></p>`;
+ if(st===1){s+=`<p style="margin:8px 0">You are planning a new neighborhood for 10,000 people on Colorado’s Front Range. Make one choice for each question. Your city appears in the picture just below this box, and it changes as you choose.</p>`;
+  DEC.forEach((d,j)=>{s+=`<div style="margin:8px 0"><b>${j+1}. ${QS4[j]}</b><div class="row" style="gap:6px;flex-wrap:wrap;margin-top:4px">${d.o.map(o=>`<button type="button" class="btn${c.chosen[d.k]&&b[j]===o.v?' primary':''}" data-pick="${d.k}" data-v="${o.v}">${esc(o.l)}</button>`).join('')}</div></div>`;});
+  s+=done?next('See how your city compares',2):`<p style="margin:10px 0 0;color:var(--muted)">${4-DEC.filter(d=>c.chosen[d.k]).length} more to choose.</p>`;}
+ else if(st===2){const v=C.ind(b),best=[],worst=[];
+  M.forEach((m,i)=>{const all=[...PLANS.map(p=>C.ind(p.b)[i]),v[i]],bv=m.low?Math.min(...all):Math.max(...all),wv=m.low?Math.max(...all):Math.min(...all);if(Math.abs(v[i]-bv)<1e-9)best.push(PLAIN[i]);else if(Math.abs(v[i]-wv)<1e-9)worst.push(PLAIN[i]);});
+  s+=`<p style="margin:8px 0">Look at the table under the picture. Your city is the bottom row (<b>★ Your build</b>). Above it are four ready-made plans. Each column measures something different. The shaded cells show which plan is best on that measure: <b>no plan wins them all</b>.</p>`;
+  s+=`<ul style="margin:4px 0 0 18px;padding:0"><li>Your city is <b>best of the five</b> on: ${best.length?esc(best.join(', ')):'none yet'}.</li><li>Your city is <b>worst of the five</b> on: ${worst.length?esc(worst.join(', ')):'none'}.</li><li>GDP per person: <b>$${f0(v[0])}k</b>. Unhealthy-air days: <b>${f0(v[5])}</b>. Commute: <b>${f0(v[3])} minutes</b> a day. CO₂: <b>${f1(v[6])} tons</b> per person.</li></ul>`;
+  s+=`<p style="margin:8px 0 0">So which city is “best”? That depends on what you count. Next you choose.</p>`+next('Choose what matters',3);}
+ else if(st===3){s+=`<p style="margin:8px 0">A <b>scoreboard</b> says how much each measure counts. The weights (×0 to ×5) appear under each column of the table.</p>`;
+  if(LOCK)s+=`<p><b>Your teacher set the scoreboard:</b> ${esc(boardName(w))}: ${esc(wText(w))}.</p>`;
+  else{s+=`<p style="margin:4px 0"><b>Pick a scoreboard:</b></p><div class="row" style="gap:6px;flex-wrap:wrap">${PRESETS.filter(p=>atLeast('honors')||(p.k!=='fair'&&p.k!=='water')).map(p=>`<button type="button" class="btn${C.wKey(p.w)===C.wKey(w)?' primary':''}" data-spre="${p.k}">${esc(p.l)}</button>`).join('')}</div>`;
+   s+=`<p style="margin:8px 0 4px"><b>Or see it through someone else’s eyes:</b></p><div class="row" style="gap:6px;flex-wrap:wrap">${ROLES.map(r=>`<button type="button" class="btn${c.role===r.k?' primary':''}" data-role="${r.k}">${esc(r.l)}</button>`).join('')}</div>`;
+   s+=`<p style="margin:8px 0 0;color:var(--muted)">Now: ${esc(boardName(w))}: ${esc(wText(w))}.${c.role?' '+esc(ROLES.find(r=>r.k===c.role).why):''} In Full lab you can also set every weight yourself with the sliders.</p>`;}
+  s+=next('Guess the winner',4);}
+ else if(st===4){if(!c.guess){s+=`<p style="margin:8px 0">Under <b>${esc(boardName(w))}</b>, which one scores highest? Go with your gut before you see any scores.</p><div class="row" style="flex-wrap:wrap;gap:6px">${ROWS.map(r=>`<button type="button" class="btn" data-guess="${r.k}">${r.k==='Y'?'Your city':r.n}</button>`).join('')}</div>`;}
+  else if(!h){const sc=allScores(sim),rk=ranks(sim),ti=rk.indexOf(1),gi=ROWS.findIndex(r=>r.k===c.guess);
+   s+=`<p style="margin:8px 0"><b>${ROWS[ti].k==='Y'?'Your city':ROWS[ti].n}</b> is #1 under ${esc(boardName(w))} with ${f1(sc[ti])} points. ${c.guess===ROWS[ti].k?'Your gut was right.':`Your gut picked ${ROWS[gi].k==='Y'?'your city':ROWS[gi].n} (#${rk[gi]}).`} Your city scores ${f1(sc[4])} (#${rk[4]} of 5). The scores are in the right-hand column of the table.</p>`;
+   s+=`<p style="margin:0">Try another scoreboard in step 3, or change your city in step 1, and guess again.</p>`+next('Go deeper',5);}
+  else{s+=`<p style="margin:8px 0">Your guess is locked: <b>${c.guess==='Y'?'your city':ROWS.find(r=>r.k===c.guess).n}</b>. Now work out each score yourself in <b>Score the plans</b> below the graph.</p><p><button type="button" class="btn primary" data-sjump>Work out the scores ↓</button></p>`;if(allDone(sim))s+=next('Go deeper',5);}}
+ else{s+=`<p style="margin:8px 0">The panel below the graph has three tabs:</p><ul style="margin:4px 0 0 18px;padding:0"><li><b>Score the plans:</b> every scoreboard side by side${atLeast('honors')?', who breathes the worst air, the smart growth check and runoff':''}${atLeast('ap')?', plus trade-offs and pay now or later':''}, and <b>Send to my teacher</b>.</li><li><b>Real places:</b> score real Front Range counties, and compare real cities around the world.</li><li><b>How it’s built and sources:</b> exactly how every number is made, and where the real data comes from.</li></ul><p><button type="button" class="btn primary" data-sjump>Go to the panel ↓</button> <button type="button" class="btn" data-sgo="1">Plan another city</button></p>`;}
+ return s;}
+function ensureStart(sim,el){const sec=el.closest('.sim');if(!sec)return;let card=sec.querySelector('.city-start');
+ if(!card){card=document.createElement('div');card.className='panel city-start';card.style.cssText='margin-top:14px;border-left:5px solid var(--rj)';const bench=sec.querySelector('.bench');if(!bench)return;bench.parentNode.insertBefore(card,bench);
+  if(!document.getElementById('city-start-css')){const st=document.createElement('style');st.id='city-start-css';st.textContent='.sim.m-guided:not(.g-done) .city-start,.sim.m-review .city-start,.sim.m-game .city-start{display:none}.city-start .btn[disabled]{opacity:.45;cursor:default}';document.head.appendChild(st);}}
+ card.innerHTML=startHTML(sim);const c=cs(sim);
+ card.querySelectorAll('[data-sgo]').forEach(b=>b.onclick=()=>{if(b.disabled)return;c.step=+b.dataset.sgo;sim.infoDirty=true;if(c.step===2){const bn=sec.querySelector('.bench');if(bn)setTimeout(()=>card.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}),50);}});
+ card.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{const k=b.dataset.pick;c.chosen[k]=true;BioLab.setValues(sim,{[k]:b.dataset.v});sim.infoDirty=true;BioLab.refresh(sim);});
+ card.querySelectorAll('[data-spre]').forEach(b=>b.onclick=()=>{preset(sim,b.dataset.spre);c.role=null;sim.infoDirty=true;BioLab.refresh(sim);});
+ card.querySelectorAll('[data-sjump]').forEach(b=>b.onclick=()=>{c.tab='score';sim.infoDirty=true;setTimeout(()=>{const p=sec.querySelector('.panel.info');if(p)p.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});},60);});
+ bindShared(sim,card);}
+/* Buttons that work the same in the Start card and the panel. */
+function bindShared(sim,el){const c=cs(sim);
+ el.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{if(LOCK)return;const r=ROLES.find(x=>x.k===b.dataset.role);setW(sim,r.w);c.role=r.k;sim.infoDirty=true;BioLab.refresh(sim);});
+ el.querySelectorAll('[data-guess]').forEach(b=>b.onclick=()=>{const g=b.dataset.guess;c.guess=g==='-'?null:g;if(!hand(sim)){c.revealed=true;markAuto(sim);}sim.infoDirty=true;BioLab.refresh(sim);});}
 function bindInfo(sim,el){const c=cs(sim);
+ ensureStart(sim,el);
  /* This tool's panel holds wide tables, so give it the full width under the graph. */
  const low=el.closest('.lower');if(low)low.style.gridTemplateColumns='minmax(0,1fr)';
  el.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{c.tab=b.dataset.tab;sim.infoDirty=true;});
  el.querySelectorAll('[data-cmode]').forEach(b=>b.onclick=()=>{if(LOCK)return;const m=b.dataset.cmode;if(m!==c.mode){c.mode=m;resetCalc(sim);BioLab.refresh(sim);}});
- el.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{if(LOCK)return;const r=ROLES.find(x=>x.k===b.dataset.role);setW(sim,r.w);c.role=r.k;sim.infoDirty=true;BioLab.refresh(sim);});
- el.querySelectorAll('[data-guess]').forEach(b=>b.onclick=()=>{const g=b.dataset.guess;c.guess=g==='-'?null:g;if(!hand(sim)){c.revealed=true;markAuto(sim);}sim.infoDirty=true;BioLab.refresh(sim);});
+ bindShared(sim,el);
  el.querySelectorAll('[data-ans]').forEach(i=>i.oninput=()=>{const k=i.dataset.ans;c.hand[k]=Object.assign(c.hand[k]||{},{v:i.value});});
  el.querySelectorAll('[data-check]').forEach(b=>b.onclick=()=>{const k=b.dataset.check,x=c.hand[k]=c.hand[k]||{},inp=el.querySelector(`[data-ans="${k}"]`),raw=(inp?inp.value:x.v||'').replace(/[,\s]/g,'').replace('−','-');
   const v=parseFloat(raw);if(!Number.isFinite(v)){if(inp)inp.focus();return;}x.v=v;const ans=rowScore(sim,k),ok=Math.abs(v-ans)<=0.2+0.002*Math.abs(ans);
@@ -248,8 +290,9 @@ function bindInfo(sim,el){const c=cs(sim);
 
 /* ---------- the tool ---------- */
 const WN=['GDP','Jobs','Housing cost','Commute','Active minutes','Unhealthy air (average)','CO₂','Life satisfaction','Worst-off block','Paved ground'];
-const onW=sim=>{const c=cs(sim);if(hand(sim))resetCalc(sim);else c.code='';const r=C.roleOf(W(sim));if(!LOCK)c.role=r?r.k:null;};
+const onW=sim=>{const c=cs(sim);if(!tourOn(sim))resetCalc(sim);const r=C.roleOf(W(sim));if(!LOCK)c.role=r?r.k:null;};
 const onB=sim=>{const c=cs(sim);if(c.hand.Y)delete c.hand.Y;c.code='';};
+const onB2=(k)=>sim=>{onB(sim);if(!tourOn(sim))cs(sim).chosen[k]=true;};
 const costLine=(b,yr)=>{const x=C.costs(b);return x.up+x.yr*yr;};
 const SIM={
  id:'cityscore',hash:'cityscore',apUnit:13,order:6,kind:'Simulation',tab:'Score the city: GDP vs. well-being',
@@ -262,7 +305,7 @@ const SIM={
  aspect:16/9,timeless:true,animated:true,trials:true,
  controlsTitle:'Your build and the scoreboard',
  controls:[
-  ...DEC.map((d,j)=>({id:d.k,label:d.l,type:'seg',def:DEFB[j],onChange:onB,options:d.o.map(o=>({v:o.v,l:o.l}))})),
+  ...DEC.map((d,j)=>({id:d.k,label:d.l,type:'seg',def:DEFB[j],onChange:onB2(d.k),options:d.o.map(o=>({v:o.v,l:o.l}))})),
   {id:'view',label:'Show the table as',type:'seg',def:'raw',lvl:'honors',options:[{v:'raw',l:'Real units'},{v:'pts',l:'Points (0 to 100)'}]},
   ...M.map((m,i)=>({id:'w'+i,label:'Weight: '+WN[i],type:'range',min:0,max:5,step:1,def:W0[i],unit:'',lvl:LOCK?'locked':(i>=8?'honors':'bio'),onChange:onW}))
  ],
