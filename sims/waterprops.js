@@ -1,6 +1,9 @@
 (function(){
 'use strict';
-const {clamp,lerp,rng,rr,txt,pill,atLeast,PAL,FONT,RM,lvText,axes,bars,legend,serColor}=BioLab.h;
+const {clamp,lerp,rng,rr,txt,pill,PAL,FONT,RM,lvText,axes,bars,legend,serColor}=BioLab.h;
+/* Nov 2026 (Jason + Paul Stearman): one version of this lab at every detail level, so every property
+   and comparison shows for everyone. Properties are tabs above the stage, like Guided / Full lab / Review. */
+const atLeast=()=>true;
 
 /* Properties of Water Stations: a virtual version of the eight-station lab.
    Each station runs a small model in step(); draw() renders the bench scene on the left
@@ -8,10 +11,18 @@ const {clamp,lerp,rng,rr,txt,pill,atLeast,PAL,FONT,RM,lvText,axes,bars,legend,se
 
 const C={O:'#d64545',H:'#f4f6f8',Hs:'#5d6b79',C:'#4b515c',ice:'#d4ecfa',iceS:'#8fb9d4',oil:'#e2b93b',oilS:'#a8841c',na:'#8e5bd1',cl:'#3c9d4b',
   copper:'#c27a3a',copperD:'#8f5523',towel:'#f3f1ea',blueDye:'#3d7fd6',balloon:'#e2455b',strip:'#efeadb'};
+/* Tab order follows the station sheet. '0' (the water molecule, the sheet's "Before you begin") and '9'
+   (heat of evaporation, property 5 in the water notes) have no station on the sheet. */
+const TABS=[['0','Water molecule'],['1','Ice floats'],['2','Cohesion'],['3','Adhesion'],['4','Surface tension'],['5','Specific heat'],
+  ['9','Heat of evaporation'],['6','Solvent'],['7','Polarity'],['8','Acids & bases']];
 const STATIONS=[
+  {v:'0',l:'Before you begin · The water molecule'},
   {v:'1',l:'1 · Density (ice)'},{v:'2',l:'2 · Cohesion (penny)'},{v:'3',l:'3 · Adhesion (paper towel)'},{v:'4',l:'4 · Surface tension (paperclip)'},
-  {v:'5',l:'5 · Heating (boiling demo)'},{v:'6',l:'6 · Dissolving'},{v:'7',l:'7 · Charged balloon'},{v:'8',l:'8 · Acids and bases'}];
-const STNAME={'1':'Density','2':'Cohesion','3':'Adhesion','4':'Surface tension','5':'Heating','6':'Dissolving','7':'Polarity (balloon)','8':'Acids and bases'};
+  {v:'5',l:'5 · Heating (boiling demo)'},{v:'9',l:'Heat of evaporation (wet thermometers)'},{v:'6',l:'6 · Dissolving'},{v:'7',l:'7 · Charged balloon'},{v:'8',l:'8 · Acids and bases'}];
+const STNAME={'0':'The water molecule','1':'Density','2':'Cohesion','3':'Adhesion','4':'Surface tension','5':'High specific heat','6':'Dissolving','7':'Polarity (balloon)','8':'Acids and bases','9':'Heat of evaporation'};
+const STHEAD=stn=>stn==='0'?'Before you begin: the water molecule':stn==='9'?'Heat of evaporation (from the water notes)':'Station '+stn+': '+STNAME[stn];
+// evaporation model (station 9): wet-cloth thermometers in front of a fan, 25 °C room
+const EV={room:25,h:1.13,C:34,m0:2,LAB:10,w:{R:0.004,L:2260},a:{R:0.020,L:841}};
 const LIQ={water:{name:'Water',col:'#9fd0ef'},alcohol:{name:'Rubbing alcohol',col:'#e6eef3'},soapy:{name:'Soapy water',col:'#c9e3f2'},oil:{name:'Vegetable oil',col:'#e8c24a'}};
 const DOME={water:58,alcohol:16,soapy:24};
 const PH={lemon:2.2,water:7.0,cleaner:11.5};
@@ -79,9 +90,13 @@ const ACT={
   dip(sim){sim.st.d8.dipped=true;sim.st.d8.dipT=0;},
   buffer(sim){const d=sim.st.d8;d.mode=d.mode==='buffer'?'strips':'buffer';d.acid=0;},
   acid(sim){const d=sim.st.d8;if(d.mode!=='buffer'){d.mode='buffer';d.acid=0;}d.acid+=1;d.dropT=0.6;},
-  acid5(sim){const d=sim.st.d8;if(d.mode!=='buffer'){d.mode='buffer';d.acid=0;}d.acid+=5;d.dropT=0.6;}
+  acid5(sim){const d=sim.st.d8;if(d.mode!=='buffer'){d.mode='buffer';d.acid=0;}d.acid+=5;d.dropT=0.6;},
+  neighbor(sim){const d=sim.st.d0;if(d.nb.length<4)d.nb.push({f:0});},
+  clearN(sim){sim.st.d0.nb=[];},
+  wet(sim){const d=sim.st.d9;if(d.on&&d.m.w>0)return;Object.assign(d,{on:true,t:0,T:{d:EV.room,w:EV.room,a:EV.room},m:{w:EV.m0,a:EV.m0},hist:[{t:0,d:EV.room,w:EV.room,a:EV.room}]});},
+  dryAll(sim){Object.assign(sim.st.d9,{on:false,t:0,T:{d:EV.room,w:EV.room,a:EV.room},m:{w:0,a:0},hist:[]});}
 };
-const A=(id,label,st,lvl,primary)=>({id,label,lvl:lvl||'bio',primary:!!primary,st,run:ACT[id]});
+const A=(id,label,st,lvl,primary)=>({id,label,lvl:'bio',primary:!!primary,st,run:ACT[id]});
 const ACTIONS=[
   A('iceDrop','Drop in an ice cube',['1'],'bio',true),A('winter','Let winter come to the lake',['1']),
   A('drop','Add a drop',['2'],'bio',true),A('auto','Keep adding drops',['2']),A('dry','Dry the penny',['2']),
@@ -90,12 +105,25 @@ const ACTIONS=[
   A('heat','Turn on the hot plates',['5'],'bio',true),A('cool','Turn off and start over',['5']),
   A('salt','Add salt (1 g)',['6']),A('sugar','Add sugar (1 g)',['6']),A('oil','Add oil (1 mL)',['6']),A('stir','Stir',['6'],'bio',true),A('emptyBeaker','Fresh beaker of water',['6']),
   A('rub','Rub the balloon on your hair',['7'],'bio',true),A('closer','Bring the balloon close',['7']),A('away','Move the balloon away',['7']),
-  A('dip','Dip the pH strips',['8'],'bio',true),A('buffer','Compare plain water with a buffer',['8'],'honors'),A('acid','Add a drop of acid',['8'],'honors'),A('acid5','Add 5 drops of acid',['8'],'honors')
+  A('dip','Dip the pH strips',['8'],'bio',true),A('buffer','Compare plain water with a buffer',['8']),A('acid','Add a drop of acid',['8']),A('acid5','Add 5 drops of acid',['8']),
+  A('neighbor','Add a neighbor molecule',['0'],'bio',true),A('clearN','Back to one molecule',['0']),
+  A('wet','Wet the cloths and turn on the fan',['9'],'bio',true),A('dryAll','Dry everything and start over',['9'])
 ];
 const CTRL_ST={pennyLiquid:['2'],clipLiquid:['4'],streamLiquid:['7'],place:['5']};
-const GRAPH_ST={'2':'drops','3':'wick','5':'heat','8':'ph'};
+const GRAPH_ST={'2':'drops','3':'wick','5':'heat','8':'ph','9':'evap'};
 
-function syncStation(sim){const ui=sim.ui;if(!ui.sec)return;const stn=sim.p.station;
+function syncTabs(sim){const st=sim.ui.sec&&sim.ui.sec.querySelector('.stage');if(!st)return;let bar=st.querySelector('.wp-tabs');
+  if(!bar){if(!document.getElementById('wp-tabs-css')){const css=document.createElement('style');css.id='wp-tabs-css';
+      css.textContent='.wp-tabs{display:flex;align-items:center;margin:0 0 10px}.wp-tabs .wp-tl{font:700 13px var(--font);color:var(--muted);padding:0 6px 0 8px;text-transform:uppercase;letter-spacing:.04em}.wp-tabs button{padding:7px 12px}.wp-top{min-width:0}';
+      document.head.appendChild(css);}
+    bar=document.createElement('div');bar.className='modebar wp-tabs';bar.setAttribute('role','group');bar.setAttribute('aria-label','Property of water');
+    bar.innerHTML='<span class="wp-tl" aria-hidden="true">Property</span>'+TABS.map(([v,l])=>`<button type="button" data-st="${v}">${l}</button>`).join('');
+    bar.addEventListener('click',e=>{const b=e.target.closest('button[data-st]');if(b&&b.dataset.st!==sim.p.station)BioLab.setValues(sim,{station:b.dataset.st});});
+    /* scale line + tabs share one wrapper, so the guided side-by-side grid keeps them together above the canvas */
+    const top=document.createElement('div');top.className='wp-top';const sc=st.querySelector(':scope>.scale');st.insertBefore(top,st.querySelector('canvas'));if(sc)top.appendChild(sc);top.appendChild(bar);}
+  bar.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.st===sim.p.station)));}
+function syncStation(sim){const ui=sim.ui;if(!ui.sec)return;const stn=sim.p.station;syncTabs(sim);
+  {const e=ui.sec.querySelector('#waterprops-station');const w=e&&e.closest('.ctl');if(w)w.hidden=true;}
   const btns=[...ui.ctrls.querySelectorAll('.actions button')];ACTIONS.forEach((a,i)=>{if(btns[i])btns[i].hidden=!atLeast(a.lvl)||!a.st.includes(stn);});
   Object.keys(CTRL_ST).forEach(id=>{const e=ui.sec.querySelector('#waterprops-'+id+',#waterprops-'+id+'-l');const w=e&&e.closest('.ctl');const c=WP.controls.find(c=>c.id===id);
     if(w)w.hidden=!atLeast(c.lvl)||!CTRL_ST[id].includes(stn);});
@@ -113,6 +141,9 @@ function phText(s,sim){const d=s.d8;if(d.mode==='buffer'){const b=bufPH(s);retur
   if(!d.dipped)return 'Dip the strips to read pH';return 'Lemon '+Math.round(PH.lemon)+' · Water '+PH.water.toFixed(0)+' · Cleaner '+Math.round(PH.cleaner);}
 function obsText(sim){const s=sim.st,stn=sim.p.station;
   switch(stn){
+    case '0':{const n=s.d0.nb.filter(q=>q.f>=1).length;return n?n+' hydrogen bond'+(n===1?'':'s')+' to the center molecule (most it can make: 4)':'One water molecule. Add neighbors to see hydrogen bonds form';}
+    case '9':{const d=s.d9;if(!d.on)return 'Wet the cloths and turn on the fan';
+      return 'Water cloth '+d.T.w.toFixed(1)+' °C'+(d.m.w<=0?' (dried out)':'')+' · Alcohol cloth '+d.T.a.toFixed(1)+' °C'+(d.m.a<=0?' (dried out)':'')+' · Dry '+d.T.d.toFixed(0)+' °C';}
     case '1':return s.d1.ice.length?'Ice floats with most of the cube below the surface'+(s.d1.lake>0.05?'; the lake froze from the top down':''):'Drop an ice cube into the beaker';
     case '2':{const d=s.d2;if(!d.n)return 'Dry penny. Add drops of '+LIQ[sim.p.pennyLiquid].name.toLowerCase();return d.spilled?LIQ[d.liq].name+' spilled on drop '+d.n+'; the penny held '+(d.n-1)+' drops':d.n+' drops of '+LIQ[d.liq].name.toLowerCase()+' heaped on the penny';}
     case '3':return s.d3.on?'Colored water climbed '+s.d3.h.toFixed(1)+' cm up the towel':'Hang the towel so it just touches the water';
@@ -127,24 +158,23 @@ function obsText(sim){const s=sim.st,stn=sim.p.station;
 /* ---------- the simulation ---------- */
 const WP={
   id:'waterprops',hash:'waterprops',apUnit:1,order:0,kind:'Virtual lab',tab:'Properties of water stations',next:['water'],
-  card:'Eight mini-experiments: drops on a penny, a floating paperclip, a bending stream and more, with a zoom-in that shows the molecules doing it.',
+  card:'One tab for each property of water, from Mr. Stearman’s station lab and notes: drops on a penny, a floating paperclip, sweat-like cooling and more, each with a molecule zoom.',
   title:'Properties of water: the station lab',
-  lede:{bio:'Run all eight stations, record what you see, then zoom in to find out why. Every property comes from the same thing: water is polar, so its molecules stick together with hydrogen bonds.',
-        honors:'Compare water with alcohol and oil at each station, then connect each result to an emergent property: cohesion, adhesion, surface tension, high specific heat, density, solvent and pH.',
-        ap:'Explain each station with hydrogen bonding and polarity, including buffers, the pH scale and why water boils at a lower temperature in Denver.'},
-  scale:{bio:'Left: the lab bench, real size. Right: zoomed in about 100 million times, to single molecules about 0.3 nanometers across.',
-         ap:'Left: the lab bench. Right: single molecules; one water molecule is about 0.28 nm across and a hydrogen bond is about 0.18 nm long.'},
+  lede:'Pick a property from the tabs above the bench. Each tab runs a mini-experiment from the station lab, and the zoom on the right shows the molecules causing it. Every property comes from the same thing: water is polar, so its molecules stick together with hydrogen bonds.',
+  scale:'Left: the lab bench, real size. Right: zoomed in about 100 million times, to single molecules about 0.3 nanometers across.',
   timeless:true,animated:true,trials:true,chChange:1,chReveal:6,controlsTitle:'Lab bench',
   controls:[
-    {id:'station',label:'Station',type:'select',def:'1',lvl:'bio',options:STATIONS,noTrial:false,onChange(sim){sim.st.intro=false;syncStation(sim);}},
-    {id:'pennyLiquid',label:'Liquid in the pipet',type:'seg',def:'water',lvl:'bio',options:[{v:'water',l:'Water'},{v:'alcohol',l:'Alcohol'},{v:'soapy',l:'Soapy water',lvl:'honors'}],onChange(sim){newPenny(sim.st);}},
-    {id:'clipLiquid',label:'Liquid in the dish',type:'seg',def:'water',lvl:'bio',options:[{v:'water',l:'Water'},{v:'alcohol',l:'Alcohol'},{v:'soapy',l:'Soapy water',lvl:'honors'}],onChange(sim){ACT.removeClip(sim);}},
+    {id:'station',label:'Property',type:'select',def:'0',lvl:'bio',options:STATIONS,noTrial:false,onChange(sim){sim.st.intro=false;syncStation(sim);}},
+    {id:'pennyLiquid',label:'Liquid in the pipet',type:'seg',def:'water',lvl:'bio',options:[{v:'water',l:'Water'},{v:'alcohol',l:'Alcohol'},{v:'soapy',l:'Soapy water',lvl:'bio'}],onChange(sim){newPenny(sim.st);}},
+    {id:'clipLiquid',label:'Liquid in the dish',type:'seg',def:'water',lvl:'bio',options:[{v:'water',l:'Water'},{v:'alcohol',l:'Alcohol'},{v:'soapy',l:'Soapy water',lvl:'bio'}],onChange(sim){ACT.removeClip(sim);}},
     {id:'streamLiquid',label:'Liquid in the stream',type:'seg',def:'water',lvl:'bio',options:[{v:'water',l:'Water'},{v:'oil',l:'Oil'}]},
-    {id:'place',label:'Where is the lab?',type:'seg',def:'sea',lvl:'ap',options:[{v:'sea',l:'Sea level'},{v:'denver',l:'Denver (5,280 ft)'}],onChange(sim){ACT.cool(sim);}},
+    {id:'place',label:'Where is the lab?',type:'seg',def:'sea',lvl:'bio',options:[{v:'sea',l:'Sea level'},{v:'denver',l:'Denver (5,280 ft)'}],onChange(sim){ACT.cool(sim);}},
     {id:'mol',label:'Molecule zoom',type:'toggle',def:true,lvl:'bio',help:'Show what the molecules are doing',noTrial:true}
   ],
   actions:ACTIONS,
   init(sim){const r=Math.random;return {t:0,intro:false,
+    d0:{nb:[]},
+    d9:{on:false,t:0,T:{d:EV.room,w:EV.room,a:EV.room},m:{w:0,a:0},hist:[]},
     d1:{ice:[],lake:0,cooling:false,dropped:false},
     d2:{n:0,spilled:false,liq:null,auto:false,acc:0,spillT:0,falling:[],best:{},max:{water:25+Math.floor(r()*11),alcohol:8+Math.floor(r()*5),soapy:12+Math.floor(r()*7)}},
     d3:{on:false,t:0,h:0,hist:[]},
@@ -172,9 +202,21 @@ const WP={
     // 7 balloon: the charge slowly leaks away; the force falls off with distance; nonpolar oil barely responds
     const d7=s.d7;if(d7.rub>0)d7.rub-=dt;d7.charge=Math.max(0,d7.charge-dt*0.01);const target=d7.charge*(d7.near?1:0.12)*(p.streamLiquid==='water'?42:2.5);d7.defl=lerp(d7.defl,target,Math.min(1,dt*4));
     // 8 pH
-    const d8=s.d8;if(d8.dipped)d8.dipT+=dt;if(d8.dropT>0)d8.dropT-=dt;},
+    const d8=s.d8;if(d8.dipped)d8.dipT+=dt;if(d8.dropT>0)d8.dropT-=dt;
+    // 0 molecule: neighbors glide in to their hydrogen-bond spots
+    s.d0.nb.forEach(q=>{q.f=Math.min(1,q.f+dt*0.9);});
+    // 9 evaporation: each wet bulb gains heat from the air, h(Troom−T), and loses rate × heat of vaporization
+    const d9=s.d9;if(d9.on){const sub=0.02,n=Math.max(1,Math.ceil(dt*EV.LAB/sub)),dl=dt*EV.LAB/n;
+      for(let i=0;i<n;i++){['w','a'].forEach(q=>{const R=d9.m[q]>0?EV[q].R:0;d9.m[q]=Math.max(0,d9.m[q]-R*dl);d9.T[q]+=(EV.h*(EV.room-d9.T[q])-R*EV[q].L)/EV.C*dl;});}
+      d9.t+=dt*EV.LAB;if(!d9.hist.length||d9.t-d9.hist[d9.hist.length-1].t>=2)d9.hist.push({t:d9.t,d:d9.T.d,w:d9.T.w,a:d9.T.a});
+      if(d9.t>900)d9.on=false;}},
   metrics:[
     {id:'obs',label:'Observation',unit:'',lvl:'bio',text:true,get:s=>obsText(s)},
+    {id:'hbn',label:'Hydrogen bonds to the center molecule',unit:'of 4',lvl:'bio',st:['0'],min:0,max:4,d:0,get:s=>s.st.d0.nb.filter(q=>q.f>=1).length},
+    {id:'tw9',label:'Water cloth',unit:'°C',lvl:'bio',st:['9'],min:0,max:30,d:1,get:s=>s.st.d9.T.w},
+    {id:'ta9',label:'Alcohol cloth',unit:'°C',lvl:'bio',st:['9'],min:0,max:30,d:1,get:s=>s.st.d9.T.a},
+    {id:'qw9',label:'Heat carried off by the water',unit:'J',lvl:'bio',st:['9'],min:0,max:5000,d:0,get:s=>(EV.m0-s.st.d9.m.w)*EV.w.L*(s.st.d9.on||s.st.d9.t>0?1:0)},
+    {id:'qa9',label:'Heat carried off by the alcohol',unit:'J',lvl:'bio',st:['9'],min:0,max:5000,d:0,get:s=>(EV.m0-s.st.d9.m.a)*EV.a.L*(s.st.d9.on||s.st.d9.t>0?1:0)},
     {id:'drops',label:'Drops on the penny',unit:'drops',lvl:'bio',st:['2'],min:0,max:40,d:0,get:s=>s.st.d2.spilled?s.st.d2.n-1:s.st.d2.n},
     {id:'wick',label:'Height climbed',unit:'cm',lvl:'bio',st:['3'],min:0,max:12,d:1,get:s=>s.st.d3.h},
     {id:'clipres',label:'Paperclip',unit:'',lvl:'bio',st:['4'],text:true,get:s=>s.st.d4.clip?(s.st.d4.clip.state==='float'?'Floats':'Sinks'):'Not placed'},
@@ -185,10 +227,11 @@ const WP={
     {id:'dis',label:'Dissolved?',unit:'',lvl:'bio',st:['6'],text:true,get:s=>dissolvedText(s.st)},
     {id:'defl',label:'Stream bends',unit:'mm',lvl:'bio',st:['7'],min:0,max:30,d:0,get:s=>s.st.d7.defl*0.6},
     {id:'phs',label:'pH',unit:'',lvl:'bio',st:['8'],text:true,get:s=>phText(s.st,s)},
-    {id:'hplus',label:'H⁺ in lemon juice vs water',unit:'',lvl:'ap',st:['8'],text:true,get:s=>s.st.d8.dipped?'about '+Math.round(Math.pow(10,PH.water-PH.lemon)).toLocaleString('en-US')+'× more H⁺':'Dip the strips first'}
+    {id:'hplus',label:'H⁺ in lemon juice vs water',unit:'',lvl:'bio',st:['8'],text:true,get:s=>s.st.d8.dipped?'about '+Math.round(Math.pow(10,PH.water-Math.round(PH.lemon))).toLocaleString('en-US')+'× more H⁺':'Dip the strips first'}
   ],
   graphs:[{id:'drops',label:'Drops on a penny (Station 2)',custom:true},{id:'wick',label:'Water climbing the towel (Station 3)',custom:true},
-          {id:'heat',label:'Heating curves (Station 5)',custom:true},{id:'ph',label:'pH of each sample (Station 8)',custom:true}],
+          {id:'heat',label:'Heating curves (Station 5)',custom:true},{id:'ph',label:'pH of each sample (Station 8)',custom:true},
+          {id:'evap',label:'Wet thermometers (Heat of evaporation)',custom:true}],
   defaultGraph:'drops',
   plot(sim,ctx,box,id){const s=sim.st,msg=m=>txt(ctx,m,box.cw/2,box.ch/2,{s:15,c:PAL['muted'],a:'center',b:'middle'});
     if(id==='drops'){const keys=['water','alcohol'].concat(atLeast('honors')?['soapy']:[]);const vals=keys.map(k=>s.d2.best[k]||0);if(!vals.some(v=>v>0))return msg('Add drops at Station 2 to fill this graph.');
@@ -199,6 +242,10 @@ const WP={
       const b2={L:box.L,T:box.T+22,W:box.W,H:box.H-22,cw:box.cw,ch:box.ch};const ax=axes(ctx,b2,{xmin:0,xmax:tmax,ymin:0,ymax:200,xl:'Time (min of lab time)',yl:'Temperature (°C)'});
       [['w','Water',PAL['s2']],['a','Alcohol',PAL['s5']],['o','Oil',PAL['s4']]].forEach(([k,,col])=>{ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();h.forEach((q,i)=>{const x=ax.X(q.t*DEMO/60),y=ax.Y(q[k]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();});
       legend(ctx,box.L,box.T+8,[{label:'Water',color:PAL['s2']},{label:'Alcohol',color:PAL['s5']},{label:'Oil',color:PAL['s4']}]);return;}
+    if(id==='evap'){const h=s.d9.hist;if(h.length<2)return msg('Wet the cloths on the Heat of evaporation tab to fill this graph.');const tmax=Math.max(5,h[h.length-1].t/60);
+      const b2={L:box.L,T:box.T+22,W:box.W,H:box.H-22,cw:box.cw,ch:box.ch};const ax=axes(ctx,b2,{xmin:0,xmax:tmax,ymin:0,ymax:30,xl:'Time (min of lab time)',yl:'Temperature (°C)'});
+      [['d',PAL['cv-soft']],['w',PAL['s2']],['a',PAL['s5']]].forEach(([q,col])=>{ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();h.forEach((r,i)=>{const x=ax.X(r.t/60),y=ax.Y(r[q]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();});
+      legend(ctx,box.L,box.T+8,[{label:'Dry',color:PAL['cv-soft']},{label:'Water cloth',color:PAL['s2']},{label:'Alcohol cloth',color:PAL['s5']}]);return;}
     if(id==='ph'){const d=s.d8;if(d.mode==='buffer'){const b=bufPH(s);const ax=axes(ctx,box,{xmin:0,xmax:2,ymin:0,ymax:14,xcats:['Plain water','Buffered (blood)'],yl:'pH'});bars(ctx,ax,[b.plain,b.buf],{colors:[phColor(b.plain),phColor(b.buf)],d:1});return;}
       if(!d.dipped)return msg('Dip the pH strips at Station 8 to fill this graph.');const ax=axes(ctx,box,{xmin:0,xmax:3,ymin:0,ymax:14,xcats:['Lemon juice','Water','Cleaner'],yl:'pH'});
       bars(ctx,ax,[PH.lemon,PH.water,PH.cleaner],{colors:[phColor(PH.lemon),phColor(PH.water),phColor(PH.cleaner)],d:1});}},
@@ -210,6 +257,13 @@ const WP={
   narrate(sim){const s=sim.st,stn=sim.p.station,hon=atLeast('honors'),ap=atLeast('ap');
     if(s.intro)return '<b>Water is polar.</b> Oxygen pulls the shared electrons toward itself, so the oxygen end is slightly negative (δ−) and the hydrogen ends slightly positive (δ+). Opposite charges on neighboring molecules attract: those are <b>hydrogen bonds</b>.';
     switch(stn){
+      case '0':{const n=s.d0.nb.filter(q=>q.f>=1).length;
+        if(!n)return '<b>Water is polar.</b> Inside the molecule, oxygen and hydrogen share electrons (covalent bonds), but oxygen pulls the shared electrons closer. So the oxygen end is slightly negative (δ−) and each hydrogen end is slightly positive (δ+).';
+        return '<b>Hydrogen bonds:</b> a δ+ hydrogen on one molecule is attracted to the δ− oxygen of a neighbor (dashed line). '+(n<4?'Add more neighbors: one water molecule can make up to 4.':'This molecule now has all 4: two through its hydrogens and two through its oxygen.')+' Each hydrogen bond is about 20 times weaker than the covalent bonds inside the molecule, so they break and re-form constantly.';}
+      case '9':{const d=s.d9;if(!d.on&&!d.hist.length)return 'Three thermometers in front of a fan: one dry, one wrapped in a water-soaked cloth, one in an alcohol-soaked cloth. Predict which gets coldest, and which stays cool longest. Then click the bench or press <b>Wet the cloths and turn on the fan</b>.';
+        const qw=(EV.m0-d.m.w)*EV.w.L,qa=(EV.m0-d.m.a)*EV.a.L;
+        if(d.m.a>0)return '<b>Evaporation pulls heat away.</b> To escape as a gas, a molecule must break all its hydrogen bonds, and the energy for that comes from the cloth and thermometer. Alcohol evaporates fast, so it cools quickly, but it is going fast too.';
+        return '<b>Water has a high heat of evaporation.</b> Each gram that evaporates carries away 2,260 J, compared with 841 J for alcohol. The alcohol cloth dried out, but the water cloth is still cooling. So far water has carried off '+Math.round(qw).toLocaleString('en-US')+' J and alcohol '+Math.round(qa).toLocaleString('en-US')+' J from the same 2 g. This is how sweat cools you, and why it feels cooler by a lake.';}
       case '1':return s.d1.lake>0.05?'<b>Ice floats, so lakes freeze from the top down.</b> In ice, hydrogen bonds lock molecules into an open honeycomb that takes more space than liquid water, so ice is less dense. The ice layer insulates the water below, where fish survive at about 4 °C.':
         '<b>Ice floats.</b> Frozen water is about 9% less dense than liquid water because hydrogen bonds hold the molecules in an open honeycomb. Rubbing alcohol does not even freeze in a kitchen freezer.';
       case '2':{const d=s.d2,liq=d.liq||sim.p.pennyLiquid;if(liq==='water')return '<b>Cohesion:</b> water molecules cling to each other with hydrogen bonds, so the drops pile up into a tall dome before the surface finally breaks'+(d.n?' ('+(d.spilled?d.n-1:d.n)+' drops so far)':'')+'.';
@@ -235,24 +289,25 @@ const WP={
   draw(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis,stn=p.station;k=Math.min(k,1.3);
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
     ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,422,540,28);
-    txt(ctx,'Station '+stn+': '+STNAME[stn],16,26,{s:15*k,w:700});
-    const scene={'1':sDensity,'2':sCohesion,'3':sAdhesion,'4':sSurface,'5':sHeat,'6':sDissolve,'7':sBalloon,'8':sPH}[stn];
+    txt(ctx,STHEAD(stn),16,26,{s:15*k,w:700});
+    const scene={'0':sMolecule,'9':sEvap,'1':sDensity,'2':sCohesion,'3':sAdhesion,'4':sSurface,'5':sHeat,'6':sDissolve,'7':sBalloon,'8':sPH}[stn];
     ctx.save();scene(sim,ctx,vdt,k,t);ctx.restore();
     if(p.mol)drawInset(sim,ctx,vdt,k,t);else{txt(ctx,'Turn on Molecule zoom',668,190,{s:13*k,c:PAL['cv-soft'],a:'center'});txt(ctx,'to see why',668,210,{s:13*k,c:PAL['cv-soft'],a:'center'});}},
-  onClick(sim,x,y){const stn=sim.p.station;if(x>540)return;const map={'1':'iceDrop','2':'drop','3':'hang','4':'clip','5':'heat','6':'stir','7':'rub','8':'dip'};ACT[map[stn]](sim);},
+  onClick(sim,x,y){const stn=sim.p.station;if(x>540)return;const map={'0':'neighbor','9':'wet','1':'iceDrop','2':'drop','3':'hang','4':'clip','5':'heat','6':'stir','7':'rub','8':'dip'};ACT[map[stn]](sim);},
   thumbSetup(sim){BioLab.setValues(sim,{station:'2'});for(let i=0;i<20;i++)ACT.drop(sim);},
   /* ---------- guidance ---------- */
   tour:[
-    {title:'Water is polar',text:'Start with one molecule. Oxygen pulls the shared electrons toward itself, so the oxygen end is slightly negative (δ−) and the two hydrogen ends are slightly positive (δ+).',focus:[546,48,246,262],speed:0.5,setup(sim){BioLab.setValues(sim,{station:'1',mol:true});sim.st.intro=true;}},
-    {title:'Hydrogen bonds',text:'The δ+ hydrogen of one molecule is attracted to the δ− oxygen of a neighbor. That attraction is a hydrogen bond (dashed line). Every station today is explained by these bonds.',focus:[546,48,246,262],speed:0.5,setup(sim){sim.st.intro=true;}},
+    {title:'Water is polar',text:'Start with one molecule. Oxygen pulls the shared electrons toward itself, so the oxygen end is slightly negative (δ−) and the two hydrogen ends are slightly positive (δ+).',focus:[60,110,320,250],speed:0.5,setup(sim){BioLab.setValues(sim,{station:'0',mol:true});sim.st.intro=false;ACT.clearN(sim);}},
+    {title:'Hydrogen bonds',text:'The δ+ hydrogen of one molecule is attracted to the δ− oxygen of a neighbor. That attraction is a hydrogen bond (dashed line). Every station today is explained by these bonds.',focus:[[40,60,370,330],[546,48,246,262]],speed:0.5,setup(sim){BioLab.setValues(sim,{station:'0'});ACT.clearN(sim);for(let i=0;i<4;i++)ACT.neighbor(sim);}},
     {title:'Station 1: ice floats',text:'Hydrogen bonds lock ice into an open honeycomb, so ice is less dense than liquid water and floats. Lakes freeze from the top down, and fish survive underneath.',focus:[8,40,532,384],speed:1,setup(sim){sim.st.intro=false;BioLab.setValues(sim,{station:'1'});ACT.iceDrop(sim);ACT.winter(sim);}},
     {title:'Station 2: cohesion',text:'Water sticks to itself. Watch the drops pile into a dome on the penny before the surface finally breaks. Then try alcohol.',focus:[[120,110,300,280],[546,48,246,262]],speed:1,setup(sim){BioLab.setValues(sim,{station:'2',pennyLiquid:'water'});ACT.auto(sim);}},
     {title:'Station 3: adhesion',text:'Water sticks to other polar materials, like the cellulose in a paper towel. Adhesion pulls it up and cohesion drags the rest along: capillary action.',focus:[[90,90,260,334],[546,48,246,262]],speed:1,setup(sim){BioLab.setValues(sim,{station:'3'});ACT.newTowel(sim);ACT.hang(sim);}},
     {title:'Station 4: surface tension',text:'Hydrogen bonds pull the surface tight. A steel paperclip, denser than water, rests on that skin.',focus:[[60,150,420,250],[546,48,246,262]],speed:1,setup(sim){BioLab.setValues(sim,{station:'4',clipLiquid:'water'});ACT.clip(sim);}},
     {title:'Station 5: high specific heat',text:'Same heat, three liquids. Water warms slowly because energy goes into breaking hydrogen bonds. Alcohol boils first.',focus:[8,40,532,384],speed:1,setup(sim){BioLab.setValues(sim,{station:'5'});ACT.cool(sim);ACT.heat(sim);}},
+    {title:'Heat of evaporation',text:'Wet cloths on two thermometers, with a fan blowing. Evaporating molecules must break all their hydrogen bonds, so they carry heat away. Alcohol cools fast but dries out; each gram of water carries off 2.7 times as much heat. That is how sweat cools you.',focus:[[8,40,532,384],[546,48,246,262]],speed:1,setup(sim){BioLab.setValues(sim,{station:'9'});ACT.dryAll(sim);ACT.wet(sim);}},
     {title:'Station 6: the universal solvent',text:'Water molecules surround each ion and pull the salt crystal apart. Oil is nonpolar, so it stays in its own layer.',focus:[[120,90,280,334],[546,48,246,262]],speed:1,setup(sim){BioLab.setValues(sim,{station:'6'});ACT.emptyBeaker(sim);ACT.salt(sim);ACT.oil(sim);ACT.stir(sim);}},
-    {lvl:'honors',title:'Station 7: polarity you can see',text:'A charged balloon pulls on the δ+ ends of water molecules, so the whole stream bends. Oil, which is nonpolar, barely moves.',focus:[8,40,532,384],speed:1,setup(sim){BioLab.setValues(sim,{station:'7',streamLiquid:'water'});ACT.rub(sim);ACT.closer(sim);}},
-    {lvl:'ap',title:'Station 8: buffers',text:'Add acid to plain water and the pH crashes. Add it to a buffered solution like blood and the pH barely moves, because bicarbonate soaks up the extra H⁺.',focus:[8,40,532,384],speed:1,setup(sim){BioLab.setValues(sim,{station:'8'});ACT.buffer(sim);ACT.acid5(sim);}}
+    {lvl:'bio',title:'Station 7: polarity you can see',text:'A charged balloon pulls on the δ+ ends of water molecules, so the whole stream bends. Oil, which is nonpolar, barely moves.',focus:[8,40,532,384],speed:1,setup(sim){BioLab.setValues(sim,{station:'7',streamLiquid:'water'});ACT.rub(sim);ACT.closer(sim);}},
+    {lvl:'bio',title:'Station 8: buffers',text:'Add acid to plain water and the pH crashes. Add it to a buffered solution like blood and the pH barely moves, because bicarbonate soaks up the extra H⁺.',focus:[8,40,532,384],speed:1,setup(sim){BioLab.setValues(sim,{station:'8'});ACT.buffer(sim);ACT.acid5(sim);}}
   ],
   onTourExit(sim){sim.st.intro=false;},
   challenges:[
@@ -265,35 +320,41 @@ const WP={
     {lvl:'bio',q:'Water, alcohol and oil get the same heat. Which one boils first?',choices:['Water','Alcohol','Oil','They all boil at once'],correct:1,
      baseline:{station:'5'},baselineAction:'heat',changeText:'Hot plates on',watch:'heat',at:0.2,reveal:14,
      explain:{bio:'Alcohol boils first, at about 78 °C. Water has to reach 100 °C and warms more slowly, because much of the energy breaks hydrogen bonds. Oil heats quickly but its boiling point is far above anything here.'}},
+    {lvl:'bio',instant:true,show:'0',q:'Inside one water molecule, what holds the two hydrogen atoms to the oxygen?',choices:['Covalent bonds: the atoms share electrons','Hydrogen bonds','Ionic bonds: oxygen takes the electrons completely','Nothing: they just touch'],correct:0,
+     explain:{bio:'Covalent bonds. Oxygen and each hydrogen share a pair of electrons. Oxygen pulls the pair closer, so the bonds are polar covalent: oxygen ends up δ− and the hydrogens δ+. Hydrogen bonds are the weaker attractions between separate molecules.'}},
+    {lvl:'bio',q:'Both cloths are wet and the fan is on. Which thermometer gets colder in the first minute?',choices:['The one in the water cloth','The one in the alcohol cloth','Both cool the same'],correct:1,
+     baseline:{station:'9'},baselineAction:'wet',changeText:'Fan on, cloths wet',watch:'evap',at:0.2,reveal:5,
+     explain:{bio:'The alcohol cloth, which drops to about 10 °C. Alcohol evaporates about five times faster than water, so it pulls heat out quickly. But keep watching: it dries out in under 2 minutes, while the water keeps cooling for over 8. Gram for gram, water carries off 2.7 times more heat.'}},
+    {lvl:'bio',instant:true,show:'9',q:'You sweat 2 g of water and it all evaporates. About how much heat does it carry away from your skin? (Water: 2,260 J per gram)',choices:['About 1,100 J','About 4,500 J','About 2,260 J','About 840 J'],correct:1,
+     explain:{bio:'2 g × 2,260 J/g = 4,520 J. The same 2 g of alcohol would carry off only 2 × 841 = 1,682 J. Run the Heat of evaporation tab to the end and read both Heat carried off tiles.'}},
     {lvl:'bio',instant:true,show:'1',q:'Ice fishing works because ice forms on top of a lake. Which station shows that property?',choices:['Station 1: density','Station 2: cohesion','Station 6: dissolving','Station 8: acids and bases'],correct:0,
      explain:{bio:'Density. Ice is less dense than liquid water because hydrogen bonds lock it into an open honeycomb, so ice floats and the lake freezes from the top down. The ice insulates the water underneath, where the fish live.'}},
     {lvl:'bio',instant:true,show:'6',q:'Your bloodstream carries sugar, salts and many other things dissolved in water. Which station shows that property?',choices:['Station 4: surface tension','Station 6: dissolving','Station 5: heating','Station 1: density'],correct:1,
      explain:{bio:'Station 6. Water is a polar solvent, so it surrounds charged and polar particles (salt, sugar) and carries them. Nonpolar things like oil and fat do not dissolve, which is why fats travel in blood packaged with proteins.'}},
-    {lvl:'honors',q:'You bring a charged balloon close to a thin stream of water. What does the stream do?',choices:['Bends toward the balloon','Bends away from the balloon','Nothing'],correct:0,
+    {lvl:'bio',q:'You bring a charged balloon close to a thin stream of water. What does the stream do?',choices:['Bends toward the balloon','Bends away from the balloon','Nothing'],correct:0,
      baseline:{station:'7',streamLiquid:'water'},baselineAction:'rub',changeAction:'closer',changeText:'Balloon moved close',at:0.6,reveal:4,
-     explain:{honors:'It bends toward the balloon. Water molecules are polar, so they turn their δ+ ends toward the negatively charged balloon and are pulled toward it. That is direct evidence that water carries charge.'}},
-    {lvl:'honors',q:'Add soapy water to a penny instead of plain water. Compared with about 30 drops of water, the penny will hold…',choices:['Fewer drops','The same number','More drops'],correct:0,
+     explain:{bio:'It bends toward the balloon. Water molecules are polar, so they turn their δ+ ends toward the negatively charged balloon and are pulled toward it. That is direct evidence that water carries charge.'}},
+    {lvl:'bio',q:'Add soapy water to a penny instead of plain water. Compared with about 30 drops of water, the penny will hold…',choices:['Fewer drops','The same number','More drops'],correct:0,
      baseline:{station:'2',pennyLiquid:'soapy'},baselineAction:'auto',changeText:'Adding soapy water',watch:'drops',at:0.2,reveal:10,
-     explain:{honors:'Fewer. Soap molecules wedge between water molecules at the surface and break hydrogen bonds, lowering cohesion and surface tension.'}},
-    {lvl:'honors',instant:true,show:'4',q:'A basilisk ("Jesus lizard") can run across the surface of a pond. Which property helps most?',choices:['Surface tension (cohesion)','High specific heat','Water dissolves salts','Ice is less dense'],correct:0,
-     explain:{honors:'Surface tension from cohesion. Hydrogen bonds pull the surface molecules tight, and the lizard slaps its feet fast enough to push off that skin before breaking through. Station 4 shows the same skin holding up a paperclip.'}},
-    {lvl:'honors',instant:true,show:'3',q:'How does water rise from the roots to the leaves of a tree without a pump?',choices:['Cohesion and adhesion (with evaporation from leaves)','Density','Water is a base','High specific heat'],correct:0,
-     explain:{honors:'Water evaporating from the leaves pulls on the column below. Cohesion keeps the column of water molecules connected, and adhesion to the polar walls of the xylem helps it climb. Station 3 shows adhesion pulling water up a paper towel.'}},
-    {lvl:'honors',instant:true,show:'3',q:'Why does water in a graduated cylinder form a curved meniscus, and where do you read it?',choices:['Adhesion to the glass pulls water up the sides; read the bottom of the curve','Cohesion pulls the middle up; read the top of the curve','Density; read the top of the curve'],correct:0,
-     explain:{honors:'Water adheres to the polar glass and creeps up the walls, so the surface curves down in the middle. Read the volume at the bottom of the meniscus, at eye level.'}},
-    {lvl:'ap',q:'Add 5 drops of acid to plain water and to a buffered solution like blood. Which pH changes more?',choices:['Plain water','The buffered solution','They change the same amount'],correct:0,
+     explain:{bio:'Fewer. Soap molecules wedge between water molecules at the surface and break hydrogen bonds, lowering cohesion and surface tension.'}},
+    {lvl:'bio',instant:true,show:'4',q:'A basilisk ("Jesus lizard") can run across the surface of a pond. Which property helps most?',choices:['Surface tension (cohesion)','High specific heat','Water dissolves salts','Ice is less dense'],correct:0,
+     explain:{bio:'Surface tension from cohesion. Hydrogen bonds pull the surface molecules tight, and the lizard slaps its feet fast enough to push off that skin before breaking through. Station 4 shows the same skin holding up a paperclip.'}},
+    {lvl:'bio',instant:true,show:'3',q:'How does water rise from the roots to the leaves of a tree without a pump?',choices:['Cohesion and adhesion (with evaporation from leaves)','Density','Water is a base','High specific heat'],correct:0,
+     explain:{bio:'Water evaporating from the leaves pulls on the column below. Cohesion keeps the column of water molecules connected, and adhesion to the polar walls of the xylem helps it climb. Station 3 shows adhesion pulling water up a paper towel.'}},
+    {lvl:'bio',instant:true,show:'3',q:'Why does water in a graduated cylinder form a curved meniscus, and where do you read it?',choices:['Adhesion to the glass pulls water up the sides; read the bottom of the curve','Cohesion pulls the middle up; read the top of the curve','Density; read the top of the curve'],correct:0,
+     explain:{bio:'Water adheres to the polar glass and creeps up the walls, so the surface curves down in the middle. Read the volume at the bottom of the meniscus, at eye level.'}},
+    {lvl:'bio',q:'Add 5 drops of acid to plain water and to a buffered solution like blood. Which pH changes more?',choices:['Plain water','The buffered solution','They change the same amount'],correct:0,
      baseline:{station:'8'},baselineAction:'buffer',changeAction:'acid5',changeText:'5 drops of acid added to each',watch:'ph',at:0.5,reveal:3,
-     explain:{ap:'Plain water drops to about pH 3.3, while the buffer barely moves from 7.4. Bicarbonate (HCO₃⁻) in blood accepts H⁺ to form carbonic acid, so extra acid, like stomach acid that leaks into tissues, is absorbed instead of changing the pH.'}},
-    {lvl:'ap',instant:true,show:'8',q:'Lemon juice is about pH 2 and black coffee about pH 5. How much more H⁺ does lemon juice have?',choices:['3 times','30 times','1,000 times','10,000 times'],correct:2,
-     explain:{ap:'pH = −log[H⁺], so each unit is a factor of 10. Three units apart is 10 × 10 × 10 = 1,000 times more H⁺.'}},
-    {lvl:'ap',instant:true,show:'5',q:'If desert animals’ main body liquid were alcohol instead of water, what would happen on a hot day?',choices:['Their temperature would swing much more, and sweat would evaporate away too fast','Nothing would change','They would stay cooler'],correct:0,
-     explain:{ap:'Alcohol has a lower specific heat (2.4 vs 4.2 J/g·°C) and a much lower heat of vaporization. Body temperature would rise much faster, and evaporating it would pull away less heat per gram while drying the animal out. Water’s hydrogen bonds buffer temperature.'}}
+     explain:{bio:'Plain water drops to about pH 3.3, while the buffer barely moves from 7.4. Bicarbonate (HCO₃⁻) in blood accepts H⁺ to form carbonic acid, so extra acid, like stomach acid that leaks into tissues, is absorbed instead of changing the pH.'}},
+    {lvl:'bio',instant:true,show:'8',q:'Lemon juice is about pH 2 and black coffee about pH 5. How much more H⁺ does lemon juice have?',choices:['3 times','30 times','1,000 times','10,000 times'],correct:2,
+     explain:{bio:'pH = −log[H⁺], so each unit is a factor of 10. Three units apart is 10 × 10 × 10 = 1,000 times more H⁺.'}},
+    {lvl:'bio',instant:true,show:'5',q:'If desert animals’ main body liquid were alcohol instead of water, what would happen on a hot day?',choices:['Their temperature would swing much more, and sweat would evaporate away too fast','Nothing would change','They would stay cooler'],correct:0,
+     explain:{bio:'Alcohol has a lower specific heat (2.4 vs 4.2 J/g·°C) and a much lower heat of vaporization. Body temperature would rise much faster, and evaporating it would pull away less heat per gram while drying the animal out. Water’s hydrogen bonds buffer temperature.'}}
   ],
   onChallenge(sim,ch,phase){if(ch&&ch.instant&&ch.show&&phase==='done')BioLab.setValues(sim,{station:ch.show});},
-  lab:{bio:'<p><b>Observation sheet:</b> run every station and record what you see.</p><ol><li><b>Density:</b> Is the ice floating? Did the alcohol freeze? Which way did the lake freeze?</li><li><b>Cohesion:</b> How many drops of water fit on the penny? How many of alcohol?</li><li><b>Adhesion:</b> Where does the water move on the paper towel?</li><li><b>Surface tension:</b> Does the paperclip float on water? On alcohol?</li><li><b>Heating:</b> Which liquid boiled first?</li><li><b>Dissolving:</b> Did salt, sugar and oil dissolve?</li><li><b>Balloon:</b> What happens to the stream?</li><li><b>Acids and bases:</b> Record the pH of each sample and circle acid, neutral or base.</li></ol><p>Press Record trial at each station so your results are saved in the table.</p>',
-       honors:'<p><b>Observation sheet:</b> run every station, comparing water with alcohol or oil where you can. Record a trial at each station.</p><ol><li>Record your drop counts for water, alcohol and soapy water (Station 2).</li><li>Measure how high the water climbs the towel after 5 minutes of lab time (Station 3).</li><li>Note which liquid boils first and at what temperature (Station 5).</li></ol><p>For each station, name the emergent property and explain it using hydrogen bonds or polarity.</p>',
-       ap:'<p><b>Investigation:</b> for each station, write the property, the observation, and a molecular explanation.</p><ol><li>Use the heating curves to rank the liquids by specific heat (steeper line = lower specific heat).</li><li>Switch the lab to Denver and explain the new boiling points.</li><li>Use the buffer comparison to explain how blood stays near pH 7.4.</li></ol><p><b>Claim–evidence–reasoning:</b> using two stations as evidence, explain how hydrogen bonds and polarity cause water’s emergent properties.</p>'},
-  terms:[{t:'Polar molecule',d:'A molecule with a slightly negative end and a slightly positive end. In water, oxygen is δ− and the hydrogens are δ+.'},
+  lab:'<p><b>Observation sheet:</b> open each tab, run it and record what you see. Press Record trial on each tab so your results are saved in the table.</p><ol><li><b>Water molecule:</b> What type of bond holds the atoms together? Why is the molecule polar? Add neighbors: how many hydrogen bonds can one molecule make?</li><li><b>Ice floats:</b> Is the ice floating? Did the alcohol freeze? Which way did the lake freeze?</li><li><b>Cohesion:</b> How many drops of water fit on the penny? Of alcohol? Of soapy water?</li><li><b>Adhesion:</b> Where does the water move on the paper towel?</li><li><b>Surface tension:</b> Does the paperclip float on water? On alcohol? What does soap do?</li><li><b>Specific heat:</b> Which liquid boiled first? Try Denver.</li><li><b>Heat of evaporation:</b> Which cloth got coldest first? Which stayed cool longer? How much heat did each carry off?</li><li><b>Solvent:</b> Did salt, sugar and oil dissolve?</li><li><b>Polarity:</b> What happens to the stream of water? Of oil?</li><li><b>Acids and bases:</b> Record the pH of each sample and circle acid, neutral or base. Then compare plain water with a buffer.</li></ol><p>For each tab, name the property and explain it using hydrogen bonds or polarity.</p>',
+  terms:[{t:'Covalent bond',d:'Atoms sharing a pair of electrons. The O–H bonds inside a water molecule are covalent.'},
+    {t:'Polar molecule',d:'A molecule with a slightly negative end and a slightly positive end. In water, oxygen is δ− and the hydrogens are δ+.'},
     {t:'Hydrogen bond',d:'The attraction between a δ+ hydrogen on one molecule and a δ− atom (like oxygen) on another.'},
     {t:'Cohesion',d:'Attraction between molecules of the same kind, like water to water.'},
     {t:'Adhesion',d:'Attraction between different kinds of molecules, like water to glass or paper.'},
@@ -301,16 +362,82 @@ const WP={
     {t:'Density',d:'Mass per unit of volume. Ice (0.92 g/mL) is less dense than liquid water (1.00 g/mL).'},
     {t:'Solvent',d:'The substance that does the dissolving. Water dissolves polar and charged particles.'},
     {t:'pH',d:'A scale from 0 to 14 for how acidic or basic a solution is. 7 is neutral.'},
-    {lvl:'honors',t:'Capillary action',d:'Water moving up a narrow space because of adhesion and cohesion.'},
-    {lvl:'honors',t:'Specific heat',d:'The energy needed to raise 1 g of a substance by 1 °C. Water’s is high: 4.18 J/g·°C.'},
-    {lvl:'honors',t:'Heat of vaporization',d:'The energy needed to turn a liquid into a gas. Water’s is very high, so sweating cools you.'},
-    {lvl:'honors',t:'Hydrophilic / hydrophobic',d:'Water-loving (polar or charged, dissolves) versus water-fearing (nonpolar, like oil).'},
-    {lvl:'ap',t:'Buffer',d:'A solution that resists changes in pH by absorbing or releasing H⁺.'},
-    {lvl:'ap',t:'Emergent property',d:'A property that appears from many molecules interacting, not from one molecule alone.'}],
-  about:'<p>Each station is a small rule-based model tuned to typical classroom results, not a full physics simulation.</p><ul><li><b>Penny:</b> the number of drops is chosen at random within typical ranges: water 25–35, alcohol 8–12, soapy water 12–18.</li><li><b>Paper towel:</b> the rise follows h ∝ √t (the Washburn pattern) and stops at 11 cm.</li><li><b>Heating demo:</b> 100 g of each liquid gets the same heat. Temperature rises as heat ÷ (mass × specific heat): water 4.18, alcohol 2.44, oil about 1.9 J/g·°C. Boiling points are 100 and 78 °C at sea level, about 95 and 74 °C in Denver. The oil would smoke long before boiling, so the demo stops it near 190 °C. Lab time is sped up.</li><li><b>Dissolving:</b> stirring speeds dissolving. Amounts are small enough that salt and sugar always fully dissolve.</li><li><b>pH:</b> values are typical, not measured; the buffer model is simplified.</li><li><b>Molecule views:</b> diagrams, not to scale in number or spacing.</li></ul>'
+    {lvl:'bio',t:'Capillary action',d:'Water moving up a narrow space because of adhesion and cohesion.'},
+    {lvl:'bio',t:'Specific heat',d:'The energy needed to raise 1 g of a substance by 1 °C. Water’s is high: 4.18 J/g·°C.'},
+    {lvl:'bio',t:'Heat of vaporization (evaporation)',d:'The energy needed to turn a liquid into a gas: 2,260 J per gram for water, 841 for alcohol. Water’s is very high, so sweating cools you.'},
+    {lvl:'bio',t:'Evaporative cooling',d:'When the fastest molecules escape as gas, they carry heat away, so what is left behind gets cooler.'},
+    {lvl:'bio',t:'Hydrophilic / hydrophobic',d:'Water-loving (polar or charged, dissolves) versus water-fearing (nonpolar, like oil).'},
+    {lvl:'bio',t:'Buffer',d:'A solution that resists changes in pH by absorbing or releasing H⁺.'},
+    {lvl:'bio',t:'Emergent property',d:'A property that appears from many molecules interacting, not from one molecule alone.'}],
+  about:'<p>Each station is a small rule-based model tuned to typical classroom results, not a full physics simulation.</p><ul><li><b>Penny:</b> the number of drops is chosen at random within typical ranges: water 25–35, alcohol 8–12, soapy water 12–18.</li><li><b>Paper towel:</b> the rise follows h ∝ √t (the Washburn pattern) and stops at 11 cm.</li><li><b>Heating demo:</b> 100 g of each liquid gets the same heat. Temperature rises as heat ÷ (mass × specific heat): water 4.18, alcohol 2.44, oil about 1.9 J/g·°C. Boiling points are 100 and 78 °C at sea level, about 95 and 74 °C in Denver. The oil would smoke long before boiling, so the demo stops it near 190 °C. Lab time is sped up.</li><li><b>Water molecule:</b> a diagram. The 104.5° angle and the four hydrogen-bond positions are real; the bond energies (O–H about 460 kJ/mol, a hydrogen bond about 23) are typical textbook values.</li><li><b>Wet thermometers:</b> each bulb holds 2 g of liquid. It gains heat from the 25 °C air at 1.13 W per °C and loses (evaporation rate × heat of vaporization). Rates are fixed while liquid remains: water 0.004 g/s, alcohol 0.020 g/s; heats of vaporization 2,260 and 841 J/g; bulb heat capacity 34 J/°C. Real rates also depend on humidity and temperature. Lab time is sped up 10 times.</li><li><b>Dissolving:</b> stirring speeds dissolving. Amounts are small enough that salt and sugar always fully dissolve.</li><li><b>pH:</b> values are typical, not measured; the buffer model is simplified.</li><li><b>Molecule views:</b> diagrams, not to scale in number or spacing.</li></ul>'
 };
 
 /* ---------- station scenes ---------- */
+function wrapTxt(ctx,str,x,y,w,lh,o){o=o||{};ctx.font=(o.w||400)+' '+o.s+'px '+FONT;const words=str.split(' ');let line='',yy=y;
+  words.forEach(wd=>{const tst=line?line+' '+wd:wd;if(ctx.measureText(tst).width>w&&line){txt(ctx,line,x,yy,o);line=wd;yy+=lh;}else line=tst;});if(line)txt(ctx,line,x,yy,o);return yy+lh;}
+const MOL0={x:205,y:245,ang:-Math.PI/2,S:4,gap:70,ns:2.2};
+function molSites(){const M=MOL0,dH=13*M.S,out=[];const H=[M.ang-0.91,M.ang+0.91].map(a=>[M.x+Math.cos(a)*dH,M.y+Math.sin(a)*dH,a]);
+  // donor: center H → neighbor O; acceptor: neighbor H → center O (lone-pair directions)
+  const acc=[M.ang+Math.PI+0.95,M.ang+Math.PI-0.95];
+  [0,1].forEach(i=>{const h=H[i],u=[Math.cos(h[2]),Math.sin(h[2])];out.push({kind:'don',O:[h[0]+u[0]*M.gap,h[1]+u[1]*M.gap],ang:h[2],from:[h[0],h[1]],dir:u});
+    const a=acc[i],v=[Math.cos(a),Math.sin(a)],dHn=13*M.ns;out.push({kind:'acc',O:[M.x+v[0]*(M.gap+dHn),M.y+v[1]*(M.gap+dHn)],ang:a+Math.PI+0.91,dir:v});});
+  return [out[0],out[1],out[2],out[3]];}
+function sMolecule(sim,ctx,vdt,k,t){const d=sim.st.d0,M=MOL0,S=M.S,dH=13*S,rO=8.5*S,rH=5.2*S,jig=RM?0:1;
+  const a1=M.ang-0.91,a2=M.ang+0.91,H1=[M.x+Math.cos(a1)*dH,M.y+Math.sin(a1)*dH],H2=[M.x+Math.cos(a2)*dH,M.y+Math.sin(a2)*dH];
+  const glow=(p,r,col)=>{const g=ctx.createRadialGradient(p[0],p[1],r*0.2,p[0],p[1],r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p[0],p[1],r,0,6.29);ctx.fill();};
+  glow([M.x,M.y],rO*2.1,'rgba(214,69,69,0.30)');glow(H1,rH*2.2,'rgba(61,127,214,0.30)');glow(H2,rH*2.2,'rgba(61,127,214,0.30)');
+  // neighbors and hydrogen bonds
+  const sites=molSites();
+  d.nb.forEach((q,i)=>{const st=sites[i],e=1-Math.pow(1-q.f,3),off=(1-e)*220,dx=st.kind==='don'?st.dir[0]:st.dir[0],dy=st.dir[1];
+    const x=st.O[0]+dx*off,y=st.O[1]+dy*off,w=water(ctx,x+Math.sin(t*2+i)*0.8*jig,y+Math.cos(t*2.3+i)*0.8*jig,st.ang,M.ns);
+    if(q.f>=1){const pulse=0.65+0.3*Math.sin(t*3+i)*jig;ctx.save();ctx.globalAlpha=pulse;ctx.setLineDash([6,5]);ctx.strokeStyle=PAL['s2'];ctx.lineWidth=3;ctx.beginPath();
+      if(st.kind==='don'){ctx.moveTo(st.from[0]+st.dir[0]*rH,st.from[1]+st.dir[1]*rH);ctx.lineTo(w.O[0]-st.dir[0]*8.5*M.ns,w.O[1]-st.dir[1]*8.5*M.ns);}
+      else{const h=w.H[0];ctx.moveTo(h[0]-st.dir[0]*5.2*M.ns,h[1]-st.dir[1]*5.2*M.ns);ctx.lineTo(M.x+st.dir[0]*rO,M.y+st.dir[1]*rO);}
+      ctx.stroke();ctx.restore();}});
+  // the big molecule
+  ctx.strokeStyle=C.Hs;ctx.lineWidth=2;[H1,H2].forEach(h=>{ctx.fillStyle=C.H;ctx.beginPath();ctx.arc(h[0],h[1],rH,0,6.29);ctx.fill();ctx.stroke();txt(ctx,'H',h[0],h[1]+1,{s:17*k,w:800,c:'#33404d',a:'center',b:'middle'});});
+  ctx.fillStyle=C.O;ctx.beginPath();ctx.arc(M.x,M.y,rO,0,6.29);ctx.fill();txt(ctx,'O',M.x,M.y+12,{s:20*k,w:800,c:'#fff',a:'center',b:'middle'});
+  // shared electron pairs sit closer to O; lone pairs on O
+  const eDot=(x,y)=>{ctx.fillStyle=PAL['cv-e'];ctx.strokeStyle='#5a4a00';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,3.6,0,6.29);ctx.fill();ctx.stroke();};
+  [a1,a2].forEach((a,i)=>{const u=0.40+0.10*Math.sin(t*2.2+i*2)*jig,cx=M.x+Math.cos(a)*dH*u,cy=M.y+Math.sin(a)*dH*u,px=-Math.sin(a)*5,py=Math.cos(a)*5;eDot(cx+px,cy+py);eDot(cx-px,cy-py);});
+  [M.ang+Math.PI+0.6,M.ang+Math.PI-0.6].forEach(a=>{const cx=M.x+Math.cos(a)*(rO-9),cy=M.y+Math.sin(a)*(rO-9),px=-Math.sin(a)*5,py=Math.cos(a)*5;eDot(cx+px,cy+py);eDot(cx-px,cy-py);});
+  // angle and charges
+  ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(M.x,M.y,rO+10,a1,a2);ctx.stroke();txt(ctx,'104.5°',M.x,M.y-rO-20,{s:12*k,w:700,a:'center'});
+  txt(ctx,'δ−',M.x,M.y+rO+22,{s:18*k,w:800,c:C.O,a:'center',b:'middle'});
+  txt(ctx,'δ+',H1[0]-rH-16,H1[1]+6,{s:18*k,w:800,c:PAL['s2'],a:'center',b:'middle'});txt(ctx,'δ+',H2[0]+rH+16,H2[1]+6,{s:18*k,w:800,c:PAL['s2'],a:'center',b:'middle'});
+  // key
+  const KX=372,KW=160;let y=74;
+  txt(ctx,'Inside the molecule',KX,y,{s:12.5*k,w:700});y+=18*k;
+  eDot(KX+5,y-4);eDot(KX+14,y-4);y=wrapTxt(ctx,'shared electrons (covalent bond). Oxygen pulls them closer.',KX+24,y,KW-24,15*k,{s:11.5*k,c:PAL['cv-soft']});y+=10;
+  txt(ctx,'Between molecules',KX,y,{s:12.5*k,w:700});y+=18*k;
+  ctx.setLineDash([6,5]);ctx.strokeStyle=PAL['s2'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(KX,y-4);ctx.lineTo(KX+20,y-4);ctx.stroke();ctx.setLineDash([]);
+  y=wrapTxt(ctx,'hydrogen bond: δ+ H attracted to δ− O',KX+26,y,KW-26,15*k,{s:11.5*k,c:PAL['cv-soft']});y+=10;
+  const n=d.nb.filter(q=>q.f>=1).length;txt(ctx,'Hydrogen bonds: '+n+' of 4',KX,y+4,{s:14*k,w:800,c:n?PAL['s2']:PAL['cv-ink']});
+  if(!d.nb.length)txt(ctx,'Click the bench or press Add a neighbor molecule',16,412,{s:12*k,c:PAL['cv-soft']});}
+function sEvap(sim,ctx,vdt,k,t){const d=sim.st.d9,v=sim.vis,on=d.on,jig=RM?0:1;
+  // fan
+  const FX=62,FY=250;ctx.fillStyle='#4b515c';ctx.fillRect(FX-4,FY+40,8,120);rr(ctx,FX-28,FY+156,56,10,4);ctx.fill();
+  ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(FX,FY,44,0,6.29);ctx.stroke();
+  v.fanA=(v.fanA||0)+(on?vdt*14*jig:0);for(let i=0;i<3;i++){const a=v.fanA+i*2.094;ctx.fillStyle='#8aa4bd';ctx.beginPath();ctx.ellipse(FX+Math.cos(a)*20,FY+Math.sin(a)*20,20,8,a,0,6.29);ctx.fill();}
+  ctx.fillStyle='#4b515c';ctx.beginPath();ctx.arc(FX,FY,6,0,6.29);ctx.fill();txt(ctx,on?'Fan on':'Fan off',FX,FY-58,{s:12*k,w:700,a:'center'});
+  if(on){ctx.strokeStyle=PAL['cv-soft'];ctx.globalAlpha=0.45;ctx.lineWidth=1.5;for(let i=0;i<4;i++){const y=FY-30+i*20,x0=112+((t*80+i*37)%36)*jig;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x0+22,y);ctx.stroke();}ctx.globalAlpha=1;}
+  // thermometers: 0–30 °C
+  const TH=[['d','Dry',175,null],['w','Water',265,LIQ.water.col],['a','Alcohol',355,'#cfd8de']],Y0=330,Y1=150;
+  TH.forEach(([q,name,x,col])=>{const T=d.T[q];
+    txt(ctx,name,x,102,{s:12.5*k,w:700,a:'center'});txt(ctx,T.toFixed(1)+' °C',x,124,{s:16*k,w:800,a:'center',c:q==='d'?PAL['cv-ink']:T<EV.room-0.5?PAL['s2']:PAL['cv-ink']});
+    ctx.fillStyle=PAL['card'];rr(ctx,x-6,Y1-8,12,Y0-Y1+20,6);ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.stroke();
+    for(let c=0;c<=30;c+=10){const y=Y0-(c/30)*(Y0-Y1);ctx.beginPath();ctx.moveTo(x+8,y);ctx.lineTo(x+14,y);ctx.stroke();if(q==='d')txt(ctx,c+'°',x-12,y+4,{s:10.5*k,c:PAL['cv-soft'],a:'right'});}
+    const th=clamp(T/30,0,1)*(Y0-Y1);ctx.fillStyle='#d32f2f';ctx.fillRect(x-2.5,Y0-th,5,th+12);ctx.beginPath();ctx.arc(x,Y0+20,11,0,6.29);ctx.fill();
+    if(col){const wet=d.m[q]/EV.m0;ctx.fillStyle='#d9c9a3';rr(ctx,x-17,Y0+2,34,38,7);ctx.fill();if(wet>0){ctx.globalAlpha=0.35+0.6*wet;ctx.fillStyle=col;rr(ctx,x-17,Y0+2,34,38,7);ctx.fill();ctx.globalAlpha=1;}
+      ctx.strokeStyle=PAL['cv-bstroke'];ctx.lineWidth=1.2;rr(ctx,x-17,Y0+2,34,38,7);ctx.stroke();
+      txt(ctx,!on&&!d.hist.length?'dry cloth':d.m[q]>0&&k>1.15?d.m[q].toFixed(1)+' g':d.m[q]>0?d.m[q].toFixed(2)+' g left':'dried out',x,Y0+58,{s:11*k,w:600,a:'center',c:d.m[q]>0||!d.hist.length?PAL['cv-soft']:PAL['s1']});
+      if(on&&d.m[q]>0&&!RM){ctx.strokeStyle=PAL['cv-soft'];ctx.globalAlpha=0.5;ctx.lineWidth=1.2;const nW=q==='a'?3:2;for(let i=0;i<nW;i++){const yy=Y0-4-((t*(q==='a'?40:22)+i*14)%34);ctx.beginPath();ctx.moveTo(x+20+i*4,yy+12);ctx.quadraticCurveTo(x+26+i*4,yy+6,x+20+i*4,yy);ctx.stroke();}ctx.globalAlpha=1;}}});
+  txt(ctx,'Room air 25 °C · lab time '+Math.floor(d.t/60)+':'+String(Math.floor(d.t%60)).padStart(2,'0')+' (sped up)',128,414,{s:11.5*k,c:PAL['cv-soft']});
+  // per-gram comparison
+  const PX=428,PY=70,PW=106,PH=232;rr(ctx,PX,PY,PW,PH,8);ctx.fillStyle=PAL['cv-bg2'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
+  wrapTxt(ctx,'Heat carried off per gram',PX+8,PY+18,PW-14,14*k,{s:11*k,w:700});
+  const base=PY+PH-34,top=PY+92,bw=30;[['Water',EV.w.L,PAL['s2'],PX+14],['Alcohol',EV.a.L,PAL['s5'],PX+60]].forEach(([nm,L,col,x])=>{const h=(L/2400)*(base-top);
+    ctx.fillStyle=col;ctx.fillRect(x,base-h,bw,h);txt(ctx,L.toLocaleString('en-US')+' J',x+bw/2,base-h-6,{s:11*k,w:700,a:'center'});txt(ctx,nm,x+bw/2,base+15,{s:10.5*k,a:'center',c:PAL['cv-soft']});});}
 function sDensity(sim,ctx,vdt,k,t){const d=sim.st.d1;
   // A: beaker with floating ice
   beaker(ctx,30,160,150,240,LIQ.water.col,170);txt(ctx,'Ice in tap water',105,150,{s:12*k,w:700,a:'center'});
@@ -455,6 +582,21 @@ function drawInset(sim,ctx,vdt,k,t){const s=sim.st,stn=sim.p.station,X=548,Y=48,
   if(s.intro){const a=water(ctx,cx-34,cy-18,-Math.PI/2,2.4,{labels:true,k});const b=water(ctx,cx+58,cy+58,Math.PI*0.75,1.5);hbond(ctx,a.H[1],b.O);
     title('One water molecule','dashed line = hydrogen bond');ctx.restore();return;}
   switch(stn){
+    case '0':{title('Two kinds of bonds','strength to break, kJ per mole');const bx=X+16,bw=W-32;
+      txt(ctx,'Covalent O–H bond (inside)',bx,Y+56,{s:11.5*k,w:700});ctx.fillStyle=C.O;ctx.fillRect(bx,Y+64,bw,20);txt(ctx,'about 460',bx+bw-6,Y+78,{s:11.5*k,w:800,c:'#fff',a:'right'});
+      txt(ctx,'Hydrogen bond (between)',bx,Y+112,{s:11.5*k,w:700});ctx.fillStyle=PAL['s2'];ctx.fillRect(bx,Y+120,Math.max(6,bw*23/460),20);txt(ctx,'about 23',bx+bw*23/460+8,Y+134,{s:11.5*k,w:800});
+      wrapTxt(ctx,'A hydrogen bond is about 20 times weaker, so it breaks and re-forms all the time. Billions of them together hold water together and cause every property in these tabs.',bx,Y+168,bw,15*k,{s:11*k,c:PAL['cv-soft']});
+      break;}
+    case '9':{const d=s.d9,on=d.on&&(d.m.w>0||d.m.a>0);title('The fastest molecules escape',on?'each one carries heat away':'wet the cloths to start evaporation');
+      const surf=Y+118;ctx.fillStyle=PAL['cv-water'];ctx.globalAlpha=0.35;ctx.fillRect(X+8,surf,W-16,H-surf+Y-24);ctx.globalAlpha=1;
+      ctx.strokeStyle=PAL['cv-bstroke'];ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(X+8,surf);ctx.lineTo(X+W-8,surf);ctx.stroke();
+      const pts=[];for(let r=0;r<3;r++)for(let c=0;c<5;c++){const x=X+30+c*44+(r%2)*18+Math.sin(t*1.3+c+r*2)*2*jig,y=surf+22+r*36+Math.cos(t*1.1+c)*2*jig;pts.push([x,y]);water(ctx,x,y,(c+r)%2?Math.PI/2:-Math.PI/2+0.4,0.8);}
+      for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){if(Math.hypot(pts[i][0]-pts[j][0],pts[i][1]-pts[j][1])<52&&(i+j)%3)hbond(ctx,pts[i],pts[j],0.55);}
+      v.esc=v.esc||[];if(on&&!RM){v.escAcc=(v.escAcc||0)+vdt*1.4;while(v.escAcc>=1){v.escAcc--;v.esc.push({x:X+40+Math.random()*(W-80),y:surf+6,vx:(Math.random()-.5)*30,a:Math.random()*6.28});}}
+      v.esc.forEach(m=>{m.y-=vdt*70;m.x+=m.vx*vdt;m.a+=vdt*4;const g=ctx.createRadialGradient(m.x,m.y,2,m.x,m.y,20);g.addColorStop(0,'rgba(255,140,40,0.55)');g.addColorStop(1,'rgba(255,140,40,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(m.x,m.y,20,0,6.29);ctx.fill();water(ctx,m.x,m.y,m.a,0.8);
+        if(m.y>surf-26){txt(ctx,'bond breaks!',m.x,m.y-20,{s:10.5*k,w:700,c:PAL['s1'],a:'center'});}});
+      v.esc=v.esc.filter(m=>m.y>Y+34);if(on)txt(ctx,'left behind: slower = cooler',X+W/2,Y+H-30,{s:10.5*k,w:600,a:'center',c:PAL['cv-ink']});
+      break;}
     case '1':{const ice=s.d1.ice.length>0||s.d1.lake>0.05;title(ice?'Ice: an open honeycomb':'Liquid water',ice?'ice 0.92 g/mL, liquid 1.00 g/mL':'molecules packed closer');
       if(ice){const pts=[];for(let r=0;r<3;r++)for(let c=0;c<4;c++){const x=X+30+c*50+(r%2)*25,y=Y+70+r*54;pts.push([x,y]);water(ctx,x,y,(r+c)%2?Math.PI/2:-Math.PI/2,0.9);}
         for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i][0]-pts[j][0],dy=pts[i][1]-pts[j][1],dd=Math.hypot(dx,dy);if(dd<64)hbond(ctx,pts[i],pts[j],0.6);}}
