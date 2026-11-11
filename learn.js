@@ -845,4 +845,79 @@ lifebonds: {
   ]
 }
 });
+/* ---------- properties of water stations (Mr. Stearman's lab) ---------- */
+function wpGo(sim,...ids){ids.forEach(id=>fAct(sim,id));}
+
+BioLab.addLearn({
+waterprops: {
+  goals: {
+    bio: ['Why one water molecule has a slightly negative end and two slightly positive ends', 'How hydrogen bonds explain each station: ice, cohesion, adhesion, surface tension, heat, evaporation, dissolving, the balloon and buffers', 'What to look for at each station when you do the real lab', 'Where each property shows up in your life'],
+    honors: ['Why water is polar and how hydrogen bonds form', 'How hydrogen bonds explain each station', 'How to predict what alcohol, soap or oil will do differently', 'Where each property shows up in your life'],
+    ap: ['How polarity and hydrogen bonding explain every emergent property of water', 'Why alcohol, soap and oil behave differently', 'How specific heat and heat of vaporization connect to climate and body temperature', 'How buffers resist pH change']
+  },
+  matters: 'Almost every station in the water lab comes down to one idea: water molecules are polar, so they stick to each other and to other charged things. Learn that once, and the penny, the paperclip, the paper towel and the balloon all make sense.',
+  question: 'Water beads up into a dome on a penny, climbs up a paper towel and lets a steel paperclip float. What one thing about water molecules explains all three?',
+  startKey: 'molecule', startRun: false,
+  steps: [
+    { key: 'molecule', title: 'Before you begin: one molecule', set: { station: '0', mol: true }, fresh: true, speed: 0.5, run(sim){sim.st.intro=false;wpGo(sim,'clearN');},
+      see: 'One water molecule, with its shared electron pairs (in the O–H bonds) and its two lone pairs on the oxygen. The oxygen end is marked δ− and the hydrogen ends δ+.',
+      why: 'Oxygen pulls shared electrons harder than hydrogen does, so the molecule has a slightly negative end and slightly positive ends: it is <b>polar</b>. Real water is clear; red and white are labels for oxygen and hydrogen.' },
+    { key: 'neighbors', title: 'Hydrogen bonds', set: { station: '0' }, speed: 0.5, run(sim){wpGo(sim,'clearN','neighbor','neighbor','neighbor','neighbor');},
+      see: 'Four neighbors join. Each dashed line is a hydrogen bond: the δ+ hydrogen of one molecule attracted to the δ− oxygen of another. The inset compares it with the O–H bond inside the molecule.',
+      why: 'A hydrogen bond is about 20 times weaker than a covalent bond, so they break and re-form constantly. But each molecule can make up to 4, and there are trillions in a drop. Every station today is explained by these bonds.' },
+    { key: 'ice', title: 'Station 1: ice floats', set: { station: '1' }, speed: 1, run(sim){wpGo(sim,'iceDrop','winter');},
+      see: 'An ice cube floats with most of it underwater, and the lake freezes from the top down while the water below stays liquid.',
+      why: 'In ice, hydrogen bonds lock every molecule into an open honeycomb, so ice takes up about 9% more room than the same water as a liquid. Less dense things float, so the ice stays on top and insulates the water below.',
+      so: 'That 9% expansion is why a full glass bottle of water cracks in the freezer.' },
+    { key: 'cohesion', title: 'Station 2: cohesion', set: { station: '2', pennyLiquid: 'water' }, speed: 1, run(sim){wpGo(sim,'dry','auto');},
+      see: 'Drops pile onto the penny into a dome that bulges far above the rim before it finally spills. Watch the drop count.',
+      why: 'Water molecules hydrogen-bond to each other, so the drop holds together as one blob: <b>cohesion</b>. Try alcohol in the Full lab: fewer hydrogen bonds, so far fewer drops fit.',
+      so: 'Cohesion is why raindrops are round and water beads up on a waxed car.' },
+    { key: 'adhesion', title: 'Station 3: adhesion', set: { station: '3' }, speed: 1, run(sim){wpGo(sim,'newTowel','hang');},
+      see: 'The bottom of a paper towel touches the water, and the water climbs up the towel against gravity.',
+      why: 'Paper is made of cellulose, which has polar –OH groups, so water sticks to it: <b>adhesion</b>. Adhesion pulls water up the tiny gaps between fibers, and cohesion drags more water along behind it. Together that is <b>capillary action</b>.',
+      so: 'The same pull helps lift water up the thin tubes inside plant stems.' },
+    { key: 'tension', title: 'Station 4: surface tension', set: { station: '4', clipLiquid: 'water' }, speed: 1, run(sim){wpGo(sim,'removeClip','clip');},
+      see: 'A steel paperclip rests on top of the water, dimpling the surface without sinking, even though steel is about 8 times denser than water.',
+      why: 'Molecules at the surface have no neighbors above, so they hold extra tight to the ones beside and below. That makes a stretchy skin: <b>surface tension</b>. Soap squeezes between water molecules, breaks the skin, and the clip sinks.',
+      so: 'Surface tension is how water striders walk on ponds.' },
+    { key: 'heat', title: 'Station 5: high specific heat', set: { station: '5' }, speed: 1, run(sim){wpGo(sim,'cool','heat');},
+      see: 'Three liquids on identical hot plates. Water warms the slowest, and alcohol boils first.',
+      why: 'Heat added to water first goes into tugging on hydrogen bonds before the molecules speed up, so water needs 4.18 J to warm 1 g by 1 °C, far more than most liquids. That is a high <b>specific heat</b>.',
+      so: 'That is why lakes and oceans keep nearby weather mild, and why your body temperature stays steady.' },
+    { key: 'evap', title: 'Heat of evaporation', set: { station: '9' }, speed: 1, run(sim){wpGo(sim,'dryAll','wet');},
+      see: 'Three thermometers in front of a fan: one dry, one wrapped in a wet cloth, one in an alcohol-soaked cloth. The wet ones cool below room temperature.',
+      why: 'To evaporate, a molecule must break all its hydrogen bonds, so the fastest, most energetic molecules leave and carry heat away. Each gram of water that evaporates removes 2,260 J. Alcohol cools fast but dries out quickly.',
+      so: 'That is how sweat cools you.' },
+    { key: 'solvent', title: 'Station 6: the universal solvent', set: { station: '6' }, speed: 1, run(sim){wpGo(sim,'emptyBeaker','salt','oil','stir');},
+      see: 'Salt disappears into the water when you stir, but the oil stays in its own layer on top.',
+      why: 'Water’s charged ends surround each Na⁺ and Cl⁻ ion and pull the crystal apart, so salt dissolves. Oil is nonpolar, so water molecules stick to each other instead and leave it out.',
+      so: 'That is how your blood can carry salts and sugars to every cell, while fats need special protein carriers.' },
+    { key: 'balloon', title: 'Station 7: polarity you can see', set: { station: '7', streamLiquid: 'water' }, speed: 1, run(sim){wpGo(sim,'rub','closer');},
+      see: 'A balloon rubbed on hair is brought near a thin stream of water, and the stream bends toward it. Try oil in the Full lab: it barely moves.',
+      why: 'The charged balloon pulls on the oppositely charged ends of the polar water molecules, so the whole stream bends. Oil molecules have no charged ends to pull on.' },
+    { key: 'buffer', title: 'Station 8: acids, bases and buffers', set: { station: '8' }, speed: 1, run(sim){wpGo(sim,'buffer','acid5');},
+      see: 'Five drops of acid go into plain water and into a buffered solution. The plain water’s pH crashes; the buffer’s barely moves.',
+      why: 'A buffer is a pair of chemicals that catch extra H⁺ (or OH⁻). Blood’s bicarbonate buffer keeps your blood between pH 7.35 and 7.45. The Acids, bases and buffers lab goes deeper.' }
+  ],
+  useIt: [
+    { do: 'Leave room at the top of a water bottle before you freeze it.',
+      why: 'Water expands by about 9% as it freezes, because hydrogen bonds hold ice in an open honeycomb. A bottle filled to the brim can split or crack.' },
+    { do: 'To cool someone who is overheating, wet their skin and fan them while you get help.',
+      why: 'Evaporating water carries heat away, 2,260 J for every gram. CDC’s first aid for heat illness includes cool, wet cloths or a cool bath; call 911 for signs of heat stroke.' },
+    { do: 'Fill a cooler with ice and some cold water, not just ice.',
+      why: 'Water touches the cans all the way around and moves heat into the ice much faster than air pockets do, and the mix stays at 0 °C until the ice melts.' },
+    { do: 'Add a drop of dish soap when water beads up and won’t soak into very dry potting soil.',
+      why: 'Soap breaks water’s surface tension, so the water spreads and wets the soil instead of beading up on top.' }
+  ],
+  tryIt: [
+    { title: 'drops on a penny (10 minutes)',
+      steps: ['Lay a clean, dry penny flat. Use a dropper or straw to add water one drop at a time, counting until it spills.', 'Dry the penny and repeat with water that has one drop of dish soap stirred in.'],
+      look: 'Plain water usually fits 25 or more drops in a tall dome. Soapy water spills much sooner, because soap breaks the hydrogen bonds holding the dome together. This is Station 2 at your kitchen table.' },
+    { title: 'the floating paperclip (5 minutes)',
+      steps: ['Fill a bowl with water. Lay a dry paperclip on a fork and lower it gently onto the surface.', 'Once it floats, touch the water near it with a soapy fingertip.'],
+      look: 'The clip rests on the water’s surface skin, then sinks as soon as soap breaks the surface tension. Station 4, at home.' }
+  ]
+}
+});
 })();
