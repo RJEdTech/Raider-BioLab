@@ -24,6 +24,13 @@ function drawProtein(ctx,cx,cy,R,o,a,seed,u,t,opt){opt=opt||{};u=clamp(u||0,0,1)
     ctx.restore();}
   if(u>0){const C=chainPts(cx,cy,R,o,seed,u,t);ctx.save();ctx.globalAlpha*=clamp(u*1.7,0,1);ctx.strokeStyle=PAL['cv-enzd'];ctx.lineWidth=R*(0.1+0.16*u);ctx.lineJoin='round';ctx.lineCap='round';strokePts(ctx,C);
     if(opt.beads&&u>0.3){ctx.fillStyle=PAL['cv-enz'];for(let k=0;k<C.length;k+=4){ctx.beginPath();ctx.arc(C[k][0],C[k][1],R*0.07,0,6.29);ctx.fill();}}ctx.restore();}}
+/* Molecules to scale beside a 5 nm enzyme (radius 34 px): one sugar or amino-acid unit is about 0.5 nm, r = 3.4 px.
+   Amylase cuts starch (sugar rings); pepsin cuts protein (amino acids); Taq builds DNA from nucleotides. */
+const UNIT_R=3.4;
+function chainC(ctx,x,y,n,r,ang,col,kind){const L=(n-1)*r*2.2;ctx.save();ctx.translate(x,y);ctx.rotate(ang||0);ctx.translate(-L/2,0);ctx.fillStyle=col;ctx.strokeStyle=col;ctx.lineWidth=r*0.55;
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(L,0);ctx.stroke();
+  for(let i=0;i<n;i++){const q=i*r*2.2;ctx.beginPath();if(kind==='ring'){for(let j=0;j<6;j++){const an=j/6*6.2832+0.52;const X=q+Math.cos(an)*r,Y=Math.sin(an)*r;j?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}ctx.closePath();}else ctx.arc(q,0,r*(kind==='nuc'?1.15:0.9),0,6.29);ctx.fill();}ctx.restore();}
+const SUBK={amylase:'ring',pepsin:'bead',taq:'nuc'},SUBN={amylase:'starch',pepsin:'protein',taq:'DNA building block'},PRODN={amylase:'maltose sugar',pepsin:'short peptide',taq:'DNA strand piece'};
 /* starch as a short chain of sugar beads; split = gap in the middle, col = colour */
 function drawStarch(ctx,x,y,n,r,ang,col,gapAt,gap){ctx.save();ctx.translate(x,y);ctx.rotate(ang||0);ctx.fillStyle=col||PAL['cv-sub'];ctx.strokeStyle=col||PAL['cv-sub'];ctx.lineWidth=r*0.5;
   let px=0;const xs=[];for(let i=0;i<n;i++){if(gapAt!==undefined&&i===gapAt)px+=gap||0;xs.push(px);px+=r*2.2;}
@@ -390,28 +397,30 @@ const ENZYME={
       const sx=cx+Math.cos(o)*Rr*0.72,sy=cy+Math.sin(o)*Rr*0.72;
       if(c.comp){ctx.fillStyle=PAL['cv-inc'];ctx.beginPath();ctx.moveTo(sx+Math.cos(o)*9,sy+Math.sin(o)*9);ctx.lineTo(sx+Math.cos(o+2.2)*8,sy+Math.sin(o+2.2)*8);ctx.lineTo(sx+Math.cos(o-2.2)*8,sy+Math.sin(o-2.2)*8);ctx.closePath();ctx.fill();}
       if(c.non){const nx=cx-Math.cos(o)*Rr,ny=cy-Math.sin(o)*Rr;ctx.fillStyle=PAL['cv-inn'];ctx.beginPath();ctx.moveTo(nx,ny-9);ctx.lineTo(nx+8,ny);ctx.lineTo(nx,ny+9);ctx.lineTo(nx-8,ny);ctx.closePath();ctx.fill();}
-      if(v.busy[i]>0){v.busy[i]-=vdt;ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(sx,sy,7,0,6.29);ctx.fill();
+      if(v.busy[i]>0){v.busy[i]-=vdt;chainC(ctx,cx+Math.cos(o)*Rr*0.78,cy+Math.sin(o)*Rr*0.78,SUBK[p.enzyme]==='nuc'?1:4,UNIT_R,o,PAL['cv-sub'],SUBK[p.enzyme]||'ring');
         if(v.busy[i]<=0){for(let m=0;m<2;m++)v.prods.push({x:sx,y:sy,vx:Math.cos(o+(m?.6:-.6))*60,vy:Math.sin(o+(m?.6:-.6))*60,life:5});}}
     });
     if(v.rings&&v.rings.length){ctx.lineWidth=3;v.rings.forEach(g=>{const [x,y]=ENZPOS[g.i];g.life-=vdt*0.8;ctx.strokeStyle='rgba(240,170,20,'+clamp(g.life,0,1)+')';ctx.beginPath();ctx.arc(x,y,36+(1-g.life)*26,0,6.29);ctx.stroke();});v.rings=v.rings.filter(g=>g.life>0);}
     if(sim.lnKey!=='bumps'&&sim.lnKey!=='cold'){v.rings=[];v.hitT=[];}
-    for(const a of v.subs){move(a,speed);ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(a.x,a.y,5.5,0,6.29);ctx.fill();}
+    const sk=SUBK[p.enzyme]||'ring',sn=sk==='nuc'?1:4;
+    for(const a of v.subs){move(a,speed);if(a.ang==null){a.ang=R()*6.28;a.w=(R()-.5)*1.2;}a.ang+=a.w*vdt*speed;chainC(ctx,a.x,a.y,sn,UNIT_R,a.ang,PAL['cv-sub'],sk);}
     for(const a of v.inC){move(a,speed);ctx.fillStyle=PAL['cv-inc'];ctx.beginPath();ctx.moveTo(a.x,a.y-7);ctx.lineTo(a.x+6.5,a.y+5);ctx.lineTo(a.x-6.5,a.y+5);ctx.closePath();ctx.fill();}
     for(const a of v.inN){move(a,speed);ctx.fillStyle=PAL['cv-inn'];ctx.beginPath();ctx.moveTo(a.x,a.y-7);ctx.lineTo(a.x+6,a.y);ctx.lineTo(a.x,a.y+7);ctx.lineTo(a.x-6,a.y);ctx.closePath();ctx.fill();}
-    for(const a of v.prods){move(a,speed);a.life-=vdt;ctx.globalAlpha=clamp(a.life/2,0,1);ctx.fillStyle=PAL['cv-prod'];ctx.beginPath();ctx.arc(a.x,a.y,4.2,0,6.29);ctx.fill();}
+    for(const a of v.prods){move(a,speed);a.life-=vdt;ctx.globalAlpha=clamp(a.life/2,0,1);if(a.ang==null)a.ang=R()*6.28;chainC(ctx,a.x,a.y,2,UNIT_R,a.ang,PAL['cv-prod'],SUBK[p.enzyme]||'ring');}
     ctx.globalAlpha=1;v.prods=v.prods.filter(a=>a.life>0);if(v.prods.length>120)v.prods.splice(0,v.prods.length-120);
     // legend
     let lx=16;const ly=438,item=(draw,label)=>{draw(lx+5,ly-4);txt(ctx,label,lx+15,ly,{s:12*k,c:PAL['cv-soft']});ctx.font='400 '+12*k+'px '+FONT;lx+=ctx.measureText(label).width+34;};
     item((x,y)=>{drawProtein(ctx,x,y,7.5,0,0.55,3,0,0);},'enzyme');
-    item((x,y)=>{ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(x,y,5,0,6.29);ctx.fill();},'substrate');
-    item((x,y)=>{ctx.fillStyle=PAL['cv-prod'];ctx.beginPath();ctx.arc(x,y,4,0,6.29);ctx.fill();},'product');
+    item((x,y)=>{chainC(ctx,x+3,y,SUBK[p.enzyme]==='nuc'?1:3,3,0,PAL['cv-sub'],SUBK[p.enzyme]||'ring');},SUBN[p.enzyme]+' (substrate)');
+    item((x,y)=>{chainC(ctx,x,y,2,3,0,PAL['cv-prod'],SUBK[p.enzyme]||'ring');},PRODN[p.enzyme]+' (product)');
+    {const bx=716,by=34;ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx,by-6);ctx.lineTo(bx,by);ctx.lineTo(bx+68,by);ctx.lineTo(bx+68,by-6);ctx.stroke();txt(ctx,'5 nm',bx+34,by-9,{s:12*k,w:700,a:'center',c:PAL['cv-ink']});}
     if(hon)item((x,y)=>{ctx.fillStyle=PAL['cv-inc'];ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+6,y+5);ctx.lineTo(x-6,y+5);ctx.closePath();ctx.fill();},'competitive inhibitor');
     if(ap)item((x,y)=>{ctx.fillStyle=PAL['cv-inn'];ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+5,y);ctx.lineTo(x,y+6);ctx.lineTo(x-5,y);ctx.closePath();ctx.fill();},'noncompetitive');
   }
 };
 Object.assign(ENZYME,{
-  art:{protein:drawProtein,starch:drawStarch,pos:ENZPOS},
-  scale:'Molecular view: each enzyme is about 5 nanometers across. One drop of saliva holds trillions of amylase molecules.',
+  art:{protein:drawProtein,starch:drawStarch,chain:chainC,pos:ENZPOS},
+  scale:'Molecular view, drawn to scale: each enzyme is about 5 nanometers across, and each sugar ring in the starch about half a nanometer. One drop of saliva holds trillions of amylase molecules. Molecules are far too small to have a color, so the colors here are labels.',
   narrate(sim){if(sim.st.B&&sim.vlab)return benchNarrate(sim);
     const p=sim.p,s=sim.st,e=ENZ[p.enzyme],hon=atLeast('honors'),nm=hon?e.name:'Amylase',occ=Math.round(100*p.sub/(s.km+p.sub));
     if(s.D>0.5)return '<b>Most of the enzyme is permanently damaged by heat (denatured).</b> Its shape is gone, so cooling it down won’t bring it back. Press Reset for fresh enzyme.';
