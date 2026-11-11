@@ -23,7 +23,7 @@ let level=store.get(LAB_KEY+'-level');if(!(level in LV))level='bio';
    ?level=bio|honors|ap picks the starting detail level for this visit only. */
 const QS=(()=>{try{return new URLSearchParams(location.search);}catch(e){return new URLSearchParams('');}})();
 const EMBED=QS.has('embed'),QMODE=QS.get('mode'),QLVL=QS.get('level'),QLAB=QS.get('lab');
-const MODES=['guided','game','lab','vlab','review','frq'];
+const MODES=['guided','test','game','lab','vlab','review','frq'];
 if(QLVL&&(QLVL in LV))level=QLVL;
 BL.embed=EMBED;
 const atLeast=l=>LV[level]>=LV[l||'bio'];
@@ -80,6 +80,19 @@ BL.register=function(def){if(!def||!def.id)return;DEFS.push(def);};
 const PRACT={};BL.addPractical=o=>{Object.assign(PRACT,o||{});};
 /* Review layer (review.js): questions and AP exam links per tool. Merged into the tool definitions at start. */
 const REVIEWS={};BL.addReview=o=>{Object.assign(REVIEWS,o||{});};
+/* Learn layer (learn.js): a teaching walkthrough for students meeting the idea for the first time. Each step says what you see and why it happens. Replaces the tour when present. */
+const LEARN={};BL.addLearn=o=>{Object.assign(LEARN,o||{});};
+const lnPick=(v,l)=>{if(v==null)return v;if(typeof v!=='object'||Array.isArray(v))return v;let o=v.bio;if(LV[l]>=LV.honors&&v.honors!=null)o=v.honors;if(LV[l]>=LV.ap&&v.ap!=null)o=v.ap;return o;};
+const lnLv=f=>({bio:f('bio'),honors:f('honors'),ap:f('ap')});
+function applyLearn(d){const L=LEARN[d.id];if(!L)return;d.learn=L;const P=d.practical||{},defs={};(d.controls||[]).forEach(c=>defs[c.id]=c.def);
+  const li=a=>(a||[]).map(x=>`<li>${x}</li>`).join('');
+  const start={title:'Start here',pause:!L.startRun,hook:true,key:L.startKey,overlay:L.startOverlay,speed:L.startSpeed,text:lnLv(l=>{const g=lnPick(L.goals,l),m=lnPick(L.matters,l),q=lnPick(L.question||P.hook,l);
+    return `<p class="ln-k">You will learn</p><ul class="ln-goals">${li(g)}</ul>${m?`<p class="ln-k">Why it matters</p><p>${m}</p>`:''}${q?`<p class="ln-k">Keep this question in mind</p><p class="ln-q">${q}</p>`:''}`;}),
+    setup(sim){BL.setValues(sim,Object.assign({},defs));BL.reset(sim);}};
+  const steps=(L.steps||[]).map(s=>({title:s.title,lvl:s.lvl,focus:s.focus,speed:s.speed,pause:s.pause,key:s.key,overlay:s.overlay,
+    text:lnLv(l=>{const see=lnPick(s.see,l),why=lnPick(s.why,l),so=lnPick(s.so,l);return `${see?`<p class="ln-k">What you see</p><p>${see}</p>`:''}${why?`<p class="ln-k">Why it happens</p><p>${why}</p>`:''}${so?`<p class="ln-k">Why it matters</p><p>${so}</p>`:''}`;}),
+    setup(sim){if(s.set){BL.setValues(sim,Object.assign({},defs,s.set));if(s.fresh)BL.reset(sim);}else if(Object.keys(defs).some(k=>sim.p[k]!==defs[k])){BL.setValues(sim,Object.assign({},defs));BL.reset(sim);}if(s.run)s.run(sim);}}));
+  d.tour=[start].concat(steps);}
 const bioOver=(t,n)=>!n?t:(t&&typeof t==='object')?Object.assign({},t,{bio:n}):(t?{bio:n,honors:t}:n);
 function applyPractical(d){const P=PRACT[d.id];if(!P)return;d.practical=P;
   if(P.lede)d.lede=bioOver(d.lede,P.lede);if(P.card)d.card=P.card;
@@ -122,7 +135,7 @@ function buildSim(sim){
   <div class="panel review" aria-live="polite"></div><div class="rv-note"></div>${d.frq?'<div class="panel frq"></div><div class="fq-note"></div>':''}
   <div class="bench">
     <div class="stage">${d.scale?`<p class="scale"></p>`:''}<canvas id="${id}-stage" style="aspect-ratio:${asp};--asp:${asp}" role="img" aria-label="${d.title} simulation"></canvas>
-      <div class="tourbar" hidden><div class="tb-h"><span class="tb-n"></span><b class="tb-t"></b></div><p class="tb-x"></p>
+      <div class="tourbar" hidden><div class="tb-h"><span class="tb-n"></span><b class="tb-t"></b></div><div class="tb-x"></div>
         <div class="row"><button type="button" class="btn" data-tour="back">Back</button><button type="button" class="btn primary" data-tour="next">Next</button><button type="button" class="btn" data-tour="exit">Exit walkthrough</button></div></div>
       ${d.narrate?'<p class="cap"></p>':''}
       <div class="transport">
@@ -220,11 +233,11 @@ const lvText=t=>{if(!t||typeof t==='string')return t||'';let out='';['bio','hono
 function tourSteps(sim){return (sim.def.tour||[]).filter(s=>atLeast(s.lvl));}
 function tourGo(sim,i){const st=tourSteps(sim);if(!st.length)return;if(i>=st.length){tourExit(sim);return;}i=Math.max(0,i);
   const first=!sim.tour||!sim.tour.on;if(first&&sim.def.tourReset!==false){const base={};(sim.def.controls||[]).forEach(c=>base[c.id]=c.def);applyValues(sim,base);resetSim(sim);if(sim.ch.phase==='running'){sim.ch.phase='ask';renderChallenge(sim);}}
-  sim.tour={on:true,i};const s=st[i];if(s.setup)s.setup(sim);setSpeed(sim,s.speed!==undefined?s.speed:0.25);setRunning(sim,!s.pause);
+  sim.tour={on:true,i};const s=st[i];sim.lnKey=s.key||null;sim.lnT0=performance.now();if(s.setup)s.setup(sim);setSpeed(sim,s.speed!==undefined?s.speed:0.25);setRunning(sim,!s.pause);
   const b=sim.ui.tourbar;b.hidden=false;if(sim.ui.cap)sim.ui.cap.hidden=true;b.querySelector('.tb-n').textContent='Step '+(i+1)+' of '+st.length;b.querySelector('.tb-t').textContent=lvText(s.title);
   b.querySelector('.tb-x').innerHTML=lvText(s.text);b.querySelector('[data-tour=back]').disabled=i===0;b.querySelector('[data-tour=next]').textContent=i===st.length-1?'Finish':'Next';}
-function tourExit(sim,why){const wasOn=sim.tour&&sim.tour.on;sim.tour={on:false,i:0};sim.ui.tourbar.hidden=true;if(sim.ui.cap)sim.ui.cap.hidden=false;setSpeed(sim,1);setRunning(sim,true);if(sim.def.onTourExit)sim.def.onTourExit(sim);
-  if(wasOn&&sim.mode==='guided'&&sim.guide&&sim.guide.phase==='tour'&&why!=='level'&&why!=='mode'){if(why==='exit')setMode(sim,'lab',true);else guideTry(sim);}}
+function tourExit(sim,why){const wasOn=sim.tour&&sim.tour.on;sim.tour={on:false,i:0};sim.lnKey=null;sim.ui.tourbar.hidden=true;if(sim.ui.cap)sim.ui.cap.hidden=false;setSpeed(sim,1);setRunning(sim,true);if(sim.def.onTourExit)sim.def.onTourExit(sim);
+  if(wasOn&&sim.mode==='guided'&&sim.guide&&sim.guide.phase==='tour'&&why!=='level'&&why!=='mode'){if(why==='exit')setMode(sim,'lab',true);else if(sim.def.learn)guideDone(sim);else guideTry(sim);}}
 function drawFocus(sim,ctx,LH){if(!sim.tour||!sim.tour.on)return;const s=tourSteps(sim)[sim.tour.i];if(!s||!s.focus)return;let f=typeof s.focus==='function'?s.focus(sim):s.focus;if(!f)return;
   const rects=Array.isArray(f[0])?f:[f];const sub=(x,y,w,h,r)=>{r=Math.min(r,w/2,h/2);ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
   ctx.save();ctx.beginPath();ctx.rect(0,0,800,LH);rects.forEach(r=>sub(r[0],r[1],r[2],r[3],10));ctx.fillStyle='rgba(10,10,14,.5)';ctx.fill('evenodd');
@@ -240,22 +253,23 @@ BL.h.lvText=lvText;
 const modeKey=sim=>LAB_KEY+'-mode-'+sim.def.id;
 function hasGuide(sim){return tourSteps(sim).length>0;}
 function buildModebar(sim){const bar=sim.ui.sec.querySelector('.modebar');if(!bar)return;const d=sim.def,opts=[];
-  if(d.tour)opts.push(['guided','Guided']);if(d.game)opts.push(['game',d.game.label||'Challenge']);opts.push(['lab','Full lab']);if(d.labs&&d.labs.length)opts.push(['vlab','Virtual lab']);if(d.review)opts.push(['review','Review']);if(d.frq)opts.push(['frq','Free response']);
+  if(d.tour)opts.push(['guided',d.learn?'Learn it':'Guided']);if(d.learn&&(d.challenges||d.review))opts.push(['test','Test yourself']);if(d.game)opts.push(['game',d.game.label||'Challenge']);opts.push(['lab','Full lab']);if(d.labs&&d.labs.length)opts.push(['vlab','Virtual lab']);if(d.review&&!d.learn)opts.push(['review','Review']);if(d.frq)opts.push(['frq','Free response']);
   if(opts.length<2){bar.hidden=true;return;}
   bar.innerHTML=opts.map(([m,l])=>`<button type="button" data-mode="${m}">${l}</button>`).join('');
   bar.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setMode(sim,b.dataset.mode,true)));}
 function restoreVisibility(sim){const d=sim.def;sim.ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl)||(!!e.dataset.vlab&&sim.mode!=='vlab');});if(d.onLevel)d.onLevel(sim);}
-function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(sim))mode='lab';if(mode==='game'&&!d.game)mode='lab';if(mode==='vlab'&&!(d.labs&&d.labs.length))mode='lab';if(mode==='review'&&!d.review)mode='lab';if(mode==='frq'&&!d.frq)mode='lab';if(!MODES.includes(mode))mode='lab';
+function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(sim))mode='lab';if(mode==='test'&&!(d.learn&&(d.challenges||d.review)))mode='lab';if(mode!=='review')sim.testFlow=false;if(mode==='game'&&!d.game)mode='lab';if(mode==='vlab'&&!(d.labs&&d.labs.length))mode='lab';if(mode==='review'&&!d.review)mode='lab';if(mode==='frq'&&!d.frq)mode='lab';if(!MODES.includes(mode))mode='lab';
   const was=sim.mode;
   if(sim.game&&mode!=='game')gameStop(sim);
   if(sim.tour&&sim.tour.on)tourExit(sim,'mode');
   if(was==='vlab'&&mode!=='vlab')vlabExit(sim);
   sim.mode=mode;if(user)store.set(modeKey(sim),mode);
-  const sec=sim.ui.sec;MODES.forEach(m=>sec.classList.toggle('m-'+m,m===mode));sec.classList.remove('g-try','g-done','rv-see','fq-see');
-  sec.querySelectorAll('.modebar button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
+  const sec=sim.ui.sec;const cm=mode==='test'?'guided':mode;MODES.forEach(m=>sec.classList.toggle('m-'+m,m===cm));sec.classList.toggle('m-test',mode==='test');sec.classList.toggle('has-learn',!!d.learn);sec.classList.remove('g-try','g-done','rv-see','fq-see');
+  sec.querySelectorAll('.modebar button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode||(!!d.learn&&mode==='review'&&b.dataset.mode==='test'))));
   sim.ui.donecard.hidden=true;sim.ui.gamecard.hidden=true;sim.guide=null;
   const ex=sim.ui.tourbar&&sim.ui.tourbar.querySelector('[data-tour=exit]');if(ex)ex.textContent=mode==='guided'?'Skip to the full lab':'Exit walkthrough';
-  if(mode==='guided'){sim.guide={phase:'tour'};sim.ch={idx:0,phase:'ask',pick:null,changed:false};renderChallenge(sim);tourGo(sim,0);}
+  lnPred(sim,mode==='test');if(mode==='test'){sim.guide={phase:'try',test:true};sim.tScore={};lnBase(sim,0);guideTry(sim);}
+  else if(mode==='guided'){sim.guide={phase:'tour'};sim.ch={idx:0,phase:'ask',pick:null,changed:false};renderChallenge(sim);tourGo(sim,0);}
   else if(mode==='game'){gameStart(sim);}
   else if(mode==='vlab'){restoreVisibility(sim);vlabEnter(sim,was==='vlab');}
   else if(mode==='review'){restoreVisibility(sim);renderReview(sim);}
@@ -263,10 +277,23 @@ function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(si
   else restoreVisibility(sim);
   if(user&&sim.ui.sec.scrollIntoView)window.scrollTo(0,0);
   updateReadouts(sim);drawGraph(sim);}
+function lnBase(sim,i){const b={};(sim.def.controls||[]).forEach(x=>b[x.id]=x.def);const q=visibleCh(sim)[i];applyValues(sim,Object.assign(b,q&&q.baseline||{}));resetSim(sim);if(q&&q.baselineAction)runAction(sim,q.baselineAction);}
+function lnPred(sim,on){const pr=sim.ui.pred,st=sim.ui.stage&&sim.ui.stage.parentNode;if(!pr||!st)return;if(on){if(!sim.ui.predHome){sim.ui.predHome=document.createComment('pred');pr.parentNode.insertBefore(sim.ui.predHome,pr);}st.appendChild(pr);}else if(sim.ui.predHome&&sim.ui.predHome.parentNode){sim.ui.predHome.parentNode.insertBefore(pr,sim.ui.predHome);}}
 function guideTry(sim){const list=visibleCh(sim);if(!list.length){guideDone(sim);return;}sim.guide.phase='try';sim.ui.sec.classList.add('g-try');
   sim.ch={idx:0,phase:'ask',pick:null,changed:false};if(sim.def.onChallenge)sim.def.onChallenge(sim,list[0],'ask');renderChallenge(sim);
-  const c=sim.ui.donecard;c.innerHTML=`<p class="dc-h">Your turn: ${list.length} quick prediction${list.length>1?'s':''}</p><p class="dc-x">Below the simulation, pick what you think will happen. Then watch the model test your prediction.</p>`;c.hidden=false;}
-function guideDone(sim){if(!sim.guide)sim.guide={};sim.guide.phase='done';const sec=sim.ui.sec,d=sim.def;sec.classList.remove('g-try');sec.classList.add('g-done');
+  const c=sim.ui.donecard;if(sim.mode==='test'){c.hidden=true;return;}c.innerHTML=`<p class="dc-h">Your turn: ${list.length} quick prediction${list.length>1?'s':''}</p><p class="dc-x">Below the simulation, pick what you think will happen. Then watch the model test your prediction.</p>`;c.hidden=false;}
+function learnDone(sim){const d=sim.def,P=d.practical||{},sec=sim.ui.sec,c=sim.ui.donecard;
+  if(sim.mode==='test'){if(d.review&&rvList(sim).length){sim.rvI=0;setMode(sim,'review',false);sim.testFlow=true;renderReview(sim);return true;}
+    lnPred(sim,false);const v=Object.values(sim.tScore||{}),got=v.filter(Boolean).length;sim.guide.phase='done';sec.classList.remove('g-try');sec.classList.add('g-done');
+    c.innerHTML=`<p class="dc-h">You finished Test yourself.</p><p class="dc-x">You got ${got} of ${v.length} right the first time.${got<v.length?' Go back to Learn it for the ones you missed: each step there explains why.':''}</p><div class="row"><button type="button" class="btn primary" data-dc="learn">${got<v.length?'Go back to Learn it':'Learn it again'}</button><button type="button" class="btn" data-dc="test">Test yourself again</button><button type="button" class="btn" data-dc="lab">Explore the full lab</button></div>`;c.hidden=false;}
+  else if(sim.mode==='guided'){sim.guide.phase='done';sec.classList.remove('g-try');sec.classList.add('g-done');
+    const tk=P.takeaway?lvText(P.takeaway):'',an=P.answer?lvText(P.answer):'',us=(P.uses||[]).slice(0,2),canTest=!!(d.challenges||d.review);
+    const L=d.learn,ui=sim.ui;if((L.useIt||L.tryIt)&&ui.stage){let ub=ui.useBox;if(!ub){ub=el('div',{class:'ln-use'});ui.stage.parentNode.after(ub);ui.useBox=ub;}const uz=(L.useIt||[]).filter(x=>atLeast(x.lvl)),trs=[].concat(L.tryIt||[]);
+      ub.innerHTML=`${uz.length?`<h3 class="ln-uh">Use it in your life</h3><div class="ln-cards">${uz.map(x=>`<div class="ln-card"><p class="ln-do">${lvText(x.do)}</p><p class="ln-why">${lvText(x.why)}</p></div>`).join('')}</div>`:''}${trs.map(tr=>`<h3 class="ln-uh">Try it at home: ${lvText(tr.title)}</h3><ol class="ln-try">${tr.steps.map(x=>`<li>${lvText(x)}</li>`).join('')}</ol>${tr.look?`<p class="ln-why"><b>What it shows:</b> ${lvText(tr.look)}</p>`:''}`).join('')}`;}
+    c.innerHTML=`<p class="dc-h">You finished Learn it.</p>${tk?`<p class="ln-k">The big idea</p><p class="dc-take">${tk}</p>`:''}${an?`<p class="ln-k">Back to the question</p><p class="dc-ans">${an}</p>`:''}${d.learn.useIt?`<p class="dc-x">Below: how to use this in your own life.</p>`:''}${us.length&&!d.learn.useIt?`<p class="ln-k">Where you will see this</p><ul class="ln-goals">${us.map(u=>`<li>${lvText(u)}</li>`).join('')}</ul>`:''}<div class="row">${canTest?'<button type="button" class="btn primary" data-dc="test">Test yourself</button>':''}<button type="button" class="btn${canTest?'':' primary'}" data-dc="lab">Explore the full lab</button><button type="button" class="btn" data-dc="learn">Learn it again</button></div>`;c.hidden=false;}
+  else return false;
+  [['learn','guided'],['test','test'],['lab','lab']].forEach(([k,m])=>{const b=c.querySelector(`[data-dc=${k}]`);if(b)b.onclick=()=>setMode(sim,m,true);});return true;}
+function guideDone(sim){if(!sim.guide)sim.guide={};if(sim.def.learn&&learnDone(sim))return;sim.guide.phase='done';const sec=sim.ui.sec,d=sim.def;sec.classList.remove('g-try');sec.classList.add('g-done');
   const c=sim.ui.donecard;const tk=d.practical&&d.practical.takeaway?lvText(d.practical.takeaway):'';const an=d.practical&&d.practical.answer?lvText(d.practical.answer):'';c.innerHTML=`<p class="dc-h">You finished the guide.</p>${an?`<p class="dc-ans"><b>Back to the question:</b> ${an}</p>`:''}${tk?`<p class="dc-take"><b>Take this with you:</b> ${tk}</p>`:''}<p class="dc-x">${d.game?'Test yourself in the challenge, or explore':'Now explore'} on your own: the full lab has every variable, the graph, the data table and an investigation to try.</p><div class="row">${d.game?`<button type="button" class="btn primary" data-dc="game">Play the ${d.game.label||'challenge'}</button>`:''}<button type="button" class="btn${d.game?'':' primary'}" data-dc="lab">Open the full lab</button><button type="button" class="btn" data-dc="again">Start the guide again</button></div>`;c.hidden=false;
   c.querySelector('[data-dc=lab]').onclick=()=>setMode(sim,'lab',true);const g=c.querySelector('[data-dc=game]');if(g)g.onclick=()=>setMode(sim,'game',true);c.querySelector('[data-dc=again]').onclick=()=>setMode(sim,'guided',true);}
 function gameVis(sim,ctls,mets){restoreVisibility(sim);
@@ -665,15 +692,15 @@ function runAction(sim,id){const a=(sim.def.actions||[]).find(a=>a.id===id);if(a
 function renderChallenge(sim){const box=sim.ui.pred;if(!box)return;const list=visibleCh(sim),c=sim.ch;
   if(!list.length){box.innerHTML='<div class="p-head"><h3>Predict, then test</h3></div><p class="status">Choose more detail at the top of the page to see challenges for this simulation.</p>';return;}
   if(c.idx>=list.length)c.idx=0;const ch=list[c.idx];
-  const head=`<div class="p-head"><h3>${sim.def.challengeTitle||'Predict, then test'}</h3><span class="count">${c.idx+1} of ${list.length}</span></div><p class="q">${ch.q}</p>`;
+  const tm=sim.mode==='test',nrv=tm&&sim.def.review?rvList(sim).length:0;const head=`<div class="p-head"><h3>${tm?'Test yourself · Part 1: predict':(sim.def.challengeTitle||'Predict, then test')}</h3><span class="count">${c.idx+1} of ${list.length}</span></div>${tm&&c.idx===0&&c.phase==='ask'?`<p class="help">Pick what you think will happen. The model runs it and tells you why.${nrv?` Then ${nrv} why questions.`:''}</p>`:''}<p class="q">${ch.q}</p>`;
   if(c.phase==='ask'){box.innerHTML=head+`<div class="choices">${ch.choices.map((t,i)=>`<button type="button" class="choice" data-i="${i}">${t}</button>`).join('')}</div>`;
     box.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>startChallenge(sim,+b.dataset.i)));}
   else if(c.phase==='running'){box.innerHTML=head+`<p class="pick">Your prediction: <b>${ch.choices[c.pick]}</b></p><p class="status">${c.changed?(ch.changeText||'Changed')+'. Watch what happens.':'Holding steady first…'}</p><div class="prog"><i></i></div>`;}
-  else{const ok=c.pick===ch.correct;box.innerHTML=head+`<p class="verdict ${ok?'ok':'no'}">${ok?(ch.instant?'Correct.':'Your prediction held up.'):(ch.instant?'Not quite.':'Not what you predicted.')}</p>${ok?'':`<p class="pick">${ch.instant?'Answer':'Result'}: <b>${ch.choices[ch.correct]}</b></p>`}<p class="explain">${explainFor(ch)}</p>
-    <div class="row"><button type="button" class="btn" data-a="again">${ch.instant?'Try again':'Run it again'}</button>${c.idx<list.length-1?'<button type="button" class="btn primary" data-a="next">Next</button>':(sim.mode==='guided'?'<button type="button" class="btn primary" data-a="finish">Finish</button>':'<button type="button" class="btn primary" data-a="first">Start over</button>')}</div>`;
+  else{const ok=c.pick===ch.correct;if(sim.mode==='test'&&sim.tScore&&sim.tScore[c.idx]===undefined)sim.tScore[c.idx]=ok;box.innerHTML=head+`<p class="verdict ${ok?'ok':'no'}">${ok?(ch.instant?'Correct.':'Your prediction held up.'):(ch.instant?'Not quite.':'Not what you predicted.')}</p>${ok?'':`<p class="pick">${ch.instant?'Answer':'Result'}: <b>${ch.choices[ch.correct]}</b></p>`}<p class="explain">${explainFor(ch)}</p>
+    <div class="row"><button type="button" class="btn" data-a="again">${ch.instant?'Try again':'Run it again'}</button>${c.idx<list.length-1?'<button type="button" class="btn primary" data-a="next">Next</button>':(sim.mode==='guided'||sim.mode==='test'?`<button type="button" class="btn primary" data-a="finish">${sim.mode==='test'&&sim.def.review&&rvList(sim).length?'On to the why questions':'Finish'}</button>`:'<button type="button" class="btn primary" data-a="first">Start over</button>')}</div>`;
     box.querySelector('[data-a=again]').addEventListener('click',()=>{c.phase='ask';if(sim.def.onChallenge)sim.def.onChallenge(sim,list[c.idx],'ask');renderChallenge(sim);});
     const fin=box.querySelector('[data-a=finish]');if(fin)fin.addEventListener('click',()=>guideDone(sim));
-    const nx=box.querySelector('[data-a=next],[data-a=first]');if(nx)nx.addEventListener('click',()=>{c.idx=nx.dataset.a==='next'?c.idx+1:0;c.phase='ask';const nl=visibleCh(sim);if(sim.def.onChallenge)sim.def.onChallenge(sim,nl[c.idx],'ask');renderChallenge(sim);});}}
+    const nx=box.querySelector('[data-a=next],[data-a=first]');if(nx)nx.addEventListener('click',()=>{c.idx=nx.dataset.a==='next'?c.idx+1:0;c.phase='ask';const nl=visibleCh(sim);if(sim.mode==='test')lnBase(sim,c.idx);if(sim.def.onChallenge)sim.def.onChallenge(sim,nl[c.idx],'ask');renderChallenge(sim);});}}
 function startChallenge(sim,pick){const ch=visibleCh(sim)[sim.ch.idx];sim.ch.pick=pick;
   if(ch.instant){sim.ch.phase='done';if(sim.def.onChallenge)sim.def.onChallenge(sim,ch,'done');renderChallenge(sim);return;}
   const base={};(sim.def.controls||[]).forEach(c=>base[c.id]=c.def);
@@ -689,7 +716,8 @@ function challengeTick(sim){const c=sim.ch;if(c.phase!=='running')return;const d
 /* ---------- canvases ---------- */
 function fit(cv,w,h){const dpr=Math.min(2,window.devicePixelRatio||1),W=Math.round(w*dpr),H=Math.round(h*dpr);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}return dpr;}
 function drawStageTo(sim,cv,vdt,kOverride){const w=cv.clientWidth;if(!w)return;const asp=sim.def.aspect||16/9,LH=800/asp,h=w/asp;fit(cv,w,h);const ctx=cv.getContext('2d'),sc=cv.width/800;
-  ctx.setTransform(sc,0,0,sc,0,0);ctx.clearRect(0,0,800,LH);const k=kOverride||clamp(720/w,1,1.8);ctx.save();sim.def.draw(sim,ctx,vdt,k,sim.vt);ctx.restore();drawFocus(sim,ctx,LH);}
+  ctx.setTransform(sc,0,0,sc,0,0);ctx.clearRect(0,0,800,LH);const k=kOverride||clamp(720/w,1,1.8);ctx.save();sim.def.draw(sim,ctx,vdt,k,sim.vt);ctx.restore();drawFocus(sim,ctx,LH);lnOverlay(sim,ctx,LH,k);}
+function lnOverlay(sim,ctx,LH,k){if(!sim.tour||!sim.tour.on)return;const s=tourSteps(sim)[sim.tour.i];if(!s||!s.overlay)return;const tau=RM?60:(performance.now()-(sim.lnT0||0))/1000;ctx.save();try{s.overlay(sim,ctx,LH,k,tau);}catch(e){if(window.console)console.error(e);}ctx.restore();}
 function drawGraph(sim){if(sim.vlab&&sim.mode==='vlab')vlGraph(sim);const cv=sim.ui.graph;if(!cv)return;const W=cv.clientWidth,H=cv.clientHeight;if(!W)return;const dpr=fit(cv,W,H),ctx=cv.getContext('2d');
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);const box={L:66,T:12,W:W-66-14,H:H-12-40,cw:W,ch:H};
   if(sim.gmode==='live'){const o=graphOptions(sim).find(g=>g.id===sim.gMetric);if(!o){txt(ctx,'No graph for this level.',W/2,H/2,{s:15,c:PAL['muted'],a:'center',b:'middle'});return;}
@@ -752,9 +780,10 @@ function renderReview(sim,focus){const box=sim.ui.review,R=sim.def.review;if(!bo
     body=`<p class="rv-kind ${q.kind}">${RV_KIND[q.kind]||''}</p><div class="rv-q">${q.q}</div>${input}${fb}
     <div class="row rv-nav"><button type="button" class="btn" data-rv="prev"${i===0?' disabled':''}>Back</button><button type="button" class="btn${done?' primary':''}" data-rv="next">${i===list.length-1?'See my results':'Next question'}</button></div>`;}
   else if(list.length){const got=list.filter(x=>ans[x.id]&&ans[x.id].done&&ans[x.id].ok).length,did=list.filter(x=>ans[x.id]&&ans[x.id].done).length;const missed=list.length-got;
-    body=`<h3 class="rv-res">${did<list.length?`${did} of ${list.length} answered. `:''}You got ${got} of ${list.length} right the first time.</h3><p class="help">${missed?'Reset the ones you missed and try them again.':'Nice work.'} Your answers stay on this device. Your teacher can’t see them.</p><div class="row">${missed?'<button type="button" class="btn primary" data-rv="redo">Try the missed ones again</button>':''}<button type="button" class="btn" data-rv="clear">Start over</button><button type="button" class="btn" data-rv="prev">Back</button></div>`;}
+    body=`<h3 class="rv-res">${did<list.length?`${did} of ${list.length} answered. `:''}You got ${got} of ${list.length} right the first time.</h3><p class="help">${missed?'Reset the ones you missed and try them again.':'Nice work.'} Your answers stay on this device. Your teacher can’t see them.</p><div class="row">${missed?'<button type="button" class="btn primary" data-rv="redo">Try the missed ones again</button>':''}<button type="button" class="btn" data-rv="clear">Start over</button>${sim.def.learn?'<button type="button" class="btn" data-rv="learn">Go back to Learn it</button>':''}<button type="button" class="btn" data-rv="prev">Back</button></div>`;}
   else body='<p class="help">No review questions at this detail level yet. Try Closer look or Deep dive.</p>';
-  box.innerHTML=`<div class="rv-head"><h3>Review</h3><div class="rv-dots">${dots}</div></div>${body}${apLinksHtml(R.ap,R.apNote,atLeast('ap'))}`;
+  const tsv=Object.values(sim.tScore||{}),tsl=sim.testFlow&&tsv.length?`<p class="help">Part 1: you got ${tsv.filter(Boolean).length} of ${tsv.length} predictions right the first time.</p>`:'';
+  box.innerHTML=`<div class="rv-head"><h3>${sim.def.learn?'Test yourself: why questions':'Review'}</h3><div class="rv-dots">${dots}</div></div>${tsl}${body}${apLinksHtml(R.ap,R.apNote,atLeast('ap'))}`;
   const stop=()=>{sim.ui.sec.classList.remove('rv-see');};
   const go=n=>{sim.rvI=n;stop();renderReview(sim,true);};
   box.querySelectorAll('[data-rv-go]').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.rvGo)));
@@ -766,7 +795,7 @@ function renderReview(sim,focus){const box=sim.ui.review,R=sim.def.review;if(!bo
   const ni=box.querySelector('.rv-num input');if(ni&&!ni.disabled)ni.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const c=box.querySelector('[data-rv=check]');if(c)c.click();}});
   act('redo',()=>{list.forEach(x=>{if(ans[x.id]&&!ans[x.id].ok)delete ans[x.id];});save();const n=list.findIndex(x=>!ans[x.id]);go(n<0?0:n);});
   act('clear',()=>{store.del(rvKey(sim));go(0);});
-  act('lab',()=>{rvOpenLab(sim,q);});
+  act('lab',()=>{rvOpenLab(sim,q);});act('learn',()=>setMode(sim,'guided',true));
   if(focus){const v=box.querySelector('.verdict');if(v&&v.focus)v.focus({preventScroll:true});box.scrollIntoView&&window.scrollTo(0,Math.max(0,box.getBoundingClientRect().top+window.scrollY-12));}}
 function rvOpenLab(sim,q){const L=q.lab,base={};(sim.def.controls||[]).forEach(c=>base[c.id]=c.def);BL.setValues(sim,Object.assign(base,L.set||{}));BL.reset(sim);restoreVisibility(sim);
   sim.ui.sec.classList.add('rv-see');setRunning(sim,true);
@@ -905,7 +934,7 @@ BL.frq={parse:fqParseNum,load:fqLoad,score:fqScore,openLab:fqOpenLab,list:fqList
 const unitFor=(cid,i)=>{const c=(BL.COURSES||[]).find(x=>x.id===cid),u=c&&c.units[+i];return u?{c,u,i:+i,id:'u-'+cid+'-'+i}:null;};
 function parseUnit(id){const m=/^u-(.+)-(\d+)$/.exec(id||'');return m?unitFor(m[1],m[2]):null;}
 function unitTools(U){return linkList(U.u.ids);}
-function toolSteps(d){const s=[];if(d.tour&&d.tour.length)s.push(['guided','Guided walkthrough']);if(d.review)s.push(['review','Review questions']);if(d.frq)s.push(['frq','Free-response practice']);if(!s.length)s.push(['lab','Full lab']);return s;}
+function toolSteps(d){const s=[];if(d.learn){s.push(['guided','Learn it']);if(d.challenges||d.review)s.push(['test','Test yourself']);}else{if(d.tour&&d.tour.length)s.push(['guided','Guided walkthrough']);if(d.review)s.push(['review','Review questions']);}if(d.frq)s.push(['frq','Free-response practice']);if(!s.length)s.push(['lab','Full lab']);return s;}
 function unitPath(U){const out=[];unitTools(U).forEach(d=>toolSteps(d).forEach(([m,l])=>out.push({d,m,l})));return out;}
 const unitUrl=(d,m,U)=>'#'+d.hash+'@'+m+'@'+U.id;
 const seenKey=()=>LAB_KEY+'-unit-seen';
@@ -1012,7 +1041,7 @@ function buildHome(){const units=document.getElementById('units');units.innerHTM
 BL.start=function(){
   if(EMBED)document.documentElement.classList.add('embed');
   homeEl=document.getElementById('home');simsEl=document.getElementById('sims');jumpEl=document.getElementById('jump');backEl=document.getElementById('back');
-  DEFS.forEach(d=>{applyPractical(d);if(REVIEWS[d.id])d.review=REVIEWS[d.id];if(FRQS[d.id]&&FRQS[d.id].length)d.frq=FRQS[d.id];sims[d.id]=makeSim(d);});
+  DEFS.forEach(d=>{applyPractical(d);applyLearn(d);if(REVIEWS[d.id])d.review=REVIEWS[d.id];if(FRQS[d.id]&&FRQS[d.id].length)d.frq=FRQS[d.id];sims[d.id]=makeSim(d);});
   unitEl=el('section',{id:'unitpage',class:'unitpage'});unitEl.hidden=true;simsEl.parentNode.insertBefore(unitEl,simsEl);
   readPal();buildHome();
   const lvlBtns=[...document.querySelectorAll('#lvl button')];

@@ -557,3 +557,24 @@ p.fq-type{margin:0 0 6px}
 .vl-an-msg{margin-left:10px;color:var(--muted);font-size:14px}
 
 .fq-data th,.fq-data td{white-space:normal}
+
+/* Learn it / Test yourself */
+.ln-k{margin:14px 0 3px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rj)}
+.tb-x>.ln-k:first-child,.donecard>.ln-k:first-child{margin-top:4px}
+.tb-x>p{margin:0 0 4px}
+.ln-goals{margin:4px 0 4px 20px;padding:0}
+.ln-goals li{margin:0 0 4px}
+.ln-q{font-weight:600}
+.ln-use{display:none;margin:14px 0 0;padding:14px 16px;background:var(--card,#fff);border:1px solid var(--line,#ddd);border-left:3px solid var(--rj);border-radius:0 10px 10px 0}
+.sim.has-learn.m-guided.g-done:not(.m-test) .ln-use{display:block}
+.ln-uh{margin:4px 0 10px;font-size:17px}
+.ln-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px;margin-bottom:12px}
+.ln-card{padding:10px 12px;border:1px solid var(--line,#ddd);border-radius:8px}
+.ln-do{margin:0 0 4px;font-weight:700}
+.ln-why{margin:0;font-size:14px;line-height:1.45;color:var(--muted,#555)}
+.ln-try{margin:0 0 8px 20px;padding:0}
+.ln-try li{margin:0 0 4px}
+.sim.has-learn.m-guided:not(.m-test):not(.g-try) .readouts{display:grid}
+@media (min-width:900px){.sim.has-learn.m-guided .stage{grid-template-columns:minmax(0,1fr) 370px}
+  .sim.m-test .stage>.predict{grid-column:2;grid-row:2;margin:0;border:0;border-left:3px solid var(--rj);border-radius:0;overflow:auto}}
+.sim.m-test .stage>.predict{margin:0}

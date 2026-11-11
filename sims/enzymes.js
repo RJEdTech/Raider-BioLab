@@ -6,6 +6,29 @@ const ENZ={amylase:{name:'Amylase',pH:6.8,Tref:37,Tm:44,w:2.5,Tirr:55},
            taq:{name:'Taq polymerase',pH:8.3,Tref:72,Tm:80,w:3,Tirr:95}};
 const KM=5,KI=2,VMAX=100;
 const ENZPOS=[[120,150],[300,130],[480,150],[660,130],[160,320],[340,300],[520,320],[690,300]];
+
+/* Enzyme art: a chain of amino acids folded into a lumpy ball with a groove (the active site).
+   u = 0 folded, u = 1 unfolded (denatured). Real enzymes are 3-D; this is a flat sketch. */
+function protShape(R,o,a,seed){const s1=seed*1.7,s2=seed*2.9,s3=seed*4.3,P=[];
+  for(let j=0;j<84;j++){const th=j/84*6.2832;let r=R*(1+0.07*Math.sin(3*th+s1)+0.05*Math.sin(5*th+s2)+0.03*Math.sin(7*th+s3));
+    const d=Math.atan2(Math.sin(th-o),Math.cos(th-o));if(Math.abs(d)<a){const q=Math.abs(d)/a;r*=0.4+0.6*q*q;}P.push([Math.cos(th)*r,Math.sin(th)*r]);}return P;}
+function chainPts(cx,cy,R,o,seed,u,t){const K=150,out=[];
+  for(let k=0;k<=K;k++){const f=k/K,q=f*6.2832*1.7,ph=q+o+0.35+0.55*Math.sin(2.3*q+seed)+0.25*Math.sin(5.1*q+2*seed),rho=R*(0.40+0.20*Math.cos(3.7*q+seed)+0.13*Math.sin(8.3*q+2*seed)+0.06*Math.cos(14.9*q+3*seed));
+    const fx=Math.cos(ph)*rho,fy=Math.sin(ph)*rho,ux=(f-0.5)*R*2.5,uy=Math.sin(f*20+seed+t*0.6)*R*0.24;
+    out.push([cx+fx+(ux-fx)*u,cy+fy+(uy-fy)*u]);}return out;}
+function strokePts(ctx,P){ctx.beginPath();P.forEach(([x,y],j)=>j?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();}
+function drawProtein(ctx,cx,cy,R,o,a,seed,u,t,opt){opt=opt||{};u=clamp(u||0,0,1);const al=clamp(1-u*1.7,0,1);
+  if(al>0){const P=protShape(R,o,a,seed);ctx.save();ctx.globalAlpha*=al;ctx.beginPath();P.forEach(([x,y],j)=>j?ctx.lineTo(cx+x,cy+y):ctx.moveTo(cx+x,cy+y));ctx.closePath();
+    ctx.fillStyle=PAL['cv-enz'];ctx.fill();if(opt.outline){ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=1.5;ctx.stroke();}
+    if(R>=14){ctx.clip();ctx.strokeStyle='rgba(255,255,255,.32)';ctx.lineWidth=Math.max(1.6,R*0.075);ctx.lineJoin='round';ctx.lineCap='round';strokePts(ctx,chainPts(cx,cy,R,o,seed,0,t));}
+    ctx.restore();}
+  if(u>0){const C=chainPts(cx,cy,R,o,seed,u,t);ctx.save();ctx.globalAlpha*=clamp(u*1.7,0,1);ctx.strokeStyle=PAL['cv-enzd'];ctx.lineWidth=R*(0.1+0.16*u);ctx.lineJoin='round';ctx.lineCap='round';strokePts(ctx,C);
+    if(opt.beads&&u>0.3){ctx.fillStyle=PAL['cv-enz'];for(let k=0;k<C.length;k+=4){ctx.beginPath();ctx.arc(C[k][0],C[k][1],R*0.07,0,6.29);ctx.fill();}}ctx.restore();}}
+/* starch as a short chain of sugar beads; split = gap in the middle, col = colour */
+function drawStarch(ctx,x,y,n,r,ang,col,gapAt,gap){ctx.save();ctx.translate(x,y);ctx.rotate(ang||0);ctx.fillStyle=col||PAL['cv-sub'];ctx.strokeStyle=col||PAL['cv-sub'];ctx.lineWidth=r*0.5;
+  let px=0;const xs=[];for(let i=0;i<n;i++){if(gapAt!==undefined&&i===gapAt)px+=gap||0;xs.push(px);px+=r*2.2;}
+  for(let i=0;i<n-1;i++){if(gapAt!==undefined&&i===gapAt-1)continue;ctx.beginPath();ctx.moveTo(xs[i],0);ctx.lineTo(xs[i+1],0);ctx.stroke();}
+  xs.forEach(q=>{ctx.beginPath();for(let j=0;j<6;j++){const an=j/6*6.2832;const X=q+Math.cos(an)*r,Y=Math.sin(an)*r;j?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}ctx.closePath();ctx.fill();});ctx.restore();}
 function benchNarrate(sim){const B=sim.st.B,b=sim.vlab.bench;
   if(B.kind==='cp'){const k=b.slot,tl=k>=0?'<b>Trial '+(k+1)+'</b> ('+CP.al[k]+' yeast). ':'';
     if(B.state==='empty')return tl+'The beaker is empty, rinsed and dry. Add 100 mL of 1% H₂O₂ when the procedure says to.';
@@ -358,18 +381,20 @@ const ENZYME={
     const st=ENZPOS.map((q,i)=>{const den=v.r1[i]<denFrac;return {den,comp:!den&&hon&&v.r2[i]<compFrac,non:!den&&ap&&v.r3[i]<nonFrac};});
     // reaction events in proportion to the modeled rate
     v.ev+=s.v*vdt*sim.def.timeScale*0.5;
-    while(v.ev>=1){v.ev--;const free=st.map((q,i)=>i).filter(i=>!st[i].den&&!st[i].comp&&v.busy[i]<=0);if(!free.length){v.ev=Math.min(v.ev,2);break;}v.busy[free[Math.floor(R()*free.length)]]=0.35;}
+    while(v.ev>=1){v.ev--;const free=st.map((q,i)=>i).filter(i=>!st[i].den&&!st[i].comp&&v.busy[i]<=0);if(!free.length){v.ev=Math.min(v.ev,2);break;}const pick=free[Math.floor(R()*free.length)];v.busy[pick]=0.35;if(sim.lnKey==='bumps'||sim.lnKey==='cold'){(v.rings=v.rings||[]).push({i:pick,life:1});(v.hitT=v.hitT||[]).push(t);}}
+    if(!v.uf||v.ufSt!==s){v.uf=st.map(c=>c.den?1:0);v.ufSt=s;}
     ENZPOS.forEach((q,i)=>{const [cx,cy]=q,o=v.ori[i]+Math.sin(t*.4+i)*0.15,c=st[i],Rr=34;
-      if(c.den){ctx.strokeStyle=PAL['cv-enzd'];ctx.lineWidth=9;ctx.lineCap='round';ctx.beginPath();
-        for(let j=0;j<=28;j++){const x=cx-40+j*2.9,y=cy+Math.sin(j*0.8+i+t*.6)*9;j?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();return;}
+      v.uf[i]+=clamp((c.den?1:0)-v.uf[i],-vdt*0.6,vdt*0.6);
       let a=0.40*s.fph+0.07;if(c.non)a*=0.45;
-      ctx.fillStyle=PAL['cv-enz'];ctx.beginPath();ctx.moveTo(cx+Math.cos(o)*Rr*0.25,cy+Math.sin(o)*Rr*0.25);ctx.arc(cx,cy,Rr,o+a,o+6.283-a);ctx.closePath();ctx.fill();
+      drawProtein(ctx,cx,cy,Rr,o,a,i+1,v.uf[i],t);if(v.uf[i]>0.4)return;
       const sx=cx+Math.cos(o)*Rr*0.72,sy=cy+Math.sin(o)*Rr*0.72;
       if(c.comp){ctx.fillStyle=PAL['cv-inc'];ctx.beginPath();ctx.moveTo(sx+Math.cos(o)*9,sy+Math.sin(o)*9);ctx.lineTo(sx+Math.cos(o+2.2)*8,sy+Math.sin(o+2.2)*8);ctx.lineTo(sx+Math.cos(o-2.2)*8,sy+Math.sin(o-2.2)*8);ctx.closePath();ctx.fill();}
       if(c.non){const nx=cx-Math.cos(o)*Rr,ny=cy-Math.sin(o)*Rr;ctx.fillStyle=PAL['cv-inn'];ctx.beginPath();ctx.moveTo(nx,ny-9);ctx.lineTo(nx+8,ny);ctx.lineTo(nx,ny+9);ctx.lineTo(nx-8,ny);ctx.closePath();ctx.fill();}
       if(v.busy[i]>0){v.busy[i]-=vdt;ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(sx,sy,7,0,6.29);ctx.fill();
         if(v.busy[i]<=0){for(let m=0;m<2;m++)v.prods.push({x:sx,y:sy,vx:Math.cos(o+(m?.6:-.6))*60,vy:Math.sin(o+(m?.6:-.6))*60,life:5});}}
     });
+    if(v.rings&&v.rings.length){ctx.lineWidth=3;v.rings.forEach(g=>{const [x,y]=ENZPOS[g.i];g.life-=vdt*0.8;ctx.strokeStyle='rgba(240,170,20,'+clamp(g.life,0,1)+')';ctx.beginPath();ctx.arc(x,y,36+(1-g.life)*26,0,6.29);ctx.stroke();});v.rings=v.rings.filter(g=>g.life>0);}
+    if(sim.lnKey!=='bumps'&&sim.lnKey!=='cold'){v.rings=[];v.hitT=[];}
     for(const a of v.subs){move(a,speed);ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(a.x,a.y,5.5,0,6.29);ctx.fill();}
     for(const a of v.inC){move(a,speed);ctx.fillStyle=PAL['cv-inc'];ctx.beginPath();ctx.moveTo(a.x,a.y-7);ctx.lineTo(a.x+6.5,a.y+5);ctx.lineTo(a.x-6.5,a.y+5);ctx.closePath();ctx.fill();}
     for(const a of v.inN){move(a,speed);ctx.fillStyle=PAL['cv-inn'];ctx.beginPath();ctx.moveTo(a.x,a.y-7);ctx.lineTo(a.x+6,a.y);ctx.lineTo(a.x,a.y+7);ctx.lineTo(a.x-6,a.y);ctx.closePath();ctx.fill();}
@@ -377,7 +402,7 @@ const ENZYME={
     ctx.globalAlpha=1;v.prods=v.prods.filter(a=>a.life>0);if(v.prods.length>120)v.prods.splice(0,v.prods.length-120);
     // legend
     let lx=16;const ly=438,item=(draw,label)=>{draw(lx+5,ly-4);txt(ctx,label,lx+15,ly,{s:12*k,c:PAL['cv-soft']});ctx.font='400 '+12*k+'px '+FONT;lx+=ctx.measureText(label).width+34;};
-    item((x,y)=>{ctx.fillStyle=PAL['cv-enz'];ctx.beginPath();ctx.moveTo(x,y);ctx.arc(x,y,7,.5,5.8);ctx.closePath();ctx.fill();},'enzyme');
+    item((x,y)=>{drawProtein(ctx,x,y,7.5,0,0.55,3,0,0);},'enzyme');
     item((x,y)=>{ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(x,y,5,0,6.29);ctx.fill();},'substrate');
     item((x,y)=>{ctx.fillStyle=PAL['cv-prod'];ctx.beginPath();ctx.arc(x,y,4,0,6.29);ctx.fill();},'product');
     if(hon)item((x,y)=>{ctx.fillStyle=PAL['cv-inc'];ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+6,y+5);ctx.lineTo(x-6,y+5);ctx.closePath();ctx.fill();},'competitive inhibitor');
@@ -385,6 +410,7 @@ const ENZYME={
   }
 };
 Object.assign(ENZYME,{
+  art:{protein:drawProtein,starch:drawStarch,pos:ENZPOS},
   scale:'Molecular view: each enzyme is about 5 nanometers across. One drop of saliva holds trillions of amylase molecules.',
   narrate(sim){if(sim.st.B&&sim.vlab)return benchNarrate(sim);
     const p=sim.p,s=sim.st,e=ENZ[p.enzyme],hon=atLeast('honors'),nm=hon?e.name:'Amylase',occ=Math.round(100*p.sub/(s.km+p.sub));
