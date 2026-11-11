@@ -764,4 +764,85 @@ phlife: {
   ]
 }
 });
+/* ---------- atoms and bonds ---------- */
+function lbRing(ctx,x,y,r,tau){const a=0.5+0.5*Math.sin((tau||0)*4);ctx.save();ctx.strokeStyle='#c8102e';ctx.lineWidth=3;ctx.globalAlpha=0.55+0.45*a;ctx.beginPath();ctx.arc(x,y,r,0,6.29);ctx.stroke();ctx.restore();}
+function lbArrow(ctx,x1,y1,x2,y2,col){ctx.save();ctx.strokeStyle=col||'#c8102e';ctx.fillStyle=col||'#c8102e';ctx.lineWidth=3;const a=Math.atan2(y2-y1,x2-x1);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*8,y2-Math.sin(a)*8);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-Math.cos(a-0.45)*12,y2-Math.sin(a-0.45)*12);ctx.lineTo(x2-Math.cos(a+0.45)*12,y2-Math.sin(a+0.45)*12);ctx.closePath();ctx.fill();ctx.restore();}
+
+BioLab.addLearn({
+lifebonds: {
+  goals: {
+    bio: ['What is inside an atom, and what makes carbon-14 different from carbon-12', 'Why carbon makes 4 bonds, nitrogen 3 and oxygen 2', 'The three ways atoms bond: even sharing, uneven sharing and handing over', 'Why salt dissolves in water but grease does not, and what soap has to do with it'],
+    honors: ['What is inside an atom, and what isotopes are', 'How valence electrons predict the number of bonds', 'How electronegativity makes bonds polar, nonpolar or ionic', 'How hydrogen bonds hold water together and pair DNA bases'],
+    ap: ['Isotopes and radioactive tracers', 'Bond polarity, molecular shape and hydrophobic vs hydrophilic behavior', 'Hydrogen bonds in water, DNA and protein β-sheets', 'Why heat unzips DNA and unfolds proteins without breaking covalent bonds']
+  },
+  matters: 'Six elements, carbon, hydrogen, nitrogen, oxygen, phosphorus and sulfur, build almost everything in a cell. How their atoms share electrons decides what dissolves in your blood, why soap cleans grease, and how DNA can be unzipped and copied.',
+  question: 'Your blood carries dissolved salt to every cell, but the fat from lunch won’t dissolve in it. What is different about the bonds in salt and in fat?',
+  startKey: 'atom', startRun: false,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'One carbon atom, zoomed in about 100 million times',275,64,k,{s:12,hi:true});},
+  steps: [
+    { key: 'atom', title: 'Inside one atom', set: { view: 'atom', el: 'C', iso: '0', hl: 0 }, fresh: true, pause: true,
+      see: 'One carbon atom. The middle is the nucleus: 6 protons (red, +) and 6 neutrons (gray, no charge). Six electrons (yellow, −) move around it in shells.',
+      why: 'The number of protons makes it carbon: every atom with 6 protons is carbon. The drawing is far from scale: if the atom were a football field, the nucleus would be a grain of sand in the middle, and the rest is almost empty space.',
+      overlay(sim,ctx,LH,k,tau){lbRing(ctx,350,236,30,tau);tag(ctx,'nucleus (drawn far too big)',350,186-20,k,{s:12,hi:true});} },
+    { key: 'isotope', title: 'Same element, extra neutrons', set: { view: 'atom', el: 'C', iso: '2', hl: 2 }, fresh: true, pause: true,
+      see: 'Carbon-14 has 8 neutrons instead of 6, but still 6 protons, so it is still carbon and bonds the same way. The sample of 16 atoms on the left shows what is left after 2 half-lives: only 4 are still radioactive.',
+      why: 'Extra neutrons make this nucleus unstable, so it slowly decays. Half of any sample decays every 5,700 years. Living things keep taking in fresh carbon-14; after death the amount only drops, which is how scientists date bones and wood.',
+      overlay(sim,ctx,LH,k){tag(ctx,'2 half-lives = 11,400 years: ¼ left',110,232-90,k,{s:12,hi:true});} },
+    { key: 'share1', title: 'Sharing one pair', set: { view: 'build', ctr: 'C', nH: 1 }, fresh: true, pause: true,
+      see: 'Carbon has 4 electrons in its outer shell. One hydrogen joins it, and they share a pair: one electron from C (yellow) and one from H (blue).',
+      why: 'A shared pair of electrons is a <b>covalent bond</b>. Both atoms count the shared pair as their own, which brings each closer to a full outer shell.',
+      overlay(sim,ctx,LH,k,tau){lbRing(ctx,334,228,14,tau);tag(ctx,'one shared pair = one bond',334,182,k,{s:12,hi:true});} },
+    { key: 'share4', title: 'Carbon makes four bonds', set: { view: 'build', ctr: 'C', nH: 4 }, fresh: true, pause: true,
+      see: 'Now 4 hydrogens are attached, one on each side. Count the side panel: 8 electrons around carbon, a full outer shell. This molecule is methane, CH₄, the main gas in natural gas.',
+      why: 'Carbon has 4 valence electrons, so it needs 4 more to fill its outer shell of 8. That is why carbon always makes 4 bonds, enough to build long chains and rings. That is what makes it the backbone of life.' },
+    { key: 'oxygen', title: 'Oxygen makes two', set: { view: 'build', ctr: 'O', nH: 2 }, fresh: true, pause: true,
+      see: 'Now the center is oxygen. It already has 6 outer electrons, so it only needs 2 hydrogens to reach 8. The result is water, H₂O, with two lone pairs left over.',
+      why: 'Count valence electrons to predict bonds: carbon (4) makes 4 bonds, nitrogen (5) makes 3, oxygen (6) makes 2. Those lone pairs on oxygen give water its bent shape.' },
+    { key: 'polar', title: 'Uneven sharing: polar', set: { view: 'mol', mol: 'water', wet: false }, fresh: true, pause: true,
+      see: 'The full water molecule. The red arrows show where the shared electrons spend their time: pulled toward the oxygen. Oxygen ends up slightly negative (δ−) and each hydrogen slightly positive (δ+).',
+      why: 'Oxygen pulls on shared electrons much harder than hydrogen does (electronegativity 3.44 vs 2.20). Uneven sharing makes a <b>polar covalent</b> bond, and a molecule with charged ends.',
+      overlay(sim,ctx,LH,k){lbArrow(ctx,178,248,234,204);lbArrow(ctx,364,248,308,204);tag(ctx,'electrons pulled toward O',271,140,k,{s:12,hi:true});} },
+    { key: 'nonpolar', title: 'Even sharing: nonpolar', set: { view: 'mol', mol: 'butane', wet: true }, fresh: true, speed: 0.5,
+      see: 'A chain of carbons and hydrogens in water. The water molecules gather around it but keep to themselves, holding hands with each other instead of the chain.',
+      why: 'Carbon and hydrogen pull on electrons about equally, so C–H bonds are <b>nonpolar</b>: no charged ends for water to grab. The tails of fats and oils are chains like this, which is why grease won’t dissolve in water or in your blood.',
+      overlay(sim,ctx,LH,k){tag(ctx,'water leaves the C–H chain out',275,386,k,{s:12,hi:true});} },
+    { key: 'ionic', title: 'Handing over an electron', set: { view: 'mol', mol: 'salt', wet: true }, fresh: true, speed: 0.4,
+      see: 'Table salt in water. Sodium has handed its one outer electron to chlorine, so they are now charged ions, Na⁺ (purple) and Cl⁻ (green). Water molecules crowd around each ion and pull them apart.',
+      why: 'Opposite charges attract: that is an <b>ionic bond</b>. In water, water’s δ− oxygen ends face each Na⁺ and its δ+ hydrogen ends face each Cl⁻. Water out-pulls the crystal, and the salt dissolves. Real salt is clear cubic crystals; the colors here are labels.',
+      overlay(sim,ctx,LH,k){tag(ctx,'water’s O ends face Na⁺; H ends face Cl⁻',275,386,k,{s:12,hi:true});} },
+    { key: 'hbond', title: 'Hydrogen bonds between molecules', set: { view: 'hb', hb: 'water' }, fresh: true, speed: 0.4,
+      see: 'Liquid water, zoomed in. Each dashed line is a hydrogen bond, and they flicker as they break and re-form.',
+      why: 'A hydrogen bond is the pull between a δ+ hydrogen on one molecule and a δ− oxygen on another. It is about 20 times weaker than the O–H bond inside a water molecule, but there are so many that together they hold water together.' },
+    { key: 'dna', title: 'Hydrogen bonds pair DNA', set: { view: 'hb', hb: 'dna', gc: 4 }, fresh: true, pause: true, run(sim){for(let i=0;i<3;i++)fAct(sim,'unzip');},
+      see: 'Two DNA strands, with the top 3 base pairs unzipped. A pairs with T using 2 hydrogen bonds (dashed lines), and G pairs with C using 3.',
+      why: 'Each hydrogen bond is weak, so an enzyme can unzip DNA one pair at a time to copy it, while each strand’s strong covalent backbone stays whole. Heating to about 95 °C pulls the strands apart completely.',
+      so: 'That heating step is how PCR tests copy DNA, including many COVID and strep tests.' },
+    { lvl: 'ap', key: 'oil', title: 'The hydrophobic effect', set: { view: 'hb', hb: 'oil' }, fresh: true, speed: 0.5, run(sim){fAct(sim,'shake');},
+      see: 'Shaken oil breaks into small drops, then the drops merge back together.',
+      why: 'Water molecules hydrogen-bond to each other, not to nonpolar C–H chains, so they squeeze the oil together. The same effect packs fatty-acid tails into the middle of cell membranes and nonpolar amino acids into the core of proteins.' },
+    { lvl: 'ap', key: 'protein', title: 'Hydrogen bonds shape proteins', set: { view: 'hb', hb: 'protein' }, fresh: true, pause: true,
+      see: 'A protein β-sheet: two strands held side by side by hydrogen bonds between C=O and N–H groups.',
+      why: 'Heat breaks these weak bonds and the protein unfolds (denatures), but the peptide bonds along each strand stay whole, so the amino acid sequence doesn’t change. That is why cooked egg white turns solid without its protein being broken into pieces.' }
+  ],
+  useIt: [
+    { do: 'Wash your hands with soap, not just water, and scrub for 20 seconds.',
+      why: 'Grease and the germs stuck in it are nonpolar, so water alone slides past them. Soap is made of surfactants, molecules with a polar end that holds water and a nonpolar end that holds grease, so they lift oil and microbes off your skin (CDC).' },
+    { do: 'Never put water on a grease fire. Turn off the burner and slide a lid over the pan.',
+      why: 'Oil and water don’t mix, and water is denser, so it sinks under the burning oil, flashes to steam and throws the burning oil out of the pan. Fire safety agencies all say to smother it instead (Indiana Department of Homeland Security, citing NFPA data).' },
+    { do: 'Use dish soap, not just hot water, on greasy pans.',
+      why: 'Hot water melts grease but can’t dissolve it, because C–H chains are nonpolar. Soap’s nonpolar ends grab the grease and its polar ends hold onto the rinse water.' },
+    { do: 'Shake salad dressing right before you pour it.',
+      why: 'Oil and vinegar (mostly water) separate within minutes, the same hydrophobic effect as the oil drops merging. Shaking only breaks the oil into drops for a little while.' }
+  ],
+  tryIt: [
+    { title: 'the pepper and soap trick (2 minutes)',
+      steps: ['Fill a plate with water and sprinkle black pepper over the surface.', 'Touch the middle with a dry fingertip. Nothing much happens.', 'Now put a drop of dish soap on your fingertip and touch the middle again.'],
+      look: 'The pepper shoots to the edges. Hydrogen bonds give water a surface “skin” (surface tension) that holds the pepper. Soap molecules squeeze between the water molecules and break that skin where you touch.' },
+    { title: 'oil, water and soap in a jar (5 minutes)',
+      steps: ['Put water and a few spoonfuls of cooking oil in a jar with a lid. Shake it hard and watch for a minute.', 'Add a squirt of dish soap and shake again.'],
+      look: 'Without soap the oil drops merge and float back to the top. With soap the mixture stays cloudy much longer, because soap coats the oil drops so water can hold onto them.' }
+  ]
+}
+});
 })();
