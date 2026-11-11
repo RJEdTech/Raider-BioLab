@@ -204,5 +204,6 @@ const WATER={
     pill(ctx,phaseName(p.sub,c,p.dir==='cool'),MX,MY-MR+22,PAL['card'],PAL['cv-ink'],12.5*k);
   }
 };
+WATER.art={segOf,hOf,stateOf,MX,MY,MR,IR};
 BioLab.register(WATER);
 })();

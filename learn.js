@@ -496,4 +496,195 @@ macromolecules: {
   ]
 }
 });
+/* ---------- properties of water: hydrogen bonds and the heating curve ---------- */
+function wSet(sim,ph,f){const A=sim.def.art,g=A.segOf(sim.p.sub,ph);const h=g.h0+(g.h1-g.h0)*(f||0);sim.st.h=h;sim.st.h0=h;sim.st.cur=A.stateOf(sim.p.sub,h);}
+function wSetT(sim,T){const A=sim.def.art,h=A.hOf(sim.p.sub,T);sim.st.h=h;sim.st.h0=h;sim.st.cur=A.stateOf(sim.p.sub,h);}
+function wCard(ctx,k,lines,x,y,w){x=x||268;y=y||16;w=w||158;const h=12+lines.length*19;ctx.save();ctx.globalAlpha=0.97;ctx.fillStyle=PAL['cv-sol'];H.rr(ctx,x,y,w,h,8);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.stroke();ctx.restore();
+  lines.forEach((L,i)=>H.txt(ctx,L[0],x+9,y+19+i*19,{s:(L[2]||12)*k,w:L[1]||500,c:L[3]||PAL['cv-ink']}));}
+const wE=sim=>(sim.st.h-sim.st.h0)*sim.p.mass/1000;
+/* cover the zoom circle with a fresh panel */
+function wPanel(ctx,sim){const A=sim.def.art;ctx.save();ctx.beginPath();ctx.arc(A.MX,A.MY,A.MR,0,6.29);ctx.fillStyle=PAL['cv-bg2'];ctx.fill();ctx.restore();}
+function bigWater(ctx,x,y,s,ang){const O=34*s,Hr=19*s,L=46*s,half=104.5/2*Math.PI/180;ctx.save();ctx.translate(x,y);ctx.rotate(ang||0);
+  ctx.beginPath();ctx.arc(0,0,O,0,6.29);ctx.fillStyle='#d64545';ctx.fill();
+  [-half,half].forEach(a=>{const hx=Math.sin(a)*L,hy=Math.cos(a)*L;ctx.beginPath();ctx.arc(hx,hy,Hr,0,6.29);ctx.fillStyle='#f2f2f2';ctx.fill();ctx.strokeStyle='#6a6a70';ctx.lineWidth=2;ctx.stroke();});ctx.restore();}
+
+BioLab.addLearn({
+water: {
+  goals: {
+    bio: ['What a water molecule looks like, and why its ends are slightly charged', 'What a hydrogen bond is, and why it makes ice float', 'Why the temperature stops rising while ice melts and while water boils', 'How this explains sweat, steam burns, burst pipes and lake ice'],
+    honors: ['What a water molecule looks like, and why its ends are slightly charged', 'What a hydrogen bond is, and why it makes ice float', 'Why water has such a high specific heat, and how ethanol compares', 'How this explains sweat, steam burns, burst pipes and lake ice'],
+    ap: ['Why water is polar and forms hydrogen bonds', 'Why temperature holds steady during a phase change (latent heat)', 'How to measure specific heat and heat of fusion from the curve', 'How this explains sweat, steam burns, burst pipes and lake ice']
+  },
+  matters: 'You are about 60% water, and so is most of life. Water does strange things: its ice floats, it warms up slowly, and evaporating it pulls a lot of heat away. All of that comes from one small attraction between molecules, the hydrogen bond.',
+  question: 'You put a glass of ice water on a hot stove. While there is still ice in the glass, what does a thermometer in the water read, and why?',
+  startKey: 'start', startRun: false,
+  startOverlay(sim,ctx,LH,k){const A=sim.def.art;tag(ctx,'A beaker of ice on a hot plate',170,94,k,{s:12,hi:true});tag(ctx,'Zoomed in to single molecules',A.MX,A.MY-A.MR-6,k,{s:12,hi:true});},
+  steps: [
+    { key: 'molecule', title: 'One water molecule', fresh: true, pause: true, run(sim){wSetT(sim,-20);},
+      see: 'This is one water molecule, blown up hugely. One oxygen atom (red) holds two hydrogen atoms (white) in a bent, V shape. The whole molecule is only about 0.28 nanometers wide.',
+      why: 'Oxygen pulls the shared electrons toward itself, so its end is slightly negative (δ−) and the two hydrogen ends are slightly positive (δ+). A molecule with charged ends like this is <b>polar</b>. Real water is clear: the red and white are labels for the atoms.',
+      overlay(sim,ctx,LH,k){const A=sim.def.art;wPanel(ctx,sim);bigWater(ctx,A.MX,A.MY-24,1.35,Math.PI);
+        tag(ctx,'δ−  oxygen',A.MX,A.MY+50,k,{s:13,hi:true,c:'#b3261e'});tag(ctx,'δ+  hydrogen',A.MX-92,A.MY-112,k,{s:13,c:'#1b4f8a'});tag(ctx,'δ+  hydrogen',A.MX+92,A.MY-112,k,{s:13,c:'#1b4f8a'});
+        tag(ctx,'104.5° bend, about 0.28 nm wide',A.MX,A.MY+110,k,{s:12});} },
+    { key: 'hbond', title: 'Opposite ends attract', pause: true,
+      see: 'Back to the zoom of the ice. The highlighted dashed line joins the slightly positive hydrogen of one molecule to the slightly negative oxygen of its neighbor.',
+      why: 'Opposite charges attract, so neighboring water molecules cling to each other. That pull is a <b>hydrogen bond</b>. It is about 20 times weaker than the bonds inside the molecule, so it breaks and re-forms easily, but there are trillions of them in every drop.',
+      overlay(sim,ctx,LH,k,tau){const A=sim.def.art,v=sim.vis;if(!v.mol||!v.edges)return;let best=null,bd=1e9;v.edges.forEach(e=>{const a=v.mol[e[0]],b=v.mol[e[1]],d=Math.hypot((a.x+b.x)/2-A.MX,(a.y+b.y)/2-A.MY);if(d<bd){bd=d;best=[a,b];}});
+        if(best){const pu=0.5+0.5*Math.sin(tau*4),a=best[0],b=best[1];a.ang=Math.atan2(b.y-a.y,b.x-a.x)-0.91;ctx.save();ctx.strokeStyle='#c8102e';ctx.lineWidth=3;ctx.globalAlpha=0.6+0.4*pu;[a,b].forEach(m=>{ctx.beginPath();ctx.arc(m.x,m.y,17,0,6.29);ctx.stroke();});
+          ctx.lineWidth=4;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(a.x+Math.cos(a.ang+0.91)*10,a.y+Math.sin(a.ang+0.91)*10);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.restore();line(ctx,A.MX,A.MY+A.MR-38,(a.x+b.x)/2,(a.y+b.y)/2+10,'#c8102e');
+          tag(ctx,'hydrogen bond: δ+ H pulled toward δ− O',A.MX,A.MY+A.MR-26,k,{s:12,hi:true});}} },
+    { key: 'ice', title: 'Ice: a locked lattice', speed: 0.1, run(sim){wSetT(sim,-20);},
+      see: 'Each molecule in the ice holds four neighbors with hydrogen bonds, locked into six-sided rings with open space in the middle. As the hot plate heats it, the thermometer rises and the molecules shake harder in place.',
+      why: 'Heat makes molecules move faster, and temperature measures that motion. In ice they can only vibrate, because the hydrogen bonds hold every molecule at arm’s length.',
+      so: 'Those six-sided rings are why snowflakes have six sides.',
+      overlay(sim,ctx,LH,k){const A=sim.def.art;tag(ctx,'open six-sided rings',A.MX,A.MY-A.MR+20,k,{s:12,hi:true});} },
+    { key: 'melt', title: 'Melting: stuck at 0 °C', speed: 0.6, run(sim){wSet(sim,'melt',0);},
+      see: 'The ice is melting. Watch the card: energy keeps pouring in, but the thermometer stays at 0.0 °C. In the zoom, molecules break out of the lattice one by one.',
+      why: 'All the heat goes into breaking hydrogen bonds, freeing molecules from the lattice, instead of making them move faster. The temperature can’t rise until every bit of ice has melted. Melting 1 g of ice takes 334 J.',
+      so: 'That is why a cooler stays near 0 °C until the ice is gone.',
+      overlay(sim,ctx,LH,k){const c=sim.st.cur;wCard(ctx,k,[['Energy in: '+wE(sim).toFixed(1)+' kJ',700],['Temperature: '+c.T.toFixed(1)+' °C'],['Melted: '+Math.round((c.ph==='melt'?c.f:c.ph==='solid'?0:1)*100)+'%']]);} },
+    { key: 'float', title: 'Ice floats', speed: 0.15, run(sim){wSet(sim,'melt',0.45);},
+      see: 'The ice cubes float with most of their bulk underwater. The circle now shows a frozen lake from the side: a lid of ice on top, liquid water underneath.',
+      why: 'The open rings in ice take up more room than the crowded molecules in liquid water, so ice is less dense: 0.92 g/mL versus 1.00 g/mL. Almost every other substance is denser as a solid. Because ice floats, lakes freeze from the top down, and the ice lid keeps the water below from freezing solid.',
+      overlay(sim,ctx,LH,k){const A=sim.def.art,x0=A.MX-A.MR,y0=A.MY-A.MR,W=2*A.MR;ctx.save();ctx.beginPath();ctx.arc(A.MX,A.MY,A.MR,0,6.29);ctx.clip();
+        ctx.fillStyle='#cfe2f2';ctx.fillRect(x0,y0,W,110);ctx.fillStyle='#3d6f9e';ctx.fillRect(x0,y0+110,W,W);ctx.fillStyle='#e9f5fb';ctx.fillRect(x0,y0+96,W,22);ctx.strokeStyle='#9cc3dc';ctx.lineWidth=1.5;ctx.strokeRect(x0-2,y0+96,W+4,22);
+        ctx.fillStyle='#6b5a3c';ctx.beginPath();ctx.moveTo(x0,y0+W);ctx.quadraticCurveTo(A.MX,y0+W-90,x0+W,y0+W);ctx.fill();
+        [[A.MX-40,A.MY+40],[A.MX+50,A.MY+70]].forEach(([fx,fy])=>{ctx.fillStyle='#c9a227';ctx.beginPath();ctx.ellipse(fx,fy,16,6,0,0,6.29);ctx.fill();ctx.beginPath();ctx.moveTo(fx+14,fy);ctx.lineTo(fx+24,fy-6);ctx.lineTo(fx+24,fy+6);ctx.fill();});ctx.restore();
+        tag(ctx,'ice: 0.92 g/mL (floats)',A.MX,y0+86,k,{s:12,hi:true});tag(ctx,'liquid water below stays about 4 °C',A.MX,A.MY+8,k,{s:12});tag(ctx,'1.00 g/mL',150,330,k,{s:12});} },
+    { key: 'warm', title: 'Water warms up slowly', speed: 0.3, run(sim){wSetT(sim,20);},
+      see: 'Liquid water at 20 °C heating up. The card shows the energy going in and how much the temperature has risen. In the zoom, molecules slide past each other, constantly breaking and re-forming hydrogen bonds.',
+      why: 'It takes 4.18 J to warm 1 g of water by 1 °C. That is water’s <b>specific heat</b>, and it is unusually high: dry sand needs only about 0.8 J. Before the molecules can speed up, some of the heat goes into tugging on hydrogen bonds.',
+      so: 'That is why beach sand can burn your feet while the water stays cool, and why oceans keep coastal weather mild.',
+      overlay(sim,ctx,LH,k){const c=sim.st.cur;wCard(ctx,k,[['Energy in: '+wE(sim).toFixed(1)+' kJ',700],['Warmed: +'+Math.max(0,c.T-20).toFixed(1)+' °C'],['4.18 J per g per °C']]);} },
+    { key: 'boil', title: 'Boiling: stuck at 100 °C', speed: 3, run(sim){wSet(sim,'boil',0);},
+      see: 'At 100 °C the water boils. Bubbles of steam rise, and the thermometer stays at 100 °C for a long time while the water level drops. In the zoom, molecules break free and fly off as gas.',
+      why: 'To become gas, a molecule has to break every hydrogen bond it has, not just loosen them. That takes 2,260 J per gram, about 7 times as much as melting. Until all of it has boiled away, the extra heat goes into breaking bonds, not raising the temperature.',
+      so: 'In Denver water boils at about 95 °C, and turning the burner up only makes it boil away faster, not get hotter.',
+      overlay(sim,ctx,LH,k){const c=sim.st.cur;wCard(ctx,k,[['Energy in: '+wE(sim).toFixed(1)+' kJ',700],['Temperature: '+c.T.toFixed(1)+' °C'],['Boiled away: '+Math.round((c.ph==='boil'?c.f:c.ph==='gas'?1:0)*100)+'%']]);} },
+    { key: 'steam', title: 'Steam gives the heat back', set: { dir: 'cool' }, speed: 3, run(sim){wSet(sim,'boil',1);},
+      see: 'Now the plate cools the steam. It condenses back into liquid, and the thermometer holds at 100 °C again while it does.',
+      why: 'When steam condenses, the hydrogen bonds form again and release the same 2,260 J per gram they took to break. That heat is released wherever the steam condenses, including on your skin.',
+      so: 'That is why steam burns worse than boiling water at the same temperature.',
+      overlay(sim,ctx,LH,k){const c=sim.st.cur;wCard(ctx,k,[['Heat released: '+(-wE(sim)).toFixed(1)+' kJ',700],['Temperature: '+c.T.toFixed(1)+' °C']]);} },
+    { lvl: 'honors', key: 'ethanol', title: 'Ethanol for comparison', set: { sub: 'ethanol' }, speed: 0.6, run(sim){wSetT(sim,20);},
+      see: 'Now the beaker holds ethanol, also starting at 20 °C on the same heater. Its temperature climbs much faster, and it boils at just 78 °C.',
+      why: 'Ethanol has only one O–H, so each molecule forms about half as many hydrogen bonds as water. Less heat goes into the bonds, so its specific heat is only 2.44 J/g·°C, and less energy is needed to pull its molecules apart.',
+      overlay(sim,ctx,LH,k){const c=sim.st.cur;wCard(ctx,k,[['Ethanol',700],['Warmed: +'+Math.max(0,c.T-20).toFixed(1)+' °C'],['2.44 J per g per °C']]);} },
+    { lvl: 'ap', key: 'latent', title: 'Measure the heat of fusion', speed: 0.6, run(sim){wSet(sim,'melt',0);},
+      see: 'The melt again. The card divides the energy added by the mass, live, while the temperature stays at 0 °C.',
+      why: 'During a phase change, the energy raises potential energy (bonds broken), not kinetic energy, so the temperature holds steady. When the plateau ends, energy ÷ mass is the latent heat of fusion: 334 J/g for water.',
+      overlay(sim,ctx,LH,k){const E=wE(sim)*1000;wCard(ctx,k,[['Q ÷ m',700],[E.toFixed(0)+' J ÷ '+sim.p.mass+' g'],['= '+(E/sim.p.mass).toFixed(0)+' J/g',700]]);} }
+  ],
+  useIt: [
+    { do: 'On hot, humid days, slow down, drink water and get into shade or air conditioning sooner.',
+      why: 'Sweat cools you because evaporating water carries a lot of heat away. When the humidity is high, sweat evaporates more slowly, so your body can’t release heat as fast (CDC).' },
+    { do: 'Open lids, microwave bags and steamy containers pointed away from your face.',
+      why: 'Steam releases 2,260 J for every gram that condenses on your skin, on top of being 100 °C. That is why steam burns worse than splashes of boiling water.' },
+    { do: 'On very cold nights, let a faucet on an outside wall drip.',
+      why: 'Water expands when it freezes, which can burst pipes. Even a trickle of running water helps keep the pipe from freezing (American Red Cross).' },
+    { do: 'Stay off a frozen lake or pond until the ice is at least 4 inches of solid, clear ice.',
+      why: 'Because ice floats, lakes freeze from the top down, and the thickness varies from place to place. Colorado Parks and Wildlife considers 4 inches of solid, clear ice safe for walking.' },
+    { do: 'Cook pasta and boiled eggs a little longer in Colorado.',
+      why: 'At high altitude water boils below 100 °C, about 95 °C in Denver. Turning the burner up doesn’t make boiling water hotter; it only boils away faster.' }
+  ],
+  tryIt: [
+    { title: 'the sinking ice cube (5 minutes)',
+      steps: ['Fill one clear glass with water and another with rubbing alcohol (with an adult’s OK; keep it away from flames).', 'Drop an ice cube into each glass.', 'Watch where each cube ends up.'],
+      look: 'The cube floats in water but sinks in rubbing alcohol. Ice (0.92 g/mL) is less dense than water (1.00) but denser than rubbing alcohol (about 0.8 to 0.9; 91% alcohol works best). Floating depends on density, not on ice being special.' },
+    { title: 'the wet finger (1 minute)',
+      steps: ['Wet one fingertip and leave another dry.', 'Blow gently across both at once.'],
+      look: 'The wet finger feels much colder. As the water evaporates, the fastest molecules escape and carry heat away from your skin. That is how sweat cools you.' }
+  ]
+}
+});
+/* ---------- food tests lab ---------- */
+const fTX=i=>i<8?62+i*62:560+(i-8)*58;
+function fAct(sim,id){const a=sim.def.actions.find(x=>x.id===id);if(a)a.run(sim);}
+/* a card in the empty top-right corner showing what the reagent does to the molecule */
+function fCard(ctx,k,title,sub){ctx.save();ctx.globalAlpha=0.97;ctx.fillStyle=PAL['cv-sol'];H.rr(ctx,290,12,498,104,10);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.stroke();ctx.restore();
+  H.txt(ctx,title,302,32,{s:13*k,w:700});if(sub)H.txt(ctx,sub,302,108,{s:11*k,c:PAL['cv-soft']});}
+function fTubeTag(ctx,k,i,s,hi){tag(ctx,s,fTX(i),132,k,{s:11.5,hi:hi!==false});}
+function helix(ctx,x0,y,len,col){ctx.save();ctx.strokeStyle=col||'#b9790f';ctx.lineWidth=3;ctx.beginPath();for(let t=0;t<=len;t+=2){const yy=y+Math.sin(t/9)*14,xx=x0+t;t?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);}ctx.stroke();
+  for(let t=4;t<len;t+=18){ctx.fillStyle=col||'#b9790f';ctx.beginPath();for(let j=0;j<6;j++){const a=Math.PI/6+j*Math.PI/3;ctx.lineTo(x0+t+Math.cos(a)*4.5,y+Math.sin(t/9)*14+Math.sin(a)*4.5);}ctx.closePath();ctx.fill();}ctx.restore();}
+
+BioLab.addLearn({
+foodtests: {
+  goals: {
+    bio: ['How each of the four reagents finds one kind of nutrient', 'What each color change means, and why Benedict’s needs heat', 'Why the plain-water tube matters (the negative control)', 'How to use a pattern of results to identify an unknown food'],
+    honors: ['How each of the four reagents finds one kind of nutrient', 'Why you need both negative and positive controls', 'How to use a pattern of results to identify an unknown food', 'Where the same tests show up at the doctor and in the kitchen'],
+    ap: ['What each reagent reacts with at the molecular level', 'Why Benedict’s is semi-quantitative, and why sucrose stays blue', 'How to use controls and patterns to identify unknowns', 'Where the same tests show up at the doctor and in the kitchen']
+  },
+  matters: 'Labels tell you what is in your food, but how do scientists know? Each of these tests is a chemical that changes color when it meets one kind of molecule. Doctors use the same idea in the urine test at a physical, and you use it every time you read a home test strip.',
+  question: 'Milk’s label lists sugar, protein and fat but no starch. If you test milk with all four reagents, which ones change color, and which one looks just like plain water?',
+  startKey: 'rack', startRun: false,
+  startOverlay(sim,ctx,LH,k){fTubeTag(ctx,k,0,'plain water');fTubeTag(ctx,k,5,'milk');tag(ctx,'Mystery foods',654,118,k,{s:12,hi:true});},
+  steps: [
+    { key: 'rack', title: 'The rack and the control', fresh: true, pause: true,
+      see: 'Eight known foods sit in the rack, with four mystery samples on the right. The tubes are about life size: real test tubes are about 15 cm tall. The first tube is plain water.',
+      why: 'Plain water has none of the nutrients, so whatever color it turns is what “no” looks like. That is the <b>negative control</b>. A result only counts if it looks different from the water tube.',
+      overlay(sim,ctx,LH,k){fTubeTag(ctx,k,0,'negative control');fCard(ctx,k,'Four reagents, four questions');[['Iodine','starch?','#c8892e'],['Biuret','protein?','#4b7fd8'],['Benedict’s','sugar?','#2f63c9'],['Sudan III','fat?','#d84a4a']].forEach(([n,q,c],i)=>{const x=306+i*120;ctx.fillStyle=c;H.rr(ctx,x,48,18,30,4);ctx.fill();H.txt(ctx,n,x+26,60,{s:12*k,w:700});H.txt(ctx,q,x+26,78,{s:12*k,c:PAL['cv-soft']});});} },
+    { key: 'iodine', title: 'Iodine finds starch', set: { reagent: 'iodine' }, speed: 1, run(sim){fAct(sim,'addAll');},
+      see: 'Amber-brown iodine drips into every tube. The starch and potato tubes turn blue-black. Everything else stays amber, like the water tube.',
+      why: 'Starch is a long glucose chain that coils into a spring (a helix). Iodine slips inside the coil, and that packed iodine looks blue-black. No coil, no color change.',
+      so: 'Bread, rice and pasta would turn dark too.',
+      overlay(sim,ctx,LH,k){fCard(ctx,k,'Iodine tucks into the starch coil','Colors are labels. Starch itself is white; iodine packed in the coil looks blue-black.');helix(ctx,300,70,300);
+        ctx.fillStyle='#3a2f6e';for(let x=318;x<590;x+=20){ctx.beginPath();ctx.arc(x,70,4.5,0,6.29);ctx.fill();}H.txt(ctx,'→ blue-black',620,74,{s:13*k,w:700,c:'#1e1b3b'});
+        fTubeTag(ctx,k,2,'starch');fTubeTag(ctx,k,6,'potato');} },
+    { key: 'biuret', title: 'Biuret finds protein', set: { reagent: 'biuret' }, speed: 1, run(sim){fAct(sim,'addAll');},
+      see: 'Blue Biuret reagent goes in. Egg white turns violet, milk and potato turn lilac, and the rest stay blue.',
+      why: 'Biuret contains copper ions. In a protein, amino acids are linked by peptide bonds, and the copper grabs onto the nitrogen atoms in those bonds. Copper held that way looks violet instead of blue. More protein, deeper violet.',
+      so: 'Meat, beans and yogurt would turn violet too.',
+      overlay(sim,ctx,LH,k){fCard(ctx,k,'Copper grabs the peptide bonds in a protein','Copper (Cu²⁺) is blue on its own and violet when it holds a protein chain.');
+        ctx.strokeStyle='#3f6fb0';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(300,64);for(let i=0;i<8;i++)ctx.lineTo(320+i*36,i%2?78:58);ctx.stroke();
+        for(let i=1;i<8;i+=2){ctx.fillStyle='#3f6fb0';ctx.beginPath();ctx.arc(320+i*36,78,5,0,6.29);ctx.fill();}
+        ctx.fillStyle='#7b3fb0';[356,500].forEach(x=>{ctx.strokeStyle='#7b3fb0';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,78);ctx.lineTo(x+18,89);ctx.lineTo(x+36,78);ctx.stroke();ctx.fillStyle='#7b3fb0';ctx.beginPath();ctx.arc(x+18,89,8,0,6.29);ctx.fill();H.txt(ctx,'Cu',x+18,90,{s:8.5,w:700,c:'#fff',a:'center',b:'middle'});});
+        H.txt(ctx,'→ violet',620,74,{s:13*k,w:700,c:'#7b3fb0'});fTubeTag(ctx,k,3,'egg white');fTubeTag(ctx,k,5,'milk');} },
+    { key: 'benedict', title: 'Benedict’s: nothing yet', set: { reagent: 'benedict' }, speed: 1, run(sim){fAct(sim,'addAll');},
+      see: 'Blue Benedict’s reagent goes into every tube, including glucose and apple juice, which are full of sugar. Every tube stays blue.',
+      why: 'Benedict’s finds sugars like glucose, but the reaction only happens when it is hot. Read it cold and you get a <b>false negative</b>: the sugar is there, but the test says no.',
+      overlay(sim,ctx,LH,k){fCard(ctx,k,'Benedict’s needs heat','Cold: the copper stays as blue Cu²⁺ ions, even with plenty of sugar.');fTubeTag(ctx,k,1,'glucose: still blue');} },
+    { key: 'heat', title: 'Into the hot water bath', set: { reagent: 'benedict' }, speed: 1, run(sim){fAct(sim,'heat');},
+      see: 'The rack goes into an 80 °C water bath. Over five minutes, the sugary tubes shift from blue to green, yellow, orange and finally brick red. Water and starch stay blue.',
+      why: 'Hot glucose hands electrons to the blue copper ions (Cu²⁺), turning them into copper(I) oxide, a red-orange solid that settles out. More sugar makes more of the solid, so the color goes further toward brick red.',
+      so: 'Before glucose meters existed, doctors checked urine for sugar this way.',
+      overlay(sim,ctx,LH,k){fCard(ctx,k,'Sugar + heat turns blue copper into a red solid','Benedict’s colors are real: Cu²⁺ is blue and copper(I) oxide is brick red.');
+        [['#2f63c9','none'],['#3f9d4a','trace'],['#d9c22e','low'],['#e07a22','medium'],['#a8341f','high']].forEach(([c,l],i)=>{const x=300+i*96;ctx.fillStyle=c;H.rr(ctx,x,48,26,32,5);ctx.fill();H.txt(ctx,l,x+32,68,{s:12*k,c:PAL['cv-ink']});});
+        fTubeTag(ctx,k,1,'glucose');fTubeTag(ctx,k,7,'apple juice');} },
+    { key: 'sudan', title: 'Sudan III finds fat', set: { reagent: 'sudan' }, speed: 1, run(sim){fAct(sim,'addAll');},
+      see: 'Red Sudan III drips in. In the oil and milk tubes, a red layer floats on top. In the rest, the dye just mixes into a pale pink with no layer.',
+      why: 'Sudan III is a dye that dissolves in fat but not in water. Fats and oils are less dense than water, so they float, and the dye goes up with them. A red layer on top means fat.',
+      overlay(sim,ctx,LH,k){fCard(ctx,k,'The dye dissolves in fat, and fat floats','Oil drops collect the red dye and rise to the top.');
+        ctx.fillStyle='#d9ecf5';H.rr(ctx,300,46,240,48,6);ctx.fill();ctx.fillStyle='#c8332e';H.rr(ctx,300,46,240,14,6);ctx.fill();[[340,78],[420,84],[480,72]].forEach(([x,y])=>{ctx.fillStyle='#e05a4a';ctx.beginPath();ctx.arc(x,y,6,0,6.29);ctx.fill();});
+        H.txt(ctx,'red layer = fat',556,74,{s:13*k,w:700,c:'#c8332e'});fTubeTag(ctx,k,4,'oil');fTubeTag(ctx,k,5,'milk');} },
+    { key: 'unknown', title: 'Identify a mystery food', speed: 1, run(sim){const st=sim.st;['iodine','biuret','benedict','sudan'].forEach(r=>st.tubes[r].forEach(tb=>{tb.added=1;tb.mix=1;tb.heat=5;tb.delay=0;}));BioLab.setValues(sim,{reagent:'benedict',tube:'8'});},
+      see: 'Every test has now been run on every tube, and unknown A is selected. The card lists its four results side by side.',
+      why: 'One test answers one question, so it takes all four to describe a food. Match the pattern of + and − to the known foods: each + tells you one nutrient that is in it.',
+      overlay(sim,ctx,LH,k){const res=sim.st.res[8]||{},nm={iodine:'starch',biuret:'protein',benedict:'sugar',sudan:'fat'};fCard(ctx,k,'Unknown A: four results, one food');
+        ['iodine','biuret','benedict','sudan'].forEach((r,i)=>{const o=res[r],x=300+i*122;ctx.fillStyle=o?o.col:'#ddd';H.rr(ctx,x,48,18,30,4);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.25)';ctx.stroke();H.txt(ctx,nm[r],x+26,60,{s:12*k,w:700});H.txt(ctx,o?(o.pos?'+ yes':'− no'):'…',x+26,78,{s:12*k,w:700,c:o&&o.pos?'#1b7a3a':PAL['cv-soft']});});
+        fTubeTag(ctx,k,8,'A');} },
+    { lvl: 'ap', key: 'sucrose', title: 'Why table sugar stays blue', speed: 1,
+      see: 'Look at the Benedict’s colors again. Glucose and apple juice turned brick red. Table sugar (sucrose), if it is one of the unknowns, stays blue even after heating.',
+      why: 'Benedict’s needs a sugar with a free reactive end (an aldehyde or ketone) to hand electrons to copper: a <b>reducing sugar</b>. In sucrose, the glycosidic bond ties up both glucose’s and fructose’s reactive ends, so nothing reacts until the bond is hydrolyzed.',
+      overlay(sim,ctx,LH,k){fCard(ctx,k,'Reducing sugars only','glucose, fructose, lactose, maltose: + · sucrose: − until split by acid or sucrase');} }
+  ],
+  useIt: [
+    { do: 'Always check the control line on a home test strip.',
+      why: 'A home test has its own control, just like the water tube. If the control line does not appear, the result is invalid and you need a new test (FDA).' },
+    { do: 'Know what the urine cup at a physical is checking.',
+      why: 'The dipstick has pads of chemicals that change color, like these reagents. Two of them look for sugar and protein, which should not normally be in urine (MedlinePlus).' },
+    { do: 'Pick bananas by what you need: green for less sweet, spotted for baking.',
+      why: 'Unripe fruit stores energy as starch, which iodine would turn black. As it ripens, enzymes cut the starch into sugar, which is why spotty bananas taste so sweet.' },
+    { do: 'Read a positive result against what “no” looks like before you decide.',
+      why: 'The water tube shows that a color only counts if it differs from the control. The same habit keeps you from misreading strips, pool test kits and lab results.' }
+  ],
+  tryIt: [
+    { title: 'the brown paper bag test (10 minutes)',
+      steps: ['Cut a brown paper bag into squares and label them.', 'Rub a little of each food onto its square: butter, a potato chip, an apple slice, bread, water.', 'Let them dry for 10 minutes, then hold each square up to a window.'],
+      look: 'The butter and chip leave see-through spots that never dry. Water dries and disappears. Fat soaks into paper and stays, the same property Sudan III uses.' },
+    { title: 'iodine on a potato and an apple (with an adult)',
+      steps: ['Cut a slice of raw potato and a slice of apple. Don’t eat them afterward.', 'Put one drop of iodine tincture from a first-aid kit on each.', 'Wait one minute and compare.'],
+      look: 'The potato turns blue-black: it is packed with starch. A ripe apple barely darkens, because ripening turned its starch into sugar. Orchard growers use this test to decide when to pick.' }
+  ]
+}
+});
 })();
