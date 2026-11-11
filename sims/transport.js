@@ -53,6 +53,7 @@ function drawMol(sim,ctx,vdt,k,t,X0,Y0,MX){const p=sim.p,s=sim.st,v=sim.vis,M=MO
   const ly=Y0+410;dot({x:X0+16,y:ly-4},4.2);txt(ctx,M.name,X0+26,ly,{s:11.5*k,c:PAL['cv-soft']});
   txt(ctx,p.mol==='o2'?'no protein needed':p.mol==='glucose'?'carrier protein':'pump and channel',X0+290,ly,{s:11.5*k,c:PAL['cv-soft'],a:'right'});}
 const TR={
+  art:{CX,CY,MX:650,X0:493,chY:[135,325]},
   id:'transport',hash:'transport',apUnit:2,order:4,kind:'Simulation',tab:'Membrane transport and osmosis',
   card:'Drop a red blood cell or a plant cell into salt water and watch water rush in or out.',
   title:'Membrane transport and osmosis',
@@ -259,7 +260,8 @@ const TR={
     // crossing water molecules
     const base=p.aqua?1.8:0.3,net=clamp(s.flow/4,-3,3);
     v.inAcc+=base*(1+Math.max(0,net))*vdt;v.outAcc+=base*(1+Math.max(0,-net))*vdt;
-    const spawn=dir=>{const y=p.aqua?chY[R()<.5?0:1]+(R()-.5)*16:70+R()*320;v.cross.push({x:dir>0?MX-38:MX+38,y,dir});};
+    const spawn=dir=>{const y=p.aqua?chY[R()<.5?0:1]+(R()-.5)*16:70+R()*320;v.cross.push({x:dir>0?MX-38:MX+38,y,dir});if(sim.lnKey)(v.xT=v.xT||[]).push([t,dir]);};
+    if(!sim.lnKey)v.xT=[];else if(v.xT&&v.xT.length>400)v.xT.splice(0,v.xT.length-400);
     while(v.inAcc>=1){v.inAcc--;spawn(1);}while(v.outAcc>=1){v.outAcc--;spawn(-1);}
     v.cross.forEach(c=>{c.x+=c.dir*(p.aqua?38:16)*vdt;dot(c,PAL['s2'],3.6);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1;ctx.stroke();});
     v.cross=v.cross.filter(c=>Math.abs(c.x-MX)<40);if(v.cross.length>40)v.cross.splice(0,v.cross.length-40);

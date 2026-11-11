@@ -91,7 +91,7 @@ function applyLearn(d){const L=LEARN[d.id];if(!L)return;d.learn=L;const P=d.prac
     setup(sim){BL.setValues(sim,Object.assign({},defs));BL.reset(sim);}};
   const steps=(L.steps||[]).map(s=>({title:s.title,lvl:s.lvl,focus:s.focus,speed:s.speed,pause:s.pause,key:s.key,overlay:s.overlay,
     text:lnLv(l=>{const see=lnPick(s.see,l),why=lnPick(s.why,l),so=lnPick(s.so,l);return `${see?`<p class="ln-k">What you see</p><p>${see}</p>`:''}${why?`<p class="ln-k">Why it happens</p><p>${why}</p>`:''}${so?`<p class="ln-k">Why it matters</p><p>${so}</p>`:''}`;}),
-    setup(sim){if(s.set){BL.setValues(sim,Object.assign({},defs,s.set));if(s.fresh)BL.reset(sim);}else if(Object.keys(defs).some(k=>sim.p[k]!==defs[k])){BL.setValues(sim,Object.assign({},defs));BL.reset(sim);}if(s.run)s.run(sim);}}));
+    setup(sim){const bs=Object.assign({},defs,s.base||{}),df=o=>{const r={};for(const q in o)if(sim.p[q]!==o[q])r[q]=o[q];return r;};if(s.fresh){BL.setValues(sim,df(bs));BL.reset(sim);if(s.set)BL.setValues(sim,df(s.set));}else if(s.set||s.base){BL.setValues(sim,df(Object.assign(bs,s.set||{})));}else if(Object.keys(defs).some(q=>sim.p[q]!==defs[q])){BL.setValues(sim,df(bs));BL.reset(sim);}if(s.run)s.run(sim);}}));
   d.tour=[start].concat(steps);}
 const bioOver=(t,n)=>!n?t:(t&&typeof t==='object')?Object.assign({},t,{bio:n}):(t?{bio:n,honors:t}:n);
 function applyPractical(d){const P=PRACT[d.id];if(!P)return;d.practical=P;
