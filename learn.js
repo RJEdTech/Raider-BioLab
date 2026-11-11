@@ -687,4 +687,81 @@ foodtests: {
   ]
 }
 });
+/* ---------- acids, bases and buffers ---------- */
+const phY=pH=>32+25.7*pH;
+const phM=(sim,id)=>{const m=sim.def.metrics.find(x=>x.id===id);return m?m.get(sim):NaN;};
+function phDrops(sim,n){for(let i=0;i<n;i+=5)fAct(sim,'drop5');}
+function phCard(ctx,k,lines,x,y,w){x=x||14;y=y||124;w=w||196;const h=12+lines.length*19;ctx.save();ctx.globalAlpha=0.97;ctx.fillStyle=PAL['cv-sol'];H.rr(ctx,x,y,w,h,8);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.stroke();ctx.restore();
+  lines.forEach((L,i)=>H.txt(ctx,L[0],x+9,y+19+i*19,{s:(L[2]||12)*k,w:L[1]||500,c:L[3]||PAL['cv-ink']}));}
+function phTimes(pH){const r=Math.pow(10,7-pH);if(Math.abs(Math.log10(r))<0.02)return 'same H⁺ as pure water';const v=r>1?r:1/r,s=v>=1000?Math.round(v).toLocaleString('en-US'):v<10?v.toFixed(1):Math.round(v);return s+'× '+(r>1?'more':'less')+' H⁺ than water';}
+const PH_THINGS=[['Lemon juice',2],['Cola',2.5],['Coffee',5],['Milk',6.7],['Pure water',7],['Blood',7.4],['Seawater',8.1],['Baking soda in water',8.3],['Household ammonia',11.6],['Bleach',12.5]];
+
+BioLab.addLearn({
+phlife: {
+  goals: {
+    bio: ['What the pH number counts, and why one step means ten times', 'Why a few drops of acid wreck the pH of pure water', 'How a buffer, like the one in your blood, catches extra H⁺', 'Why enzymes need the right pH, and what that means for teeth, pools and gardens'],
+    honors: ['What the pH number counts, and why one step means ten times', 'How a buffer catches extra H⁺, and why blood’s buffer needs your lungs', 'Why blood must stay between pH 7.35 and 7.45', 'Why enzymes need the right pH, and what that means for teeth, pools and gardens'],
+    ap: ['pH = −log[H⁺], and what a factor of ten means', 'How buffer pairs work, with Henderson–Hasselbalch', 'Why blood’s bicarbonate buffer depends on the lungs', 'How pH changes enzyme activity']
+  },
+  matters: 'Every enzyme in you is built to work at one pH. Your blood has to stay between 7.35 and 7.45, while your stomach sits near 2. The same chemistry decides whether soda eats your teeth and why Colorado gardeners struggle to grow blueberries.',
+  question: 'Five drops of acid go into a cup of pure water, and five more go into blood. Why does the water’s pH crash while the blood’s barely moves?',
+  startKey: 'scale', startRun: false,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'pH meter',268,82,k,{s:12,hi:true});tag(ctx,'The pH scale',686,22,k,{s:12,hi:true});tag(ctx,'Where the added H⁺ goes',454,6+12,k,{s:12,hi:true});},
+  steps: [
+    { key: 'scale', title: 'The pH scale counts H⁺', fresh: true, pause: true, set: { sol: 'water', reag: 'acid' },
+      see: 'Things you know, placed on the pH scale. Lemon juice and cola sit near 2–3, pure water at 7, blood just above 7, and bleach near 12.5. The colors on the bar are the real colors of universal indicator at each pH.',
+      why: 'pH counts hydrogen ions (H⁺). The lower the number, the more H⁺ and the more <b>acidic</b>; above 7 is <b>basic</b>. Each step is ten times: pH 5 has 100 times more H⁺ than pH 7, and pH 2 has 100,000 times more.',
+      overlay(sim,ctx,LH,k){ctx.save();ctx.fillStyle=PAL['cv-bg'];H.rr(ctx,330,10,250,432,10);ctx.fill();ctx.restore();H.txt(ctx,'pH of things you know',342,32,{s:13*k,w:700});
+        let prevY=30;PH_THINGS.forEach(([n,p])=>{const yb=phY(p);let y=Math.max(yb,prevY+28);prevY=y;H.txt(ctx,n+'  '+p,342,y+4,{s:12*k,w:600});ctx.save();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(500,y);ctx.lineTo(560,y);ctx.lineTo(598,yb);ctx.stroke();ctx.restore();});} },
+    { key: 'water', title: 'Acid into pure water', set: { sol: 'water', reag: 'acid' }, fresh: true, speed: 0.3, run(sim){phDrops(sim,5);},
+      see: 'Five drops of acid, a quarter of a milliliter, go into 50 mL of pure water. The pH meter drops from 7.00 to about 3.3, and the indicator turns red.',
+      why: 'Pure water has nothing in it to catch the added H⁺, so every one of them stays free and counts toward the pH. From pH 7 to 3.3 is about 5,000 times more H⁺.',
+      overlay(sim,ctx,LH,k){const p=phM(sim,'ph');phCard(ctx,k,[['pH '+p.toFixed(2),700,15],[phTimes(p)]]);} },
+    { key: 'free', title: 'Nothing catches the H⁺', pause: true,
+      see: 'Look at the panel in the middle. It shows where the added H⁺ went: in pure water, every one is still floating free.',
+      why: 'Free H⁺ is what makes a liquid acidic. With nothing to grab them, a tiny amount of acid makes a huge change.',
+      overlay(sim,ctx,LH,k){tag(ctx,'every H⁺ stays free',454,236,k,{s:12,hi:true});} },
+    { key: 'buffer', title: 'A buffer catches H⁺', set: { sol: 'cell', reag: 'acid' }, fresh: true, speed: 0.3, run(sim){phDrops(sim,5);},
+      see: 'The same 5 drops go into phosphate buffer, the kind inside your cells. The middle panel shows each H⁺ being caught. The pH meter only slips from 7.20 to about 7.16.',
+      why: 'A <b>buffer</b> is a pair of chemicals that soak up extra acid or base. Here HPO₄²⁻ grabs each H⁺ and becomes H₂PO₄⁻, so the H⁺ no longer floats free and the pH barely moves.',
+      overlay(sim,ctx,LH,k){const p=phM(sim,'ph');phCard(ctx,k,[['pH '+p.toFixed(2),700,15],['buffer caught almost all of it']]);tag(ctx,'HPO₄²⁻ + H⁺ → H₂PO₄⁻',454,236,k,{s:12,hi:true});} },
+    { key: 'blood', title: 'Blood’s buffer uses your lungs', set: { sol: 'blood', reag: 'acid', lungs: true }, fresh: true, speed: 0.3, run(sim){phDrops(sim,5);},
+      see: 'Now blood’s buffer, with breathing switched on. The same 5 drops of acid barely move the pH from 7.40.',
+      why: 'Blood uses bicarbonate: HCO₃⁻ + H⁺ → H₂CO₃ → CO₂ + H₂O. The extra acid turns into CO₂, and your lungs breathe the CO₂ out, so the buffer pair stays balanced.',
+      so: 'That is one reason you breathe harder during hard exercise: working muscles make extra CO₂ and acid, and breathing blows it off.',
+      overlay(sim,ctx,LH,k){const p=phM(sim,'ph');phCard(ctx,k,[['pH '+p.toFixed(2),700,15],['lungs carry the CO₂ away']]);} },
+    { key: 'sealed', title: 'Too much acid: acidosis', set: { sol: 'blood', reag: 'acid', lungs: false }, fresh: true, speed: 0.3, run(sim){phDrops(sim,30);},
+      see: 'Blood buffer in a sealed beaker, with 30 drops. The CO₂ has nowhere to go, the buffer runs low, and the pH falls to about 6.8, far outside blood’s safe band.',
+      why: 'Blood has to stay between pH 7.35 and 7.45. Below 7.35 is <b>acidosis</b>: the extra H⁺ changes the charges on proteins, so enzymes and other proteins stop working properly. A buffer can only absorb so much.',
+      overlay(sim,ctx,LH,k){const p=phM(sim,'ph');phCard(ctx,k,[['pH '+p.toFixed(2),700,15,p<7.35?'#b3261e':PAL['cv-ink']],[p<7.35?'below 7.35: acidosis':'inside the safe range']]);ctx.save();ctx.strokeStyle='#c8102e';ctx.lineWidth=3;ctx.strokeRect(598,phY(7.35),28,phY(7.45)-phY(7.35));ctx.restore();} },
+    { key: 'stomach', title: 'Enzymes need their pH', set: { sol: 'stomach', enz: 'pepsin' }, fresh: true, pause: true,
+      see: 'The beaker now holds stomach acid, pH 2. The bottom panel shows pepsin, the enzyme that cuts protein in your stomach, working at its best.',
+      why: 'Each enzyme’s shape is held by charges, and pH changes those charges. Pepsin is built for pH 2. Put it in blood at 7.4 and it is at almost 0%, while amylase in saliva and trypsin in the small intestine are built for pH 7 to 8.',
+      overlay(sim,ctx,LH,k){tag(ctx,'pepsin: built for pH 2',454,276,k,{s:12,hi:true});} },
+    { key: 'antacid', title: 'Neutralizing acid', set: { sol: 'stomach', reag: 'base', enz: 'pepsin' }, fresh: true, speed: 0.4, run(sim){phDrops(sim,100);},
+      see: 'One hundred drops of base go into the stomach acid. The pH jumps toward 7, the indicator turns green, and pepsin’s activity falls to almost nothing.',
+      why: 'Each OH⁻ from the base meets an H⁺ and makes water: H⁺ + OH⁻ → H₂O. That is <b>neutralization</b>. Antacids for heartburn work the same way, with weaker bases like calcium carbonate.',
+      overlay(sim,ctx,LH,k){const p=phM(sim,'ph');phCard(ctx,k,[['pH '+p.toFixed(2),700,15],['H⁺ + OH⁻ → H₂O']]);} },
+    { lvl: 'ap', key: 'hh', title: 'Henderson–Hasselbalch', set: { sol: 'blood', lungs: false }, fresh: true, pause: true,
+      see: 'Fresh blood buffer. The card reads the buffer pair straight from the model.',
+      why: 'pH = pKa + log([HCO₃⁻] ÷ [CO₂]) = 6.1 + log(24 ÷ 1.2) = 7.40. A buffer works best near its pKa. Blood sits 1.3 units above bicarbonate’s pKa, so it relies on the lungs (CO₂) and kidneys (HCO₃⁻) to hold the ratio near 20.',
+      overlay(sim,ctx,LH,k){phCard(ctx,k,[['Henderson–Hasselbalch',700],[String(phM(sim,'hh')),500,11]],14,124,192);} }
+  ],
+  useIt: [
+    { do: 'Drink soda or sports drinks with a meal, not in sips all day, and rinse with water after.',
+      why: 'Tooth enamel begins to dissolve below pH 5.5, and many soft drinks are near pH 2.5 to 3.5. Every sip restarts the acid attack (American Association of Orthodontists).' },
+    { do: 'Check a pool’s pH and chlorine before you swim.',
+      why: 'CDC recommends pool water between pH 7.0 and 7.8. Above 8, chlorine kills germs poorly; below 7, the water irritates eyes and skin and corrodes pipes.' },
+    { do: 'In Colorado, grow blueberries in pots of acidic mix, not in the yard.',
+      why: 'Blueberries need soil around pH 4 to 5.5, while Colorado soils are usually 7.0 to 8.3. That soil is so well buffered by lime that you can’t practically lower it (CSU Extension).' },
+    { do: 'Take antacids only as the label directs.',
+      why: 'An antacid is a weak base that neutralizes stomach acid. Your stomach needs some acid to digest protein, since pepsin only works near pH 2.' }
+  ],
+  tryIt: [
+    { title: 'red cabbage pH indicator (20 minutes, with an adult)',
+      steps: ['Chop a few red cabbage leaves, cover them with very hot water and let them sit for 10 minutes. Pour off the purple juice.', 'Put a little juice in several clear cups.', 'Add vinegar to one, lemon juice to another, baking soda to another and plain water to the last.'],
+      look: 'Acids turn the juice pink or red, plain water leaves it purple, and baking soda turns it blue or green. The cabbage pigment changes shape as it gains or loses H⁺, just like universal indicator.' }
+  ]
+}
+});
 })();
