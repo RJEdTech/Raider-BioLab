@@ -920,4 +920,124 @@ waterprops: {
   ]
 }
 });
+/* ---------- water potential ---------- */
+const WPX=214,WPY=262,WPW=104,WPH=70;            // cell centre and half-size at the start (208 px = 50 µm)
+const wpPsi=(i,C,T)=>-i*C*0.0831*(T+273);
+const wpI=sim=>({sucrose:1,nacl:2,cacl2:3})[sim.p.solute]||1;
+const wpS=x=>(x<-0.004?'−':'')+Math.abs(x).toFixed(2);
+function wpCard(ctx,k,lines,x,y,w,maxH){const lh=maxH?Math.min(20,(maxH-12)/lines.length):20,h=12+lines.length*lh;ctx.save();ctx.globalAlpha=0.97;ctx.fillStyle=PAL['cv-sol'];H.rr(ctx,x,y,w,h,8);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.stroke();ctx.restore();
+  lines.forEach((l,j)=>{const o=typeof l==='string'?[l]:l;H.txt(ctx,o[0],x+10,y+lh+2+j*lh,{s:Math.min((o[2]||13)*Math.min(k,1.3),lh*0.8),w:o[1]||500,c:o[3]||PAL['cv-ink']});});}
+function wpBox(ctx,x,y,w,h,tau){const a=0.5+0.5*Math.sin((tau||0)*4);ctx.save();ctx.strokeStyle='#c8102e';ctx.lineWidth=3;ctx.globalAlpha=0.55+0.45*a;H.rr(ctx,x,y,w,h,10);ctx.stroke();ctx.restore();}
+/* the lower right card area (the verdict card) used for close-ups */
+/* matches the tool's card layout: the verdict card starts below the cell and solution cards, whose height grows with k */
+function wpQ(k){const lh=13*Math.min(k,1.35)*1.5,y=40+lh*10.8;return {x:424,y,w:368,h:450-y-6};}
+function wpPanel(ctx,k){const q=wpQ(k);ctx.save();ctx.fillStyle=PAL['cv-sol'];H.rr(ctx,q.x,q.y,q.w,q.h,10);ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.stroke();ctx.restore();return q;}
+function wpPlantAt(ctx,sim,k,q){const sc=Math.min(1,(q.h-12)/170);ctx.save();ctx.translate(q.x+96,q.y+q.h-54*sc);ctx.scale(sc,sc);wpPlant(ctx,sim,k,0,0);ctx.restore();}
+function wpSide(ctx,k,q,lines){lines.forEach((l,j)=>{const o=typeof l==='string'?[l]:l;H.txt(ctx,o[0],q.x+176,q.y+28+j*Math.min(22,(q.h-30)/lines.length),{s:(o[2]||12.5)*Math.min(k,1.3),w:o[1]||400,c:o[3]||PAL['cv-ink']});});}
+/* red onion skin under a microscope: long brick-shaped cells; the purple sap shrinks away from the walls as the cell loses water */
+function wpOnion(ctx,sim,k,cx,cy,R){const V=sim.st.V,f=V<1?Math.sqrt(Math.max(0.3,V)):1;ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.clip();
+  ctx.fillStyle='#eef0e6';ctx.fillRect(cx-R,cy-R,2*R,2*R);
+  const cw=R*0.95,ch=R*0.36;
+  for(let r=-3;r<=3;r++){const off=(r%2)*cw*0.5;for(let c=-2;c<=2;c++){const x=cx+c*cw+off-cw/2,y=cy+r*ch-ch/2;
+    ctx.strokeStyle='#a39a7c';ctx.lineWidth=2.4;ctx.strokeRect(x,y,cw,ch);
+    const pw=(cw-6)*f,ph=(ch-6)*(f<1?Math.max(0.55,f):1);ctx.fillStyle='rgba(150,40,120,0.72)';H.rr(ctx,x+cw/2-pw/2,y+ch/2-ph/2,pw,ph,f<1?ph/2:3);ctx.fill();}}
+  ctx.restore();ctx.save();ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.stroke();ctx.restore();}
+/* a potted seedling whose stem droops as its cells lose water */
+function wpPlant(ctx,sim,k,x,y){const V=sim.st.V,droop=V>=1.02?0:clamp((1.02-V)/0.2,0,1),ang=droop*1.25;ctx.save();
+  ctx.fillStyle='#a5582c';ctx.beginPath();ctx.moveTo(x-34,y);ctx.lineTo(x+34,y);ctx.lineTo(x+26,y+46);ctx.lineTo(x-26,y+46);ctx.closePath();ctx.fill();ctx.fillStyle='#5b3a1e';ctx.fillRect(x-36,y-6,72,8);
+  ctx.strokeStyle='#3f8f2e';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x,y-6);
+  const L=96,N=12;let px=x,py=y-6,a=-Math.PI/2;const pts=[];for(let i=1;i<=N;i++){a+=ang/N*(i>N*0.35?1.6:0.3);px+=Math.cos(a)*L/N;py+=Math.sin(a)*L/N;ctx.lineTo(px,py);pts.push([px,py,a]);}ctx.stroke();
+  const leaf=(p,side)=>{ctx.save();ctx.translate(p[0],p[1]);ctx.rotate(p[2]+side*(1.1-0.5*droop)+droop*0.6);ctx.fillStyle='#4fa63a';ctx.beginPath();ctx.ellipse(16,0,17,7,0,0,6.29);ctx.fill();ctx.restore();};
+  leaf(pts[5],-1);leaf(pts[5],1);leaf(pts[N-1],-1);leaf(pts[N-1],1);ctx.restore();}
+/* a Ψ number line across the lower-right panel: 0 on the right, more negative to the left */
+function wpLadder(ctx,sim,k){const q=wpPanel(ctx,k),kk=Math.min(k,1.3),x0=q.x+30,x1=q.x+q.w-30,y=q.y+q.h*0.62,lo=-16,X=v=>x1-(x1-x0)*clamp(v/lo,0,1);
+  const c=phM(sim,'psic'),s=phM(sim,'psisol'),eq=Math.abs(c-s)<0.05;
+  H.txt(ctx,eq?'Equal Ψ: no net flow':'Water flows downhill: higher Ψ → lower Ψ',q.x+14,q.y+24*kk,{s:13*kk,w:700,c:eq?PAL['cv-ink']:'#1d6fd6'});
+  ctx.save();ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();
+  for(let v=0;v>=lo;v-=4){ctx.beginPath();ctx.moveTo(X(v),y-5);ctx.lineTo(X(v),y+5);ctx.stroke();H.txt(ctx,v===0?'0':'−'+(-v),X(v),y+20*kk,{s:11.5*kk,a:'center'});}
+  H.txt(ctx,'Ψ (bar)',x0-6,y+38*kk,{s:11.5*kk,c:PAL['cv-soft']});
+  const dot=(v,col,lab,up)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(X(v),y,8,0,6.29);ctx.fill();H.txt(ctx,lab+' '+wpS(v),X(v),up?y-16*kk:y+38*kk,{s:12*kk,w:700,c:col,a:'center'});};
+  dot(s,'#1d6fd6','solution',true);dot(c,'#2a7a3a','cell',false);
+  if(!eq){const xa=X(Math.max(c,s)),xb=X(Math.min(c,s)),ya=y-40*kk;ctx.strokeStyle='#1d6fd6';ctx.fillStyle='#1d6fd6';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xa,ya);ctx.lineTo(xb+10,ya);ctx.stroke();ctx.beginPath();ctx.moveTo(xb,ya);ctx.lineTo(xb+12,ya-6);ctx.lineTo(xb+12,ya+6);ctx.closePath();ctx.fill();
+    H.txt(ctx,'water',(xa+xb)/2,ya-8,{s:12*kk,w:700,c:'#1d6fd6',a:'center'});}
+  ctx.restore();}
+
+BioLab.addLearn({
+wpotential: {
+  goals: {
+    bio: ['What water potential (Ψ) is and why it predicts which way water moves', 'How to work out Ψs = −iCRT from a real solution', 'Why a plant cell in plain water firms up and in strong sugar water pulls away from its wall', 'Why plants wilt, and why watering them makes them stand back up'],
+    honors: ['What water potential (Ψ) is and why it predicts which way water moves', 'How to work out Ψs = −iCRT, including i for salts', 'Why a plant cell in plain water firms up and in strong sugar water pulls away from its wall', 'Why plants wilt, and why watering them makes them stand back up'],
+    ap: ['How to use Ψ = Ψp + Ψs and Ψs = −iCRT from the AP formula sheet', 'How to predict the direction of water movement from two Ψ values', 'How to find Ψp of a cell at equilibrium', 'Why the zero point of the potato lab gives the cells’ water potential']
+  },
+  matters: 'Water moves in and out of every cell you have ever seen, and you cannot watch it happen. Water potential is a single number that tells you which way it will go before it moves. Plants use it to stand up, farmers use it to water fields, and it is on the AP Biology formula sheet.',
+  question: 'A plant cell full of sap sits in a beaker. If you change what is dissolved in the beaker, how can one number tell you whether the cell will swell, stay the same, or shrink away from its wall?',
+  startKey: 'cell', startRun: true, startSpeed: 0.5,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'One plant cell, about 50 µm long',214,74,k,{s:13});scaleBar(ctx,52,400,83,'20 µm',k);tag(ctx,'The live equations, with this moment’s numbers',608,144,k,{s:13});},
+  steps: [
+    { key: 'cell', title: 'Meet the plant cell', base: { conc: 0.1, solute: 'sucrose', csap: 0.3, temp: 22 }, fresh: true, speed: 0.5,
+      see: 'One plant cell, drawn to scale: about 50 µm long, so 20 of them end to end make 1 mm. The thick olive line is the <b>cell wall</b>, the green edge just inside is the <b>membrane</b>, and the big blue space is the <b>vacuole</b>, a bag of watery sap. The brown dots are sugars and salts dissolved in the sap.',
+      why: 'The membrane lets water through but holds the dissolved particles in, and the stiff wall stops the cell from stretching too far. The colors are labels: a real cell looks mostly clear and green, and in a red onion the sap is purple.',
+      overlay(sim,ctx,LH,k){scaleBar(ctx,52,400,83,'20 µm',k);tag(ctx,'cell wall (stiff)',330,150,k,{s:12});line(ctx,330,162,300,198);
+        tag(ctx,'membrane',96,190,k,{s:12});line(ctx,96,202,122,232);tag(ctx,'brown dots: dissolved sugars and salts',236,98,k,{s:12});line(ctx,236,110,196,226);} },
+    { key: 'zero', title: 'Pure water: Ψ = 0', set: { conc: 0 }, fresh: true, speed: 0.5,
+      see: 'The beaker now holds pure water, so its card shows Ψ = 0. Blue drops move into the cell, the cell swells against its wall, and the wall pushes back: watch Ψp climb in the top card.',
+      why: '<b>Water potential (Ψ)</b> measures how ready water is to move. Pure water in an open beaker is set at 0, the top of the scale. Anything dissolved in water lowers its Ψ below 0. The cell’s sap is full of solute, so the cell starts below 0 and water moves in.',
+      so: 'This is why a plant cell is firm in fresh water. The wall stops it from bursting.',
+      overlay(sim,ctx,LH,k,tau){wpBox(ctx,424,148,368,96,tau);tag(ctx,'pure water: Ψ = 0, the highest Ψ there is',214,82,k,{s:12.5,hi:true,c:'#1d6fd6'});} },
+    { key: 'psis', title: 'Add sugar: Ψs = −iCRT', set: { conc: 0.3 }, fresh: true, speed: 0.5,
+      see: 'The beaker now holds 0.30 M sugar (sucrose). The card on the left breaks the solution’s Ψ into the four numbers in Ψs = −iCRT, and the boxed solution card shows the same answer.',
+      why: '<b>i</b> is how many particles each unit makes when it dissolves (sucrose stays whole, so 1). <b>C</b> is the concentration in mol/L. <b>R</b> is a constant, 0.0831. <b>T</b> is the temperature in kelvin. More dissolved particles make Ψs more negative.',
+      overlay(sim,ctx,LH,k,tau){const T=sim.p.temp;wpBox(ctx,424,148,368,96,tau);const q=wpPanel(ctx,k);
+        wpCard(ctx,k,[['Ψs = −iCRT',800,14],'i = 1  (sucrose stays whole)','C = '+sim.p.conc.toFixed(2)+' mol/L','R = 0.0831 L·bar/(mol·K)','T = '+T+' + 273 = '+(T+273)+' K',['Ψs = '+wpS(wpPsi(1,sim.p.conc,T))+' bar',800,14,'#1d6fd6']],q.x+8,q.y+8,352,q.h-16);} },
+    { key: 'compare', title: 'Water flows from higher Ψ to lower Ψ', base: { conc: 0.3 }, set: { conc: 0.1 }, fresh: true, speed: 0.25,
+      see: 'The number line at the bottom right puts the solution (blue) and the cell (green) on one Ψ scale, with 0 on the right. The arrow shows the way water moves. Watch the green dot slide right as water enters, until the two dots meet.',
+      why: 'Water always moves from <b>higher Ψ to lower Ψ</b>, like a ball rolling downhill. 0.10 M sugar is −2.45 bar; the cell starts near −7.35 bar, lower, so water moves in. As the cell swells, its sap gets more dilute and its wall pushes harder, both of which raise its Ψ. Flow stops when the two are equal.',
+      overlay(sim,ctx,LH,k){wpLadder(ctx,sim,k);} },
+    { key: 'plasmo', title: 'Strong sugar water: plasmolysis', set: { conc: 0.6 }, fresh: true, speed: 0.6,
+      see: 'The beaker holds 0.60 M sugar, Ψ = −14.7 bar, far below the cell. Water drops leave, and the cell’s green membrane pulls in from the olive wall. The microscope view on the right shows the same thing in real red onion skin cells: the purple sap shrinks away from each wall.',
+      why: 'Now the solution has the lower Ψ, so water leaves the cell. The wall stops pushing (Ψp = 0), and the membrane pulls away from the wall. That is <b>plasmolysis</b>. The cell does not burst or collapse, because the wall keeps its shape.',
+      so: 'You can see this in class: a drop of salt water on red onion skin under a microscope.',
+      overlay(sim,ctx,LH,k){const q=wpPanel(ctx,k),R=Math.min(74,q.h/2-8);wpOnion(ctx,sim,k,q.x+12+R,q.y+q.h/2,R);
+        wpSide(ctx,k,q,[['Red onion skin, ×100',700,13],'Real cells: about','0.3 mm long. The purple','is real pigment in the sap.',[sim.st.V<0.99?'Sap pulls away from walls.':'Sap fills each cell.',700,12.5,'#b3261e']]);} },
+    { key: 'wilt', title: 'Why plants wilt', set: { conc: 0.4 }, fresh: true, speed: 0.6,
+      see: 'The cell starts firm, then 0.40 M sugar water pulls water out of it. The plant on the right is built from cells like this one: as the cell loses water and goes from turgid to flaccid, the stem bends over.',
+      why: 'A plant has no skeleton. Its stems and leaves stand up because millions of firm cells push on their walls (<b>Ψp > 0</b>), like a bike tire full of air. When the soil water’s Ψ drops below the roots’ Ψ, from drought or too much salt, the cells lose water, Ψp falls to 0, and the plant <b>wilts</b>.',
+      overlay(sim,ctx,LH,k){const q=wpPanel(ctx,k);wpPlantAt(ctx,sim,k,q);const st=sim.st.V<0.99?'plasmolyzed':sim.st.V>1.02?'turgid':'flaccid';
+        wpSide(ctx,k,q,[['The whole plant',700,13],['Cells: '+st,700,12.5,st==='turgid'?'#2a7a3a':'#b3261e'],'Ψp = '+wpS(phM(sim,'psip'))+' bar']);} },
+    { key: 'water', title: 'Water it and it stands back up', set: { conc: 0 }, speed: 0.3,
+      see: 'Same wilted plant, now in pure water. Water flows back into the cell, the wall starts pushing again, and the stem lifts.',
+      why: 'Fresh water has a higher Ψ (0) than the cells, so water moves back in. Ψp rises, the cells firm up, and the stem stands up again. A plant wilted by dry soil usually recovers within hours of watering, as long as its cells were not damaged.',
+      overlay(sim,ctx,LH,k){const q=wpPanel(ctx,k);wpPlantAt(ctx,sim,k,q);const st=sim.st.V<0.99?'plasmolyzed':sim.st.V>1.02?'turgid':'flaccid';
+        wpSide(ctx,k,q,[['After watering',700,13],['Cells: '+st,700,12.5,st==='turgid'?'#2a7a3a':'#b3261e'],'Ψp = '+wpS(phM(sim,'psip'))+' bar']);} },
+    { lvl: 'honors', key: 'salt', title: 'Salt counts double', set: { conc: 0.3, solute: 'nacl' }, fresh: true, speed: 0.6,
+      see: 'Same 0.30 M, but the solute is now table salt, NaCl. The card shows each NaCl splitting into a Na⁺ and a Cl⁻, and the solution’s Ψ doubles from −7.35 to −14.71 bar. The beaker has twice as many particles, and the cell plasmolyzes.',
+      why: 'Water potential depends on the number of dissolved particles, not the number of formula units. Each NaCl makes 2 particles, so <b>i = 2</b>; CaCl₂ makes 3. 0.30 M NaCl pulls water like 0.60 M sugar.',
+      overlay(sim,ctx,LH,k){const T=sim.p.temp;const q=wpPanel(ctx,k);wpCard(ctx,k,[['1 NaCl → Na⁺ + Cl⁻',800,14],'so i = 2 particles per unit','0.30 M sucrose: Ψs = '+wpS(wpPsi(1,0.3,T))+' bar',['0.30 M NaCl: Ψs = '+wpS(wpPsi(2,0.3,T))+' bar',800,13,'#7a4fa6']],432,258,352);
+        tag(ctx,'purple Na⁺, teal Cl⁻',330,120,k,{s:12});} },
+    { lvl: 'ap', key: 'psip', title: 'Find Ψp at equilibrium', set: { conc: 0.2 }, fresh: true, speed: 2,
+      see: 'In 0.20 M sugar, water enters until flow stops. The card reads the three numbers once the cell settles and solves Ψ = Ψp + Ψs for Ψp.',
+      why: 'At equilibrium Ψ<sub>cell</sub> = Ψ<sub>solution</sub>. The open beaker has Ψp = 0, so its Ψ = Ψs = −4.90 bar. The cell’s sap is now a bit diluted, so its Ψs is about −6.99 bar, and Ψp = Ψ − Ψs ≈ +2.09 bar: the wall’s push.',
+      overlay(sim,ctx,LH,k){const c=phM(sim,'psic'),s=phM(sim,'psisol'),ss=phM(sim,'psisc');const q=wpPanel(ctx,k);
+        wpCard(ctx,k,[['At equilibrium: Ψcell = Ψsolution',800,13],'Ψ = '+wpS(s)+' bar (the solution)','cell Ψs = '+wpS(ss)+' bar','Ψp = Ψ − Ψs',['= '+wpS(s)+' − ('+wpS(ss)+') = '+wpS(s-ss)+' bar',800,13,'#2a7a3a'],[Math.abs(c-s)<0.05?'flow has stopped':'still settling…',600,12,PAL['cv-soft']]],q.x+8,q.y+8,352,q.h-16);} },
+    { lvl: 'ap', key: 'zeropt', title: 'The potato lab’s zero point', set: { conc: 0.3 }, fresh: true, speed: 2,
+      see: 'The solution is now 0.30 M sugar, the same as the cell’s sap. The cell ends at its starting size, neither firm nor plasmolyzed, and Ψp settles near 0.',
+      why: 'When the cell neither gains nor loses water, Ψ<sub>cell</sub> = Ψ<sub>solution</sub> = −iCRT = −7.35 bar. That is exactly what the zero crossing in the potato-core lab measures: the molarity where mass does not change gives the cells’ water potential.',
+      overlay(sim,ctx,LH,k){const q=wpPanel(ctx,k);wpCard(ctx,k,[['No mass change, so',800,13],'Ψcell = Ψsolution = −iCRT','= −(1)(0.30)(0.0831)('+(sim.p.temp+273)+')',['= '+wpS(wpPsi(1,0.3,sim.p.temp))+' bar',800,14,'#1d6fd6'],['cell size: '+Math.round(sim.st.V*100)+'% of start',600,12,PAL['cv-soft']]],q.x+8,q.y+8,352,q.h-16);} }
+  ],
+  useIt: [
+    { do: 'On icy steps, mix a little salt into sand instead of using salt alone, and do not pile salty snow around trees and shrubs.',
+      why: 'Salt dissolved in soil water drops its Ψ below the roots’ Ψ, so water flows out of the roots, like the cell in strong sugar water. Iowa State University Extension suggests about 50 pounds of sand to 1 pound of salt.' },
+    { do: 'For a nasal rinse, use the saline packet, made with distilled, sterile or boiled-and-cooled water.',
+      why: 'Saline is close to your cells’ own concentration, so water does not rush into the lining of your nose; plain water does, which stings. The FDA warns against plain tap water because it can carry harmful organisms.' },
+    { do: 'Recut cut-flower stems about an inch under water before putting them in a vase.',
+      why: 'Water in a plant stem is under tension (negative Ψp), so a fresh cut in air pulls in air bubbles that block the water tubes. Cutting under water fills them with water instead (UMass Extension).' }
+  ],
+  tryIt: [
+    { title: 'the celery stand-up (overnight)',
+      steps: ['Let two celery sticks sit out on the counter for a few hours until they bend easily.', 'Put one in a glass of plain water and one in a glass of very salty water (about 3 tablespoons of salt in 1 cup).', 'Leave them in the fridge overnight, then try bending each one.'],
+      look: 'The stick in plain water is crisp again: its cells took in water and their walls are pushing back (turgid). The stick in salt water is even floppier, because the salty water has a lower Ψ than its cells.' }
+  ]
+}
+});
+
 })();

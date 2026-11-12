@@ -411,7 +411,21 @@ wpotential:{
     q:'At equilibrium in 0.20 M sucrose (Ψ = −4.90 bar), a cell’s Ψs is −6.99 bar. What is its pressure potential, Ψp? Answer in bar.',
     num:{ans:2.09,tol:.03,unit:'bar'},
     steps:['At equilibrium, Ψ of the cell = Ψ of the solution = −4.90 bar.','Ψ = Ψp + Ψs, so Ψp = Ψ − Ψs = −4.90 − (−6.99).','Ψp = +2.09 bar. The wall pushes back with this pressure.'],
-    lab:{set:{conc:0.2},look:'Read <b>Ψs of the cell</b> and <b>Ψp of the cell</b> once flow stops.'},verify:[['psisc',-6.99,.02],['psip',2.087,.02]],wait:60}
+    lab:{set:{conc:0.2},look:'Read <b>Ψs of the cell</b> and <b>Ψp of the cell</b> once flow stops.'},verify:[['psisc',-6.99,.02],['psip',2.087,.02]],wait:60},
+  {id:'roadsalt',kind:'real',lvl:'bio',
+    q:'Shrubs next to a driveway that was salted all winter come up brown and stunted in spring, even though the soil is damp. What is the best explanation?',
+    choices:['Salt in the soil water lowered its Ψ below the roots’ Ψ, so water left the roots','Salt froze the roots','The shrubs got too much water from melting snow','Salt is a fertilizer, so the shrubs grew too fast'],correct:0,
+    steps:['Dissolved salt makes the soil water’s Ψs very negative (and salt counts double, i = 2).','Once the soil’s Ψ is lower than the root cells’ Ψ, water moves out of the roots instead of in, even in damp soil.','That is why extension services suggest mixing salt with sand and not piling salty snow near plants.'],
+    lab:{set:{conc:0.3,solute:'nacl'},look:'0.30 M NaCl. Watch the cell lose water and the membrane pull away from the wall.'},verify:[['psisol',-14.71,.02]]},
+  {id:'wilt',kind:'real',lvl:'bio',
+    q:'A potted plant droops on a hot afternoon and its soil is dry. An hour after you water it, it is standing up again. What changed inside its cells?',
+    choices:['Water moved back in, the cells pushed on their walls again (Ψp rose), and the stems firmed up','The plant grew new, stronger cells in an hour','The water dissolved the sugar in the cells','The cells burst and released water'],correct:0,
+    steps:['Dry soil has a low Ψ, so the cells lost water and Ψp fell to about 0: the plant wilted.','Watering raised the soil water’s Ψ above the cells’ Ψ, so water moved back in.','Firm cells pressing on their walls hold the stem up, like air in a bike tire.'],
+    lab:{set:{conc:0},look:'Pure water. Watch <b>Ψp of the cell</b> climb as the cell becomes turgid.'},verify:[['psisol',0,.01]]},
+  {id:'xylem',kind:'real',lvl:'ap',
+    q:'Florists recut flower stems under water. Water in a stem’s xylem is under tension. In terms of water potential, why does a cut made in air hurt the flower?',
+    choices:['Ψp in the xylem is negative, so a cut in air pulls air bubbles into the vessels and blocks water flow','Air raises Ψs in the stem','Cutting in air makes Ψp positive, so water flows out','It does not matter where the stem is cut'],correct:0,
+    steps:['Leaves lose water, which pulls the water column up the xylem: Ψp there is negative (tension).','Open a vessel to air and that tension pulls air in, forming bubbles that break the water column.','Cutting under water lets water, not air, fill the cut vessels, so the flower keeps drinking.']}
   ]},
 sav:{
   questions:[
