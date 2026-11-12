@@ -453,7 +453,16 @@ sav:{
     q:'An agar block with the same volume as a 2 cm cube is flattened into a slab 4 cm × 4 cm × 0.5 cm. The 2 cm cube takes 40 minutes to clear. About how long does the slab take?',
     choices:['About 2.5 minutes','About 20 minutes','40 minutes, because the volume is the same','About 160 minutes'],correct:0,
     steps:['What matters is the distance to the center along the shortest direction: 0.25 cm for the slab, 1 cm for the cube.','Time grows with distance squared: (0.25 ÷ 1)² = 1/16.','40 ÷ 16 = 2.5 minutes. Flat and thin shapes, like red blood cells and leaves, exchange materials fast.'],
-    lab:{set:{sA:2,shape:'slab'},look:'Cube A’s volume is now a flat slab. Read <b>Time to clear cube A</b>.'},verify:[['tA',2.5,.01]]}
+    lab:{set:{sA:2,shape:'slab'},look:'Cube A’s volume is now a flat slab. Read <b>Time to clear cube A</b>.'},verify:[['tA',2.5,.01]]},
+  {id:'leftovers',kind:'real',lvl:'bio',
+    q:'You made a big pot of chili. Why does the USDA say to split it into small, shallow containers before refrigerating it?',
+    choices:['Shallow containers have much more surface for their volume, so the chili cools quickly and bacteria have less time to grow','Small containers keep the chili warmer','The fridge works better when it is full','Chili tastes better in small containers'],correct:0,
+    steps:['Heat leaves food through its surface, just as acid enters the agar through its surface.','A deep pot has little surface for its huge volume, so its center stays warm for hours, like the pink center of the 3 cm cube.','Shallow containers have a high SA:V, so every part is close to a surface and cools fast.'],
+    lab:{set:{sA:1,sB:2,sC:3},look:'Compare <b>Cube A reached</b> and <b>Cube C reached</b> as the blocks soak.'},verify:[['rA',6,.01],['rC',2,.01]]},
+  {id:'rbc',kind:'real',lvl:'ap',
+    q:'Red blood cells are flattened discs about 7.5 µm across and 2 µm thick, not spheres. How does that shape help them carry oxygen?',
+    choices:['For the same volume, a flat disc has more surface and no point far from it, so oxygen diffuses in and out quickly','A disc holds more hemoglobin than a sphere of the same volume','Flat cells are heavier, so they sink to the lungs','The shape has nothing to do with gas exchange'],correct:0,
+    steps:['Diffusion time grows with the square of the distance to the surface.','A thin disc keeps every part of the cell within about 1 µm of a surface and raises its SA:V.','That is the same reason the agar slab clears far faster than a cube of the same volume.']}
   ]},
 signaling:{
   apNote:'Cell communication and signal transduction are AP Biology Unit 4 topics.',

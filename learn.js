@@ -1040,4 +1040,91 @@ wpotential: {
 }
 });
 
+/* ---------- cell size and diffusion (agar cubes) ---------- */
+const SVX=[140,400,660],SVY=328;
+function svP2(sim){let P2=34;['sA','sB','sC'].forEach(k=>{const s=sim.p[k];const sh=sim.p.shape&&H.atLeast('ap')?sim.p.shape:'cube';const d=sh==='slab'?[2*s,2*s,s/4]:sh==='rod'?[4*s,s/2,s/2]:[s,s,s];P2=Math.min(P2,220/d[0],68/d[1]);});return P2;}
+function svBox(ctx,x,y,w,h){ctx.save();ctx.globalAlpha=0.97;ctx.fillStyle=PAL['cv-sol'];H.rr(ctx,x,y,w,h,8);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.stroke();ctx.restore();}
+function svCube(ctx,cx,cy,s,P,cols){const pt=(x,y,z)=>[cx+(x-y)*P*0.866,cy+(x+y)*P*0.5-z*P];
+  const F=[[[0,0,s],[s,0,s],[s,s,s],[0,s,s]],[[s,0,0],[s,s,0],[s,s,s],[s,0,s]],[[0,s,0],[s,s,0],[s,s,s],[0,s,s]]];
+  F.forEach((f,i)=>{ctx.beginPath();f.forEach((v,j)=>{const q=pt(v[0]-s/2,v[1]-s/2,v[2]);j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);});ctx.closePath();ctx.fillStyle=cols[i];ctx.fill();ctx.strokeStyle='#7a2a55';ctx.lineWidth=1.2;ctx.stroke();});}
+const SVPINK=['#f07ab5','#c53f86','#e0569d'];
+function svRBC(ctx,x,y,r){ctx.save();const g=ctx.createRadialGradient(x,y,r*0.1,x,y,r);g.addColorStop(0,'#e88a8a');g.addColorStop(0.45,'#c0392b');g.addColorStop(1,'#9b1c1c');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.29);ctx.fill();ctx.restore();}
+
+BioLab.addLearn({
+sav: {
+  goals: {
+    bio: ['Why acid reaches the middle of a small agar cube before a big one', 'What surface area to volume (SA:V) means, and why it drops as a cube gets bigger', 'Why cells stay tiny, and why big living things are made of trillions of cells', 'Where SA:V shows up in cooking, babies and safety'],
+    honors: ['Why acid reaches the middle of a small agar cube before a big one', 'How to calculate SA, V and SA:V for a cube', 'How temperature changes the speed of diffusion', 'Where SA:V shows up in cooking, babies and safety'],
+    ap: ['Why diffusion time grows with the square of the distance', 'How to calculate SA, V and SA:V and compare shapes of the same volume', 'Why flat and long, thin cells beat round ones of the same volume', 'Where SA:V shows up in cooking, babies and safety']
+  },
+  matters: 'Everything a cell needs comes in through its surface, and everything it makes goes out the same way. Diffusion is fast over tiny distances and painfully slow over large ones. That one fact explains why you are made of about 30 trillion small cells instead of one big one.',
+  question: 'Three pink agar cubes, 1, 2 and 3 cm on a side, soak in vinegar. The acid moves in at the same speed in all three. Why does the small one turn completely clear long before the big one?',
+  startKey: 'setup', startRun: false, startSpeed: 0.2,
+  startOverlay(sim,ctx,LH,k){const P2=svP2(sim);scaleBar(ctx,30,372,P2,'1 cm',k);tag(ctx,'Pink agar: the real color of phenolphthalein in basic agar',400,288,k,{s:12.5});},
+  steps: [
+    { key: 'setup', title: 'Three agar “cells”', base: { sA: 1, sB: 2, sC: 3, temp: 20, shape: 'cube' }, fresh: true, speed: 0.15,
+      see: 'Three cubes of agar, a jelly made from seaweed, 1, 2 and 3 cm on a side, sitting in a tray of vinegar. Below each cube is a slice through its middle. The 1 cm scale bar sits under the slices.',
+      why: 'The agar was made with <b>phenolphthalein</b>, which is bright pink when the agar is basic and turns clear when acid reaches it. That pink is the real color you see in the lab. Each cube stands in for a cell, and the acid stands in for oxygen and food moving in.',
+      overlay(sim,ctx,LH,k){scaleBar(ctx,30,372,svP2(sim),'1 cm',k);tag(ctx,'pink = acid has not arrived yet',400,288,k,{s:12.5,hi:true});tag(ctx,'vinegar (acid)',560,262,k,{s:12});} },
+    { key: 'inward', title: 'Acid moves in from every face', fresh: true, speed: 0.35,
+      see: 'A clear border appears around every slice and creeps inward from all four sides. The arrows on the biggest slice show the acid arriving from every face at once.',
+      why: 'Acid particles are always moving randomly. More of them bump in from the vinegar than bump back out, so they spread into the agar from every face that touches vinegar. This random spreading from high to low concentration is <b>diffusion</b>.',
+      overlay(sim,ctx,LH,k){const P2=svP2(sim),h=sim.p.sC*P2/2,cx=SVX[2],col='#c8102e';
+        lbArrow(ctx,cx-h-34,SVY,cx-h+4,SVY,col);lbArrow(ctx,cx+h+34,SVY,cx+h-4,SVY,col);lbArrow(ctx,cx,SVY-h-26,cx,SVY-h+4,col);lbArrow(ctx,cx,SVY+h+26,cx,SVY+h-4,col);
+        tag(ctx,'acid soaks in from every face',cx-150,292,k,{s:12.5,hi:true});} },
+    { key: 'same', title: 'The same depth in every block', speed: 1,
+      see: 'The red brackets measure the clear border on each slice. They are the same width in all three, and the card shows that depth growing as the minutes pass.',
+      why: 'Diffusion does not know how big the block is. In the same vinegar for the same time, acid gets the same distance in from the surface of every block. What differs is how far each block’s <b>center</b> is from its surface: 0.5, 1 and 1.5 cm.',
+      overlay(sim,ctx,LH,k){const P2=svP2(sim),d=phM(sim,'depth');['sA','sB','sC'].forEach((key,i)=>{const w=sim.p[key]*P2,x0=SVX[i]-w/2,y=SVY+sim.p[key]*P2/2+9,x1=x0+Math.min(d*P2,w/2);
+          ctx.save();ctx.strokeStyle='#c8102e';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x0,y-5);ctx.lineTo(x0,y);ctx.lineTo(x1,y);ctx.lineTo(x1,y-5);ctx.stroke();ctx.restore();});
+        wpCard(ctx,k,[['Acid depth after '+sim.st.soak.toFixed(1)+' min',700,13],['d = '+d.toFixed(2)+' cm in every block',800,14,'#c8102e']],14,56,240);} },
+    { key: 'small', title: 'The small cube finishes first', speed: 4,
+      see: 'Sped up. The 1 cm cube turns completely clear first, at about 10 minutes. The 2 and 3 cm cubes still have pink centers, and the card shows how much of each one the acid has reached.',
+      why: 'The acid only needs to go 0.5 cm to reach the middle of the small cube, but 1.5 cm for the big one. A cell is the same: oxygen that comes in through the surface reaches the middle of a small cell quickly, and the middle of a big one too slowly.',
+      overlay(sim,ctx,LH,k){const p=['pA','pB','pC'].map(id=>phM(sim,id));wpCard(ctx,k,[['After '+sim.st.soak.toFixed(0)+' min, acid has reached:',700,13],['1 cm cube: '+p[0].toFixed(0)+'%',700,13,p[0]>=99.9?'#1b7339':PAL['cv-ink']],'2 cm cube: '+p[1].toFixed(0)+'%','3 cm cube: '+p[2].toFixed(0)+'%'],14,56,240);} },
+    { key: 'ratio', title: 'Surface area vs volume', speed: 1,
+      see: 'The card builds a 2 cm cube out of eight 1 cm cubes. Its outside surface is 4 times bigger, but there is 8 times as much inside. The SA:V numbers under the blocks show the same pattern: 6, 3 and 2 per cm.',
+      why: 'Surface area grows with the side squared (6 × side²), but volume grows with the side cubed (side³). So every time a cell doubles its width, it gets only half as much surface for each bit of inside. <b>SA:V falls as size goes up.</b>',
+      overlay(sim,ctx,LH,k){svBox(ctx,14,282,772,104);const P=13;
+        svCube(ctx,92,342,1,P*1.6,SVPINK);H.txt(ctx,'1 cm cube',150,316,{s:13*Math.min(k,1.3),w:700});H.txt(ctx,'SA = 6 × 1² = 6 cm²',150,336,{s:12.5*Math.min(k,1.3)});H.txt(ctx,'V = 1³ = 1 cm³ · SA:V = 6',150,356,{s:12.5*Math.min(k,1.3)});
+        [[0,0,0],[1,0,0],[0,1,0],[1,1,0],[0,0,1],[1,0,1],[0,1,1],[1,1,1]].forEach(([x,y,z])=>svCube(ctx,470+(x-y)*P*1.6*0.866,350+(x+y)*P*1.6*0.5-z*P*1.6,1,P*1.6,SVPINK));
+        H.txt(ctx,'2 cm cube = 8 small cubes',540,316,{s:13*Math.min(k,1.3),w:700});H.txt(ctx,'SA = 6 × 2² = 24 cm² (×4)',540,336,{s:12.5*Math.min(k,1.3)});H.txt(ctx,'V = 2³ = 8 cm³ (×8) · SA:V = 3',540,356,{s:12.5*Math.min(k,1.3),w:700,c:'#c8102e'});} },
+    { key: 'cells', title: 'Why cells stay tiny', speed: 4,
+      see: 'The card works out how long acid takes to reach the center of cubes of shrinking size. Every time the cube gets 10 times smaller, the wait gets 100 times shorter.',
+      why: 'Time to reach the center grows with the <b>square</b> of the distance. For this agar, a 1 cm “cell” waits 10 minutes, but a cube the size of a real cell, about 10 µm, would wait less than a thousandth of a second. That is why large living things are built from trillions of small cells instead of a few big ones.',
+      overlay(sim,ctx,LH,k){svBox(ctx,14,282,772,104);const rows=[['1 cm (block A)','10 min'],['1 mm','6 s'],['0.1 mm','0.06 s'],['10 µm, a real cell','0.0006 s']];
+        H.txt(ctx,'Time for the acid to reach the center',30,302,{s:13*Math.min(k,1.3),w:700});
+        rows.forEach((r,i)=>{const x=30+i*190;H.txt(ctx,r[0],x,330,{s:12.5*Math.min(k,1.3)});H.txt(ctx,r[1],x,354,{s:14*Math.min(k,1.3),w:800,c:i===3?'#1b7339':PAL['cv-ink']});if(i<3)H.txt(ctx,'÷100',x+150,342,{s:12*Math.min(k,1.3),w:700,c:'#c8102e'});});} },
+    { lvl: 'honors', key: 'warm', title: 'Warm vinegar, faster diffusion', set: { temp: 35 }, fresh: true, speed: 2,
+      see: 'The same three cubes, but the vinegar is now 35 °C instead of 20 °C. The card compares the acid depth at this moment with what it would be at 20 °C.',
+      why: 'Warmer particles move faster, so they spread farther in the same time. Here diffusion is about 45% faster at 35 °C, but the depth only grows with the square root of time, so every block still clears from the outside in.',
+      overlay(sim,ctx,LH,k){const t=sim.st.soak,D20=0.0125,D=D20*(1+0.03*(sim.p.temp-20));wpCard(ctx,k,[['After '+t.toFixed(1)+' min',700,13],'at 20 °C: d = '+Math.sqrt(2*D20*t).toFixed(2)+' cm',['at '+sim.p.temp+' °C: d = '+Math.sqrt(2*D*t).toFixed(2)+' cm',800,13,'#c8102e']],14,56,240);} },
+    { lvl: 'ap', key: 'slab', title: 'Same volume, flatter shape', set: { shape: 'slab' }, fresh: true, speed: 2,
+      see: 'Each block now has the same volume as before but is squashed into a flat slab. The thin slabs clear almost at once. The card compares block A as a cube and as a slab.',
+      why: 'A 2 × 2 × 0.25 cm slab holds 1 cm³, like the 1 cm cube, but has 10 cm² of surface instead of 6, and no point is more than 0.125 cm from a face. Time to clear goes with (half the thinnest side)² ÷ 2D: 10 minutes for the cube, about 0.6 minutes for the slab.',
+      overlay(sim,ctx,LH,k){wpCard(ctx,k,[['Block A, 1 cm³ either way',700,13],'cube: SA:V 6, clears in 10 min',['slab: SA:V 10, clears in '+phM(sim,'tA').toFixed(1)+' min',800,13,'#c8102e']],14,56,262);} },
+    { lvl: 'ap', key: 'shapes', title: 'Real cells cheat with shape', set: { shape: 'rod' }, fresh: true, speed: 2,
+      see: 'The blocks are now long thin rods, and the card shows two real cells drawn to the same scale: a red blood cell, a flattened disc about 7.5 µm across and 2 µm thick, and a stretch of a nerve cell’s axon, about 1 µm wide and up to a meter long.',
+      why: 'A red blood cell’s flat shape puts every bit of it close to the surface, so oxygen loads and unloads fast. A neuron can reach a meter in length because it stays thin. Both keep SA:V high without being tiny in every direction.',
+      overlay(sim,ctx,LH,k){svBox(ctx,14,282,772,104);const u=8;svRBC(ctx,90,327,3.75*u);ctx.save();ctx.fillStyle='#9b1c1c';H.rr(ctx,150,321,7.5*u,2*u,u);ctx.fill();ctx.restore();
+        H.txt(ctx,'red blood cell, face on and edge on',40,368,{s:12*Math.min(k,1.3)});
+        ctx.save();ctx.fillStyle='#e8d9a8';ctx.strokeStyle='#8a7a3a';ctx.lineWidth=1;H.rr(ctx,300,323,420,1*u,u/2);ctx.fill();ctx.stroke();ctx.restore();H.txt(ctx,'axon of a nerve cell, 1 µm wide (only a tiny piece shown)',300,312,{s:12*Math.min(k,1.3)});
+        scaleBar(ctx,560,362,5*u,'5 µm',k);} }
+  ],
+  useIt: [
+    { do: 'Split a big pot of leftovers into small, shallow containers before it goes in the fridge.',
+      why: 'A big pot has little surface for all that volume, so its center stays warm for hours while bacteria grow. Shallow containers have far more surface for their volume, so they cool fast. This is the USDA Food Safety and Inspection Service’s advice.' },
+    { do: 'Dress a baby or young child in one more layer than you would wear outside in the cold.',
+      why: 'A small body has much more skin for its volume than an adult’s, so it loses heat faster, like the small cube taking in acid faster. The American Academy of Pediatrics gives this one-extra-layer rule, and warns not to overdo it.' },
+    { do: 'Never shake flour, sugar or other fine powders into the air near a flame.',
+      why: 'A powder is a solid broken into a huge number of tiny pieces, with an enormous total surface. OSHA warns that almost any material that burns can burn very fast when finely divided; a sugar dust explosion killed 14 workers in Georgia in 2008.' }
+  ],
+  tryIt: [
+    { title: 'the sugar cube race (5 minutes)',
+      steps: ['Fill two clear glasses with the same amount of room-temperature water.', 'Drop a whole sugar cube in one. Crush a second sugar cube into fine grains and pour it into the other.', 'Don’t stir. Watch both and time how long until no sugar is left on the bottom.'],
+      look: 'The crushed sugar disappears much sooner. Same amount of sugar, but crushing it gave the water far more surface to work on, the same reason the small agar cube clears first.' }
+  ]
+}
+});
+
 })();
