@@ -25,7 +25,11 @@ function glucStep(s,p,dt){
   s.sec=sec;}
 function tempStep(s,p,dt){
   const S=p.fever?39:37;s.S=S;
-  s.vaso=clamp(1+3*(s.Tc-S),0.35,3);s.shiv=clamp(2.5*(S-0.2-s.Tc),0,4);s.sweat=clamp(6*(s.Tc-S-0.1),0,6);
+  /* Shivering tires: hard shivering uses up muscle fuel, so its top rate fades over a few hours of cold (fat 1 → 0.15),
+     and recovers when you warm up. Without this the model held a T-shirt at −10 °C near 36 °C forever. */
+  if(s.fat===undefined)s.fat=1;
+  s.vaso=clamp(1+3*(s.Tc-S),0.35,3);s.shiv=clamp(2.5*(S-0.2-s.Tc),0,4*s.fat);
+  s.fat=clamp(s.fat+dt*(s.shiv>0.05?-s.shiv/4/90:(1-s.fat)/60),0.15,1);s.sweat=clamp(6*(s.Tc-S-0.1),0,6);
   /* Dry heat loss through skin and a T-shirt. Narrowed skin vessels cut it, but not to zero (tissue still conducts),
      and colder air strips heat faster (convection), so a T-shirt at −10 °C loses about 2.6× resting heat. */
   const exH=s.ex>0?3:0;s.made=1+s.shiv+exH;s.dry=0.0667*(0.4+0.6*s.vaso)*(s.Tc-p.ta)*(1+0.012*Math.max(0,22-p.ta));s.lost=s.dry+s.sweat;
@@ -61,7 +65,7 @@ const HOMEO={
     {id:'exercise',label:'Exercise for 30 min',run(sim){sim.st.ex=30;}},
     {id:'insulin',label:'Inject insulin',lvl:'honors',mode:'glucose',run(sim){sim.st.D+=900;}}
   ],
-  init(){return {G:90,I:10,X:10,Gn:60,Q:0,Q2:0,D:0,Lg:80,ex:0,Ipk:10,hgp:2.7,upt:2.7,ren:0,Ra:0,sec:10,Tc:37,S:37,vaso:1,shiv:0,sweat:0,made:1,dry:1,lost:1};},
+  init(){return {G:90,I:10,X:10,Gn:60,Q:0,Q2:0,D:0,Lg:80,ex:0,Ipk:10,hgp:2.7,upt:2.7,ren:0,Ra:0,sec:10,Tc:37,S:37,vaso:1,shiv:0,fat:1,sweat:0,made:1,dry:1,lost:1};},
   step(sim,dt){const s=sim.st,p=sim.p;glucStep(s,p,dt);tempStep(s,p,dt);if(s.ex>0)s.ex=Math.max(0,s.ex-dt);},
   afterPrewarm(sim){sim.st.Ipk=sim.st.I;},
   onLevel(sim){syncMode(sim);},
@@ -139,7 +143,7 @@ const HOMEO={
   terms:[{t:'Homeostasis',d:'Keeping the body’s internal conditions in a stable range.'},{t:'Negative feedback',d:'A response that reverses a change, bringing a value back toward its set point.'},{t:'Insulin',d:'Hormone from beta cells that lowers blood glucose.'},{t:'Glucagon',d:'Hormone from alpha cells that raises blood glucose.'},
     {lvl:'honors',t:'Glycogen',d:'Stored glucose in the liver and muscles.'},{lvl:'honors',t:'Set point',d:'The target value a feedback loop holds, such as 37 °C.'},{lvl:'honors',t:'Vasodilation / vasoconstriction',d:'Widening or narrowing of skin blood vessels to lose or keep heat.'},{lvl:'honors',t:'Type 1 / type 2 diabetes',d:'No insulin is made (type 1), or cells resist insulin (type 2).'},
     {lvl:'ap',t:'Stimulus, sensor, control center, effector',d:'The parts of a feedback loop, e.g. high glucose, beta cells, pancreas, muscle and liver.'},{lvl:'ap',t:'Insulin resistance',d:'Cells need more insulin to take in the same glucose.'}],
-  about:'<p><b>Blood sugar:</b> the stomach empties into the small intestine (2.4% per minute) and the intestine absorbs glucose into the blood (1.5% per minute), so a meal’s glucose peaks 30–45 minutes after eating. Glucose G also changes with liver output (raised by glucagon, lowered by insulin), uptake ((0.004 + S<sub>i</sub>·insulin action)·G) and kidney loss above 180 mg/dL. Insulin secretion rises 1 µU/mL per mg/dL above 90; insulin action lags insulin by about 25 minutes. Type 1 sets secretion to zero; type 2 cuts insulin sensitivity to 10%. Injected insulin is absorbed from a depot over about an hour. A healthy 75 g meal peaks near 130 mg/dL with insulin near 50 µU/mL, in line with typical healthy adults (under 140 mg/dL, back near baseline in 2–3 hours).</p><p><b>Temperature:</b> heat made = 80 W resting + shivering (up to 320 W) + exercise; heat lost = dry loss through skin and a T-shirt (cut, but not to zero, when skin vessels narrow, and faster in colder air) + sweating. Responses scale with how far the core is from the set point.</p><p><b>Simplified:</b> one compartment for blood, no stress hormones (cortisol, epinephrine), no humidity or wind, and no behavior such as putting on a coat. Numbers are typical adult values, not a medical model.</p>',
+  about:'<p><b>Blood sugar:</b> the stomach empties into the small intestine (2.4% per minute) and the intestine absorbs glucose into the blood (1.5% per minute), so a meal’s glucose peaks 30–45 minutes after eating. Glucose G also changes with liver output (raised by glucagon, lowered by insulin), uptake ((0.004 + S<sub>i</sub>·insulin action)·G) and kidney loss above 180 mg/dL. Insulin secretion rises 1 µU/mL per mg/dL above 90; insulin action lags insulin by about 25 minutes. Type 1 sets secretion to zero; type 2 cuts insulin sensitivity to 10%. Injected insulin is absorbed from a depot over about an hour. A healthy 75 g meal peaks near 130 mg/dL with insulin near 50 µU/mL, in line with typical healthy adults (under 140 mg/dL, back near baseline in 2–3 hours).</p><p><b>Temperature:</b> heat made = 80 W resting + shivering (up to 320 W) + exercise; heat lost = dry loss through skin and a T-shirt (cut, but not to zero, when skin vessels narrow, and faster in colder air) + sweating. Responses scale with how far the core is from the set point. Hard shivering tires: its top rate fades over a few hours in the cold as muscle fuel runs low, so in a T-shirt at −10 °C the core holds near 36 °C for the first hour or two, then slides below 35 °C (hypothermia) within about four hours; at −20 °C, in about three.</p><p><b>Simplified:</b> one compartment for blood, no stress hormones (cortisol, epinephrine), no humidity or wind, and no behavior such as putting on a coat. Numbers are typical adult values, not a medical model.</p>',
   initVis(sim){const r=rng(23),v=sim.vis;v.bl=[];for(let i=0;i<110;i++)v.bl.push({x:r()*780+10,y:190+r()*72,k:r(),ph:r()*6.3});
     v.gly=[];for(let i=0;i<30;i++)v.gly.push([60+r()*150,55+r()*80]);v.food=[];for(let i=0;i<30;i++)v.food.push([320+r()*170,60+r()*70,r()*6.3]);
     v.flakes=[];for(let i=0;i<40;i++)v.flakes.push([r()*520,r()*440,0.5+r()]);v.drops=[];v.fl=0;},
