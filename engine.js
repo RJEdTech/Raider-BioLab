@@ -97,7 +97,7 @@ const bioOver=(t,n)=>!n?t:(t&&typeof t==='object')?Object.assign({},t,{bio:n}):(
 function applyPractical(d){const P=PRACT[d.id];if(!P)return;d.practical=P;
   if(P.lede)d.lede=bioOver(d.lede,P.lede);if(P.card)d.card=P.card;
   if(P.tour&&d.tour){let k=0;d.tour.forEach(st=>{if(st.lvl&&st.lvl!=='bio')return;const n=P.tour[k++];if(n&&typeof n==='object'){if(n.text)st.text=bioOver(st.text,n.text);if(n.title)st.title=bioOver(st.title,n.title);}else if(n)st.text=bioOver(st.text,n);});}
-  if(P.hook&&d.tour&&d.tour.length){const h={title:P.hookTitle||'The question',text:P.hook,pause:true,hook:true};
+  if(P.hook&&d.tour&&d.tour.length){const h={title:P.hookTitle||'The question',text:P.hook,pause:!d.hookRun,hook:true};if(d.hookOverlay)h.overlay=d.hookOverlay;if(d.hookSpeed)h.speed=d.hookSpeed;
     /* hookSet: settings that make the opening scene match the question. The first original step then starts again from the defaults. */
     if(P.hookSet){h.setup=sim=>{BL.setValues(sim,P.hookSet);BL.reset(sim);};const f=d.tour[0],o=f.setup;f.setup=sim=>{const base={};(d.controls||[]).forEach(c=>base[c.id]=c.def);BL.setValues(sim,base);BL.reset(sim);if(o)o(sim);};}
     d.tour.unshift(h);}}
@@ -621,7 +621,7 @@ function pace(sim,btns,key,src,cue,before){btns=(btns&&!btns.tagName&&btns.lengt
 document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('.pace-wait');if(!b)return;e.preventDefault();e.stopImmediatePropagation();
   const host=b.closest('.row,.choices,.vstep,.donecard,.panel')||b.parentNode,c=(host&&host.parentNode&&host.parentNode.querySelector('.pace-cue'))||b;c.classList.remove('pace-nudge');void c.offsetWidth;c.classList.add('pace-nudge');},true);
 {const f=tourGo;tourGo=function(sim){f.apply(this,arguments);if(!sim.tour||!sim.tour.on||!sim.ui.tourbar)return;const b=sim.ui.tourbar,t=b.querySelector('.tb-t');
-  pace(sim,b.querySelector('[data-tour=next]'),sim.mode+':t:'+sim.tour.i+':'+(t?t.textContent:''),b.querySelector('.tb-x'),'Watch the model');};}
+  const s=tourSteps(sim)[sim.tour.i];pace(sim,b.querySelector('[data-tour=next]'),sim.mode+':t:'+sim.tour.i+':'+(t?t.textContent:''),b.querySelector('.tb-x'),s&&s.pause&&!s.overlay?'Look at the picture':'Watch the model');};}
 {const f=renderChallenge;renderChallenge=function(sim){f.apply(this,arguments);const box=sim.ui.pred,c=sim.ch;if(!box||!c)return;const q=box.querySelector('.q'),k=sim.mode+':c:'+c.idx+':'+(q?q.textContent.slice(0,60):'');
   if(c.phase==='ask'){const ch=box.querySelectorAll('.choices .choice');if(ch.length)pace(sim,ch,k+':ask',q,'Look at the model, then pick',box.querySelector('.choices'));}
   else if(c.phase==='done')pace(sim,box.querySelectorAll('[data-a=next],[data-a=finish]'),k+':done',box.querySelector('.explain')||box,'Read why');};}
