@@ -578,3 +578,15 @@ p.fq-type{margin:0 0 6px}
 @media (min-width:900px){.sim.has-learn.m-guided .stage{grid-template-columns:minmax(0,1fr) 370px}
   .sim.m-test .stage>.predict{grid-column:2;grid-row:2;margin:0;border:0;border-left:3px solid var(--rj);border-radius:0;overflow:auto}}
 .sim.m-test .stage>.predict{margin:0}
+
+/* Reading pace: buttons wait a moment the first time a step appears (see engine.js "Reading pace") */
+.pace-wait{opacity:.5;cursor:wait!important}
+.pace-wait:hover{border-color:var(--line)}
+.pace-cue{display:flex;width:fit-content;align-items:center;gap:8px;margin:2px 0 8px;font-size:13px;font-weight:700;color:var(--rj-ink,var(--rj))}
+.pace-cue>i{display:inline-block;width:56px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;position:relative}
+.pace-cue>i::after{content:"";position:absolute;inset:0;background:var(--rj);transform-origin:left;transform:scaleX(0);animation:paceFill var(--pace,3s) linear forwards}
+@keyframes paceFill{to{transform:scaleX(1)}}
+.pace-nudge{animation:paceNudge .4s ease}
+.pace-nudge>span{text-decoration:underline}
+@keyframes paceNudge{20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+@media (prefers-reduced-motion: reduce){.pace-nudge{animation:none}}

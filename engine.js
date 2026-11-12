@@ -241,7 +241,7 @@ function tourExit(sim,why){const wasOn=sim.tour&&sim.tour.on;sim.tour={on:false,
 function drawFocus(sim,ctx,LH){if(!sim.tour||!sim.tour.on)return;const s=tourSteps(sim)[sim.tour.i];if(!s||!s.focus)return;let f=typeof s.focus==='function'?s.focus(sim):s.focus;if(!f)return;
   const rects=Array.isArray(f[0])?f:[f];const sub=(x,y,w,h,r)=>{r=Math.min(r,w/2,h/2);ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
   ctx.save();ctx.beginPath();ctx.rect(0,0,800,LH);rects.forEach(r=>sub(r[0],r[1],r[2],r[3],10));ctx.fillStyle='rgba(10,10,14,.5)';ctx.fill('evenodd');
-  ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;rects.forEach(r=>{rr(ctx,r[0],r[1],r[2],r[3],10);ctx.stroke();});ctx.restore();}
+  ctx.strokeStyle=PAL['rj'];ctx.lineWidth=sim.paceUntil&&performance.now()<sim.paceUntil?3+2*(1+Math.sin(performance.now()/150)):3;rects.forEach(r=>{rr(ctx,r[0],r[1],r[2],r[3],10);ctx.stroke();});ctx.restore();}
 BL.h.lvText=lvText;
 /* ---------- view modes: Guided (default), Challenge game, Full lab ----------
    Guided runs the walkthrough one step at a time, then the predict-then-test questions one at a time,
@@ -601,6 +601,35 @@ function vlExportTxt(sim){const V=sim.vlab;if(!V)return;const t=vlReportText(sim
 BL.openLab=openLab;BL.vlab={save:vlSave,report:sim=>sim.vlab?{html:vlReportHTML(sim,vlPng(sim.vlab),false),text:vlReportText(sim),png:vlPngs(sim.vlab)[0]||'',pngs:vlPngs(sim.vlab)}:null,overlay:sim=>sim.vlab?vlOverlay(sim,vlReportHTML(sim,vlPng(sim.vlab),false)):null,
   word:sim=>sim.vlab?vlWordDoc(sim,vlPng(sim.vlab)):null,check:vlCheck,go:vlGo,num:vlNum};
 
+/* ---------- Reading pace (Nov 12, 2026) ----------
+   A student said classmates clicked through without looking. Next, Finish and answer buttons now wait 3–5 s
+   (by how much text the step has) the first time a student meets a step. While they wait, a cue says what to look at
+   and the highlighted part of the model pulses, so the wait is spent watching the picture, not staring at a button.
+   Steps already seen unlock at once (Back and Run it again never wait). "Skip to the full lab" and the mode bar never wait.
+   Teachers presenting: open any Raider Labs page once with ?pace=off (e.g. /Raider-PhysLab/?pace=off) and the wait stays off
+   in that browser on every lab site (they share rjedtech.github.io storage); ?pace=on turns it back on. */
+const PACE_OFF=(()=>{const q=QS.get('pace');if(q==='off')store.set('raider-labs-pace','off');else if(q==='on')store.del('raider-labs-pace');return store.get('raider-labs-pace')==='off';})(),PACE_SEEN=new Set();
+function paceMs(src){const t=((src&&src.textContent)||'').trim();const w=t?t.split(/\s+/).length:0;return Math.round(Math.min(5000,Math.max(3000,w*1000/12)));}
+function unpace(b){if(!b)return;clearTimeout(b._paceT);b._paceT=0;b.classList.remove('pace-wait');b.removeAttribute('aria-disabled');if(b._paceCue){b._paceCue.remove();b._paceCue=null;}}
+function pace(sim,btns,key,src,cue,before){btns=(btns&&!btns.tagName&&btns.length!==undefined?Array.from(btns):[btns]).filter(Boolean);btns.forEach(unpace);
+  if(!btns.length||PACE_OFF||!sim||!sim.def)return;key=sim.def.id+'|'+key;
+  if(PACE_SEEN.has(key)||btns[0].offsetParent===null)return;
+  const ms=paceMs(src),until=performance.now()+ms;sim.paceUntil=until;
+  const at=before||(btns[0].closest&&btns[0].closest('.row'))||btns[0];let c=null;if(cue&&at&&at.parentNode){c=el('span',{class:'pace-cue',role:'status'},`<span>${cue}</span><i style="--pace:${ms}ms"></i>`);at.parentNode.insertBefore(c,at);}
+  btns.forEach((b,n)=>{b.classList.add('pace-wait');b.setAttribute('aria-disabled','true');if(n===0)b._paceCue=c;
+    b._paceT=setTimeout(()=>{PACE_SEEN.add(key);unpace(b);if(sim.paceUntil===until)sim.paceUntil=0;},ms);});}
+document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('.pace-wait');if(!b)return;e.preventDefault();e.stopImmediatePropagation();
+  const host=b.closest('.row,.choices,.vstep,.donecard,.panel')||b.parentNode,c=(host&&host.parentNode&&host.parentNode.querySelector('.pace-cue'))||b;c.classList.remove('pace-nudge');void c.offsetWidth;c.classList.add('pace-nudge');},true);
+{const f=tourGo;tourGo=function(sim){f.apply(this,arguments);if(!sim.tour||!sim.tour.on||!sim.ui.tourbar)return;const b=sim.ui.tourbar,t=b.querySelector('.tb-t');
+  pace(sim,b.querySelector('[data-tour=next]'),sim.mode+':t:'+sim.tour.i+':'+(t?t.textContent:''),b.querySelector('.tb-x'),'Watch the model');};}
+{const f=renderChallenge;renderChallenge=function(sim){f.apply(this,arguments);const box=sim.ui.pred,c=sim.ch;if(!box||!c)return;const q=box.querySelector('.q'),k=sim.mode+':c:'+c.idx+':'+(q?q.textContent.slice(0,60):'');
+  if(c.phase==='ask'){const ch=box.querySelectorAll('.choices .choice');if(ch.length)pace(sim,ch,k+':ask',q,'Look at the model, then pick',box.querySelector('.choices'));}
+  else if(c.phase==='done')pace(sim,box.querySelectorAll('[data-a=next],[data-a=finish]'),k+':done',box.querySelector('.explain')||box,'Read why');};}
+{const f=renderReview;renderReview=function(sim){f.apply(this,arguments);const box=sim.ui.review;if(!box)return;const q=box.querySelector('.rv-q');if(!q)return;const k='rv:'+q.textContent.slice(0,60);
+  const picks=box.querySelectorAll('[data-rv-pick]:not([disabled])');if(picks.length)pace(sim,picks,k+':ask',q,'Read the question',box.querySelector('.choices'));
+  const fb=box.querySelector('.rv-fb');if(fb)pace(sim,box.querySelectorAll('[data-rv=next]'),k+':done',fb,'Read why');};}
+{const f=vlGo;vlGo=function(sim){f.apply(this,arguments);const v=sim.ui&&sim.ui.vstep,V=sim.vlab;if(!v||v.hidden||!V||!V.data)return;
+  pace(sim,v.querySelector('[data-vs=next]'),'vs:'+(V.lab&&V.lab.id)+':'+(V.data.step||0),v.querySelector('.vs-x')||v,'Read the step');};}
 /* ---------- "Embed this tool in Canvas" panel ---------- */
 function embedUrl(sim,o){let base=location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');const q=new URLSearchParams();q.set('embed','1');if(o.mode)q.set('mode',o.mode);if(o.mode==='vlab'&&o.lab)q.set('lab',o.lab);if(o.level)q.set('level',o.level);return base+'?'+q.toString()+'#'+sim.def.hash;}
 function buildEmbed(sim){const box=sim.ui.sec.querySelector('.embed-b');if(!box||EMBED){const d=sim.ui.sec.querySelector('.embed-box');if(d&&EMBED)d.hidden=true;return;}const d=sim.def,id=d.id;

@@ -85,3 +85,13 @@ Add questions in `review.js` with `BioLab.addReview({<id>:{apNote,ap:[{title,url
 Each question has `id`, `kind` (`real`, `test` or `ap`), `lvl`, `q`, `steps` (worked solution), and either `choices` + `correct` or `num:{ans,tol,unit}`. Add `lab:{set,act,look}` for the "See it in the lab" button: `set` is control values, `act` an action id, `look` tells students what to read. `verify`, `verifyAbove` and `wait` are read only by the test script, to check answers against the model.
 
 Unit paths need no setup: `#u-<courseId>-<unitIndex>` is built from `courses.js`. A tool page opened from a path uses `#<hash>@<mode>@u-<courseId>-<unitIndex>`.
+
+## Reading pace (Nov 12, 2026)
+The first time a student meets a step, its Next / Finish / answer buttons wait 3–5 s (3 s, plus more for long text, capped at 5 s).
+While they wait, a cue above the buttons says what to look at ("Watch the model", "Read why") with a small fill bar, and the step's `focus` box pulses.
+- Gated: walkthrough Next (Guided and Learn it), prediction choices, the Next/Finish after a prediction result, review choices and Next after feedback, virtual-lab step Next, and (math engine) the reveal's Next.
+- Never gated: Back, Skip to the full lab, the mode bar, Run it again, steps already seen this visit, the gut answer, typed answers, games, FRQ.
+- Buttons are blocked with the `pace-wait` class and `aria-disabled`, not `disabled`, so the virtual lab's own `disabled` checks keep working. A capture-phase click listener on `document` swallows early clicks and nudges the cue.
+- `?pace=off` turns it off in that browser for every Raider Labs site (shared `raider-labs-pace` key in localStorage); `?pace=on` turns it back on.
+- Hooks are wrappers on `tourGo`, `renderChallenge`, `renderReview`, `vlGo` (and `guideReveal` in the math engine), so a step that renders through those gets the wait with no change to the sim.
+- Playwright treats `aria-disabled` buttons as disabled and waits; use `click(force=True)` to test an early click.
