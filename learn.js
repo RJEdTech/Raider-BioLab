@@ -1127,4 +1127,395 @@ sav: {
 }
 });
 
+
+/* ---------- Cell energy (Nov 13, 2026): photosynthesis, chloroplast, glycolysis, respiration ---------- */
+/* a card of lines; L = [[text, {s,w,c}]...]; returns the card height */
+function ceCard(ctx,k,x,y,w,L,o){o=o||{};const pad=10*k;let h=pad;const rows=L.map(r=>{const t=Array.isArray(r)?[r[0],r[1]||{}]:[r,{}];const sz=(t[1].s||13)*Math.min(k,1.35);h+=sz*1.35;return [t[0],t[1],sz];});h+=pad*0.6+(o.extra||0)*Math.min(k,1.3);
+  ctx.save();H.rr(ctx,x,y,w,h,9);ctx.fillStyle=PAL['cv-sol'];ctx.globalAlpha=0.97;ctx.fill();ctx.globalAlpha=1;ctx.lineWidth=o.hi===false?1.2:2.5;ctx.strokeStyle=o.hi===false?PAL['cv-soft']:'#c8102e';ctx.stroke();
+  let yy=y+pad;rows.forEach(([s,op,sz])=>{yy+=sz*1.1;H.txt(ctx,s,x+pad,yy,{s:sz,w:op.w||600,c:op.c||PAL['cv-ink']});yy+=sz*0.25;});ctx.restore();return h;}
+/* two or three labelled bars inside a card area */
+function ceBars(ctx,k,x,y,w,B,max){const bh=14*Math.min(k,1.3),gap=10*Math.min(k,1.3);B.forEach((b,i)=>{const yy=y+i*(bh+gap),lw=Math.min(150,w*0.42);H.txt(ctx,b[0],x,yy+bh*0.8,{s:12*Math.min(k,1.3),w:600});
+  ctx.save();ctx.fillStyle=PAL['line'];ctx.fillRect(x+lw,yy,w-lw-50,bh);ctx.fillStyle=b[2];ctx.fillRect(x+lw,yy,Math.max(0,(w-lw-50)*clamp(b[1]/max,0,1)),bh);ctx.restore();
+  H.txt(ctx,b[3]||String(Math.round(b[1]*10)/10),x+w-44,yy+bh*0.8,{s:12*Math.min(k,1.3),w:700});});return B.length*(bh+gap);}
+const CE_GREEN='#1b7a3a',CE_RED='#b3261e',CE_BLUE='#1f5fbf';
+/* Elodea leaf cells in a zoom circle: rectangular cells with green chloroplasts; scale 2.4 px per µm */
+function ceElodea(ctx,cx,cy,R,k,t){ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.fillStyle='#eef6e4';ctx.fill();ctx.clip();
+  const um=2.4,cw=50*um,ch=20*um;for(let r=-4;r<=4;r++){const off=(r%2)*cw*0.5;for(let c=-3;c<=3;c++){const x=cx+c*cw+off-cw/2,y=cy+r*ch-ch/2;ctx.strokeStyle='#7fa86a';ctx.lineWidth=2;ctx.strokeRect(x,y,cw,ch);
+    for(let j=0;j<9;j++){const a=(j*2.399+r*1.3+c*0.7),px=x+5+((a*37)%(cw-10)),py=y+4+((a*19)%(ch-8))+Math.sin(t*0.6+j+r)*1.2;ctx.fillStyle='#2f8a2f';ctx.beginPath();ctx.ellipse(px,py,2.6*um,1.6*um,a,0,6.29);ctx.fill();}}}
+  ctx.restore();ctx.save();ctx.lineWidth=3;ctx.strokeStyle='#c8102e';ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.stroke();ctx.restore();scaleBar(ctx,cx-25*um/2,cy+R-14,20*um,'20 µm',k);}
+
+BioLab.addLearn({
+photo: {
+  goals: {
+    bio: ['What a plant takes in and gives off when it photosynthesizes', 'Why moving the light twice as far away cuts the bubbles by more than half', 'Why a plant can be making oxygen and still add none to the water', 'How light, CO₂ and temperature each set a limit'],
+    honors: ['What a plant takes in and gives off when it photosynthesizes', 'Why light falls off with the square of distance', 'Gross vs. net oxygen: photosynthesis minus the plant’s own respiration', 'Why temperature and light color change the rate'],
+    ap: ['The overall equation and where the O₂ comes from', 'Inverse-square light and limiting factors', 'Gross productivity − respiration = net productivity', 'Why the rate peaks with temperature, then falls']
+  },
+  matters: 'Almost all the oxygen you breathe and the food you eat started in a leaf like this one. The same rules decide how close a grow light should hang, why a fish pond can run out of oxygen before dawn, and why lawns slow down on hot afternoons.',
+  question: 'Slide the lamp from 15 cm to 30 cm, twice as far. Does the plant make half as many bubbles? How far can the lamp go before the bubbling stops?',
+  startKey: 'setup', startRun: true, startSpeed: 1,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Lamp',474,140,k,{s:12,hi:true});tag(ctx,'Elodea (pondweed), about 10 cm long',300,300,k,{s:12,hi:true});line(ctx,420,300,575,300);
+    tag(ctx,'Oxygen bubbles rise here',300,170,k,{s:12,hi:true});line(ctx,392,170,610,200);tag(ctx,'Ruler: cm from the plant',300,395,k,{s:12,hi:true});},
+  steps: [
+    { key: 'setup', title: 'Light in, oxygen out', set: { dist: 15 }, fresh: true, speed: 1,
+      see: 'A sprig of Elodea sits in water with baking soda, 15 cm from a lamp. Tiny bubbles rise from the leaves and the cut stem. The card shows what goes in and what comes out.',
+      why: 'The plant uses light energy to turn carbon dioxide and water into sugar. Oxygen is left over and escapes as bubbles. Baking soda releases the CO₂ the plant needs.',
+      overlay(sim,ctx,LH,k){ceCard(ctx,k,20,62,390,[['Photosynthesis',{s:15,w:800}],['In:  light + CO₂ (from baking soda) + water',{c:CE_BLUE}],['Out:  sugar (stays in the plant) + O₂ (the bubbles)',{c:CE_GREEN}],['6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂',{s:12,w:700}]]);} },
+    { key: 'cells', title: 'Inside a leaf: chloroplasts', set: { dist: 15 }, speed: 1,
+      see: 'A close-up of an Elodea leaf, drawn to the 20 µm scale bar. Each brick-shaped cell is packed with green dots: the chloroplasts.',
+      why: 'Chloroplasts hold <b>chlorophyll</b>, the green pigment that absorbs light. The absorbed energy splits water molecules, and that is where the oxygen in the bubbles comes from.',
+      so: 'Every green part of a plant is doing this whenever light hits it.',
+      overlay(sim,ctx,LH,k,tau){ceElodea(ctx,230,250,130,k,tau);line(ctx,360,250,590,250,'#c8102e');tag(ctx,'Leaf cells: the green dots are chloroplasts',230,92,k,{s:12,hi:true});} },
+    { key: 'count', title: 'Counting bubbles measures the rate', set: { dist: 15 }, speed: 1,
+      see: 'Watch the bubbles rise from the top of the plant while the card counts them. At 15 cm the plant gives off about 20 bubbles a minute.',
+      why: 'Each bubble is mostly oxygen. More bubbles per minute means the plant is photosynthesizing faster, so bubble counting is how this class lab measures the rate.',
+      overlay(sim,ctx,LH,k){const b=phM(sim,'bubbles'),l=phM(sim,'light');ceCard(ctx,k,20,62,330,[['Lamp 15 cm away',{s:14,w:800}],['Light at the plant: '+Math.round(l)+'%'],['Bubbles per minute: '+Math.round(b),{w:800,c:CE_GREEN}]]);tag(ctx,'count these',700,150,k,{s:12,hi:true});line(ctx,700,165,618,200,'#c8102e');} },
+    { key: 'far', title: 'Twice as far, a quarter of the light', set: { dist: 30 }, fresh: true, speed: 1,
+      see: 'The lamp slides back to 30 cm. Light at the plant drops from 44% to 11%, and the bubbles slow to fewer than half: about 8 a minute.',
+      why: 'Light spreads out as it travels. At twice the distance the same light covers 4 times the area, so each leaf gets only a quarter. That is the <b>inverse-square</b> rule.',
+      overlay(sim,ctx,LH,k){const b=phM(sim,'bubbles'),l=phM(sim,'light');const h=ceCard(ctx,k,20,62,330,[['Lamp 30 cm away (twice as far)',{s:14,w:800}],['Light at the plant: '+Math.round(l)+'% (was 44%)'],['Bubbles per minute: '+Math.round(b),{w:800,c:CE_GREEN}],['Same light, spread over 4× the area:',{s:12}]]);
+        const y0=62+h+10,s=28;ctx.save();ctx.fillStyle='#ffd966';ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.fillRect(40,y0,s,s);ctx.strokeRect(40,y0,s,s);H.txt(ctx,'15 cm',54,y0+s+15,{s:11*k,a:'center'});
+        ctx.globalAlpha=0.45;for(let i=0;i<2;i++)for(let j=0;j<2;j++){ctx.fillRect(140+i*s,y0+j*s,s,s);}ctx.globalAlpha=1;for(let i=0;i<2;i++)for(let j=0;j<2;j++)ctx.strokeRect(140+i*s,y0+j*s,s,s);H.txt(ctx,'30 cm: ¼ each',168,y0+2*s+15,{s:11*k,a:'center'});ctx.restore();} },
+    { key: 'farthest', title: 'Too far: making = using', set: { dist: 60 }, fresh: true, speed: 1,
+      see: 'At 60 cm the bubbles stop. The bars show the plant is still making oxygen, but its own cells use just as much.',
+      why: 'Plant cells do cellular respiration all the time, day and night, and it uses oxygen. Bubbles only appear when photosynthesis makes <b>more</b> oxygen than respiration uses. Here the two balance, so nothing is left over.',
+      overlay(sim,ctx,LH,k){const g=phM(sim,'gross'),r=phM(sim,'resp');const h=ceCard(ctx,k,20,62,380,[['Lamp 60 cm away',{s:14,w:800}],['O₂ made by photosynthesis vs. used by respiration',{s:12}]],{extra:52});ceBars(ctx,k,32,62+h-52*Math.min(k,1.3),356,[['Made',g,CE_GREEN,g.toFixed(1)],['Used',r,CE_RED,r.toFixed(1)]],30);} },
+    { key: 'noco2', title: 'Bright light, no CO₂', set: { dist: 15, co2: 0 }, fresh: true, speed: 1,
+      see: 'The lamp is back at 15 cm, as bright as the start, but there is no baking soda. The bubbles stop.',
+      why: 'CO₂ is the other raw material. Without it the plant can’t build sugar, the energy from light backs up, and water stops being split. A plant needs light <b>and</b> CO₂; whichever runs short sets the limit.',
+      overlay(sim,ctx,LH,k){const g=phM(sim,'gross'),r=phM(sim,'resp');const h=ceCard(ctx,k,20,62,380,[['15 cm, but no CO₂',{s:14,w:800}],['Light 44%, same as the start',{s:12}]],{extra:52});ceBars(ctx,k,32,62+h-52*Math.min(k,1.3),356,[['Made',g,CE_GREEN,g.toFixed(1)],['Used',r,CE_RED,r.toFixed(1)]],30);} },
+    { key: 'hot', lvl: 'honors', title: 'Temperature: warm helps, hot hurts', set: { dist: 15, temp: 45 }, fresh: true, speed: 1,
+      see: 'At 15 cm the water is heated to 45 °C. Photosynthesis falls, respiration climbs, and the bubbles stop.',
+      why: 'Photosynthesis runs on enzymes. Warmth speeds them up to an optimum (about 35 °C in this model, with the most bubbles of all). Past it, enzymes such as rubisco lose their shape, while respiration keeps rising with heat.',
+      overlay(sim,ctx,LH,k){const g=phM(sim,'gross'),r=phM(sim,'resp');const h=ceCard(ctx,k,20,62,380,[['45 °C water',{s:14,w:800}],['At 35 °C: made ≈ 38, used ≈ 8. At 45 °C:',{s:12}]],{extra:52});ceBars(ctx,k,32,62+h-52*Math.min(k,1.3),356,[['Made',g,CE_GREEN,g.toFixed(1)],['Used',r,CE_RED,r.toFixed(1)]],40);} },
+    { key: 'green', lvl: 'honors', title: 'Light color: green works least', set: { dist: 15, filter: 'green' }, fresh: true, speed: 1,
+      see: 'A green filter goes over the lamp. The light reaching the plant is the same strength, but the bubbles drop to well under half.',
+      why: 'Chlorophyll absorbs red and blue light best and green the least. The green light it doesn’t absorb is reflected or passes through, which is exactly why leaves look green.',
+      overlay(sim,ctx,LH,k){const g=phM(sim,'gross');ceCard(ctx,k,20,62,380,[['Green light at 15 cm',{s:14,w:800}],['O₂ made: '+g.toFixed(1)+'  (white light: 24.7)',{w:800,c:CE_GREEN}],['Leaves look green because they use green the least.',{s:12}]]);} },
+    { key: 'net', lvl: 'ap', title: 'Gross − respiration = net', set: { dist: 30 }, fresh: true, speed: 1,
+      see: 'Back at 30 cm. The card splits the oxygen into what photosynthesis makes (gross), what the plant’s respiration uses, and what is left for the bubbles (net).',
+      why: 'Net productivity = gross productivity − respiration. A light-response curve crosses zero net at the <b>light compensation point</b>, which this plant reaches near 60 cm.',
+      overlay(sim,ctx,LH,k){const g=phM(sim,'gross'),r=phM(sim,'resp'),n=phM(sim,'net');const h=ceCard(ctx,k,20,62,330,[['30 cm: net = gross − respiration',{s:14,w:800}],[g.toFixed(1)+' − '+r.toFixed(1)+' = '+n.toFixed(1),{w:800}]],{extra:76});ceBars(ctx,k,32,62+h-76*Math.min(k,1.3),306,[['Gross',g,CE_GREEN,g.toFixed(1)],['Respiration',r,CE_RED,r.toFixed(1)],['Net',n,CE_BLUE,n.toFixed(1)]],30);} }
+  ],
+  useIt: [
+    { do: 'Hang a grow light close above seedlings, a few inches away, not across the room.',
+      why: 'Light falls off with the square of distance: twice as far gives a quarter of the light. University of Minnesota Extension advises keeping fluorescent lights just 2 to 4 inches above seedlings.' },
+    { do: 'Run a pond or aquarium bubbler overnight after cloudy summer days.',
+      why: 'At night plants and algae stop photosynthesizing but keep respiring, so oxygen falls until sunrise. Extension services (Texas A&M AgriLife, for one) note that fish kills from low oxygen usually happen near dawn after cloudy, hot weather.' },
+    { do: 'Put a houseplant that’s growing slowly in a brighter spot before you add fertilizer.',
+      why: 'Fertilizer can’t help if light is the limiting factor. Like the plant at 60 cm, a plant in a dim corner may only make as much sugar as it uses.' },
+    { do: 'Shade a pet’s outdoor water bowl and keep a fish tank out of direct sun.', lvl: 'honors',
+      why: 'Warm water holds less oxygen, and above an optimum temperature respiration rises while photosynthesis falls, as you saw at 45 °C. Direct sun can also overheat a small tank.' }
+  ],
+  tryIt: [
+    { title: 'the floating leaf disks (20 minutes)',
+      steps: ['Stir 1/8 teaspoon of baking soda and one drop of dish soap into a cup of water.', 'Punch 10 disks out of a spinach leaf with a drinking straw.', 'Put the disks and some of the water in a plastic syringe (no needle), cover the tip, and pull the plunger back a few times until the disks sink.', 'Pour the disks and water into a clear cup under a bright lamp. Count how many float every minute.'],
+      look: 'Disks rise as oxygen from photosynthesis fills their air spaces. Try a second cup farther from the lamp: its disks rise later.' }
+  ]
+}
+});
+
+/* chloroplast inset: a whole chloroplast with grana, about 5 µm, and where this slice comes from */
+function ceChloroInset(ctx,k){const x=18,y=18,w=300,h=128;ctx.save();H.rr(ctx,x,y,w,h,9);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle='#c8102e';ctx.stroke();
+  const cx=x+90,cy=y+68;ctx.beginPath();ctx.ellipse(cx,cy,66,36,0,0,6.29);ctx.fillStyle='#cfe8b8';ctx.fill();ctx.strokeStyle='#4f8a3a';ctx.lineWidth=2;ctx.stroke();
+  for(let g=0;g<5;g++){const gx=cx-44+g*22,gy=cy+(g%2?6:-6);for(let d=0;d<5;d++){ctx.fillStyle='#2f7a2f';H.rr(ctx,gx-8,gy-12+d*5,16,4,2);ctx.fill();}}
+  ctx.strokeStyle='#c8102e';ctx.lineWidth=2;ctx.strokeRect(cx+22-10,cy-18,20,8);ctx.restore();
+  scaleBar(ctx,cx-66,y+h-8,132/5*1,'1 µm',k);H.txt(ctx,'Chloroplast ≈ 5 µm',x+168,y+30,{s:11*k,w:700});H.txt(ctx,'Grana: stacks of',x+168,y+50,{s:11*k});H.txt(ctx,'thylakoids',x+168,y+64,{s:11*k});H.txt(ctx,'Red box: this slice,',x+168,y+86,{s:11*k,c:'#c8102e',w:700});H.txt(ctx,'membrane ≈ 7 nm thick',x+168,y+100,{s:11*k,c:'#c8102e'});}
+function ceMitoInset(ctx,k){const x=188,y=8,w=340,h=104;ctx.save();H.rr(ctx,x,y,w,h,9);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle='#c8102e';ctx.stroke();
+  const cx=x+80,cy=y+52;ctx.beginPath();ctx.ellipse(cx,cy,64,30,0,0,6.29);ctx.fillStyle='#f6dcc6';ctx.fill();ctx.strokeStyle='#a0522d';ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx-54,cy);for(let i=0;i<=10;i++){const xx=cx-54+i*10.8;ctx.lineTo(xx,cy+(i%2?-18:18));}ctx.strokeStyle='#c97b4a';ctx.lineWidth=2;ctx.stroke();
+  ctx.strokeStyle='#c8102e';ctx.lineWidth=2;ctx.strokeRect(cx-4,cy-24,12,10);ctx.restore();
+  H.txt(ctx,'Mitochondrion ≈ 1–2 µm',x+156,y+26,{s:11*k,w:700});H.txt(ctx,'Folded inner membrane',x+156,y+44,{s:11*k});H.txt(ctx,'Red box: this slice,',x+156,y+66,{s:11*k,c:'#c8102e',w:700});H.txt(ctx,'membrane ≈ 7 nm thick',x+156,y+82,{s:11*k,c:'#c8102e'});}
+const CLC=(sim,ctx,k,L,o)=>ceCard(ctx,k,330,300,455,L,o);
+const RSC=(sim,ctx,k,L,o)=>ceCard(ctx,k,190,6,440,L,o);
+const GLC=(sim,ctx,k,L,o)=>ceCard(ctx,k,12,350,336,L,o);
+const f1=v=>(Math.round(v*10)/10).toFixed(1);
+
+BioLab.addLearn({
+chloroplast: {
+  goals: {
+    bio: ['Where in a leaf photosynthesis happens, and how small it is', 'How light splits water and releases the oxygen you breathe', 'How the light-powered half charges up ATP and NADPH, and the Calvin cycle spends them to make sugar', 'Why a leaf needs light and CO₂ at the same time'],
+    honors: ['How light splits water and powers the electron transport chain', 'How the H⁺ gradient runs ATP synthase', 'How the Calvin cycle spends ATP and NADPH to fix CO₂', 'Why light color, temperature and CO₂ each change the rate'],
+    ap: ['Linear electron flow from water to NADP⁺', 'Chemiosmosis: the proton gradient drives ATP synthase', 'The cost of one G3P: 9 ATP and 6 NADPH', 'How DCMU blocks PSII and what that predicts']
+  },
+  matters: 'This one membrane makes the oxygen in every breath you take and the sugar at the bottom of every food chain. It also explains how some weed killers work and why lawns slow down on hot, dry afternoons.',
+  question: 'On a hot, dry afternoon a plant closes its leaf pores, which shuts out CO₂, while the sun is still bright. Does the leaf keep splitting water and releasing oxygen?',
+  startKey: 'where', startRun: true, startSpeed: 0.5,
+  startOverlay(sim,ctx,LH,k){ceChloroInset(ctx,k);tag(ctx,'Stroma (inside the chloroplast)',225,165,k,{s:12,hi:true});tag(ctx,'Thylakoid space',200,430,k,{s:12,hi:true});},
+  steps: [
+    { key: 'where', title: 'A slice of a chloroplast', set: {}, fresh: true, speed: 0.5, focus: [0,190,800,130],
+      see: 'The inset shows a whole chloroplast, about 5 µm long, with its stacks of flat sacs called thylakoids. The red box is the slice drawn big here: a thylakoid membrane only about 7 nm thick.',
+      why: 'Each leaf cell holds dozens of chloroplasts. The light-catching proteins sit in the thylakoid membrane; sugar is built in the fluid around the stacks, the <b>stroma</b> (top).',
+      overlay(sim,ctx,LH,k){ceChloroInset(ctx,k);} },
+    { key: 'water', title: 'Light splits water: the oxygen you breathe', speed: 0.3, focus: [40,186,110,174],
+      see: 'Light hits photosystem II. Watch the small blue O₂ appear under it as water molecules are split.',
+      why: 'Light knocks electrons out of chlorophyll. Photosystem II replaces them by splitting water: 2 H₂O → O₂ + 4 H⁺ + 4 electrons. Every O₂ a plant releases comes from water, not from CO₂.',
+      overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['2 H₂O → O₂ + 4 H⁺ + 4 e⁻',{s:14,w:800}],['O₂ released now: '+f1(phM(sim,'o2')),{w:800,c:CE_GREEN}]]);} },
+    { key: 'pump', title: 'Electrons pump H⁺', speed: 0.3, focus: [150,200,210,150],
+      see: 'Yellow electrons hop from PSII to PQ to the b6f complex. As they pass, pink H⁺ ions are pushed into the thylakoid space below, and the card’s H⁺ gradient climbs.',
+      why: 'The electrons lose a little energy at each hop, like a bucket brigade. The b6f complex uses it to pump H⁺ across the membrane, storing energy the way a battery charges.',
+      overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['Electron energy → pumping H⁺',{s:14,w:800}],['H⁺ gradient: '+Math.round(phM(sim,'hg'))+'%',{w:800,c:'#b0306a'}]]);} },
+    { key: 'psi', title: 'Photosystem I makes NADPH', speed: 0.3, focus: [355,155,200,165],
+      see: 'Light hits photosystem I and re-energizes the electrons. They pass to ferredoxin (Fd) and the reductase, and purple NADPH fills its bar in the stroma.',
+      why: 'NADPH is a carrier loaded with high-energy electrons. The Calvin cycle will need those electrons to build sugar.',
+      overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['Light again at PSI → NADPH',{s:14,w:800}],['NADPH supply: '+Math.round(phM(sim,'nadph'))+'%',{w:800,c:'#6a3fb5'}]]);} },
+    { key: 'atp', title: 'ATP synthase: H⁺ flows back, ATP is made', speed: 0.3, focus: [600,155,80,180],
+      see: 'H⁺ ions crowded in the thylakoid space flow back up through ATP synthase, and its green ATP bar fills.',
+      why: 'H⁺ can only cross the membrane through ATP synthase. As they rush through, the protein turns like a water wheel and snaps phosphate onto ADP to make ATP.',
+      overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['H⁺ flow → ATP',{s:14,w:800}],['ATP supply: '+Math.round(phM(sim,'atp'))+'%',{w:800,c:CE_GREEN}]]);} },
+    { key: 'calvin', title: 'The Calvin cycle spends them to make sugar', speed: 0.5, focus: [[440,20,140,140],[600,20,200,160]],
+      see: 'Up in the stroma the Calvin cycle turns. CO₂ goes in, the ATP and NADPH bars are drawn down, and the sugar count climbs.',
+      why: 'The enzyme <b>rubisco</b> attaches CO₂ to a sugar already in the cycle. ATP and NADPH then supply the energy and electrons to turn it into G3P, the 3-carbon sugar plants use to build glucose.',
+      overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['CO₂ + ATP + NADPH → sugar (G3P)',{s:14,w:800}],['CO₂ fixed: '+f1(phM(sim,'fix'))+'    Sugar made: '+f1(phM(sim,'g3p')),{w:800,c:CE_GREEN}]]);} },
+    { key: 'dark', title: 'Turn off the light', set: { light: 0 }, speed: 0.8,
+      see: 'Light goes to 0%. Water splitting stops, the O₂ count falls to 0, the H⁺ gradient drains, and the Calvin cycle slows as its ATP and NADPH run out.',
+      why: 'No light means no excited electrons, so nothing refills ATP and NADPH. The Calvin cycle doesn’t use light itself, but it can’t run for long without what the light reactions make.',
+      overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['Light 0%',{s:14,w:800}],['O₂ released: '+f1(phM(sim,'o2'))+'    H⁺ gradient: '+Math.round(phM(sim,'hg'))+'%',{w:800}],['Sugar made: '+f1(phM(sim,'g3p')),{w:800,c:CE_GREEN}]]);} },
+    { key: 'noco2', title: 'Bright light, no CO₂', set: { co2: 0 }, fresh: true, speed: 3,
+      see: 'The light is back at 80% but CO₂ is 0. Watch the ATP and NADPH bars fill to the top, and then the O₂ count falls toward 0, even in bright light.',
+      why: 'With no CO₂ the Calvin cycle stops spending ATP and NADPH. Once they are full, the electrons have nowhere to go, so water splitting backs up and stops. That is the hook’s answer: no CO₂, no oxygen.',
+      overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['Light 80%, CO₂ 0',{s:14,w:800}],['ATP '+Math.round(phM(sim,'atp'))+'%   NADPH '+Math.round(phM(sim,'nadph'))+'%   (filling up)',{w:800}],['O₂ released: '+f1(phM(sim,'o2'))+'   (normal CO₂: about 16)',{w:800,c:CE_RED}]]);} },
+    { key: 'green', lvl: 'honors', title: 'Green light', set: { color: 'green' }, fresh: true, speed: 0.8,
+      see: 'Same 80% light, but green. O₂ released drops to well under half of white light’s 16.',
+      why: 'Chlorophyll absorbs red and blue light best and green the least, so fewer electrons get excited.',
+      overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['Green light',{s:14,w:800}],['O₂ released: '+f1(phM(sim,'o2'))+'   (white: about 16)',{w:800,c:CE_GREEN}]]);} },
+    { key: 'hot', lvl: 'honors', title: '45 °C: rubisco slows', set: { temp: 45 }, fresh: true, speed: 0.8,
+      see: 'At 45 °C the CO₂ fixed by rubisco drops to a small fraction of normal, and the ATP and NADPH bars back up.',
+      why: 'Rubisco is an enzyme, and past its optimum it loses shape and slows. The light reactions keep charging carriers the Calvin cycle can’t spend.',
+      overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['45 °C',{s:14,w:800}],['CO₂ fixed: '+f1(phM(sim,'fix'))+'   (25 °C: about 49)',{w:800,c:CE_RED}],['ATP '+Math.round(phM(sim,'atp'))+'%   NADPH '+Math.round(phM(sim,'nadph'))+'%',{w:800}]]);} },
+    { key: 'dcmu', lvl: 'ap', title: 'DCMU blocks photosystem II', set: { dcmu: true }, fresh: true, speed: 0.8,
+      see: 'With DCMU on, electrons stop leaving PSII. O₂ release and the H⁺ gradient fall to 0.',
+      why: 'DCMU (diuron) binds where plastoquinone should dock on PSII, so linear electron flow stops at its first step. Herbicides such as atrazine work the same way.',
+      overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['DCMU on',{s:14,w:800}],['O₂: '+f1(phM(sim,'o2'))+'   H⁺ gradient: '+Math.round(phM(sim,'hg'))+'%',{w:800,c:CE_RED}]]);} },
+    { key: 'cost', lvl: 'ap', title: 'The cost of one sugar', speed: 0.5, focus: [0,0,800,450],
+      see: 'Back to normal. The card adds up what one G3P sugar costs the cycle.',
+      why: 'Fixing 3 CO₂ into one G3P uses 9 ATP and 6 NADPH. Linear electron flow makes ATP and NADPH in about a 1.3 : 1 ratio, short of the 1.5 : 1 needed, which is one reason cyclic electron flow exists.',
+      overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['One G3P (3 carbons)',{s:14,w:800}],['3 CO₂ + 9 ATP + 6 NADPH → 1 G3P',{w:800}],['ATP : NADPH needed = 9 : 6 = 1.5 : 1',{s:12}]]);} }
+  ],
+  useIt: [
+    { do: 'Water lawns and gardens early in the morning.',
+      why: 'A plant short on water closes the pores in its leaves, which also shuts out CO₂, the raw material for the Calvin cycle. Colorado State University Extension recommends early-morning watering, when less is lost to evaporation.' },
+    { do: 'Use any weed killer exactly as the label says, and keep it off plants you want to keep.',
+      why: 'Some herbicides, such as atrazine and diuron, block photosystem II, the step that splits water, so the plant can’t make sugar. The EPA calls the pesticide label the law.' },
+    { do: 'For indoor plants, pick a full-spectrum or red-and-blue grow light.',
+      why: 'Chlorophyll absorbs red and blue light best and green the least. In this tool, green light cut oxygen release by more than half.' }
+  ],
+  tryIt: [
+    { title: 'light vs. dark leaf disks (20 minutes)',
+      steps: ['Make baking-soda water: 1/8 teaspoon of baking soda in a cup of water, plus a drop of dish soap.', 'Punch 20 spinach disks with a straw. Sink them using a plastic syringe with no needle, as in the floating-disk activity.', 'Split them into two clear cups of the baking-soda water. Put one cup under a bright lamp and the other in a dark closet.', 'After 15 minutes, count the floating disks in each cup.'],
+      look: 'Only the cup in the light has floaters. Same leaves, same CO₂: without light there is no water splitting, so no oxygen fills the disks.' }
+  ]
+},
+
+glycolysis: {
+  goals: {
+    bio: ['How your cells take one glucose apart, and where its 6 carbons go', 'Why oxygen lets a cell make about 32 ATP instead of 2', 'What fermentation is, and why yeast and sprinting muscles use it'],
+    honors: ['The three stages: glycolysis, the Krebs cycle and electron transport, and where each happens', 'Where NADH and FADH₂ come from, and why they matter', 'Yeast vs. muscle fermentation, and why fermentation recycles NAD⁺'],
+    ap: ['Substrate-level vs. oxidative phosphorylation', 'Carbon accounting from glucose to CO₂', 'Why fermentation keeps glycolysis running without O₂']
+  },
+  matters: 'Every move you make, from blinking to sprinting, runs on ATP made this way. It also explains where the mass goes when you lose weight, why bread rises and why a bulging can is dangerous.',
+  question: 'When you burn off a granola bar on a run, its sugar doesn’t just vanish. Follow one glucose molecule with oxygen available. Where do its 6 carbon atoms end up, and how much ATP does your cell get from it?',
+  startKey: 'arrive', startRun: true, startSpeed: 0.25,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Each colored ball = one carbon atom',190,395,k,{s:12,hi:true});line(ctx,110,380,70,335);tag(ctx,'Glycolysis: in the cytoplasm',190,428,k,{s:12,hi:true});},
+  steps: [
+    { key: 'arrive', title: 'One glucose, six carbons', set: { o2: true, mode: 'cell' }, fresh: true, speed: 0.25, focus: [30,42,320,80],
+      see: 'A glucose molecule arrives. Each colored ball is one of its 6 carbon atoms, so you can follow every one.',
+      why: 'Glucose (C₆H₁₂O₆) is the sugar carried in your blood. Its bonds store the energy your cell is about to move into ATP, the molecule that powers almost everything a cell does.',
+      overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['Glucose: C₆H₁₂O₆',{s:14,w:800}],['About 1 nm across. The mitochondrion',{s:12}],['is drawn far smaller than the real 1–2 µm.',{s:12}]]);} },
+    { key: 'invest', title: 'Spend 2 ATP to start', speed: 0.25, focus: [30,105,320,70],
+      see: 'Two orange phosphate groups (P) are added to the glucose, and the card shows −2 ATP.',
+      why: 'Like an investment, the cell spends 2 ATP first. The phosphates make glucose unstable enough to break in half.',
+      overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['Investment: −2 ATP',{s:15,w:800,c:CE_RED}],['Phosphates make glucose ready to split.',{s:12}]]);} },
+    { key: 'payoff', title: 'Split and payoff', speed: 0.25, focus: [30,170,320,175],
+      see: 'The 6-carbon sugar splits into two 3-carbon halves. Each is broken down to pyruvate, and +4 ATP and +2 NADH appear.',
+      why: 'Breaking the halves down releases enough energy to make 4 ATP. Pay back the 2 spent and glycolysis nets 2 ATP. NADH carries high-energy electrons for later.',
+      overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['Glycolysis: −2 + 4 = +2 ATP',{s:15,w:800,c:CE_GREEN}],['+2 NADH. Leaves 2 pyruvate (3 carbons each).',{s:12}]]);} },
+    { key: 'pyruvate', title: 'Into the mitochondrion: 2 carbons leave', speed: 0.25, focus: [360,215,170,110],
+      see: 'With oxygen around, each pyruvate enters the mitochondrion and loses one carbon as CO₂. Watch the CO₂ total in the top bar go up by 2.',
+      why: 'That CO₂ is carbon from your glucose, and you will breathe it out. What is left of each pyruvate, a 2-carbon piece, joins the Krebs cycle.',
+      overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['2 of the 6 carbons → CO₂',{s:15,w:800}],['+2 NADH',{s:12}]]);} },
+    { key: 'krebs', title: 'The Krebs cycle: the last 4 carbons leave', speed: 0.25, focus: [505,90,195,205],
+      see: 'The 2-carbon pieces go around the Krebs cycle and leave as 4 more CO₂. All 6 carbons from the glucose are now CO₂.',
+      why: 'The cycle strips the carbons off and loads their energy onto NADH and FADH₂, plus 2 ATP. This is where the mass of the food you burn goes: out through your lungs.',
+      overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['4 more carbons → CO₂ (all 6 gone)',{s:14,w:800}],['+2 ATP, +6 NADH, +2 FADH₂',{s:12}]]);} },
+    { key: 'etc', title: 'Electron transport makes most of the ATP', speed: 0.25, focus: [400,300,370,115],
+      see: 'NADH and FADH₂ deliver electrons to the chain on the inner membrane, oxygen catches them to make water, and ATP synthase makes about 28 ATP.',
+      why: 'This is the big payoff, and it only works with oxygen. Add it up: 2 + 2 + 28 = about 32 ATP per glucose. (The Cellular respiration tool zooms in on this step.)',
+      overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['2 + 2 + 28 ≈ 32 ATP per glucose',{s:15,w:800,c:CE_GREEN}],['O₂ + electrons + H⁺ → water',{s:12}]]);} },
+    { key: 'noo2', title: 'No oxygen: only 2 ATP', set: { o2: false }, fresh: true, speed: 0.4, focus: [30,240,330,190],
+      see: 'Oxygen is switched off. The mitochondrion goes dark, and the top bar now reads 2 ATP per glucose. Pyruvate is turned into ethanol and CO₂ instead (yeast).',
+      why: 'Without oxygen to catch electrons, the chain stops, and so does the Krebs cycle. Glycolysis can still make its 2 ATP if the cell turns pyruvate into something else. That is <b>fermentation</b>.',
+      overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['No O₂: '+phM(sim,'atpPer')+' ATP per glucose',{s:15,w:800,c:CE_RED}],['32 ÷ 2 = 16 times less. A cell must burn',{s:12}],['sugar about 16 times faster to keep up.',{s:12}]]);} },
+    { key: 'muscle', lvl: 'honors', title: 'Muscle fermentation: lactate', set: { o2: false, ferm: 'muscle' }, fresh: true, speed: 0.4, focus: [30,240,330,190],
+      see: 'Switch the fermenting cell to muscle. Pyruvate becomes lactate, and no CO₂ is released.',
+      why: 'Fermentation makes no ATP itself. Its job is to turn NADH back into NAD⁺, which glycolysis needs to keep going. Yeast does it by making ethanol and CO₂; your muscles make lactate.',
+      overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['Muscle: pyruvate → lactate',{s:14,w:800}],['Recycles NAD⁺ so glycolysis can continue.',{s:12}]]);} },
+    { key: 'balloon', lvl: 'honors', title: 'The yeast balloon lab', set: { mode: 'balloon' }, fresh: true, speed: 2, focus: [0,40,800,410],
+      see: 'Four sealed flasks of yeast. Glucose and sucrose balloons fill with CO₂; lactose and water barely change.',
+      why: 'Yeast can ferment glucose, and it can split sucrose into glucose and fructose first. It lacks the enzyme to split lactose, so that sugar is no use to it.',
+      overlay(sim,ctx,LH,k){ceCard(ctx,k,20,48,360,[['CO₂ in each balloon (mL)',{s:14,w:800}],['Glucose '+Math.round(phM(sim,'b_glu'))+'   Sucrose '+Math.round(phM(sim,'b_suc'))+'   Lactose '+Math.round(phM(sim,'b_lac'))+'   Water '+Math.round(phM(sim,'b_none')),{w:700}]]);} },
+    { key: 'where', lvl: 'ap', title: 'Where the ATP comes from', set: { o2: true, mode: 'cell' }, fresh: true, speed: 0.4, focus: [0,0,800,450],
+      see: 'Back to the full cell with oxygen. The card splits the 32 ATP by how each is made.',
+      why: 'Substrate-level phosphorylation (an enzyme hands a phosphate straight to ADP) gives 4 ATP: 2 in glycolysis and 2 in the Krebs cycle. Oxidative phosphorylation, driven by the H⁺ gradient, gives about 28.',
+      overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['Substrate-level: 2 + 2 = 4 ATP',{s:13,w:800}],['Oxidative: about '+phM(sim,'oxPer')+' ATP',{s:13,w:800}],['10 NADH and 2 FADH₂ feed the chain',{s:12}]]);} }
+  ],
+  useIt: [
+    { do: 'Never eat from a can that is bulging, leaking or spurts when opened.',
+      why: 'Some bacteria grow without oxygen and make gas inside a sealed can as they break down food. The USDA says to throw such cans away: one of those bacteria makes the toxin that causes botulism.' },
+    { do: 'Let bread dough rise covered, somewhere warm but not hot.',
+      why: 'Yeast in the dough ferments sugar into CO₂ and alcohol, exactly the no-oxygen path you saw. The CO₂ bubbles make the bread rise; too much heat kills the yeast.' },
+    { do: 'Pace a long run steadily and save the all-out sprint for the end.',
+      why: 'Muscles short on oxygen lean on glycolysis, which gets only 2 ATP per glucose instead of about 32, so they burn through sugar about 16 times faster.' },
+    { do: 'Warm up and build training slowly, and don’t blame next-day soreness on “lactic acid”.', lvl: 'honors',
+      why: 'Lactate made in hard exercise is cleared from the blood within about an hour. Sports-medicine groups such as the American College of Sports Medicine describe next-day soreness as small muscle damage, not leftover lactate.' }
+  ],
+  tryIt: [
+    { title: 'the yeast balloon (30 minutes)',
+      steps: ['Pour 1 cup of warm tap water (comfortable to touch, not hot) into each of two empty plastic bottles.', 'Add a packet of dry yeast to each. Add 2 tablespoons of sugar to one bottle only.', 'Stretch a balloon over each opening. Set both somewhere warm.', 'Check every 10 minutes.'],
+      look: 'Only the bottle with sugar inflates its balloon. The yeast is fermenting the sugar and releasing CO₂, the same reaction as the class balloon lab.' }
+  ]
+},
+
+resp: {
+  goals: {
+    bio: ['Where most of your ATP is made, and how small that place is', 'How electrons from food power pumps that pile up H⁺', 'Why you need oxygen: it catches the electrons at the end', 'Why more effort means more breathing'],
+    honors: ['The path of electrons through complexes I to IV', 'How the H⁺ gradient drives ATP synthase', 'Why FADH₂ yields less ATP than NADH'],
+    ap: ['Chemiosmotic coupling and proton-motive force', 'P/O ratios: about 2.5 for NADH and 1.5 for FADH₂', 'What blocking complex IV does to the whole chain']
+  },
+  matters: 'This membrane is why you breathe. Every breath brings in the oxygen that catches electrons here, and every breath out carries away the CO₂ from your food. It also explains carbon monoxide danger and altitude sickness.',
+  question: 'Sprinting up the stairs, your muscle cells burn fuel faster and you start breathing hard. Raise the fuel supply from 40% to 100%. What happens to the ATP made and the oxygen used each second?',
+  startKey: 'where', startRun: true, startSpeed: 0.25,
+  startOverlay(sim,ctx,LH,k){ceMitoInset(ctx,k);tag(ctx,'Matrix (inside the mitochondrion)',220,425,k,{s:12,hi:true});},
+  steps: [
+    { key: 'where', title: 'The power plant’s inner membrane', set: {}, fresh: true, speed: 0.25, focus: [0,150,800,110],
+      see: 'The inset shows a whole mitochondrion, 1–2 µm long, with its folded inner membrane. The red box is the slice drawn here, only about 7 nm thick, with its row of protein machines.',
+      why: 'Most of your cells have hundreds of mitochondria. Folding packs more membrane, and more ATP-making machinery, into each one.',
+      overlay(sim,ctx,LH,k){ceMitoInset(ctx,k);} },
+    { key: 'arrive', title: 'Electrons arrive from your food', speed: 0.1, focus: [60,150,110,215],
+      see: 'NADH drops off its electrons (yellow dots) at complex I and leaves as NAD⁺.',
+      why: 'Earlier stages took glucose apart and loaded its energy onto NADH as high-energy electrons. Here they are delivered, like current entering a circuit.',
+      overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['NADH → NAD⁺ + 2 electrons',{s:14,w:800}],['Electrons from your food enter the chain.',{s:12}]]);} },
+    { key: 'pumps', title: 'Electrons power the pumps', speed: 0.1, focus: [60,110,460,170],
+      see: 'Electrons hop from complex I to Q, III, c and IV. Each time, pink H⁺ ions are pushed up into the space above the membrane.',
+      why: 'Each hop releases a little energy, and complexes I, III and IV use it to pump H⁺ across. Releasing energy in small steps lets the cell capture it instead of losing it all as heat.',
+      overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['Each pump: electron energy → H⁺ pushed up',{s:14,w:800}],['H⁺ gradient: '+Math.round(phM(sim,'grad'))+'%',{w:800,c:'#b0306a'}]]);} },
+    { key: 'oxygen', title: 'Oxygen catches the electrons', speed: 0.1, focus: [425,150,95,215],
+      see: 'At complex IV, oxygen takes the used electrons and picks up H⁺, and a blue H₂O appears.',
+      why: 'Oxygen is the last stop: O₂ + 4 e⁻ + 4 H⁺ → 2 H₂O. Without it the electrons back up and the whole chain jams. This is the reason you breathe.',
+      overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['O₂ + 4 e⁻ + 4 H⁺ → 2 H₂O',{s:14,w:800}],['O₂ used: '+f1(phM(sim,'o2use'))+' per second',{w:800,c:CE_BLUE}]]);} },
+    { key: 'gradient', title: 'H⁺ piles up above the membrane', speed: 0.4, focus: [0,0,800,170],
+      see: 'The space above the membrane fills with pink H⁺ ions, far more than in the matrix below.',
+      why: 'The crowded H⁺ store energy, like water behind a dam. They “want” to flow back down, but the membrane blocks them except at one gate.',
+      overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['Like water behind a dam',{s:14,w:800}],['H⁺ gradient: '+Math.round(phM(sim,'grad'))+'%',{w:800,c:'#b0306a'}]]);} },
+    { key: 'synthase', title: 'ATP synthase spins', speed: 0.25, focus: [605,110,130,270],
+      see: 'H⁺ ions rush back down through ATP synthase, its head spins, and green ATP pops out into the matrix.',
+      why: 'The flow of H⁺ turns ATP synthase like a turbine, and each turn adds phosphate to ADP. It takes about 4 H⁺ per ATP.',
+      overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['H⁺ flow → ATP (≈4 H⁺ each)',{s:14,w:800}],['ATP made: '+f1(phM(sim,'atp'))+' per second',{w:800,c:CE_GREEN}]]);} },
+    { key: 'fuel', title: 'More fuel: more ATP and more oxygen', set: { fuel: 100 }, fresh: true, speed: 0.4,
+      see: 'Fuel goes from 80% to 100%. ATP made rises to about 19 per second, and O₂ used rises to about 3.9. At 40% fuel they were about 11 and 2.3.',
+      why: 'More fuel sends more electrons down the chain, and every electron needs oxygen at the end. ATP and O₂ rise together, about 1.7 times from 40% to 100%. That is why you breathe hard on the stairs.',
+      overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['Fuel 100%   (at 40%: ATP ≈ 11, O₂ ≈ 2.3)',{s:13,w:800}],['ATP '+f1(phM(sim,'atp'))+' per s     O₂ used '+f1(phM(sim,'o2use'))+' per s',{w:800,c:CE_GREEN}]]);} },
+    { key: 'noo2', title: 'No oxygen: the chain stops', set: { o2: 0 }, fresh: true, speed: 0.4,
+      see: 'Oxygen is set to 0. Electrons pile up, the pumps stop, the H⁺ gradient drains and ATP production falls to 0 within seconds.',
+      why: 'With nothing to catch electrons at complex IV, none can move along the chain, so no H⁺ is pumped and ATP synthase has nothing to run on.',
+      overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['O₂ 0%',{s:14,w:800,c:CE_RED}],['ATP made: '+f1(phM(sim,'atp'))+' per s    H⁺ gradient: '+Math.round(phM(sim,'grad'))+'%',{w:800}]]);} },
+    { key: 'fadh', lvl: 'honors', title: 'FADH₂ enters later', set: { carrier: 'FADH2' }, fresh: true, speed: 0.25, focus: [180,190,70,140],
+      see: 'Switch the carrier to FADH₂. Its electrons enter at complex II, skipping complex I, and ATP made drops to about 12 per second.',
+      why: 'Complex II doesn’t pump H⁺, so each FADH₂ pumps fewer H⁺ than an NADH, and makes less ATP.',
+      overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['FADH₂ skips the first pump',{s:14,w:800}],['ATP made: '+f1(phM(sim,'atp'))+' per s   (NADH: about 17)',{w:800,c:CE_GREEN}]]);} },
+    { key: 'po', lvl: 'ap', title: 'Counting protons', set: {}, fresh: true, speed: 0.4,
+      see: 'Back to NADH. The card shows the proton count behind the P/O ratio.',
+      why: 'NADH: 4 + 4 + 2 = 10 H⁺ pumped, about 4 H⁺ per ATP → about 2.5 ATP per O. FADH₂: 6 H⁺ → about 1.5. The model reads P/O ≈ 2.4 for NADH because some H⁺ leak back as heat.',
+      overlay(sim,ctx,LH,k){const po=phM(sim,'po');RSC(sim,ctx,k,[['NADH: 10 H⁺ ÷ 4 ≈ 2.5 ATP per O',{s:13,w:800}],['FADH₂: 6 H⁺ ÷ 4 ≈ 1.5 ATP per O',{s:13,w:800}],['Model P/O now: '+(isFinite(po)?po.toFixed(2):'—'),{w:800,c:CE_GREEN}]]);} }
+  ],
+  useIt: [
+    { do: 'Put a carbon monoxide alarm near every sleeping area, and never run a car, grill or generator in a closed space.',
+      why: 'Carbon monoxide crowds oxygen off your red blood cells and can also block complex IV, so the chain stops just as it did at 0% oxygen. The CDC says CO alarms save lives because the gas has no smell.' },
+    { do: 'On a fourteener, climb gradually and head down if a headache keeps getting worse.',
+      why: 'High up, each breath holds less oxygen, so less is there to catch electrons at complex IV. The CDC’s advice for altitude illness is to go up slowly and descend if symptoms get worse.' },
+    { do: 'Eat iron-rich foods such as beans, spinach, fortified cereal or meat.',
+      why: 'Iron sits in hemoglobin, which carries oxygen, and in the cytochromes of this chain (complexes III and IV and cytochrome c). The NIH lists tiredness as a sign of low iron.' }
+  ],
+  tryIt: [
+    { title: 'count your breaths (5 minutes)',
+      steps: ['Sit still for a minute, then count your breaths for 30 seconds.', 'Do 60 seconds of jumping jacks or stair climbing.', 'Count your breaths for 30 seconds again, right away.'],
+      look: 'Your breathing speeds up because your muscles are sending more electrons down this chain, and each one needs oxygen at complex IV, like raising the fuel from 40% to 100%.' }
+  ]
+}
+});
+
+/* Why questions (Test yourself, part 2) for the cell-energy tools. */
+BioLab.addReview({
+photo:{questions:[
+  {id:'o2from',kind:'test',lvl:'bio',q:'The bubbles from Elodea are mostly oxygen. Where does that oxygen come from?',choices:['From the baking soda','From the CO₂ the plant takes in','From water molecules split using light energy','From the lamp'],correct:2,
+    steps:['Chlorophyll absorbs light, and the energy is used to split water.','Splitting water releases O₂, H⁺ and electrons.','The CO₂’s carbon and oxygen end up in the sugar, not in the bubbles.']},
+  {id:'quarter',kind:'test',lvl:'bio',q:'The lamp moves from 15 cm to 30 cm away. Why do the bubbles drop by more than half?',choices:['Light spreads over 4 times the area at twice the distance, so the plant gets only a quarter of the light','The lamp gets dimmer when moved','The water cools down','The plant runs out of CO₂'],correct:0,
+    steps:['Light from a small lamp spreads out in every direction.','At twice the distance it covers 2 × 2 = 4 times the area.','So each leaf gets ¼ of the light: 44% falls to 11%, and the bubble rate falls more than half.']},
+  {id:'stops',kind:'test',lvl:'bio',q:'At 60 cm the bubbles stop. Has the plant stopped photosynthesizing?',choices:['Yes, there is no light at all','Yes, Elodea only photosynthesizes up close','No: it is making carbon dioxide bubbles instead','No: it still makes some oxygen, but its own respiration uses all of it'],correct:3,
+    steps:['Plant cells respire all the time, and respiration uses oxygen.','Bubbles only appear when photosynthesis makes more O₂ than respiration uses.','At 60 cm the two balance (made ≈ used), so no extra oxygen escapes.']},
+  {id:'co2need',kind:'test',lvl:'bio',q:'Bright light but no baking soda: why do the bubbles stop?',choices:['Baking soda is food for the plant','Without CO₂ the plant can’t build sugar, so the light reactions back up and water splitting stops','The water becomes too acidic','Baking soda makes the bubbles'],correct:1,
+    steps:['Baking soda releases CO₂ into the water.','CO₂ is a raw material for sugar. Without it, the energy carriers made by light have nowhere to go.','Water splitting backs up, so oxygen release stops: CO₂ is now the limiting factor.']},
+  {id:'growlight',kind:'real',lvl:'bio',q:'Why do indoor growers hang lights just a few inches above seedlings?',choices:['Light falls off fast with distance, so close lights give the leaves far more light','To keep the seedlings warm','Light far away is the wrong color','Close lights use less electricity'],correct:0,
+    steps:['Twice the distance gives about a quarter of the light.','A light hung across the room gives leaves only a small fraction of what it gives up close.','Seedlings short on light grow tall and weak looking for more.']},
+  {id:'pondnight',kind:'real',lvl:'bio',q:'Why do fish in a pond sometimes die just before dawn after cloudy summer days?',choices:['Fish get cold at night','Sunlight is poisonous to fish','All night, plants and algae use oxygen for respiration but make none without light, so oxygen hits its lowest point near dawn','Algae release CO₂ only during the day'],correct:2,
+    steps:['In the dark there is no photosynthesis, only respiration.','Algae, plants and fish all use oxygen through the night.','After cloudy days there was little oxygen to start with, so it can run out before the sun returns.']},
+  {id:'greenleaf',kind:'test',lvl:'honors',q:'Under green light the plant makes much less oxygen than under white light of the same strength. Why?',choices:['Green light is weaker','Chlorophyll absorbs red and blue light best and green the least','Green light heats the water','Plants only use white light'],correct:1,
+    steps:['Only absorbed light can drive photosynthesis.','Chlorophyll absorbs blue and red well and green poorly.','The green it doesn’t absorb is reflected or passes through, which is why leaves look green.']},
+  {id:'hot45',kind:'test',lvl:'honors',q:'At 45 °C the bubbles stop, even though warmer water helped at 35 °C. Why?',choices:['Hot water has no CO₂ at all','The plant melts','Light can’t travel through hot water','Photosynthesis enzymes such as rubisco lose their shape past their optimum, while respiration keeps rising'],correct:3,
+    steps:['Warmth speeds up enzymes, up to an optimum.','Past it, enzymes start to unfold and slow down.','Respiration keeps climbing with heat, so it overtakes photosynthesis and net oxygen goes negative.']},
+  {id:'netcalc',kind:'test',lvl:'ap',q:'At 30 cm, gross O₂ production is 11.9 and respiration is 4.0 (same units). What is net production, and what does it mean if it were negative?',choices:['15.9; the plant is growing fast','2.98; net is gross divided by respiration','7.9; if negative, the plant is using more O₂ than it makes, below the light compensation point','−7.9; net always subtracts gross'],correct:2,
+    steps:['Net = gross − respiration = 11.9 − 4.0 = 7.9.','Net is the oxygen (or sugar) left over for growth or release.','Negative net means respiration exceeds photosynthesis: the plant is below its light compensation point and losing stored sugar.']}
+]},
+chloroplast:{questions:[
+  {id:'waterO2',kind:'test',lvl:'bio',q:'Why does a plant release oxygen when light hits photosystem II?',choices:['Photosystem II splits water to replace the electrons light knocked loose, and O₂ is left over','Light breaks CO₂ apart','Chlorophyll is made of oxygen','The Calvin cycle releases O₂'],correct:0,
+    steps:['Light excites electrons in chlorophyll, and they leave PSII.','PSII replaces them by splitting water: 2 H₂O → O₂ + 4 H⁺ + 4 e⁻.','The O₂ is a by-product, and it is the oxygen you breathe.']},
+  {id:'darkcalvin',kind:'test',lvl:'bio',q:'The Calvin cycle doesn’t use light. Why does it stop soon after the light goes off?',choices:['It needs light to stay warm','CO₂ disappears in the dark','Rubisco is destroyed by darkness','It runs on ATP and NADPH, which only the light reactions make'],correct:3,
+    steps:['The Calvin cycle spends ATP and NADPH to turn CO₂ into sugar.','Only the light-powered half of photosynthesis refills them.','When the light goes off, the supplies run down and the cycle slows to a stop.']},
+  {id:'noco2o2',kind:'test',lvl:'bio',q:'With bright light but no CO₂, why does oxygen release fall to almost zero?',choices:['Oxygen comes from CO₂','The Calvin cycle stops using ATP and NADPH; once they are full, electrons back up and water splitting stops','The leaf closes its chloroplasts','Light can’t reach the leaf without CO₂'],correct:1,
+    steps:['No CO₂ means the Calvin cycle stops.','ATP and NADPH fill up because nothing spends them.','The electron chain has nowhere to send electrons, so PSII stops splitting water and O₂ release stops.']},
+  {id:'stomata',kind:'real',lvl:'bio',q:'On hot, dry afternoons, grass grows more slowly even in full sun. Why?',choices:['To save water, leaves close their pores, which also blocks CO₂ from getting in','The sun is too bright','Grass only grows at night','Heat breaks down chlorophyll instantly'],correct:0,
+    steps:['Leaf pores (stomata) let CO₂ in and water vapor out.','When water is short, plants close them to avoid drying out.','Less CO₂ gets in, so the Calvin cycle slows and so does growth.']},
+  {id:'herbicide',kind:'real',lvl:'bio',q:'Some weed killers block photosystem II. Why does that kill a plant?',choices:['It poisons the soil','With PSII blocked, no electrons flow, so no ATP and NADPH are made and the plant can’t make sugar','It makes the leaves too heavy','It stops the plant from taking in water'],correct:1,
+    steps:['PSII is the start of the electron chain.','Blocked PSII means no water splitting, no H⁺ gradient and no NADPH.','Without ATP and NADPH the Calvin cycle stops, and the plant starves.']},
+  {id:'synthase',kind:'test',lvl:'honors',q:'Why does H⁺ build up in the thylakoid space, and how does that make ATP?',choices:['H⁺ is made there by the Calvin cycle','ATP synthase pumps H⁺ in','Electron flow pumps H⁺ in; the H⁺ can only flow back out through ATP synthase, which uses that flow to make ATP','H⁺ is attracted to chlorophyll'],correct:2,
+    steps:['Water splitting and the b6f pump add H⁺ to the thylakoid space.','The membrane blocks H⁺ except at ATP synthase.','H⁺ rushing out turns ATP synthase, which joins phosphate to ADP.']},
+  {id:'g3pcost',kind:'test',lvl:'ap',q:'Making one G3P fixes 3 CO₂. How much ATP and NADPH does it use?',choices:['3 ATP and 3 NADPH','6 ATP and 9 NADPH','18 ATP and 12 NADPH','9 ATP and 6 NADPH'],correct:3,
+    steps:['Each CO₂ fixed costs 3 ATP and 2 NADPH across the cycle.','3 CO₂ × 3 ATP = 9 ATP; 3 CO₂ × 2 NADPH = 6 NADPH.','That 1.5 : 1 ratio is more ATP than linear electron flow alone provides.']}
+]},
+glycolysis:{questions:[
+  {id:'carbons',kind:'test',lvl:'bio',q:'With oxygen, where do all 6 carbon atoms of a glucose end up?',choices:['In ATP','As CO₂ that you breathe out','As water','They stay in the mitochondrion'],correct:1,
+    steps:['2 carbons leave as CO₂ when pyruvate enters the mitochondrion.','The other 4 leave as CO₂ in the Krebs cycle.','You breathe that CO₂ out, which is where most of the mass of burned food goes.']},
+  {id:'o2why',kind:'test',lvl:'bio',q:'Why does a cell get about 32 ATP per glucose with oxygen but only 2 without it?',choices:['Oxygen catches electrons at the end of the electron transport chain; without it the chain and the Krebs cycle stop, leaving only glycolysis','Oxygen is a source of energy itself','Glucose can’t enter cells without oxygen','Without oxygen the cell makes ATP more slowly but the same amount'],correct:0,
+    steps:['Most ATP (about 28) comes from electron transport, which needs O₂ to accept electrons.','No O₂ means no electron transport, and the Krebs cycle stalls too.','Only glycolysis is left: 2 ATP per glucose.']},
+  {id:'invest',kind:'test',lvl:'bio',q:'Glycolysis spends 2 ATP before it makes any. Why is that worth it?',choices:['It isn’t; the cell loses 2 ATP','The ATP is stored for later','Glucose needs ATP to enter the mitochondrion','The phosphates make glucose unstable enough to split, and the payoff is 4 ATP, a net gain of 2'],correct:3,
+    steps:['Adding 2 phosphates destabilizes the glucose.','It splits, and its halves release energy to make 4 ATP.','4 − 2 = net 2 ATP from glycolysis.']},
+  {id:'bread',kind:'real',lvl:'bio',q:'Why does bread dough rise?',choices:['The flour expands when wet','Kneading pumps air in','Yeast ferments sugar into CO₂ and alcohol, and the CO₂ gets trapped as bubbles','Salt reacts with water'],correct:2,
+    steps:['Yeast in dough has little oxygen, so it ferments.','Fermentation in yeast turns pyruvate into ethanol and CO₂.','The CO₂ bubbles get trapped in the dough; the alcohol bakes off.']},
+  {id:'weight',kind:'real',lvl:'bio',q:'When you lose weight, where does most of the lost mass go?',choices:['Out through your lungs as CO₂','Out as sweat','It turns into heat','Into your muscles'],correct:0,
+    steps:['Burning fat and sugar breaks their carbon chains apart.','Those carbons leave as CO₂, as you saw in the Krebs cycle.','You breathe the CO₂ out, so most of the lost mass leaves through your lungs.']},
+  {id:'nadplus',kind:'test',lvl:'honors',q:'Fermentation makes no ATP. Why do cells do it?',choices:['To make CO₂','To make more glucose','It turns NADH back into NAD⁺, which glycolysis needs to keep making its 2 ATP','It cools the cell'],correct:2,
+    steps:['Glycolysis needs NAD⁺ to accept electrons.','Without oxygen, NADH can’t unload at the electron transport chain.','Fermentation unloads NADH onto pyruvate (making lactate or ethanol), freeing NAD⁺ so glycolysis can continue.']},
+  {id:'lactose',kind:'test',lvl:'honors',q:'In the balloon lab, yeast fills balloons with glucose and sucrose but not lactose. Why?',choices:['Lactose is too sweet','Yeast lacks the enzyme to split lactose into sugars it can use','Lactose is not a sugar','Lactose kills yeast'],correct:1,
+    steps:['Yeast can ferment glucose directly.','It has an enzyme (invertase) that splits sucrose into glucose and fructose.','It has no lactase, so lactose stays unused and the balloon stays flat.']},
+  {id:'substrate',kind:'test',lvl:'ap',q:'How many of the ~32 ATP per glucose come from substrate-level phosphorylation?',choices:['2','28','32','4'],correct:3,
+    steps:['Substrate-level: an enzyme transfers phosphate directly to ADP.','Glycolysis gives 2 net this way and the Krebs cycle gives 2.','The other ~28 come from oxidative phosphorylation via ATP synthase.']}
+]},
+resp:{questions:[
+  {id:'whybreathe',kind:'test',lvl:'bio',q:'What does the oxygen you breathe actually do inside your cells?',choices:['It catches electrons at the end of the electron transport chain and becomes water','It burns glucose directly','It becomes the CO₂ you breathe out','It is stored in ATP'],correct:0,
+    steps:['Electrons from food pass down the chain, powering H⁺ pumps.','At complex IV, O₂ accepts them and joins H⁺ to form water.','Without O₂ the electrons have nowhere to go and the chain stops.']},
+  {id:'pumpstore',kind:'test',lvl:'bio',q:'Why do the proteins pump H⁺ across the membrane instead of making ATP directly?',choices:['They can’t do anything else','H⁺ is waste to get rid of','To make the matrix acidic','The H⁺ gradient stores energy, and ATP synthase uses H⁺ flowing back to make ATP'],correct:3,
+    steps:['Each electron hop releases a small amount of energy.','The pumps store it by piling H⁺ above the membrane, like water behind a dam.','ATP synthase lets the H⁺ flow back and uses that flow to make ATP.']},
+  {id:'stairs',kind:'test',lvl:'bio',q:'Raising the fuel from 40% to 100% raises both ATP made and O₂ used. Why do they rise together?',choices:['They don’t depend on each other','Oxygen is made from ATP','Every electron sent down the chain needs oxygen at the end, so more electrons (more ATP) means more oxygen','More fuel makes oxygen'],correct:2,
+    steps:['More fuel means more NADH delivering electrons.','More electrons pump more H⁺, so more ATP is made.','Each electron must be caught by O₂, so oxygen use rises in step: about 1.7 times for both.']},
+  {id:'cogas',kind:'real',lvl:'bio',q:'Why is carbon monoxide dangerous even though you keep breathing normally?',choices:['It smells bad','It keeps oxygen from being delivered and used, so the chain stops as if there were no oxygen','It makes too much ATP','It only affects the lungs'],correct:1,
+    steps:['CO binds hemoglobin far more tightly than O₂, so less oxygen reaches cells.','It can also block complex IV.','Either way electrons can’t be passed to oxygen, ATP production falls, and the brain and heart suffer first.']},
+  {id:'altitude',kind:'real',lvl:'bio',q:'Why do you breathe faster on top of a fourteener?',choices:['Cold air makes you breathe faster','Each breath holds less oxygen, so you breathe more to supply complex IV','Mountain air has more CO₂','Climbing uses no ATP'],correct:1,
+    steps:['Air pressure is lower up high, so each breath brings in less O₂.','Your mitochondria still need the same oxygen to keep the chain running.','Breathing faster and deeper makes up part of the difference.']},
+  {id:'fadh2',kind:'test',lvl:'honors',q:'Why does FADH₂ make less ATP than NADH?',choices:['Its electrons enter at complex II, skipping complex I, so fewer H⁺ are pumped','FADH₂ has no electrons','FADH₂ blocks ATP synthase','It needs more oxygen'],correct:0,
+    steps:['NADH gives its electrons to complex I, which pumps H⁺.','FADH₂ gives them to complex II, which doesn’t pump.','Fewer H⁺ pumped means less flow through ATP synthase, about 1.5 ATP instead of 2.5.']},
+  {id:'cyanide',kind:'test',lvl:'ap',q:'Cyanide blocks complex IV. What happens to the H⁺ gradient and to O₂ use?',choices:['Both rise','The gradient rises, O₂ use falls','Both fall to near zero: electrons can’t reach O₂, so pumping stops and the gradient drains','Nothing changes because complexes I and III still pump'],correct:2,
+    steps:['With complex IV blocked, electrons back up all the way to complex I.','No electron flow means no H⁺ pumping, and the gradient leaks away.','O₂ use stops too, even though blood is full of oxygen.']}
+]}
+});
+
 })();
