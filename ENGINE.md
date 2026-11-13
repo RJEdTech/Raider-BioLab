@@ -95,3 +95,6 @@ While they wait, a cue above the buttons says what to look at ("Watch the model"
 - `?pace=off` turns it off in that browser for every Raider Labs site (shared `raider-labs-pace` key in localStorage); `?pace=on` turns it back on.
 - Hooks are wrappers on `tourGo`, `renderChallenge`, `renderReview`, `vlGo` (and `guideReveal` in the math engine), so a step that renders through those gets the wait with no change to the sim.
 - Playwright treats `aria-disabled` buttons as disabled and waits; use `click(force=True)` to test an early click.
+
+## Final review paths
+A course in `courses.js` can carry `finals:[{t, units, note}]`. Each becomes a path at `#f-<courseId>-<k>` and a button at the top of the course view. `units` lists unit indexes; an entry can be `[index, ['toolId',...]]` to take only some of that unit's tools. A final path keeps only practice steps: Test yourself for Learn it tools, Review questions otherwise, and Free-response practice where it exists. Tools with no questions are left off.

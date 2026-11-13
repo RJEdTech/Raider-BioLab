@@ -590,3 +590,8 @@ p.fq-type{margin:0 0 6px}
 .pace-nudge>span{text-decoration:underline}
 @keyframes paceNudge{20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
 @media (prefers-reduced-motion: reduce){.pace-nudge{animation:none}}
+/* Fall final review paths (#f-<course>-<k>) */
+.finals-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.final-go{margin:0;padding:8px 14px;border:2px solid var(--rj-ink);border-radius:10px;text-decoration:none}
+.final-go:hover,.final-go:focus-visible{background:var(--rj-ink);color:var(--bg,#fff)}
+.u-from{margin:0 0 2px;font-size:12px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;opacity:.7}

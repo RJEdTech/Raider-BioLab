@@ -3,7 +3,7 @@
    Within each unit, tools are listed in the order the topics come up in class.
    Tool ids that are not built yet are skipped automatically. */
 BioLab.COURSES = [
-  { id: 'bio', name: 'Biology',
+  { id: 'bio',finals:[{"t": "Biology fall final review", "units": [0, 2, 3, 4], "note": "Covers Units 1 to 4 (nature of science, chemistry of life, cells, cell energy). Your teacher decides what is on the final, so check the study guide."}], name: 'Biology',
     blurb: 'Tools in the order the Biology course covers them, unit by unit.',
     units: [
       { n: 'Unit 1', t: 'Nature of science', ids: ['expdesign', 'pillbug'] },
@@ -18,7 +18,7 @@ BioLab.COURSES = [
       { n: 'Unit 9', t: 'Evolution', ids: ['beaks', 'evolution', 'cladogram'] }
     ],
     further: ['crispr', 'epidemic', 'antibiotic'] },
-  { id: 'honors', name: 'Honors Biology',
+  { id: 'honors',finals:[{"t": "Honors Biology fall final review", "units": [0, 1, 2, 3, 4, 5, 6], "note": "Covers Fall 1 to 7, from experimental design through cellular respiration. Your teacher decides what is on the final, so check the study guide."}], name: 'Honors Biology',
     blurb: 'Tools in the order Honors Biology covers them: first semester, then second.',
     units: [
       { n: 'Fall 1', t: 'Science skills: experimental design and data', ids: ['expdesign', 'pillbug'] },
@@ -36,7 +36,7 @@ BioLab.COURSES = [
       { n: 'Spring 6', t: 'Anatomy, dissection and homeostasis', ids: ['dissection', 'homeostasis'] }
     ],
     further: ['sanger', 'crispr', 'synthbio', 'epidemic', 'antibiotic', 'molclock', 'whogetscare'] },
-  { id: 'ap', name: 'AP Biology',
+  { id: 'ap',finals:[{"t": "AP Biology fall final review", "units": [0, 1, 2, 3, 4, 5], "note": "Covers ecology, chemistry of life, cells, cell communication, cell energetics and the cell cycle. Your teacher decides what is on the final, so check the study guide."}], name: 'AP Biology',
     blurb: 'Tools in the order AP Biology covers them, starting with the summer ecology unit.',
     units: [
       { n: 'Summer', t: 'Ecology (AP Unit 8) and science practices', ids: ['pillbug', 'popgrowth', 'wolfmoose', 'predprey', 'biodiversity', 'energy', 'carboncycle'], note: 'Chi-square, population growth, communities and ecosystems.' },
@@ -52,7 +52,7 @@ BioLab.COURSES = [
       { n: 'Review', t: 'Body systems and ecosystems review', ids: ['homeostasis'] }
     ],
     further: ['sanger', 'crispr', 'synthbio', 'qpcr', 'epidemic', 'antibiotic', 'molclock'] },
-  { id: 'apes', name: 'AP Environmental Science',
+  { id: 'apes',finals:[{"t": "APES fall final review", "units": [0, 1, 2, 3, 4], "note": "Covers Units 1 to 5. Your teacher decides what is on the final, so check the study guide."}], name: 'AP Environmental Science',
     blurb: 'Tools in the order AP Environmental Science covers them: Units 1–5 in the fall, then Unit 9 and Units 6–8 in the spring.',
     units: [
       { n: 'Unit 1', t: 'Ecosystems', ids: ['commons', 'carboncycle', 'productivity', 'energy', 'biomes'], note: 'Biogeochemical cycles, primary productivity, trophic levels and biomes.' },
@@ -66,7 +66,7 @@ BioLab.COURSES = [
       { n: 'Unit 8', t: 'Aquatic and terrestrial pollution', ids: ['eutrophication', 'ld50', 'energy'], note: 'Eutrophication, dose–response and LD50, biomagnification.' }
     ],
     further: ['epidemic', 'antibiotic'] },
-  { id: 'ge', name: 'Genetic Engineering',
+  { id: 'ge',finals:[{"t": "Genetic Engineering fall review", "units": [0, 1, 2], "note": "Covers lab techniques, GE 101 and GE 102. Your teacher decides what is on the final, so check the study guide."}], name: 'Genetic Engineering',
     blurb: 'Tools for Molecular Biology & Genetic Engineering Techniques Lab, in the order the techniques are taught.',
     units: [
       { n: 'Module 1', t: 'Introduction to lab techniques', ids: ['pipette', 'gel', 'plasmid'], note: 'Micropipetting, conversions, gel loading, plasmid mapping, DNA extraction and electrophoresis.' },

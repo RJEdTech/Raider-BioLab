@@ -961,17 +961,18 @@ function fqOpenLab(sim,f){if(f.kind==='ap'&&('ap' in LV)&&level!=='ap'&&setLevel
 BL.frq={parse:fqParseNum,load:fqLoad,score:fqScore,openLab:fqOpenLab,list:fqList};
 
 const unitFor=(cid,i)=>{const c=(BL.COURSES||[]).find(x=>x.id===cid),u=c&&c.units[+i];return u?{c,u,i:+i,id:'u-'+cid+'-'+i}:null;};
-function parseUnit(id){const m=/^u-(.+)-(\d+)$/.exec(id||'');return m?unitFor(m[1],m[2]):null;}
-function unitTools(U){return linkList(U.u.ids);}
-function toolSteps(d){const s=[];if(d.learn){s.push(['guided','Learn it']);if(d.challenges||d.review)s.push(['test','Test yourself']);}else{if(d.tour&&d.tour.length)s.push(['guided','Guided walkthrough']);if(d.review)s.push(['review','Review questions']);}if(d.frq)s.push(['frq','Free-response practice']);if(!s.length)s.push(['lab','Full lab']);return s;}
-function unitPath(U){const out=[];unitTools(U).forEach(d=>toolSteps(d).forEach(([m,l])=>out.push({d,m,l})));return out;}
+const finalFor=(cid,k)=>{const c=(BL.COURSES||[]).find(x=>x.id===cid),f=c&&c.finals&&c.finals[+k];if(!f)return null;const ids=[],from={};(f.units||[]).forEach(e=>{const i=Array.isArray(e)?e[0]:e,only=Array.isArray(e)?e[1]:null,u=c.units[i];if(u)u.ids.forEach(id=>{if((!only||only.includes(id))&&!ids.includes(id)){ids.push(id);from[id]=u;}});});return {c,u:{n:f.n||'Final review',t:f.t,note:f.note,ids,from},i:'f'+k,id:'f-'+cid+'-'+k,final:true};};
+function parseUnit(id){let m=/^u-(.+)-(\d+)$/.exec(id||'');if(m)return unitFor(m[1],m[2]);m=/^f-(.+)-(\d+)$/.exec(id||'');return m?finalFor(m[1],m[2]):null;}
+function unitTools(U){const L=linkList(U.u.ids);return U.final?L.filter(d=>toolSteps(d,U).length):L;}
+function toolSteps(d,U){const s=[];if(U&&U.final){if(d.learn&&(d.challenges||d.review))s.push(['test','Test yourself']);else if(d.review)s.push(['review','Review questions']);if(d.frq)s.push(['frq','Free-response practice']);return s;}if(d.learn){s.push(['guided','Learn it']);if(d.challenges||d.review)s.push(['test','Test yourself']);}else{if(d.tour&&d.tour.length)s.push(['guided','Guided walkthrough']);if(d.review)s.push(['review','Review questions']);}if(d.frq)s.push(['frq','Free-response practice']);if(!s.length)s.push(['lab','Full lab']);return s;}
+function unitPath(U){const out=[];unitTools(U).forEach(d=>toolSteps(d,U).forEach(([m,l])=>out.push({d,m,l})));return out;}
 const unitUrl=(d,m,U)=>'#'+d.hash+'@'+m+'@'+U.id;
 const seenKey=()=>LAB_KEY+'-unit-seen';
 function seenLoad(){try{return JSON.parse(store.get(seenKey())||'{}')||{};}catch(e){return {};}}
 function renderPathbar(sim,ctx,mode){const bar=sim.ui.sec.querySelector('.pathbar');if(!bar)return;const U=parseUnit(ctx);if(!U){bar.hidden=true;bar.innerHTML='';return;}
   const path=unitPath(U),n=path.findIndex(p=>p.d===sim.def&&p.m===mode),nx=n>=0?path[n+1]:path[0];
   const seen=seenLoad();seen[sim.def.id+'@'+mode]=1;store.set(seenKey(),JSON.stringify(seen));
-  bar.innerHTML=`<a class="pb-back" href="#${U.id}">← Unit path</a><span class="pb-t">${U.c.name}, ${U.u.n||'Unit'}${n>=0?` · Step ${n+1} of ${path.length}`:''}</span>${n>=0&&n===path.length-1?`<a class="btn primary" href="#${U.id}">Finish</a>`:nx?`<a class="btn primary" href="${unitUrl(nx.d,nx.m,U)}">Next step →</a>`:''}`;bar.hidden=false;}
+  bar.innerHTML=`<a class="pb-back" href="#${U.id}">← ${U.final?'Final review':'Unit path'}</a><span class="pb-t">${U.c.name}, ${U.u.n||'Unit'}${n>=0?` · Step ${n+1} of ${path.length}`:''}</span>${n>=0&&n===path.length-1?`<a class="btn primary" href="#${U.id}">Finish</a>`:nx?`<a class="btn primary" href="${unitUrl(nx.d,nx.m,U)}">Next step →</a>`:''}`;bar.hidden=false;}
 function canvasSteps(what,copyWord,img5){return `<ol class="emb-steps">
   <li><b>Copy the embed code</b> with the red button above.</li>
   <li>In Canvas, open the page (or assignment or discussion) and click <b>Edit</b>.<img src="img/canvas-embed-1.jpg" alt="A Canvas page with the Edit button outlined" loading="lazy" width="800" height="300"></li>
@@ -980,17 +981,17 @@ function canvasSteps(what,copyWord,img5){return `<ol class="emb-steps">
   <li>Scroll down and click <b>Save</b> (or <b>Save &amp; Publish</b>). Students now see ${what} right in the page.<img src="img/canvas-embed-4.jpg" alt="The bottom of the Canvas editor with the Save button outlined" loading="lazy" width="800" height="220"></li><li>${copyWord}${img5?'<img src="img/canvas-embed-5.jpg" alt="A published Canvas page with the projectile tool embedded" loading="lazy" width="800" height="701">':''}</li></ol>`;}
 let unitEl=null,curUnit=null;
 function renderUnit(U){curUnit=U;const tools=unitTools(U),seen=seenLoad();let stepN=0;
-  const rows=tools.map(d=>{const steps=toolSteps(d).map(([m,l])=>{stepN++;const ok=!!seen[d.id+'@'+m];let extra='';if(m==='review'){const list=(d.review.questions||[]).filter(q=>atLeast(q.lvl)),a=rvLoad(d.id),did=list.filter(q=>a[q.id]&&a[q.id].done).length,got=list.filter(q=>a[q.id]&&a[q.id].ok).length;extra=did?` <span class="u-score">${got} of ${list.length} right</span>`:` <span class="u-score">${list.length} questions</span>`;}
+  const rows=tools.map(d=>{const steps=toolSteps(d,U).map(([m,l])=>{stepN++;const ok=!!seen[d.id+'@'+m];let extra='';if(m==='review'){const list=(d.review.questions||[]).filter(q=>atLeast(q.lvl)),a=rvLoad(d.id),did=list.filter(q=>a[q.id]&&a[q.id].done).length,got=list.filter(q=>a[q.id]&&a[q.id].ok).length;extra=did?` <span class="u-score">${got} of ${list.length} right</span>`:` <span class="u-score">${list.length} questions</span>`;}
       if(m==='frq'){const L=fqList(d),S=fqLoad(d.id),q=S.q||{};let got=0,tot=0,done=0;L.forEach(f=>{const sc=fqScore(f,q[f.id]);tot+=sc.tot;if(sc.done){done++;got+=sc.got;}});extra=done?` <span class="u-score">${got} points so far</span>`:` <span class="u-score">${L.length} question${L.length===1?'':'s'}, ${tot} points</span>`;}
       return `<a class="u-step${ok?' seen':''}" href="${unitUrl(d,m,U)}"><span class="u-n" aria-hidden="true">${ok?'✓':stepN}</span><span>${l}${extra}${ok?'<span class="vh"> (opened)</span>':''}</span></a>`;}).join('');
-    const lab=toolSteps(d).some(s=>s[0]==='lab')?'':`<a class="u-opt" href="${unitUrl(d,'lab',U)}">Full lab (optional)</a>`;
-    return `<li class="u-tool"><h3>${d.tab}</h3><p>${d.card||''}</p><div class="u-steps">${steps}</div>${lab}</li>`;}).join('');
+    const lab=U.final||toolSteps(d,U).some(s=>s[0]==='lab')?'':`<a class="u-opt" href="${unitUrl(d,'lab',U)}">Full lab (optional)</a>`;
+    return `<li class="u-tool">${U.final&&U.u.from[d.id]?`<p class="u-from">${U.u.from[d.id].n||''}${U.u.from[d.id].n?': ':''}${U.u.from[d.id].t}</p>`:''}<h3>${d.tab}</h3><p>${d.card||''}</p><div class="u-steps">${steps}</div>${lab}</li>`;}).join('');
   const lessons=(U.u.links||[]).map(x=>`<li><a href="${x.href}" target="_blank" rel="noopener">${x.title} ↗</a></li>`).join('');
   const seenUrl={},ap=[];tools.forEach(d=>{((d.review&&d.review.ap)||[]).forEach(a=>{if(!seenUrl[a.url+a.title]){seenUrl[a.url+a.title]=1;ap.push(a);}});});
   const total=stepN;
   unitEl.innerHTML=`<a class="u-back" href="#path-${U.c.id}">← All ${U.c.name} units</a><p class="eyebrow">${U.c.name}${U.u.n?' · '+U.u.n:''}</p><h2>${U.u.t}</h2>
-  <p class="lede">${total} steps, in order. Finish each one, then press <b>Next step</b> to move on.</p>
-  <div class="u-missed"><b>Missed class?</b> Start at step 1 and work down. This covers the tools for the unit, not everything your teacher did in class, so still check Canvas for notes and assignments.</div>
+  <p class="lede">${U.final?`${tools.length} tools, ${total} practice sets, in the order your class covered them.`:`${total} steps, in order. Finish each one, then press <b>Next step</b> to move on.`}</p>
+  ${U.final?`<div class="u-missed"><b>Studying for the final?</b> Work down the list, or jump to the units you feel least sure about. Every set has worked answers, and <b>See it in the lab</b> rebuilds a question in the simulation. ${U.u.note||''} This covers the Raider Labs tools only, so use your teacher’s study guide too.</div>`:`<div class="u-missed"><b>Missed class?</b> Start at step 1 and work down. This covers the tools for the unit, not everything your teacher did in class, so still check Canvas for notes and assignments.</div>`}
   ${lessons?`<div class="u-lessons"><h3>Start with the lesson</h3><ul>${lessons}</ul></div>`:''}
   <ol class="u-tools">${rows}</ol>${apLinksHtml(ap,'',atLeast('ap'))}
   <details class="about embed-box"><summary>Put this unit path in Canvas</summary><div class="about-b u-emb"></div></details>
@@ -1057,7 +1058,7 @@ function buildHome(){const units=document.getElementById('units');units.innerHTM
   if(bw){bw.innerHTML=['<button type="button" data-b="topic">By topic</button>'].concat(courses.map(c=>`<button type="button" data-b="${c.id}">${c.name}</button>`)).join('');
     bw.querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.b===browse));b.onclick=()=>{browse=b.dataset.b;store.set(LAB_KEY+'-browse',browse);buildHome();drawThumbs();};});}
   const course=courses.find(c=>c.id===browse);
-  if(course){const intro=el('p',{class:'lede course-lede'},course.blurb||'');units.appendChild(intro);
+  if(course){const intro=el('p',{class:'lede course-lede'},course.blurb||'');units.appendChild(intro);if((course.finals||[]).length){const fb=el('div',{class:'finals-row'});fb.innerHTML=course.finals.map((f,k)=>`<a class="unit-go final-go" href="#f-${course.id}-${k}">${f.t} →</a>`).join('');units.appendChild(fb);}
     course.units.forEach((u,i)=>{const list=linkList(u.ids),ext=u.links||[];if(!list.length&&!ext.length)return;const sec=el('section',{class:'unit'});
       sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">${u.n||('Step '+(i+1))}</span> ${u.t}</h3>${u.note?`<p class="unit-note">${u.note}</p>`:''}${list.length?`<a class="unit-go" href="#u-${course.id}-${i}">Walk through this unit →</a>`:''}${fqUnitLinks(list,course.id,i)}<div class="cards">${ext.map(extCard).join('')}${list.map(card).join('')}</div>`;units.appendChild(sec);});
     const adv=linkList(course.further),ext=course.furtherLinks||[];if(adv.length||ext.length){const sec=el('section',{class:'unit further'});sec.innerHTML=`<h3 class="unit-h"><span class="unit-n">Go further</span> For students who want more</h3><p class="unit-note">Optional tools that go past what class time allows.</p><div class="cards">${adv.map(card).join('')}${ext.map(extCard).join('')}</div>`;units.appendChild(sec);}}
