@@ -118,6 +118,8 @@ $('csv').onclick=()=>{const w=boardW();const P=C.PRESETS.filter(p=>C.wKey(p.w)!=
  const t=lines.join('\n'),done=()=>{$('csv-t').hidden=false;setTimeout(()=>$('csv-t').hidden=true,1500);};try{navigator.clipboard.writeText(t).then(done);}catch(e){}};
 desc();})();
 </script>
+<!-- Anonymous page-view count (GoatCounter): no cookies, no personal data, no form or file contents. A visit through the school's Securly filter (?scrlybrkr in the address) is recorded as ?sd = school device; nothing else about the visitor is sent. -->
+<script>window.goatcounter={path:function(p){try{var u=new URL(p,location.origin);var sd=u.searchParams.has('scrlybrkr');u.searchParams.delete('scrlybrkr');u.searchParams.delete('sd');var q=u.searchParams.toString();if(sd)q=q?q+'&sd':'sd';return u.pathname+(q?'?'+q:'');}catch(e){return p;}}};</script>
 <script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
