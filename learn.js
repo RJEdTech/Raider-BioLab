@@ -1965,4 +1965,81 @@ karyotype: {
 }
 });
 
+
+/* ===== Pedigrees ===== */
+function pdRand(seed){let a=seed>>>0;return ()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+const pdClueAR=f=>f.couples.find(c=>!f.P[c.f].aff&&!f.P[c.m].aff&&c.kids.some(i=>f.P[i].aff));
+const pdClueAD=f=>f.couples.find(c=>f.P[c.f].aff&&f.P[c.m].aff&&c.kids.some(i=>!f.P[i].aff))||f.couples.find(c=>(f.P[c.f].aff||f.P[c.m].aff)&&c.kids.some(i=>f.P[i].aff));
+const PD_OK={AR:f=>!!pdClueAR(f),AD:f=>!!(f.couples.find(c=>f.P[c.f].aff&&f.P[c.m].aff&&c.kids.some(i=>!f.P[i].aff))),XR:f=>f.P.some(p=>p.aff&&p.gen===3)&&f.P.every(p=>!p.aff||p.sex==='M'),XD:f=>f.couples.some(c=>f.P[c.f].aff&&c.kids.length>=2),MT:f=>f.couples.some(c=>f.P[c.m].aff&&c.kids.length>=2)};
+const PD_SEED={};
+/* build a fixed family for a pattern: generate() is seeded so every student sees the same family */
+function pdFam(sim,truth){const key=BioLab.level+':'+truth,orig=Math.random;let s0=PD_SEED[key]||1;
+  for(let s=s0;s<s0+120;s++){Math.random=pdRand(s*7919+truth.charCodeAt(0));try{sim.def.onLevel(sim);}finally{Math.random=orig;}const f=sim.fam;if(f&&f.truth===truth&&(PD_OK[truth]||(()=>true))(f)){PD_SEED[key]=s;break;}}
+  sim.fam.revealed=false;sim.fam.sel=0;atReset(sim);}
+const pdC=(ctx,k,L)=>dcCard(ctx,k,494,6,298,L);
+const pdRingP=(ctx,p,tau,col)=>{const a=0.5+0.5*Math.sin(tau*6);ctx.save();ctx.strokeStyle=col||'#c8102e';ctx.lineWidth=3;ctx.globalAlpha=0.45+0.55*a;ctx.beginPath();ctx.arc(p.x,p.y,28+3*a,0,6.29);ctx.stroke();ctx.restore();};
+const pdArrow=(ctx,a,b,col)=>{ctx.save();ctx.strokeStyle=col||'#c8102e';ctx.fillStyle=col||'#c8102e';ctx.lineWidth=3;const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,x1=a.x+ux*30,y1=a.y+uy*30,x2=b.x-ux*32,y2=b.y-uy*32;
+  ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-ux*11-uy*6,y2-uy*11+ux*6);ctx.lineTo(x2-ux*11+uy*6,y2-uy*11-ux*6);ctx.closePath();ctx.fill();ctx.restore();};
+
+BioLab.addLearn({
+pedigree: {
+  goals: {
+    bio: ['How to read a pedigree: symbols, lines and generations', 'The clue that a trait is recessive: it skips a generation', 'The clue that a trait is dominant', 'What a carrier is'],
+    honors: ['Reading pedigrees and naming people (II-3)', 'Telling autosomal dominant from autosomal recessive', 'X-linked recessive: why it is mostly males', 'Finding carriers from the pattern'],
+    ap: ['Ruling patterns in and out with decisive matings', 'X-linked dominant and mitochondrial patterns', 'Genotype probabilities for people in the tree']
+  },
+  matters: 'Genetic counselors draw pedigrees to estimate a family’s risk of conditions like cystic fibrosis, Huntington’s disease or hemophilia. The same logic lets you read your own family’s health history.',
+  startKey: 'start', startRun: false,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Grandparents',120,78,k,{s:12,hi:true});tag(ctx,'Their children and spouses',120,170,k,{s:12,hi:true});tag(ctx,'Grandchildren',120,300,k,{s:12,hi:true});},
+  steps: [
+    { key: 'symbols', title: 'Reading the symbols', fresh: true, pause: true, run(sim){pdFam(sim,'AR');},
+      overlay(sim,ctx,LH,k,tau){const P=sim.fam.P;pdRingP(ctx,P[0],tau);pdRingP(ctx,P[1],tau);pdC(ctx,k,[['■ male   ● female',{s:14,w:800}],['Shaded: has the trait'],['Line between two people: a couple'],['Lines down: their children']]);},
+      see: 'A three-generation family. The circled grandparents (I-1 and I-2) are a couple, joined by a horizontal line. Their children hang below them.',
+      why: 'Squares are males and circles are females. Shaded symbols have the trait; open ones don’t. People are named by generation and position: II-3 is the third person in generation II.' },
+    { key: 'down', title: 'Follow the trait down', fresh: true, speed: 1, run(sim){pdFam(sim,'AR');},
+      overlay(sim,ctx,LH,k,tau){const f=sim.fam,P=f.P,ph=Math.floor(tau/1.8)%3,g=ph+1;P.filter(p=>p.gen===g).forEach(p=>pdRingP(ctx,p,tau,p.aff?'#c8102e':'#1f5fbf'));
+        const n=P.filter(p=>p.gen===g&&p.aff).length,t=P.filter(p=>p.gen===g).length;pdC(ctx,k,[['Generation '+['I','II','III'][ph],{s:14,w:800}],[n+' of '+t+' have the trait',{w:800,c:n?CE_RED:CE_BLUE}],['Watch where it shows up, and where it skips',{s:12}]]);},
+      see: 'Watch the circles move down one generation at a time. Count how many people in each generation have the trait.',
+      why: 'The trait appears in a grandchild even though neither of that child’s parents has it. Something was passed down hidden.' },
+    { key: 'clueAR', title: 'The recessive clue', fresh: true, speed: 1, run(sim){pdFam(sim,'AR');},
+      overlay(sim,ctx,LH,k,tau){const f=sim.fam,P=f.P,c=pdClueAR(f);if(c){const kid=P[c.kids.find(i=>P[i].aff)];pdRingP(ctx,P[c.f],tau,'#1f5fbf');pdRingP(ctx,P[c.m],tau,'#1f5fbf');if(tau>1.2){pdArrow(ctx,P[c.f],kid);pdArrow(ctx,P[c.m],kid);pdRingP(ctx,kid,tau);}
+          pdC(ctx,k,[[P[c.f].id+' and '+P[c.m].id+': no trait',{s:14,w:800,c:CE_BLUE}],[tau>1.2?'Their child '+kid.id+' has it':'Watch their child…',{w:800,c:CE_RED}],['So both parents carry it hidden: recessive',{s:12}]]);}},
+      see: 'The circled couple don’t have the trait, but one of their children does.',
+      why: 'If the trait were dominant, the child would need at least one parent with it. Two unaffected parents can only have an affected child if each carries one hidden recessive allele and passes it on. That is the decisive clue for <b>recessive</b> inheritance.' },
+    { key: 'clueAD', title: 'The dominant clue', fresh: true, speed: 1, run(sim){pdFam(sim,'AD');},
+      overlay(sim,ctx,LH,k,tau){const f=sim.fam,P=f.P,c=pdClueAD(f);if(c){const kid=P[c.kids.find(i=>!P[i].aff)]||P[c.kids[0]];pdRingP(ctx,P[c.f],tau);pdRingP(ctx,P[c.m],tau);if(tau>1.2){pdArrow(ctx,P[c.f],kid,'#1f5fbf');pdArrow(ctx,P[c.m],kid,'#1f5fbf');pdRingP(ctx,kid,tau,'#1f5fbf');}
+          pdC(ctx,k,[['A new family',{s:14,w:800}],[P[c.f].id+' and '+P[c.m].id+(P[c.f].aff&&P[c.m].aff?': both have it':''),{w:800,c:CE_RED}],[tau>1.2?'Child '+kid.id+(kid.aff?' has it':' does not'):'Watch their child…',{w:800,c:CE_BLUE}]]);}},
+      see: 'A different family. The circled parents both have the trait, yet their circled child does not.',
+      why: 'Under a recessive pattern, two affected parents (aa × aa) could only have affected children. An unaffected child means each parent had a hidden normal allele: they are Aa, and the trait is <b>dominant</b>. Dominant traits also don’t skip generations: everyone affected has an affected parent.' },
+    { key: 'carriers', lvl: 'honors', title: 'Finding the carriers', fresh: true, speed: 1, run(sim){pdFam(sim,'AR');},
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.2,'rev',s=>{s.fam.revealed=true;s.infoDirty=true;});const f=sim.fam;pdC(ctx,k,[[tau<1.2?'Watch for half-shaded symbols…':'Half-shaded: must be a carrier',{s:14,w:800}],['One recessive allele, no trait'],['Every affected child’s parents',{s:12}]]);},
+      see: 'Back to the first family. After a moment, half-shaded symbols appear: the people who must be carriers.',
+      why: 'A carrier has one recessive allele and no trait. Both parents of every affected child must be carriers, and so must an unaffected person whose parent was affected. These are <b>obligate carriers</b>.' },
+    { key: 'xr', lvl: 'honors', title: 'X-linked recessive', fresh: true, speed: 1, run(sim){pdFam(sim,'XR');},
+      overlay(sim,ctx,LH,k,tau){const f=sim.fam,P=f.P;P.filter(p=>p.aff).forEach(p=>{pdRingP(ctx,p,tau);if(p.mother!=null&&tau>1.2){pdArrow(ctx,P[p.mother],p,'#1f5fbf');pdRingP(ctx,P[p.mother],tau,'#1f5fbf');}});
+        pdC(ctx,k,[['Only males have it',{s:14,w:800,c:CE_RED}],[tau>1.2?'Sons get it from their mothers':'Where did each son get it?',{w:800,c:CE_BLUE}],['Like color blindness and hemophilia',{s:12}]]);},
+      see: 'In this family only males have the trait. Watch the arrows: each affected grandson got it from his mother, who doesn’t have it.',
+      why: 'The allele is on the X chromosome. A son gets his only X from his mother, so one recessive allele shows. Daughters get an X from each parent, so they are usually hidden carriers. Fathers never pass an X-linked trait to sons.' },
+    { key: 'xd', lvl: 'ap', title: 'X-linked dominant and mitochondrial', fresh: true, speed: 1, run(sim){pdFam(sim,'XD');},
+      overlay(sim,ctx,LH,k,tau){const f=sim.fam,P=f.P,c=f.couples.find(c=>P[c.f].aff&&c.kids.length>=2);if(c){pdRingP(ctx,P[c.f],tau);if(tau>1.2)c.kids.forEach(i=>{pdArrow(ctx,P[c.f],P[i],P[i].sex==='F'?'#c8102e':'#1f5fbf');pdRingP(ctx,P[i],tau,P[i].sex==='F'?'#c8102e':'#1f5fbf');});}
+        pdC(ctx,k,[['Affected father '+(c?P[c.f].id:''),{s:14,w:800}],[tau>1.2?'All his daughters have it, no sons':'Watch his children…',{w:800,c:CE_RED}],['Mitochondrial: only mothers pass it',{s:12}]]);},
+      see: 'An X-linked dominant family. Watch the affected father’s children: every daughter has the trait, and no son does.',
+      why: 'A father gives his X to every daughter and his Y to every son. With a dominant X-linked allele, all daughters are affected and no sons. In mitochondrial inheritance the pattern flips to the mother: she passes it to every child, because only the egg’s mitochondria are inherited.' }
+  ],
+  useIt: [
+    { do: 'Draw your own family’s pedigree for one trait you can see, like attached earlobes, or for a condition your family talks about.',
+      why: 'Writing it down by generation makes patterns visible that are easy to miss in conversation, and a doctor or genetic counselor reads the same symbols.' },
+    { do: 'If a condition runs in your family, share the pattern with your doctor.',
+      why: 'Whether it skips generations, or affects only males, tells a doctor which inheritance patterns fit, and so who else might be at risk or could be a carrier.' },
+    { do: 'Know that red-green color blindness can be passed from a grandfather to a grandson through a daughter who sees colors normally.', lvl: 'honors',
+      why: 'That is the X-linked recessive path you just traced: the daughter is a carrier, and each of her sons has a 1 in 2 chance of inheriting it.' }
+  ],
+  tryIt: [
+    { title: 'the family trait survey (15 minutes)',
+      steps: ['Pick a visible trait, like a widow’s peak or free versus attached earlobes.', 'Check it in as many relatives as you can across three generations (photos help for grandparents).', 'Draw the pedigree: squares and circles, shaded if they have the trait.'],
+      look: 'Look for the decisive clues: an affected child of two unaffected parents points to recessive; two affected parents with an unaffected child points to dominant. Many everyday traits are more complicated than one gene, so your family may not fit neatly.' }
+  ]
+}
+});
+
 })();
