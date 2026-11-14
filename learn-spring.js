@@ -448,4 +448,176 @@ hominids: {
   ]
 }
 });
+/* ---- Apr–May units: APES pollution (added Nov 14, 2026) ---- */
+const SM=(ctx,k,L)=>card(ctx,k,L,480,150,300);
+const AR=(ctx,k,L)=>card(ctx,k,L,320,128,240);
+const EU=(ctx,k,L)=>card(ctx,k,L,232,40,300);
+const LD=(ctx,k,L)=>card(ctx,k,L,560,356,232);
+const hr=sim=>{const h=((sim.t%24)+24)%24,hh=Math.floor(h);return ((hh%12)||12)+(hh<12?' am':' pm');};
+
+BioLab.addLearn({
+smog: {
+  goals: {
+    bio: ['Car exhaust plus sunlight makes ground-level ozone', 'A thermal inversion traps pollution near the ground', 'Wind clears the air'],
+    honors: ['Photochemical smog: NOx + VOCs + sunlight → O₃', 'Why ozone peaks in the afternoon', 'Summer ozone vs. winter brown cloud (particles)'],
+    ap: ['The Air Quality Index', 'NO, NO₂ and O₃ through the day', 'Which emissions to cut: NOx vs. VOCs']
+  },
+  matters: 'The Denver metro area regularly fails the federal ozone standard on summer afternoons, and winter inversions trap the “brown cloud.” Ozone triggers asthma attacks, especially in kids and athletes.',
+  question: 'Morning rush hour puts the most exhaust in the air. Is ozone worst in the morning?',
+  startKey: 'day', startRun: true,
+  steps: [
+    { key: 'day', title: 'A summer day', set: { season: 'summer', traffic: 100, wind: 3, inv: false, plant: 100, voc: 100 }, fresh: true, speed: 2,
+      see: 'Watch from midnight through the afternoon. Morning traffic adds brown NO₂; ozone builds after the sun climbs and peaks mid-afternoon around 60 ppb.',
+      why: 'Ozone isn’t emitted directly. Sunlight splits NO₂, and the loose oxygen atom joins O₂ to make O₃. It needs exhaust and hours of strong sun.',
+      overlay(sim,ctx,LH,k){SM(ctx,k,[[hr(sim)+' · ozone '+f0(met(sim,'o3'))+' ppb',700,14],'AQI '+f0(met(sim,'aqi'))+': '+String(met(sim,'aqicat'))]);} },
+    { key: 'inv', title: 'A thermal inversion', set: { season: 'summer', traffic: 100, wind: 3, inv: true, plant: 100, voc: 100 }, fresh: true, speed: 2,
+      see: 'Same day with an inversion. The mixing layer stays shallow, and by afternoon ozone reaches about 180 ppb: very unhealthy.',
+      why: 'Normally air cools with height and warm polluted air rises away. In an inversion a warm layer sits on top like a lid, so pollution is trapped in a thin layer near the ground. The mountains west of Denver make it worse.',
+      overlay(sim,ctx,LH,k){SM(ctx,k,[[hr(sim)+' · ozone '+f0(met(sim,'o3'))+' ppb',700,14],['AQI '+f0(met(sim,'aqi'))+': '+String(met(sim,'aqicat')),700,13,RED]]);} },
+    { key: 'wind', title: 'A windy day', set: { season: 'summer', traffic: 100, wind: 8, inv: false, plant: 100, voc: 100 }, fresh: true, speed: 2,
+      see: 'With an 8 m/s wind, afternoon ozone stays in the 40s and the AQI is Good.',
+      why: 'Wind spreads pollutants over a much bigger volume of air and carries them away before they can build up.',
+      overlay(sim,ctx,LH,k){SM(ctx,k,[[hr(sim)+' · ozone '+f0(met(sim,'o3'))+' ppb',700,14],'AQI '+f0(met(sim,'aqi'))+': '+String(met(sim,'aqicat'))]);} },
+    { key: 'traffic', title: 'Double the traffic', set: { season: 'summer', traffic: 200, wind: 3, inv: false, plant: 100, voc: 100 }, fresh: true, speed: 2,
+      see: 'Twice the traffic pushes the afternoon AQI from about 68 to about 96.',
+      why: 'More cars mean more NOx and VOCs to feed the ozone reactions. This is why ozone action days ask people to drive less and fill up their gas tanks after dark.',
+      overlay(sim,ctx,LH,k){SM(ctx,k,[[hr(sim)+' · ozone '+f0(met(sim,'o3'))+' ppb',700,14],'AQI '+f0(met(sim,'aqi'))+': '+String(met(sim,'aqicat'))]);} },
+    { key: 'winter', lvl: 'honors', title: 'The winter brown cloud', set: { season: 'winter', traffic: 100, wind: 3, inv: true, plant: 100, voc: 100 }, fresh: true, speed: 2,
+      see: 'A winter morning inversion: little ozone, but particles (PM2.5) build up to about 27 µg/m³ and the sky turns brown.',
+      why: 'Winter sun is too weak to make much ozone, but cold, still air under an inversion traps particles from exhaust, wood smoke and power plants. Different season, different pollutant.',
+      overlay(sim,ctx,LH,k){SM(ctx,k,[[hr(sim)+' · winter inversion',700,14],'PM2.5: '+f0(met(sim,'pm'))+' µg/m³','AQI '+f0(met(sim,'aqi'))+': '+String(met(sim,'aqicat'))]);} }
+  ],
+  useIt: [
+    { do: 'Check the AQI before a hard outdoor workout on summer afternoons.',
+      why: 'Ozone peaks mid-afternoon. On ozone action days, train in the morning, when levels are lowest.' },
+    { do: 'Fill up the car in the evening on hot days.', lvl: 'honors',
+      why: 'Gasoline vapor is a VOC. Released in the evening, it has no strong sunlight to cook into ozone before it disperses.' }
+  ],
+  tryIt: [
+    { title: 'track the AQI for a week (5 minutes a day)',
+      steps: ['Check airnow.gov for your ZIP code at 8 am and 3 pm each day.', 'Note the temperature, wind and the main pollutant listed.'],
+      look: 'Hot, still afternoons usually show ozone as the main pollutant and the highest numbers; cold, calm mornings show particles.' }
+  ]
+},
+acidrain: {
+  goals: {
+    bio: ['Burning coal and gasoline makes acid rain', 'Lakes on granite turn acidic; lakes on limestone don’t', 'Scrubbers cut the pollution at the source'],
+    honors: ['SO₂ → sulfuric acid, NOx → nitric acid', 'The pH scale is logarithmic', 'Buffering by limestone (CaCO₃)'],
+    ap: ['Acid-neutralizing capacity (ANC)', 'Soil buffering runs out over years', 'The Clean Air Act cap-and-trade success']
+  },
+  matters: 'Acid rain killed fish in thousands of lakes in the Adirondacks and Scandinavia. The 1990 Clean Air Act cut sulfur emissions by more than 90% since, and many lakes are slowly recovering: a real environmental success story.',
+  question: 'Two lakes get the same acid rain. Will they both lose their fish?',
+  startKey: 'rain', startRun: true,
+  steps: [
+    { key: 'rain', title: 'Acid rain falls', set: { coal: 100, scrub: false, sulfur: 'high', cars: 100 }, fresh: true, speed: 2,
+      see: 'The coal plant and traffic make rain with a pH of 4.14, about 29 times more acidic than clean rain. Over the years, Granite Lake’s pH falls from 6.9 to about 4.1 and its trout die. Limestone Lake stays near 8.3.',
+      why: 'SO₂ and NOx react with water in clouds to make sulfuric and nitric acids. Granite can’t neutralize acid; limestone can: CaCO₃ + 2H⁺ → Ca²⁺ + CO₂ + H₂O.',
+      overlay(sim,ctx,LH,k){AR(ctx,k,[['Rain pH '+f2(met(sim,'rainph')),700,14],'Granite Lake pH '+f1(met(sim,'gph')),'Trout left: '+f0(met(sim,'fish'))+'%']);} },
+    { key: 'scrub', title: 'Install scrubbers', set: { coal: 100, scrub: true, sulfur: 'high', cars: 100 }, fresh: true, speed: 2,
+      see: 'With scrubbers on the smokestack, the rain is only pH 4.8 and Granite Lake stays near 6.8. The trout survive.',
+      why: 'Scrubbers spray the exhaust with a limestone slurry that captures most of the SO₂ before it leaves the stack. Fixing pollution at the source protects every lake downwind.',
+      overlay(sim,ctx,LH,k){AR(ctx,k,[['Scrubbers on',700,14],'Rain pH '+f2(met(sim,'rainph')),'Granite Lake pH '+f1(met(sim,'gph')),['Trout left: '+f0(met(sim,'fish'))+'%',700,12.5,GRN]]);} },
+    { key: 'dilute', lvl: 'honors', title: 'pH is logarithmic', set: { coal: 100, scrub: false, sulfur: 'high', cars: 100 }, fresh: true, speed: 1,
+      see: 'Dilute a rain sample 10 times and its pH rises one unit: 4.1, then 5.1, then 6.1.',
+      why: 'Each pH unit is a factor of 10 in H⁺. Rain at pH 4.1 has 29 times the H⁺ of clean rain at pH 5.6 (which is slightly acidic from dissolved CO₂).',
+      overlay(sim,ctx,LH,k,tau){[1.5,3].forEach((t,i)=>{const key='_dl'+i;if(tau>=t&&sim[key]!==sim.lnT0){sim[key]=sim.lnT0;act(sim,'dilute');}});AR(ctx,k,[['Dilution lab',700,14],'Sample pH: '+f2(met(sim,'sample'))]);} },
+    { key: 'lime', lvl: 'ap', title: 'Liming a lake', set: { coal: 100, scrub: false, sulfur: 'high', cars: 100 }, fresh: true, speed: 2,
+      see: 'Let Granite Lake acidify, then add limestone. Its pH jumps back up, but the rain keeps coming.',
+      why: 'Liming adds acid-neutralizing capacity (ANC) for a while, and some lakes in Sweden and New York are limed every few years. It treats the symptom; cutting emissions fixes the cause.',
+      overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'lime',9);AR(ctx,k,[['Granite Lake pH '+f1(met(sim,'gph')),700,14],'ANC: '+f0(met(sim,'anc'))+' µeq/L']);} }
+  ],
+  useIt: [
+    { do: 'Save electricity where you can.',
+      why: 'Much of Colorado’s power still comes from coal. Less demand means less SO₂ and NOx from the plants that remain.' }
+  ],
+  tryIt: [
+    { title: 'chalk in vinegar (10 minutes)',
+      steps: ['Put a piece of chalk (calcium carbonate) in a cup of vinegar.', 'Put a small granite pebble or piece of glass in another.'],
+      look: 'The chalk fizzes and slowly dissolves as it neutralizes the acid; the granite does nothing. That is why limestone lakes resist acid rain and granite lakes don’t.' }
+  ]
+},
+eutrophication: {
+  goals: {
+    bio: ['Fertilizer runoff feeds algae blooms', 'When algae die and decompose, oxygen in the water runs out', 'Without oxygen, fish die: a dead zone'],
+    honors: ['Limiting nutrients: N and P', 'Trophic states: oligotrophic to eutrophic', 'Buffer strips and wetlands as solutions'],
+    ap: ['BOD: oxygen used by decomposers', 'Warm water holds less oxygen', 'Stratification traps low oxygen at the bottom']
+  },
+  matters: 'Every summer a dead zone forms in the Gulf of Mexico from fertilizer washed down the Mississippi. Toxic algae blooms have shut down drinking water in Toledo and closed lakes in Colorado.',
+  question: 'Fertilizer helps crops grow. If some washes into a lake, why would that kill the fish?',
+  startKey: 'clean', startRun: true,
+  steps: [
+    { key: 'clean', title: 'A healthy lake', set: { runoff: 10, temp: 20, sewage: false, buffer: false, nut: 'both', strat: false }, fresh: true, speed: 3,
+      see: 'With little runoff, the lake has modest algae, plenty of oxygen top and bottom, and lots of fish.',
+      why: 'Phosphorus is in short supply, so it limits how much algae can grow. The lake stays balanced.',
+      overlay(sim,ctx,LH,k){EU(ctx,k,[['Runoff '+f0(sim.p.runoff)+'%',700,14],'Algae: '+f1(met(sim,'chl'))+' µg/L','Bottom oxygen: '+f1(met(sim,'dob'))+' mg/L','Fish: '+f0(met(sim,'fish'))+' per hectare']);} },
+    { key: 'bloom', title: 'More fertilizer', set: { runoff: 60, temp: 20, sewage: false, buffer: false, nut: 'both', strat: false }, fresh: true, speed: 3,
+      cause: { from: { runoff: 10 }, delay: 0.6, dur: 3, label: 'Fertilizer runoff' },
+      see: 'Raise runoff to 60%. Algae bloom, the water turns green, the bottom oxygen falls to zero and the fish disappear.',
+      why: 'The algae themselves make oxygen at the surface. The problem comes when they die and sink: bacteria decompose them and use up the oxygen in the deeper water.',
+      overlay(sim,ctx,LH,k){EU(ctx,k,[['Runoff '+f0(sim.p.runoff)+'%',700,14],'Algae: '+f1(met(sim,'chl'))+' µg/L',['Bottom oxygen: '+f1(met(sim,'dob'))+' mg/L',700,12.5,RED],'Fish: '+f0(met(sim,'fish'))+' per hectare']);} },
+    { key: 'buffer', lvl: 'honors', title: 'Buffer strips and wetlands', set: { runoff: 60, temp: 20, sewage: false, buffer: true, nut: 'both', strat: false }, fresh: true, speed: 3,
+      see: 'Same 60% runoff, but strips of plants and wetlands catch much of it. Algae stay moderate, bottom oxygen holds near 5 mg/L, and the fish survive.',
+      why: 'Plants along streams soak up nitrogen and phosphorus before they reach the lake. It’s cheaper than cleaning up a dead zone.',
+      overlay(sim,ctx,LH,k){EU(ctx,k,[['Buffer strips on',700,14],'Algae: '+f1(met(sim,'chl'))+' µg/L','Bottom oxygen: '+f1(met(sim,'dob'))+' mg/L',['Fish: '+f0(met(sim,'fish'))+' per hectare',700,12.5,GRN]]);} },
+    { key: 'limit', lvl: 'honors', title: 'Nitrogen only', set: { runoff: 60, temp: 20, sewage: false, buffer: false, nut: 'N', strat: false }, fresh: true, speed: 3,
+      see: 'Runoff with only nitrogen barely changes the lake. Algae stay low.',
+      why: 'This lake is phosphorus-limited: algae can’t use extra nitrogen without more phosphorus. That is why many states banned phosphate in laundry detergent.',
+      overlay(sim,ctx,LH,k){EU(ctx,k,[['Nitrogen only',700,14],'Algae: '+f1(met(sim,'chl'))+' µg/L','Limiting nutrient: '+String(met(sim,'lim'))]);} },
+    { key: 'warm', lvl: 'ap', title: 'Warm water', set: { runoff: 60, temp: 30, sewage: false, buffer: false, nut: 'both', strat: true }, fresh: true, speed: 3,
+      see: 'At 30 °C with summer stratification, water can hold only 7.4 mg/L of oxygen even at the surface, and the bottom layer is cut off from the air.',
+      why: 'Gas solubility falls as temperature rises, and a warm surface layer floats on cold bottom water without mixing. Decomposers in the bottom use up oxygen that can’t be replaced, which is why dead zones peak in late summer.',
+      overlay(sim,ctx,LH,k){EU(ctx,k,[['30 °C, stratified',700,14],'Oxygen saturation: '+f1(met(sim,'sat'))+' mg/L','BOD: '+f1(met(sim,'bod'))+' mg/L/day','Bottom oxygen: '+f1(met(sim,'dob'))+' mg/L']);} }
+  ],
+  useIt: [
+    { do: 'Use only as much lawn fertilizer as the bag says, and never before a big rain.',
+      why: 'Extra fertilizer washes into storm drains, which flow straight to streams and lakes without treatment.' },
+    { do: 'Pick up pet waste.', lvl: 'honors',
+      why: 'It adds nitrogen, phosphorus and bacteria to storm runoff, feeding algae and using up oxygen as it decomposes.' }
+  ],
+  tryIt: [
+    { title: 'jar ecosystems (2 weeks)',
+      steps: ['Fill two clear jars with pond or aquarium water.', 'Add a pinch of plant fertilizer to one jar only.', 'Set both in a sunny window and look every few days.'],
+      look: 'The fertilized jar turns green with algae first, then often murky and smelly as algae die and decompose.' }
+  ]
+},
+ld50: {
+  goals: {
+    bio: ['The dose makes the poison', 'A dose–response curve shows how effect grows with dose', 'LD50: the dose that kills half'],
+    honors: ['Control groups and replication', 'The no-effect level (NOAEL)', 'Different organisms have different sensitivities'],
+    ap: ['ED50 vs. LD50 and the safety margin', 'Log scales for dose', 'Sample size and uncertainty']
+  },
+  matters: 'Road salt kills roadside plants and harms streams every winter in Colorado. The same dose–response method sets safe limits for medicines, pesticides and chemicals in drinking water.',
+  question: 'A little salt doesn’t hurt radish seeds. How much salt does it take to stop half of them from sprouting?',
+  startKey: 'run', startRun: true,
+  steps: [
+    { key: 'run', title: 'Six dishes of seeds', set: { organism: 'radish', n: '25', salt: 'nacl' }, fresh: true, speed: 4,
+      see: 'Radish seeds sprout over 72 hours in dishes with 0% to 4% salt. The control (0%) and low doses sprout almost fully; 2% and 4% barely sprout.',
+      why: 'Salt pulls water out of the seeds by osmosis. Too much and they can’t take up enough water to germinate.',
+      overlay(sim,ctx,LH,k){LD(ctx,k,[['0%: '+f0(met(sim,'g0'))+'%  1%: '+f0(met(sim,'g3'))+'%  4%: '+f0(met(sim,'g5'))+'%',700,12.5],'LD50: '+(Number.isFinite(met(sim,'ld'))?f2(met(sim,'ld'))+'% salt':'not yet')]);} },
+    { key: 'curve', title: 'The LD50', set: { organism: 'radish', n: '25', salt: 'nacl' }, speed: 4,
+      see: 'The curve crosses 50% sprouted at a little over 1% salt. Your exact number changes a bit each run, like a real lab.',
+      why: 'LD50 (lethal dose for 50%) lets scientists compare how toxic different things are. A lower LD50 means more toxic: it takes less to harm half the group.',
+      overlay(sim,ctx,LH,k){LD(ctx,k,[['LD50 ≈ '+f2(met(sim,'ld'))+'% salt',700,14],'Control: '+f0(met(sim,'g0'))+'% sprouted']);} },
+    { key: 'lettuce', lvl: 'honors', title: 'Lettuce is more sensitive', set: { organism: 'lettuce', n: '25', salt: 'nacl' }, fresh: true, speed: 4,
+      see: 'Lettuce seeds: only about 12% sprout at 1% salt, and the LD50 drops to about 0.6%.',
+      why: 'Different species tolerate different doses. Safety limits have to protect the most sensitive organisms, not just the toughest.',
+      overlay(sim,ctx,LH,k){LD(ctx,k,[['Lettuce',700,14],'LD50: '+(Number.isFinite(met(sim,'ld'))?f2(met(sim,'ld'))+'% salt':'not yet')]);} },
+    { key: 'small', lvl: 'ap', title: 'Fewer seeds', set: { organism: 'radish', n: '10', salt: 'nacl' }, fresh: true, speed: 4,
+      see: 'With only 10 seeds per dish the results are bumpy: the 0.5% dish might beat the control.',
+      why: 'Small samples are noisy. Each seed is 10% of a dish. More seeds per dish and repeated trials give a smoother curve and a more trustworthy LD50.',
+      overlay(sim,ctx,LH,k){LD(ctx,k,[['10 seeds per dish',700,14],'LD50: '+(Number.isFinite(met(sim,'ld'))?f2(met(sim,'ld'))+'% salt':'not yet')]);} }
+  ],
+  useIt: [
+    { do: 'Read the dosing chart on medicine; never double up.',
+      why: 'Every medicine has a dose that helps and a higher dose that harms. The gap between them is the safety margin.' },
+    { do: 'Shovel first and salt sparingly on sidewalks.', lvl: 'honors',
+      why: 'Salt that washes off kills plants along the edges and raises the salinity of streams.' }
+  ],
+  tryIt: [
+    { title: 'a kitchen salinity test (4 days)',
+      steps: ['Set up 4 damp paper towels in zip bags with 10 dried beans or radish seeds each.', 'Wet them with plain water, and with water containing ¼, ½ and 1 teaspoon of salt per cup.', 'Count sprouts every day.'],
+      look: 'The saltier bags sprout fewer seeds and later. Plot % sprouted against salt to make your own dose–response curve.' }
+  ]
+}
+});
 })();
