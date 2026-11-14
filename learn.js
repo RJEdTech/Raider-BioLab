@@ -2184,4 +2184,172 @@ expression: {
 }
 });
 
+
+/* ===== Gene regulation, Hardy–Weinberg, natural selection ===== */
+const lcC=(ctx,k,L)=>dcCard(ctx,k,12,96,300,L);
+const lcFF=(sim,n)=>{for(let i=0;i<n;i++)sim.def.step(sim,0.05);sim.t+=n*0.05;};
+const lcM=(sim,id,d)=>{const v=phM(sim,id);return isNaN(v)?'…':(d?v.toFixed(d):Math.round(v).toLocaleString('en-US'));};
+const hwC=(ctx,k,L,LH)=>dcCard(ctx,k,14,(LH||450)-26,380,L,{up:true});
+const hwM=(sim,id,d)=>{const v=phM(sim,id);return isNaN(v)?'…':v.toFixed(d==null?2:d);};
+const evC=(ctx,k,L,LH)=>dcCard(ctx,k,474,(LH||450)-12,318,L,{up:true});
+const evD=sim=>Math.round(phM(sim,'p'));
+
+BioLab.addLearn({
+lacoperon: {
+  goals: {
+    bio: ['Why a cell doesn’t make every protein all the time', 'How a repressor works like an off switch', 'How lactose turns the lac genes on, and glucose turns them down'],
+    honors: ['Operons: promoter, operator and structural genes', 'Induction: allolactose pulls the repressor off', 'Catabolite repression by glucose (cAMP–CAP)'],
+    ap: ['Negative and positive control of the lac operon', 'Predicting lacI⁻, Oᶜ and CAP⁻ mutants', 'Why gene regulation saves energy']
+  },
+  matters: 'Every cell in your body has the same DNA, but a liver cell and a nerve cell use different genes. Switches like this one are how. Biotech labs use the lac switch every day to turn on genes for insulin and other medicines.',
+  startKey: 'start', startRun: true, startSpeed: 1,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'The cell membrane',640,40,k,{s:12,hi:true});tag(ctx,'The lac genes on the bacterium’s DNA',420,190,k,{s:12,hi:true});},
+  steps: [
+    { key: 'operon', title: 'One switch, three genes', fresh: true, pause: true, focus: [10,270,780,90],
+      see: 'A stretch of E. coli DNA: a promoter (where RNA polymerase lands), an operator (the switch), then three genes for using lactose, milk sugar.',
+      why: 'Genes that work together are lined up under one switch, an <b>operon</b>. One mRNA copies all three, so they turn on and off together.',
+      overlay(sim,ctx,LH,k){lcC(ctx,k,[['Promoter: start here',{s:13,w:800}],['Operator: the on/off switch'],['lacZ, lacY, lacA: lactose genes']]);} },
+    { key: 'off', title: 'Off by default', fresh: true, speed: 1,
+      see: 'With no lactose, the repressor (purple) sits on the operator. RNA polymerase is stuck behind it, and almost no mRNA is made.',
+      why: 'Why make enzymes for a sugar that isn’t there? The repressor blocks the genes until they are needed, saving the cell’s energy and building blocks.',
+      overlay(sim,ctx,LH,k){lcC(ctx,k,[['No lactose',{s:14,w:800}],['Lac genes: '+String(phM(sim,'state'))],['Enzyme per cell: '+lcM(sim,'bgal'),{w:800,c:CE_BLUE}]]);} },
+    { key: 'lactose', title: 'Lactose arrives', set: { lac: true }, fresh: true, speed: 1, cause: { from: { lac: false }, delay: 1.5, label: 'Lactose' },
+      see: 'Lactose is added outside the cell. Watch it get inside, the repressor let go of the operator, and red mRNA strands appear, then green enzyme molecules.',
+      why: 'A little lactose becomes allolactose, which binds the repressor and changes its shape so it falls off the DNA. RNA polymerase can now read the genes: the operon is <b>induced</b>.',
+      overlay(sim,ctx,LH,k){lcC(ctx,k,[[sim.p.lac?'Lactose added':'No lactose yet…',{s:14,w:800}],['lac mRNA per cell: '+lcM(sim,'mrna',1)],['Enzyme per cell: '+lcM(sim,'bgal'),{w:800,c:CE_GREEN}]]);} },
+    { key: 'glucose', title: 'Glucose comes first', set: { lac: true, glc: true }, fresh: true, speed: 1, cause: { from: { glc: false }, delay: 2, label: 'Glucose' }, run(sim){lcFF(sim,1200);},
+      see: 'The genes have been on with lactose for a while. Now glucose is added too. Watch the red mRNA thin out.',
+      why: 'Glucose is the easier fuel. When it is around, cAMP drops, so the CAP activator (blue) lets go and RNA polymerase binds the promoter only weakly. The genes run low until glucose runs out.',
+      overlay(sim,ctx,LH,k){lcC(ctx,k,[[sim.p.glc?'Lactose + glucose':'Lactose only',{s:14,w:800}],['Lac genes: '+String(phM(sim,'state'))],['lac mRNA per cell: '+lcM(sim,'mrna',1),{w:800,c:CE_RED}]]);} },
+    { key: 'gone', title: 'The lactose runs out', set: { lac: false }, fresh: true, speed: 1, cause: { from: { lac: true }, delay: 2, label: 'Lactose' }, run(sim){lcFF(sim,1200);},
+      see: 'The lactose is taken away. The repressor snaps back onto the operator, mRNA stops, and the enzymes slowly dilute out as the cells grow and divide.',
+      why: 'mRNA in bacteria lasts only minutes, so turning the switch off stops new enzyme quickly. The cell is ready to switch on again the next time milk sugar shows up.',
+      overlay(sim,ctx,LH,k){lcC(ctx,k,[[sim.p.lac?'Lactose present':'Lactose gone',{s:14,w:800}],['lac mRNA per cell: '+lcM(sim,'mrna',1),{w:800,c:CE_RED}],['Enzyme per cell: '+lcM(sim,'bgal')]]);} },
+    { key: 'laci', lvl: 'ap', title: 'A broken repressor', set: { lacI: true }, fresh: true, speed: 1, cause: { from: { lacI: false }, delay: 1.5 },
+      see: 'No lactose at all. Partway through, the lacI gene is broken so it makes no working repressor. The genes switch on anyway.',
+      why: 'With no repressor, nothing blocks the operator, so the operon is on all the time: <b>constitutive</b> expression. That is how geneticists first worked out that lacI makes a negative regulator.',
+      overlay(sim,ctx,LH,k){lcC(ctx,k,[[sim.p.lacI?'lacI⁻: no repressor':'Normal repressor',{s:14,w:800,c:sim.p.lacI?CE_RED:CE_GREEN}],['No lactose'],['lac mRNA per cell: '+lcM(sim,'mrna',1),{w:800,c:CE_RED}]]);} }
+  ],
+  useIt: [
+    { do: 'If milk upsets your stomach, try lactose-free milk or a lactase pill.',
+      why: 'Lactase is your version of β-galactosidase. Many adults stop making much of it; the pill or pre-treated milk splits the lactose so gut bacteria don’t ferment it into gas.' },
+    { do: 'Know that a lot of insulin is made by bacteria or yeast with a switched-on human gene.',
+      why: 'Engineers put the insulin gene under a switch like this one, grow the cells, then flip the switch on so the cells make insulin all at once.' },
+    { do: 'Read “gene expression” in a news story as which genes are switched on, not which ones you have.', lvl: 'honors',
+      why: 'All your cells share the same DNA. Diet, hormones and signals change which genes are on, which is why the same genes can behave differently over a lifetime.' }
+  ],
+  tryIt: [
+    { title: 'the lactase test (20 minutes, if you have lactase pills)',
+      steps: ['Pour the same amount of milk into two cups.', 'Crush a lactase pill and stir it into one cup. Leave both at room temperature for 20 minutes.', 'Dip a glucose test strip (sold for diabetes care) into each cup.'],
+      look: 'The cup with lactase shows glucose; the plain milk shows almost none. The enzyme split lactose into glucose and galactose, the same job β-galactosidase does in E. coli.' }
+  ]
+},
+hardyweinberg: {
+  goals: {
+    bio: ['What allele frequencies p and q mean', 'How to predict genotypes from allele frequencies: p², 2pq and q²', 'Why many people carry a recessive allele without knowing it'],
+    honors: ['The Hardy–Weinberg equation and its five conditions', 'What changes allele frequencies: selection, drift, migration, mutation, nonrandom mating', 'Estimating carriers from the recessive phenotype'],
+    ap: ['Testing a population against Hardy–Weinberg with chi-square', 'Distinguishing evolution from no evolution with data', 'Why small populations drift']
+  },
+  matters: 'Doctors use this math to estimate how many people carry recessive conditions like cystic fibrosis, and conservation biologists use it to watch endangered populations lose genetic variety.',
+  startKey: 'start', startRun: false,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'100 plants',200,370,k,{s:12,hi:true});tag(ctx,'All their alleles in one pool',600,100,k,{s:12,hi:true});},
+  steps: [
+    { key: 'pool', title: 'The gene pool', fresh: true, pause: true, focus: [440,40,350,44],
+      see: 'Every plant has two alleles for flower color. Pour all 200 alleles into one pool: 70% are A (purple, dominant) and 30% are a (white).',
+      why: 'p is the frequency of A and q the frequency of a. Every allele is one or the other, so <b>p + q = 1</b>.',
+      overlay(sim,ctx,LH,k){hwC(ctx,k,[['p = '+hwM(sim,'pA')+'   q = '+hwM(sim,'qa'),{s:14,w:800}],['p + q = 1']],LH);} },
+    { key: 'square', title: 'Random mating', fresh: true, pause: true, focus: [470,110,320,250],
+      see: 'If plants mate at random, each new plant draws two alleles from the pool. The square shows the chances.',
+      why: 'AA needs A twice: p × p = p². aa needs a twice: q². Aa can happen two ways (A then a, or a then A): 2pq. So <b>p² + 2pq + q² = 1</b>.',
+      overlay(sim,ctx,LH,k){hwC(ctx,k,[['AA = p² = '+hwM(sim,'AA',0)+'%',{s:13,w:800}],['Aa = 2pq = '+hwM(sim,'Aa',0)+'%'],['aa = q² = '+hwM(sim,'aa',0)+'%']],LH);} },
+    { key: 'slide', title: 'Change p, change everything', set: { p: 0.6 }, fresh: true, speed: 1, cause: { from: { p: 0.9 }, delay: 1.2, dur: 3 },
+      see: 'Watch p slide from 0.90 down to 0.60. The square’s boxes resize and more white flowers appear.',
+      why: 'At p = 0.6, q = 0.4, so q² = 16% of plants are white. 2pq = 48% are purple carriers: more than half of the 84 purple plants hide a white allele.',
+      overlay(sim,ctx,LH,k){hwC(ctx,k,[['p = '+hwM(sim,'pA')+'   q = '+hwM(sim,'qa'),{s:14,w:800}],['White (aa) = q² = '+hwM(sim,'aa',0)+'%'],['Hidden carriers (Aa) = 2pq = '+hwM(sim,'Aa',0)+'%',{w:800,c:CE_BLUE}]],LH);} },
+    { key: 'stable', lvl: 'honors', title: 'No forces, no change', set: { p: 0.6 }, fresh: true, speed: 1, run(sim){dvAct(sim,'gen10');},
+      see: 'Ten generations of a large, randomly mating population with no selection, migration or mutation. Watch p: it stays at 0.60.',
+      why: 'Shuffling alleles into new plants doesn’t change how many of each there are. Allele frequencies change only when something acts on them; that is what “no evolution” means.',
+      overlay(sim,ctx,LH,k){hwC(ctx,k,[['Generation '+hwM(sim,'gen',0),{s:14,w:800}],['p = '+hwM(sim,'pA'),{w:800,c:CE_GREEN}],['Started at 0.60']],LH);} },
+    { key: 'select', lvl: 'honors', title: 'Turn on selection', set: { p: 0.6, nosel: false }, fresh: true, speed: 1, cause: { from: { nosel: true }, delay: 1.2, label: 'No natural selection' }, run: atReset,
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.6,'g',s=>dvAct(s,'gen10'));hwC(ctx,k,[[sim.p.nosel?'No selection yet…':'White plants survive half as well',{s:13,w:800,c:sim.p.nosel?PAL['cv-ink']:CE_RED}],['Generation '+hwM(sim,'gen',0)],['p = '+hwM(sim,'pA')+' (started at 0.60)',{w:800,c:CE_GREEN}]],LH);},
+      see: 'Selection switches on: white (aa) plants survive only half as well. Watch p climb over ten generations.',
+      why: 'Every aa plant that dies takes two a alleles out of the pool, so q falls and p rises. But as a gets rare it hides in Aa carriers, where selection can’t see it, so it is removed more and more slowly.' },
+    { key: 'drift', lvl: 'honors', title: 'Small populations drift', set: { p: 0.6, large: false }, fresh: true, speed: 1, cause: { from: { large: true }, delay: 1.2, label: 'Large population' }, run: atReset,
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.6,'g',s=>dvAct(s,'gen10'));hwC(ctx,k,[[sim.p.large?'100 plants':'Only 20 plants',{s:14,w:800}],['Generation '+hwM(sim,'gen',0)],['p = '+hwM(sim,'pA')+' (started at 0.60)',{w:800,c:CE_BLUE}]],LH);},
+      see: 'The population shrinks to 20 plants with no selection at all. Run ten generations and watch p wander.',
+      why: 'In a small population, which plants happen to reproduce is partly luck, so allele frequencies drift at random. Drift can even lose an allele completely. This is <b>genetic drift</b>.' },
+    { key: 'chi', lvl: 'ap', title: 'Testing for evolution', set: { p: 0.6, nosel: false }, fresh: true, speed: 1, run(sim){dvAct(sim,'gen10');},
+      see: 'After ten generations with selection, compare the counted genotypes with the Hardy–Weinberg prediction from the current p.',
+      why: 'χ² = Σ (O − E)² ÷ E across AA, Aa and aa. With 1 degree of freedom (3 genotypes − 1 − 1 estimated allele frequency), values above 3.84 mean the population is unlikely to be in equilibrium.',
+      overlay(sim,ctx,LH,k){hwC(ctx,k,[['Counted: '+String(phM(sim,'obs')),{s:12,w:700}],['χ² = '+hwM(sim,'chi')+' (cutoff 3.84)',{w:800,c:CE_BLUE}]],LH);} }
+  ],
+  useIt: [
+    { do: 'If a recessive condition runs in your family, ask about carrier testing before starting a family.',
+      why: 'About 1 in 30 white Americans carry a cystic fibrosis allele (q ≈ 0.017), so most carriers have no idea. Carrier testing is offered because 2pq is far larger than q².' },
+    { do: 'Support wildlife corridors and protecting large habitats.',
+      why: 'Small, isolated populations lose genetic variety to drift, which can leave them less able to adapt. Corridors let animals move between populations, a kind of migration that restores variety.' },
+    { do: 'When a trait is rare, remember that the allele is much more common than the trait.', lvl: 'honors',
+      why: 'If 1 in 10,000 people show a recessive trait, q = 0.01, yet 2pq ≈ 2% of people carry it: 200 carriers for every person with the condition.' }
+  ],
+  tryIt: [
+    { title: 'the bead gene pool (15 minutes)',
+      steps: ['Put 70 purple and 30 white beads (or paper slips) in a bag: p = 0.7, q = 0.3.', 'Draw two at a time, without looking, to make one “plant”. Record AA, Aa or aa, and put both back.', 'Make 50 plants, then compare your counts with p² = 49%, 2pq = 42% and q² = 9%.'],
+      look: 'Your counts land near 25 AA, 21 Aa and 4 or 5 aa. Then make a tiny population of 5 plants several times: the numbers jump around much more. That is drift.' }
+  ]
+},
+evolution: {
+  goals: {
+    bio: ['How natural selection works: variation, inheritance and survival', 'Why fur color matches the ground for rock pocket mice', 'Why evolution acts on populations, not on individuals'],
+    honors: ['Selection changes allele frequencies over generations', 'Genetic drift and migration', 'Why a hidden recessive allele lingers'],
+    ap: ['Selection coefficients and the speed of change', 'Selection, drift, migration and mutation together', 'Comparing replicate populations']
+  },
+  matters: 'The same process explains antibiotic resistance, pests that shrug off pesticides, and the fur of real rock pocket mice on the lava flows of New Mexico and Arizona, studied by biologists like Michael Nachman.',
+  startKey: 'start', startRun: true, startSpeed: 0.4,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Dark lava rock',120,300,k,{s:12,hi:true});tag(ctx,'Dark-allele share in 5 populations',600,110,k,{s:12,hi:true});},
+  steps: [
+    { key: 'vary', title: 'Variation', fresh: true, speed: 0.3,
+      see: 'Mice on a dark lava flow. Most have light fur; about 1 in 10 alleles is D, the dark-fur version of the gene.',
+      why: 'Mice differ, and fur color is inherited: DD and Dd mice are dark (D is dominant), dd mice are light. Variation that can be inherited is the raw material of natural selection.',
+      overlay(sim,ctx,LH,k){evC(ctx,k,[['Dark-fur allele D: '+evD(sim)+'%',{s:14,w:800}],['DD, Dd: dark fur'],['dd: light fur']],LH);} },
+    { key: 'hunt', title: 'Owls hunt by sight', fresh: true, speed: 0.3,
+      see: 'Slowed down. The owl sweeps over and catches mice. Light mice stand out against dark rock, so they are caught more often.',
+      why: 'Whether a mouse is seen depends on its fur and the ground. On lava, dark mice are camouflaged and more of them live to have babies.',
+      overlay(sim,ctx,LH,k){evC(ctx,k,[['On dark rock',{s:14,w:800}],['Light mice: easy to see, caught more',{c:CE_RED}],['Dark mice: hidden, survive more',{c:CE_GREEN}]],LH);} },
+    { key: 'gens', title: 'Generation after generation', fresh: true, speed: 1,
+      see: 'Each second is one generation. Watch the share of dark mice, and the dark allele, climb.',
+      why: 'Survivors breed, so each generation inherits more D alleles than the last. No mouse changes its fur; the population changes because some mice leave more offspring than others.',
+      overlay(sim,ctx,LH,k){evC(ctx,k,[['Generation '+Math.round(sim.st.g),{s:14,w:800}],['Dark allele D: '+evD(sim)+'%',{w:800,c:CE_GREEN}],['Dark mice: '+Math.round(phM(sim,'dark'))+'%']],LH);} },
+    { key: 'flip', title: 'Change the ground', set: { bg: 'lava', p0: 0.5 }, fresh: true, speed: 1, cause: { from: { bg: 'sand' }, delay: 5, label: 'Ground' },
+      see: 'Start on light sand with half the alleles dark. For a few generations dark mice lose ground. Then the ground switches to dark lava, and the trend reverses.',
+      why: 'Selection depends on the environment. The same dark fur that is a liability on sand is an advantage on lava. Evolution has no goal; it follows whatever survives where the mice live.',
+      overlay(sim,ctx,LH,k){evC(ctx,k,[[sim.p.bg==='sand'?'Light sand':'Dark lava',{s:14,w:800}],['Generation '+Math.round(sim.st.g)],['Dark allele D: '+evD(sim)+'%',{w:800,c:sim.p.bg==='sand'?CE_RED:CE_GREEN}]],LH);} },
+    { key: 'noowls', title: 'Remove the owls', set: { s: 0, p0: 0.3 }, fresh: true, speed: 1, cause: { from: { s: 0.3 }, delay: 4, label: 'Owl hunting pressure' },
+      see: 'Dark mice gain for a few generations, then the owls are taken away. The dark allele stops climbing.',
+      why: 'Without a survival difference there is no selection. Allele frequencies then change only by chance, which is small in a population of 200.',
+      overlay(sim,ctx,LH,k){evC(ctx,k,[[sim.p.s>0?'Owls hunting':'No owls',{s:14,w:800}],['Generation '+Math.round(sim.st.g)],['Dark allele D: '+evD(sim)+'%',{w:800,c:CE_BLUE}]],LH);} },
+    { key: 'drift', lvl: 'honors', title: 'Chance in small populations', set: { s: 0, N: 10, p0: 0.5 }, fresh: true, speed: 1,
+      see: 'No owls, and only 10 mice per population. Watch the five bars at the top right: they drift apart, and some hit 0% or 100%.',
+      why: 'In a tiny population, luck decides which alleles get passed on. This <b>genetic drift</b> can fix or lose an allele with no selection at all.',
+      overlay(sim,ctx,LH,k){evC(ctx,k,[['10 mice per population',{s:14,w:800}],['Spread between populations: '+Math.round(phM(sim,'spread'))+' points',{w:800,c:CE_BLUE}],['Lost or fixed: '+String(phM(sim,'fixed'))+' of 5']],LH);} },
+    { key: 'migr', lvl: 'honors', title: 'Migration slows selection', set: { m: 0.1, pm: 0.2 }, fresh: true, speed: 1, cause: { from: { m: 0 }, delay: 3, label: 'Migration rate' },
+      see: 'On lava with owls, D climbs. Then migrants from a light-sand population start arriving each generation, bringing d alleles.',
+      why: 'Migration (gene flow) mixes populations and pulls allele frequencies toward the migrants’. Selection and migration settle at a balance short of 100% dark.',
+      overlay(sim,ctx,LH,k){evC(ctx,k,[[sim.p.m>0?'10% migrants each generation':'No migration',{s:14,w:800}],['Generation '+Math.round(sim.st.g)],['Dark allele D: '+evD(sim)+'%',{w:800,c:CE_GREEN}]],LH);} }
+  ],
+  useIt: [
+    { do: 'Take antibiotics only when prescribed, and finish them as directed.',
+      why: 'Each course of antibiotics is a selection event: resistant bacteria survive and multiply, just like dark mice on lava. Unneeded antibiotics select for resistance with no benefit.' },
+    { do: 'In a garden, rotate pest controls instead of using the same spray every year.',
+      why: 'One spray used over and over selects for resistant pests within a few generations. Rotating methods changes the “ground” so no one trait wins every time.' },
+    { do: 'Watch for evolution in the news: drug-resistant infections, herbicide-resistant weeds, new flu strains.', lvl: 'honors',
+      why: 'They all follow the same rules you just saw: variation, inheritance and unequal survival, with drift and migration shaping the outcome.' }
+  ],
+  tryIt: [
+    { title: 'the bead predator game (15 minutes)',
+      steps: ['Scatter 50 dark and 50 light beans or paper dots on a dark towel.', 'A partner has 15 seconds to pick up as many as possible, one at a time. These are “eaten”.', 'Each survivor “has one baby”: add one of the same color for each survivor. Repeat for 3 rounds and count.'],
+      look: 'Light dots get picked first on the dark towel, so dark dots take over in a few rounds. Repeat on a light towel and the opposite happens.' }
+  ]
+}
+});
+
 })();
