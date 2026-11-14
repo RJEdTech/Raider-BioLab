@@ -59,7 +59,7 @@ BioLab.COURSES = [
       { n: 'Unit 2', t: 'Biodiversity', ids: ['biodiversity', 'islandbio', 'succession', 'evolution'], note: 'Ecosystem services, island biogeography, tolerance, succession and bottlenecks.' },
       { n: 'Unit 3', t: 'Populations', ids: ['popgrowth', 'wolfmoose', 'predprey', 'humanpop'], note: 'r- and K-selection, survivorship, carrying capacity and human populations.' },
       { n: 'Unit 4', t: 'Earth systems and resources', ids: ['soil', 'seasons', 'albedo', 'enso'], note: 'Soil, solar radiation and seasons, albedo, atmospheric circulation, ocean currents and ENSO.' },
-      { n: 'Unit 5', t: 'Land and water use', ids: ['commons', 'footprint', 'treecarbon', 'mining', 'cityscore'], note: 'Tragedy of the commons, agriculture, forestry and tree carbon, mining and reclamation, carbon footprints, and urbanization and sustainability indicators.' },
+      { n: 'Unit 5', t: 'Land and water use', ids: ['commons', 'farm', 'footprint', 'treecarbon', 'mining', 'cityscore'], note: 'Tragedy of the commons, agriculture (irrigation, fertilizer and pest control), forestry and tree carbon, mining and reclamation, carbon footprints, and urbanization and sustainability indicators.' },
       { n: 'Unit 9', t: 'Global change', ids: ['climate', 'carboncycle'], note: 'Greenhouse effect, climate impacts, stabilization wedges and ocean acidification.' },
       { n: 'Unit 6', t: 'Energy resources and consumption', ids: ['energycalc', 'gridmix'], note: 'Energy sources, efficiency calculations and the lightbulb lab.' },
       { n: 'Unit 7', t: 'Atmospheric pollution', ids: ['smog', 'acidrain'], note: 'Denver air quality, smog, thermal inversions and acid rain.' },
@@ -91,7 +91,7 @@ BioLab.TOPIC_ORDER = {
   9: ['dissection', 'homeostasis'],
   10: ['pipette', 'gel', 'plasmid', 'pcr', 'blast', 'transformation'],
   12: ['soil', 'seasons', 'albedo', 'enso', 'climate'],
-  13: ['commons', 'footprint', 'treecarbon', 'mining', 'energycalc', 'gridmix', 'cityscore'],
+  13: ['commons', 'farm', 'footprint', 'treecarbon', 'mining', 'energycalc', 'gridmix', 'cityscore'],
   14: ['smog', 'acidrain', 'eutrophication', 'ld50'],
   11: ['sanger', 'crispr', 'synthbio', 'qpcr', 'epidemic', 'antibiotic', 'molclock']
 };

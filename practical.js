@@ -1197,6 +1197,16 @@ commons: {
     'Now the other fleets turn greedy, and you raise your catch to 1,200. Everyone lands a big haul this season. Watch the lake: within a few seasons it is nearly empty, and every catch falls to almost zero.'
   ]
 },
+farm: {
+  hook: 'A corn farmer in eastern Colorado pumps 20 inches of groundwater a season through furrows and harvests about 183 bushels an acre. If she switches to drip lines, how much less water can she pump for the same harvest? And how much deeper will her well have to reach after 10 years either way?',
+  answer: 'Drip gets about 95% of the water to the roots instead of 65%, so 14 inches grows about 186 bushels, a little more than furrow’s 183 with 20 inches. That saves 6 inches, about 163,000 gallons per acre every season. After 10 seasons the water table is about 19 ft lower with furrow and about 12 ft lower with drip. Either way it keeps falling, because rain recharges only about half a foot a year here.',
+  uses: [
+    'Center pivots: the giant green circles you see from a plane over eastern Colorado and Kansas are fields watered by center-pivot sprinklers, each arm about a quarter mile long.',
+    'The Ogallala Aquifer under the High Plains supplies about 30% of the groundwater used for irrigation in the US. In parts of Kansas and Texas its water table has dropped more than 100 feet since pumping began.',
+    'Nitrate in well water: the EPA limit is 10 mg/L (as nitrogen), because high nitrate can cause “blue baby syndrome” in infants. Farm wells near heavily fertilized fields are the ones most often over it.'
+  ],
+  takeaway: 'Getting water and fertilizer into the plant, instead of into the air, the ditch or the groundwater, grows the same food with less harm. Practices that look cheapest this season, like flooding, extra fertilizer or spraying every year, cost more over time through falling wells, polluted water and resistant pests.'
+},
 footprint: {
   hook: 'A typical student in this calculator rides 120 miles a week in a 25 mpg car, takes one round-trip flight a year and eats an average diet. Which single change cuts the most CO₂: a 50 mpg car, going vegetarian, or skipping the flight?',
   answer: 'The 50 mpg car saves about 1.1 tons a year, because it halves the 250 gallons of gas burned. Going vegetarian saves about 0.8 tons and skipping the 2,000-mile flight about 0.4 tons. The starting footprint is about 12.5 tons, so together these three cut about 2.3 tons.',
