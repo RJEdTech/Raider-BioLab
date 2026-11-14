@@ -89,9 +89,9 @@ function applyLearn(d){const L=LEARN[d.id];if(!L)return;d.learn=L;const P=d.prac
   const start={title:'Start here',pause:!L.startRun,hook:true,key:L.startKey,overlay:L.startOverlay,speed:L.startSpeed,text:lnLv(l=>{const g=lnPick(L.goals,l),m=lnPick(L.matters,l),q=lnPick(L.question||P.hook,l);
     return `<p class="ln-k">You will learn</p><ul class="ln-goals">${li(g)}</ul>${m?`<p class="ln-k">Why it matters</p><p>${m}</p>`:''}${q?`<p class="ln-k">Keep this question in mind</p><p class="ln-q">${q}</p>`:''}`;}),
     setup(sim){BL.setValues(sim,Object.assign({},defs));BL.reset(sim);}};
-  const steps=(L.steps||[]).map(s=>({title:s.title,lvl:s.lvl,focus:s.focus,speed:s.speed,pause:s.pause,key:s.key,overlay:s.overlay,
+  const steps=(L.steps||[]).map(s=>({title:s.title,lvl:s.lvl,focus:s.focus,speed:s.speed,pause:s.pause,key:s.key,overlay:s.overlay,cause:s.cause,
     text:lnLv(l=>{const see=lnPick(s.see,l),why=lnPick(s.why,l),so=lnPick(s.so,l);return `${see?`<p class="ln-k">What you see</p><p>${see}</p>`:''}${why?`<p class="ln-k">Why it happens</p><p>${why}</p>`:''}${so?`<p class="ln-k">Why it matters</p><p>${so}</p>`:''}`;}),
-    setup(sim){const bs=Object.assign({},defs,s.base||{}),df=o=>{const r={};for(const q in o)if(sim.p[q]!==o[q])r[q]=o[q];return r;};if(s.fresh){BL.setValues(sim,df(bs));BL.reset(sim);if(s.set)BL.setValues(sim,df(s.set));}else if(s.set||s.base){BL.setValues(sim,df(Object.assign(bs,s.set||{})));}else if(Object.keys(defs).some(q=>sim.p[q]!==defs[q])){BL.setValues(sim,df(bs));BL.reset(sim);}if(s.run)s.run(sim);}}));
+    setup(sim){const bs=Object.assign({},defs,s.base||{}),df=o=>{const r={};for(const q in o)if(sim.p[q]!==o[q])r[q]=o[q];return r;};if(s.fresh){BL.setValues(sim,df(bs));BL.reset(sim);if(s.set)BL.setValues(sim,df(s.set));}else if(s.set||s.base){BL.setValues(sim,df(Object.assign(bs,s.set||{})));}else if(Object.keys(defs).some(q=>sim.p[q]!==defs[q])){BL.setValues(sim,df(bs));BL.reset(sim);}sim._cz=null;if(s.cause)czStart(sim,s);if(s.run)s.run(sim);}}));
   d.tour=[start].concat(steps);}
 const bioOver=(t,n)=>!n?t:(t&&typeof t==='object')?Object.assign({},t,{bio:n}):(t?{bio:n,honors:t}:n);
 function applyPractical(d){const P=PRACT[d.id];if(!P)return;d.practical=P;
@@ -746,7 +746,34 @@ function challengeTick(sim){const c=sim.ch;if(c.phase!=='running')return;const d
 function fit(cv,w,h){const dpr=Math.min(2,window.devicePixelRatio||1),W=Math.round(w*dpr),H=Math.round(h*dpr);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}return dpr;}
 function drawStageTo(sim,cv,vdt,kOverride){const w=cv.clientWidth;if(!w)return;const asp=sim.def.aspect||16/9,LH=800/asp,h=w/asp;fit(cv,w,h);const ctx=cv.getContext('2d'),sc=cv.width/800;
   ctx.setTransform(sc,0,0,sc,0,0);ctx.clearRect(0,0,800,LH);const k=kOverride||clamp(720/w,1,1.8);ctx.save();sim.def.draw(sim,ctx,vdt,k,sim.vt);ctx.restore();drawFocus(sim,ctx,LH);lnOverlay(sim,ctx,LH,k);}
-function lnOverlay(sim,ctx,LH,k){if(!sim.tour||!sim.tour.on)return;const s=tourSteps(sim)[sim.tour.i];if(!s||!s.overlay)return;const tau=RM?60:(performance.now()-(sim.lnT0||0))/1000;ctx.save();try{s.overlay(sim,ctx,LH,k,tau);}catch(e){if(window.console)console.error(e);}ctx.restore();}
+/* Learn it "cause": a step can show its cause happening. cause:{from:{id:value},delay,dur,hold,ring,at,label}.
+   The step starts at the from values, then after delay seconds slides numbers (or switches toggles and choices) to the
+   step's set values over dur seconds, with a banner naming what is changing, before and now. ring:[x,y,r] or sim=>[x,y,r]
+   circles the part of the picture that changes while it changes. */
+const czEase=x=>x<=0?0:x>=1?1:x*x*(3-2*x);
+function czStart(sim,s){const c=s.cause,from=c.from||{},to={};for(const q in from)to[q]=(s.set&&q in s.set)?s.set[q]:sim.p[q];
+  const o={};for(const q in from)if(sim.p[q]!==from[q])o[q]=from[q];if(Object.keys(o).length)BL.setValues(sim,o);if(c.reset)BL.reset(sim);
+  sim._cz={key:s.key||null,from,to,delay:c.delay!=null?c.delay:1.2,dur:c.dur!=null?c.dur:2.5,hold:c.hold!=null?c.hold:3.5,ring:c.ring,at:c.at,label:c.label,done:false};}
+function czCtl(sim,q){return (sim.def.controls||[]).find(c=>c.id===q);}
+function czFmt(sim,q,v){const c=czCtl(sim,q);if(!c)return String(v);if(c.options){const o=c.options.find(o=>o.v===v);return o?o.l:String(v);}
+  if(typeof v==='boolean')return v?'on':'off';if(typeof v==='number'){const st=c.step||1,d=c.d!=null?c.d:(st>=1?0:Math.min(3,String(st).split('.')[1]?String(st).split('.')[1].length:2));return (Math.round(v*Math.pow(10,d))/Math.pow(10,d)).toFixed(d)+(c.unit||'');}return String(v);}
+function czTick(sim,tau){const z=sim._cz;if(!z||z.key!==sim.lnKey)return null;const f=clamp((tau-z.delay)/z.dur,0,1),e=czEase(f),o={};
+  for(const q in z.from){const a=z.from[q],b=z.to[q];let v;const cq=czCtl(sim,q);if(typeof a==='number'&&typeof b==='number'&&!(cq&&cq.options)){const c=cq,st=c&&c.step;v=a+(b-a)*e;v=st&&st>=1?Math.round(v/st)*st:Math.round(v*1e4)/1e4;if(f>=1)v=b;}else v=f>0?b:a;
+    if(sim.p[q]!==v)o[q]=v;}
+  if(Object.keys(o).length)BL.setValues(sim,o);if(f>=1&&!z.done){z.done=true;z.tDone=tau;}return f;}
+function czDraw(sim,ctx,LH,k,tau,f){const z=sim._cz;if(!z||f==null)return;let al=1;if(z.done){al=clamp(1-(tau-z.tDone-z.hold)/0.6,0,1);if(al<=0)return;}
+  const kk=Math.min(k,1.35),qs=Object.keys(z.from);if(!qs.length)return;const c0=czCtl(sim,qs[0]),lab=z.label||(c0?c0.label:qs[0]);
+  const parts=qs.map(q=>czFmt(sim,q,z.from[q])+' → '+czFmt(sim,q,f>=1?z.to[q]:sim.p[q]));
+  const msg=(f<=0?'Watch: about to change ':f<1?'Changing ':'Changed ')+lab+(f<=0?'':': '+parts.join(', '));
+  const sz=13*kk;ctx.save();ctx.globalAlpha=al;ctx.font='700 '+sz+'px '+FONT;const w=Math.min(780,ctx.measureText(msg).width+sz*1.6),h=sz*2;
+  const at=z.at||[400,8],x=clamp(at[0]-w/2,6,794-w),y=at[1];rr(ctx,x,y,w,h,h/2);ctx.fillStyle=f>0&&f<1?'#c8102e':'rgba(255,255,255,0.97)';ctx.fill();
+  const pulse=0.5+0.5*Math.sin(tau*6);ctx.lineWidth=2.5;ctx.strokeStyle='#c8102e';ctx.stroke();
+  ctx.fillStyle=f>0&&f<1?'#fff':'#8a0f20';ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillText(msg,x+sz*0.8,y+h/2+1,w-sz*1.6);
+  if(z.ring&&!z.done){const r=typeof z.ring==='function'?z.ring(sim):z.ring;if(r){ctx.globalAlpha=al*(0.45+0.55*pulse);ctx.strokeStyle='#c8102e';ctx.lineWidth=3;ctx.beginPath();ctx.arc(r[0],r[1],r[2]+3*pulse,0,6.29);ctx.stroke();}}
+  ctx.restore();}
+function lnOverlay(sim,ctx,LH,k){if(!sim.tour||!sim.tour.on)return;const s=tourSteps(sim)[sim.tour.i];if(!s)return;const tau=RM?60:(performance.now()-(sim.lnT0||0))/1000;const f=s.cause?czTick(sim,tau):null;
+  if(s.overlay){ctx.save();try{s.overlay(sim,ctx,LH,k,tau);}catch(e){if(window.console)console.error(e);}ctx.restore();}
+  if(f!=null){try{czDraw(sim,ctx,LH,k,tau,f);}catch(e){if(window.console)console.error(e);}}}
 function drawGraph(sim){if(sim.vlab&&sim.mode==='vlab')vlGraph(sim);const cv=sim.ui.graph;if(!cv)return;const W=cv.clientWidth,H=cv.clientHeight;if(!W)return;const dpr=fit(cv,W,H),ctx=cv.getContext('2d');
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);const box={L:66,T:12,W:W-66-14,H:H-12-40,cw:W,ch:H};
   if(sim.gmode==='live'){const o=graphOptions(sim).find(g=>g.id===sim.gMetric);if(!o){txt(ctx,'No graph for this level.',W/2,H/2,{s:15,c:PAL['muted'],a:'center',b:'middle'});return;}

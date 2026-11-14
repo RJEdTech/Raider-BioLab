@@ -98,3 +98,8 @@ While they wait, a cue above the buttons says what to look at ("Watch the model"
 
 ## Final review paths
 A course in `courses.js` can carry `finals:[{t, units, note}]`. Each becomes a path at `#f-<courseId>-<k>` and a button at the top of the course view. `units` lists unit indexes; an entry can be `[index, ['toolId',...]]` to take only some of that unit's tools. A final path keeps only practice steps: Test yourself for Learn it tools, Review questions otherwise, and Free-response practice where it exists. Tools with no questions are left off.
+
+### Learn it: showing the cause (`cause`)
+A Learn it step can show its cause happening instead of jumping to the result:
+`cause:{from:{T:300}, delay:1.2, dur:2.5, label:'Temperature', ring:[x,y,r] or sim=>[x,y,r], at:[x,y]}`.
+The step starts at the `from` values, then after `delay` seconds slides numbers to the step's `set` values over `dur` seconds (choices and toggles switch at `delay`). A banner names what is changing with before → now, and `ring` circles the part of the picture that changes. Use it whenever a step is about what one setting does. For actions (add a serum, breed, arrange), trigger them partway through the step from the overlay (see `atT` in BioLab learn.js) so the student sees the before state first.
