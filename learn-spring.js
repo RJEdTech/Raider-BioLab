@@ -293,7 +293,11 @@ gridmix: {
     { key: 'heat', lvl: 'ap', title: 'Waste heat', set: {}, fresh: true, speed: 2,
       see: 'Read the fuel heat burned and the waste heat. About two thirds of the fuel’s energy leaves the coal plant as heat in cooling towers.',
       why: 'A coal plant is about 33% efficient and a gas plant about 55%. Electricity out = fuel heat × efficiency; the rest is waste heat. 1 MWh = 3.412 MMBtu.',
-      overlay(sim,ctx,LH,k){GM(ctx,k,[['Fossil output: '+f0(met(sim,'fossil'))+' MW',700,13.5],'Fuel heat in: '+f0(met(sim,'heatin'))+' MW thermal','Waste heat: '+f0(met(sim,'waste'))+' MW','Fuel energy: '+f0(met(sim,'btu'))+' MMBtu/h']);} }
+      overlay(sim,ctx,LH,k){GM(ctx,k,[['Fossil output: '+f0(met(sim,'fossil'))+' MW',700,13.5],'Fuel heat in: '+f0(met(sim,'heatin'))+' MW thermal','Waste heat: '+f0(met(sim,'waste'))+' MW','Fuel energy: '+f0(met(sim,'btu'))+' MMBtu/h']);} },
+    { key: 'hook', title: 'Your question: closing the coal plants', set: { coal: 0 }, fresh: true, speed: 2,
+      see: 'Close the 700 MW of coal and keep the gas, wind and solar. The lights stay on through the evening peak, and the day’s CO₂ falls from about 15,000 t to about 6,200 t.',
+      why: 'The 900 MW of gas can ramp up whenever wind and solar fall short, so nothing goes dark. Coal makes about twice the CO₂ of gas for each MWh, so CO₂ drops by more than half.',
+      overlay(sim,ctx,LH,k){GM(ctx,k,[['No coal',700,14],'Power short: '+f0(met(sim,'unmet'))+' MW','CO₂ right now: '+f0(met(sim,'co2'))+' t/h']);} }
   ],
   useIt: [
     { do: 'Run the dishwasher or charge devices late at night or midday when you can.',
