@@ -2364,7 +2364,7 @@ popgrowth: {
     honors: ['Exponential vs logistic growth', 'How carrying capacity and growth rate shape the curve', 'How a population recovers after a crash'],
     ap: ['dN/dt = rN and dN/dt = rN(1 − N/K)', 'Why growth is fastest at N = K/2', 'Doubling time and density-dependent limits']
   },
-  matters: 'Wildlife managers set hunting seasons from these curves, fisheries set catch limits from them, and the same math tracks bacteria in food, invasive species and the human population.',
+  matters: 'Colorado Parks and Wildlife sets the number of deer and elk hunting licenses each year by comparing herd counts with what the land can feed. Fisheries set catch limits the same way, and the same math tracks bacteria in leftovers and invasive species in Colorado lakes.',
   startKey: 'island', startRun: true, startSpeed: 0.3,
   steps: [
     { key: 'grow', title: 'From ten deer to a full island', set: { model: 'logistic', r: 0.5, K: 500, N0: 10 }, fresh: true, speed: 1,
@@ -2414,7 +2414,7 @@ predprey: {
     honors: ['How birth rate, hunting success and carrying capacity change the cycle', 'Top-down and bottom-up control', 'What happens when people remove predators'],
     ap: ['The Lotka–Volterra model and its balance point', 'Reading a phase plot', 'Density-dependent growth for the prey']
   },
-  matters: 'Wolves in Yellowstone, fish stocks, crop pests and their insect predators, and the hare–lynx cycle in Canada’s fur records all follow these linked rises and falls. Removing a predator often backfires.',
+  matters: 'Colorado brought Canada lynx back to the San Juan Mountains starting in 1999, and released gray wolves in late 2023. Whether those predators thrive, and what happens to the deer, elk and hares they eat, follows these linked rises and falls. Removing a predator often backfires.',
   startKey: 'forest', startRun: true, startSpeed: 0.4,
   steps: [
     { key: 'cycle', title: 'Hares up, then lynx up', fresh: true, speed: 1,
