@@ -2352,4 +2352,106 @@ evolution: {
 }
 });
 
+/* ===== Ecology: population growth and predator–prey ===== */
+const PGC=(ctx,k,L)=>dcCard(ctx,k,352,8,290,L,{hi:false});
+const PPC=(ctx,k,L)=>dcCard(ctx,k,244,8,264,L,{hi:false});
+const pgN=sim=>Math.round(phM(sim,'pop'));
+const ppH=sim=>Math.round(phM(sim,'hares')).toLocaleString('en-US'),ppL=sim=>Math.round(phM(sim,'lynx'));
+BioLab.addLearn({
+popgrowth: {
+  goals: {
+    bio: ['How births and deaths change a population', 'Why populations with limited food level off at a carrying capacity', 'The difference between J-shaped and S-shaped growth'],
+    honors: ['Exponential vs logistic growth', 'How carrying capacity and growth rate shape the curve', 'How a population recovers after a crash'],
+    ap: ['dN/dt = rN and dN/dt = rN(1 − N/K)', 'Why growth is fastest at N = K/2', 'Doubling time and density-dependent limits']
+  },
+  matters: 'Wildlife managers set hunting seasons from these curves, fisheries set catch limits from them, and the same math tracks bacteria in food, invasive species and the human population.',
+  startKey: 'island', startRun: true, startSpeed: 0.3,
+  steps: [
+    { key: 'grow', title: 'From ten deer to a full island', set: { model: 'logistic', r: 0.5, K: 500, N0: 10 }, fresh: true, speed: 1,
+      see: 'Ten deer reach an island with plenty of grass and no wolves. Watch the herd and the gauge on the right.',
+      why: 'At first every deer has plenty of food, so births far outnumber deaths and the herd grows faster and faster. As it nears the carrying capacity (K = 500), food per deer runs short, fewer fawns survive and growth slows to zero. The curve is an S.',
+      overlay(sim,ctx,LH,k){PGC(ctx,k,[['Deer: '+pgN(sim)+' (carrying capacity 500)',{w:700}],'Food in use: '+Math.round(phM(sim,'food'))+'%']);} },
+    { key: 'moreK', title: 'More food, higher ceiling', set: { model: 'logistic', r: 0.5, K: 1000, N0: 10 }, fresh: true, speed: 1,
+      cause: { from: { K: 500 }, delay: 2, dur: 2, ring: [740,130,58], at: [175,62], label: 'Carrying capacity' },
+      run(sim){sim.st.N=495;},
+      see: 'The herd is at its limit, about 500 deer. Watch the carrying capacity jump to 1,000, as if the island had twice the grass.',
+      why: 'With more food per deer, births outnumber deaths again and the herd climbs until it reaches the new K. The population is limited by food, not by how fast deer can breed.',
+      overlay(sim,ctx,LH,k){PGC(ctx,k,[['K = '+Math.round(sim.p.K)+' deer (was 500)',{w:700,c:CE_RED}],'Deer: '+pgN(sim)]);} },
+    { key: 'crash', lvl: 'honors', title: 'A crash, then fast recovery', set: { model: 'logistic', r: 0.5, K: 500, N0: 10 }, fresh: true, speed: 1,
+      run(sim){atReset(sim);sim.st.N=495;sim._pgW=null;},
+      see: 'A full island of about 500 deer. Watch a disease kill 70% of them.',
+      why: 'After the crash, food is plentiful again, so each survivor has more young and the herd grows quickly, faster than it did near K. Growth is density dependent: it speeds up when the population is small compared with its food.',
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,2,'d',s=>{dvAct(s,'disease');s._pgW=pgN(s);});PGC(ctx,k,sim._pgW==null?[['Deer: '+pgN(sim),{w:700}],'Watch…']:[['Disease: 495 → '+sim._pgW+' deer',{w:700,c:CE_RED}],'Now: '+pgN(sim)+' and climbing']);} },
+    { key: 'exp', lvl: 'honors', title: 'Take away the limit', set: { model: 'exp', r: 0.5, K: 500, N0: 10 }, fresh: true, speed: 1,
+      cause: { from: { model: 'logistic' }, delay: 2.5, at: [175,62], label: 'Growth model' },
+      run(sim){sim.st.N=300;},
+      see: 'A herd of 300 heading for K. Watch the food limit get switched off.',
+      why: 'With unlimited food, births keep outpacing deaths by the same fraction every year, so the herd adds more deer each year than the year before: exponential growth, the J-curve. No real population keeps it up for long.',
+      overlay(sim,ctx,LH,k){PGC(ctx,k,[[sim.p.model==='exp'?'Unlimited food: J-curve':'Limited food: heading for K',{w:700,c:sim.p.model==='exp'?CE_RED:PAL['cv-ink']}],'Deer: '+pgN(sim)]);} },
+    { key: 'half', lvl: 'ap', title: 'Fastest at K/2', set: { model: 'logistic', r: 0.5, K: 500, N0: 10 }, fresh: true, speed: 0.6,
+      run(sim){sim.st.N=60;},
+      see: 'Watch dN/dt, the deer added per year, as the herd passes 250.',
+      why: 'dN/dt = rN(1 − N/K). Small N means few parents; N near K means little food. The product peaks at N = K/2: 0.5 × 250 × 0.5 = 62.5 deer per year. Managers aim to keep harvested populations near K/2 for the largest sustainable yield.',
+      overlay(sim,ctx,LH,k){PGC(ctx,k,[['Deer: '+pgN(sim),{w:700}],['dN/dt: '+phM(sim,'dndt').toFixed(1)+' deer/year (max 62.5)',{c:CE_RED}]]);} }
+  ],
+  useIt: [
+    { do: 'Put leftovers in the fridge within 2 hours.',
+      why: 'Bacteria on warm food grow exponentially, doubling as often as every 20 minutes. Cold slows r so much that the J-curve barely starts.' },
+    { do: 'Don’t release pet fish, turtles or plants into the wild.',
+      why: 'With no predators and plenty of food, a released species can grow like the unlimited-food herd and crowd out native species. That is how many invasive species started.' },
+    { do: 'Look up the bag limit before you go fishing or hunting.', lvl: 'honors',
+      why: 'Limits are set so the population stays near K/2, where it adds the most young each year and can be harvested without shrinking.' }
+  ],
+  tryIt: [
+    { title: 'the yeast balloon (1 hour)',
+      steps: ['Mix 1 packet of yeast and 1 tablespoon of sugar into 1 cup of warm water in a bottle.', 'Stretch a balloon over the mouth.', 'Measure around the balloon every 10 minutes for an hour.'],
+      look: 'Slow at first, then faster and faster as the yeast multiply, then slower as the sugar runs out. Plot it and you get the S-curve.' }
+  ]
+},
+predprey: {
+  goals: {
+    bio: ['How predators and prey affect each other’s numbers', 'Why their populations rise and fall in cycles', 'Why predator numbers lag behind prey numbers'],
+    honors: ['How birth rate, hunting success and carrying capacity change the cycle', 'Top-down and bottom-up control', 'What happens when people remove predators'],
+    ap: ['The Lotka–Volterra model and its balance point', 'Reading a phase plot', 'Density-dependent growth for the prey']
+  },
+  matters: 'Wolves in Yellowstone, fish stocks, crop pests and their insect predators, and the hare–lynx cycle in Canada’s fur records all follow these linked rises and falls. Removing a predator often backfires.',
+  startKey: 'forest', startRun: true, startSpeed: 0.4,
+  steps: [
+    { key: 'cycle', title: 'Hares up, then lynx up', fresh: true, speed: 1,
+      see: 'Watch the hare and lynx counts at the top right as the years go by.',
+      why: 'When hares are plentiful, lynx eat well and raise more kittens, so lynx rise a little after the hares. Then so many lynx hunt that hares crash, and the hungry lynx crash after them. With few lynx, hares recover and the cycle starts over, about every 10 years.',
+      overlay(sim,ctx,LH,k){PPC(ctx,k,[['Hares: '+ppH(sim),{w:700}],['Lynx: '+ppL(sim),{w:700}]]);} },
+    { key: 'trap', title: 'Trap half the lynx', fresh: true, speed: 1,
+      run(sim){atReset(sim);sim.st.H=6;sim.st.L=36;sim._ppW=null;},
+      see: 'Hares are scarce and lynx are many. Watch trappers remove half the lynx.',
+      why: 'Fewer hunters means more hares survive to breed, so hares boom soon after. More hares then feed a lynx comeback. Removing predators doesn’t keep their numbers down for long, and it changes the prey too.',
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,2,'t',s=>{s._ppW=ppL(s);dvAct(s,'trap');});PPC(ctx,k,sim._ppW==null?[['Lynx: '+ppL(sim),{w:700}],'Hares: '+ppH(sim)]:[['Lynx: '+ppL(sim)+' (was '+sim._ppW+')',{w:700,c:CE_RED}],'Hares: '+ppH(sim)]);} },
+    { key: 'hunt', title: 'Better hunters', set: { hunt: 160 }, fresh: true, speed: 1,
+      cause: { from: { hunt: 100 }, delay: 2, dur: 2, at: [420,72], label: 'Lynx hunting success' },
+      see: 'Watch the lynx get 60% better at catching hares, as if deep snow made hares easier to catch.',
+      why: 'Each lynx now eats more hares, so hares crash lower and faster. That starves the lynx sooner, so the lynx crash follows. A stronger predator makes the swings bigger, not just the prey smaller.',
+      overlay(sim,ctx,LH,k){PPC(ctx,k,[['Hunting '+Math.round(sim.p.hunt)+'% (was 100%)',{w:700,c:CE_RED}],'Hares: '+ppH(sim)+'   Lynx: '+ppL(sim)]);} },
+    { key: 'kcap', lvl: 'honors', title: 'Food limits the hares too', set: { K: 12 }, fresh: true, speed: 1.5,
+      cause: { from: { K: 20 }, delay: 3, dur: 2, at: [420,72], label: 'Carrying capacity for hares' },
+      run(sim){sim.st.H=5;sim.st.L=0.3;},
+      see: 'Almost no lynx left. Watch the hares climb, then watch their food supply shrink.',
+      why: 'Without predators, hares still can’t grow forever: they level off at the carrying capacity set by twigs and bark. Cut the food and the ceiling drops. Prey are controlled from below (food) as well as from above (predators).',
+      overlay(sim,ctx,LH,k){PPC(ctx,k,[['Hare limit '+Math.round(sim.p.K)+',000 (was 20,000)',{w:700,c:CE_RED}],'Hares: '+ppH(sim)]);} }
+  ],
+  useIt: [
+    { do: 'Leave spiders, ladybugs and garden snakes alone.',
+      why: 'They are predators of the pests that eat your plants and stored food. Killing them lets the prey boom, just like trapping lynx.' },
+    { do: 'Keep cats indoors or supervised outside.',
+      why: 'Pet cats are a predator with no natural limit: their food comes from you, not from their prey. Outdoor cats kill more than a billion birds a year in the US.' },
+    { do: 'Read about the Yellowstone wolves when people argue about predators.', lvl: 'honors',
+      why: 'Wolves returned in 1995 and cut elk numbers, which let streamside willows and aspens regrow. One predator changed the whole food web.' }
+  ],
+  tryIt: [
+    { title: 'the hare and lynx card game (15 minutes)',
+      steps: ['Cut 3 cm paper squares (hares) and one 8 cm square (a lynx). Scatter 3 hares on a table marked as a 60 cm square.', 'Toss the lynx square; it eats every hare it touches. It needs 3 hares to survive and has one kitten for every 3 more. Surviving hares double each round.', 'Play 15 rounds and graph hares and lynx.'],
+      look: 'Hares rise first, lynx follow, hares crash, and lynx crash after them: the same lagging cycle as the simulation.' }
+  ]
+}
+});
+
 })();
