@@ -308,4 +308,144 @@ gridmix: {
   ]
 }
 });
+/* ---- Apr–May units: evolution (added Nov 14, 2026) ---- */
+const BK=(ctx,k,L)=>card(ctx,k,L,270,8,300);
+const CG=(ctx,k,L)=>card(ctx,k,L,500,360,290);
+const HM=(ctx,k,L)=>card(ctx,k,L,470,398,320);
+const tq=(sim,id)=>{const v=met(sim,id);return v==null||v!==v?'—':String(v);};
+const beakMix=sim=>[['Tweezers','tw'],['Chopsticks','ch'],['Spoon','sp'],['Clothespin','cl'],['Binder clip','bc']].map(([n,id])=>[n,met(sim,id)]).filter(x=>x[1]>=10).sort((a,b)=>b[1]-a[1]).map(x=>x[0]+' '+f0(x[1])+'%').join(' · ')||'—';
+const multi=(sim,tau,id,times)=>times.forEach((t,i)=>{const key='_mt'+id+i;if(tau>=t&&sim[key]!==sim.lnT0){sim[key]=sim.lnT0;act(sim,id);}});
+
+BioLab.addLearn({
+beaks: {
+  goals: {
+    bio: ['Birds with beaks that fit the food survive and have more young', 'The population changes over generations, not the individual birds', 'When the food changes, the winners change'],
+    honors: ['Variation, inheritance, selection and time', 'Carrying capacity limits the population', 'Mutation adds new variation'],
+    ap: ['Relative fitness', 'Directional vs. disruptive selection', 'How the survival threshold sets selection strength']
+  },
+  matters: 'On the Galápagos, Peter and Rosemary Grant watched finch beaks get measurably deeper after a single drought in 1977. Natural selection is fast enough to see in a human lifetime.',
+  question: 'An island’s food changes to only tiny seeds. Can a bird grow a better beak, or does something else change?',
+  startKey: 'mixed', startRun: true,
+  steps: [
+    { key: 'mixed', title: 'A mixed island', set: { food: 'mixed' }, fresh: true, speed: 4,
+      see: 'Five beak types start at 8 birds each. Each round, birds collect food; those that gather 4 items survive and breed. Watch the beak mix shift over generations.',
+      why: 'Every beak is better at some foods. Birds don’t change their own beaks: birds that happen to fit the food leave more offspring, and the offspring inherit their beaks.',
+      overlay(sim,ctx,LH,k){BK(ctx,k,[['Mixed food',700,14],beakMix(sim)]);} },
+    { key: 'small', title: 'Only small seeds', set: { food: 'small' }, fresh: true, speed: 4,
+      see: 'An island with only small seeds. Within a few generations nearly every bird has tweezers.',
+      why: 'Tweezers pick up tiny seeds fastest. Other beaks can’t gather enough to survive, so their numbers fall to zero. This is natural selection.',
+      overlay(sim,ctx,LH,k){BK(ctx,k,[['Small seeds only',700,14],beakMix(sim)]);} },
+    { key: 'worms', title: 'Only worms', set: { food: 'worms' }, fresh: true, speed: 4,
+      see: 'Change the island to worms and the chopsticks take over instead.',
+      why: 'There is no single best beak. Which trait is “fittest” depends on the environment.',
+      overlay(sim,ctx,LH,k){BK(ctx,k,[['Worms only',700,14],beakMix(sim)]);} },
+    { key: 'drought', title: 'Drought', set: { food: 'mixed' }, fresh: true, speed: 4,
+      see: 'Mixed food, then a drought hits after a few seconds. Only big, hard seeds remain, and strong beaks (clothespins and binder clips) take over.',
+      why: 'This is what the Grants saw: after the 1977 drought, finches with deeper beaks that could crack big seeds survived, and the next generation had deeper beaks on average.',
+      overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'drought',3);BK(ctx,k,[[sim.p.food==='drought'?'Drought':'Mixed food (drought coming)',700,14],beakMix(sim)]);} },
+    { key: 'mut', lvl: 'honors', title: 'Mutation', set: { food: 'small', mut: true }, fresh: true, speed: 4,
+      see: 'Small seeds with mutation on. Tweezers dominate, but now and then a different beak shows up.',
+      why: 'Mutation creates new variation each generation; selection then removes most of it. Without new variation, a population that loses a beak type can never get it back if the food changes again.',
+      overlay(sim,ctx,LH,k){BK(ctx,k,[['Small seeds, with mutation',700,14],beakMix(sim)]);} },
+    { key: 'fit', lvl: 'ap', title: 'Relative fitness', set: { food: 'mixed', T: 6 }, fresh: true, speed: 4,
+      see: 'Raise the food needed to survive from 4 to 6 items. Selection gets harsher: fewer birds survive each round and the mix shifts faster.',
+      why: 'Relative fitness compares each type’s survival with the best type’s. A tougher threshold widens those gaps, so the population changes faster, which is what a harsh environment does.',
+      overlay(sim,ctx,LH,k){BK(ctx,k,[['Needs 6 items',700,14],'Survived last round: '+f0(met(sim,'surv'))+'%',beakMix(sim)]);} }
+  ],
+  useIt: [
+    { do: 'Finish every antibiotic prescription.',
+      why: 'Bacteria that survive a short course are the most resistant ones. They are selected, like the beaks that fit the food.' },
+    { do: 'Look for examples of selection in the news: insecticide-resistant bugs, herbicide-resistant weeds.', lvl: 'honors',
+      why: 'Each one is the same story: variation, a pressure, survivors that reproduce, and a changed population.' }
+  ],
+  tryIt: [
+    { title: 'the real beak lab (20 minutes, with friends)',
+      steps: ['Give each person a different “beak”: tweezers, a spoon, chopsticks, a clothespin.', 'Scatter rice, beans and pasta on a table and give everyone 30 seconds to pick up food into a cup.', 'Count. Repeat with only rice.'],
+      look: 'Whoever’s tool fits the food wins. Change the food and the winner changes, like the island.' }
+  ]
+},
+cladogram: {
+  goals: {
+    bio: ['A cladogram shows which groups share common ancestors', 'Shared derived traits mark each branch point', 'Groups closer on the tree are more closely related'],
+    honors: ['Build the tree from traits shared by the most groups', 'Outgroups and nested clades', 'Reading a cladogram correctly'],
+    ap: ['Parsimony: the tree with the fewest changes', 'Molecular evidence (cytochrome c) agrees', 'Branch points on a timeline']
+  },
+  matters: 'Cladograms tell doctors which animals are good models for human medicine, track how flu viruses spread, and show that birds are living dinosaurs.',
+  question: 'Is a lizard more closely related to a frog or to a mouse?',
+  startKey: 'empty', startRun: true,
+  steps: [
+    { key: 'empty', title: 'Seven animals', set: { set: 'vert', view: 'tree' }, fresh: true, pause: true, run(sim){act(sim,'clear');},
+      see: 'Lancelet, lamprey, shark, frog, lizard, mouse and human, with no tree yet.',
+      why: 'We’ll build the tree from traits that appeared once and were passed down: a backbone, jaws, lungs, an amniotic egg, hair and milk.' },
+    { key: 'build', title: 'Place the traits', set: { set: 'vert', view: 'tree' }, fresh: true, speed: 1, run(sim){act(sim,'clear');},
+      see: 'The traits go on one at a time, starting with the one most animals share: backbone, then jaws, lungs, the amniotic egg and finally hair and milk.',
+      why: 'A trait shared by more groups evolved earlier, so it sits lower on the tree. Every animal above a trait’s mark has it; everything below lacks it.',
+      overlay(sim,ctx,LH,k,tau){multi(sim,tau,'next',[1,2.5,4,5.5,7]);} },
+    { key: 'read', title: 'Reading the tree', set: { set: 'vert', view: 'tree' }, fresh: true, pause: true, run(sim){act(sim,'clear');for(let i=0;i<5;i++)act(sim,'next');},
+      see: 'Lizard and mouse share the amniotic egg; the frog branched off before it. So the lizard is closer to the mouse than to the frog.',
+      why: 'Relatedness comes from the most recent shared branch point, not from how alike animals look or where they live. The lamprey and lancelet are not “less evolved”: they’ve been evolving just as long.' },
+    { key: 'plant', lvl: 'honors', title: 'Land plants', set: { set: 'plant', view: 'tree' }, fresh: true, speed: 1, run(sim){act(sim,'clear');},
+      see: 'Now plants: protected embryos, then vascular tissue, seeds, and flowers.',
+      why: 'The same method works for any group. Mosses lack vascular tissue, ferns lack seeds and pines lack flowers, so each branches off at its own point.',
+      overlay(sim,ctx,LH,k,tau){multi(sim,tau,'next',[1,2.5,4,5.5]);} },
+    { key: 'time', lvl: 'ap', title: 'On a timeline', set: { set: 'vert', view: 'time' }, fresh: true, pause: true, run(sim){act(sim,'clear');for(let i=0;i<5;i++)act(sim,'next');},
+      see: 'Stretch the tree along time: jaws by about 440 million years ago, the amniotic egg by 320, and mice and humans splitting about 90 million years ago.',
+      why: 'Fossils and molecular clocks date the branch points. Cytochrome c differences agree with the tree: human and mouse differ in 9 amino acids, human and lamprey in 29.' }
+  ],
+  useIt: [
+    { do: 'When someone says humans came from chimps, picture the tree.',
+      why: 'Humans and chimps share a common ancestor; neither came from the other. Both are tips of the tree, still here.' }
+  ],
+  tryIt: [
+    { title: 'a cladogram of your kitchen (10 minutes)',
+      steps: ['Pick five utensils: spoon, fork, knife, spatula, chopsticks.', 'List traits (metal, handle, prongs, sharp edge).', 'Build a tree with the most widely shared trait at the bottom.'],
+      look: 'The method works for anything with nested traits, though utensils, unlike living things, didn’t descend from each other.' }
+  ]
+},
+hominids: {
+  goals: {
+    bio: ['Many hominin species lived over the last 7 million years', 'Brain size grew over time, but not in a straight line', 'Walking upright came before big brains'],
+    honors: ['The foramen magnum shows upright walking', 'Comparing skull features', 'Several species lived at the same time'],
+    ap: ['Encephalization quotient: brain size relative to body', 'A branching bush, not a ladder', 'How fossils are dated']
+  },
+  matters: 'Fossils from Ethiopia, Kenya and South Africa show where humans came from. Many of the most important finds, like Lucy (A. afarensis), were made in the last 50 years.',
+  question: 'Did our ancestors get big brains first, or start walking upright first?',
+  startKey: 'sapiens', startRun: false,
+  steps: [
+    { key: 'sapiens', title: 'Our own skull', set: { species: 'sapiens', scene: 'skull', labels: true }, fresh: true, pause: true,
+      see: 'A modern human skull: a high, rounded braincase holding about 1,350 cc, a flat face and a small jaw.',
+      why: 'Comparing these numbered features across species is how paleoanthropologists tell fossils apart.',
+      overlay(sim,ctx,LH,k){HM(ctx,k,[['Homo sapiens: '+f0(met(sim,'cc'))+' cc',700,14],tq(sim,'when')]);} },
+    { key: 'lucy', title: 'Lucy’s species', set: { species: 'afarensis', scene: 'skull', labels: true }, fresh: true, pause: true,
+      see: 'Australopithecus afarensis, about 3.4 million years ago: a brain of 450 cc, a third of ours, and a jutting face.',
+      why: 'Lucy’s hips and leg bones show she walked upright, with a brain barely bigger than a chimpanzee’s. Walking came first.',
+      overlay(sim,ctx,LH,k){HM(ctx,k,[['A. afarensis: '+f0(met(sim,'cc'))+' cc',700,14],tq(sim,'when')]);} },
+    { key: 'brain', title: 'Brain size over time', set: { species: 'erectus', scene: 'brain' }, fresh: true, pause: true,
+      see: 'Brain sizes from 160 cc (Proconsul, 19 million years ago) to about 1,350 cc today. Homo erectus reached about 975 cc.',
+      why: 'Brain size grew most in the last 2 million years, with Homo. Neanderthals had brains slightly larger than ours on average, so bigger isn’t the whole story.',
+      overlay(sim,ctx,LH,k){HM(ctx,k,[['H. erectus: '+f0(met(sim,'cc'))+' cc',700,14],f0(met(sim,'you'))+'% of yours']);} },
+    { key: 'time', title: 'A timeline', set: { species: 'habilis', scene: 'time' }, fresh: true, pause: true,
+      see: 'Species overlap in time. Homo habilis and Paranthropus boisei lived in East Africa at the same time, about 2 million years ago.',
+      why: 'Evolution is a branching bush. Several hominin species often lived side by side; most branches died out.',
+      overlay(sim,ctx,LH,k){HM(ctx,k,[['H. habilis',700,14],tq(sim,'when')]);} },
+    { key: 'fm', lvl: 'honors', title: 'The foramen magnum', set: { species: 'afarensis', scene: 'fm' }, fresh: true, pause: true,
+      see: 'The foramen magnum is the hole where the spinal cord leaves the skull. In A. afarensis it is farther forward than in apes.',
+      why: 'An upright body balances the skull on top of the spine, so the hole points down. In knuckle-walking apes it faces backward. Its position tells us about posture from a skull alone.',
+      overlay(sim,ctx,LH,k){HM(ctx,k,[['Foramen magnum',700,14],tq(sim,'fmw')]);} },
+    { key: 'bush', lvl: 'ap', title: 'Bush, not ladder', set: { species: 'sapiens', scene: 'bush', ladder: false }, fresh: true, pause: true,
+      see: 'The family bush: many branches, side by side in time, with only Homo sapiens left today.',
+      why: 'The old “march of progress” picture (ape to human in a line) is wrong. Neanderthals were cousins, not ancestors, and modern humans carry about 1–2% Neanderthal DNA from interbreeding.',
+      overlay(sim,ctx,LH,k){HM(ctx,k,[['A branching bush',700,14],'Only one branch survives today']);} }
+  ],
+  useIt: [
+    { do: 'Visit the human-origins hall at the Denver Museum of Nature & Science.',
+      why: 'You can compare cast skulls side by side and check the features from this lab yourself.' }
+  ],
+  tryIt: [
+    { title: 'feel your foramen magnum (2 minutes)',
+      steps: ['Put your fingers at the base of your skull, behind your ears.', 'Nod your head slowly.'],
+      look: 'Your skull pivots on top of your spine, right over the hole. That balance point is what lets you walk upright without a heavy neck muscle holding your head up.' }
+  ]
+}
+});
 })();
