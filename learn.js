@@ -2042,4 +2042,146 @@ pedigree: {
 }
 });
 
+
+/* ===== DNA replication and gene expression ===== */
+const rpC=(ctx,k,L)=>dcCard(ctx,k,466,238,326,L);
+const rpM=(sim,id)=>{const v=phM(sim,id);return isNaN(v)?'…':Math.round(v).toLocaleString('en-US');};
+const exC=(ctx,k,L)=>dcCard(ctx,k,436,196,352,L);
+const exProt=sim=>String(phM(sim,'protein')||'');
+const exB=(ctx,k,L,LH)=>dcCard(ctx,k,20,(LH||450)-22,760,L,{up:true});
+
+BioLab.addLearn({
+replication: {
+  goals: {
+    bio: ['How a cell copies its DNA before it divides', 'What helicase, DNA polymerase and ligase each do', 'Why one new strand is built in pieces', 'Why every copy is half old and half new'],
+    honors: ['Leading and lagging strands and Okazaki fragments', 'Primase, polymerase III, polymerase I and ligase', 'Proofreading and how rare mistakes are', 'Semiconservative replication'],
+    ap: ['Antiparallel strands and 5′→3′ synthesis', 'The enzymes at the fork and what fails without each', 'Meselson and Stahl’s density experiment']
+  },
+  matters: 'Every time one of your cells divides, it copies about 6 billion base pairs and makes only a few mistakes. Those rare mistakes are where mutations come from, and several cancer drugs and antibiotics work by jamming this machinery.',
+  startKey: 'start', startRun: true, startSpeed: 0.25,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Original DNA comes in from the right',600,120,k,{s:12,hi:true});tag(ctx,'New strand on the bottom',300,370,k,{s:12,hi:true});},
+  steps: [
+    { key: 'fork', title: 'The replication fork', fresh: true, speed: 0.25, focus: [0,40,800,370],
+      see: 'One spot on a bacterium’s chromosome where DNA is being copied. The original double helix (slate) comes in from the right and is opened into two single strands at the fork.',
+      why: 'Each original strand is a template: its bases decide the order of the new strand’s bases, A with T and G with C. Two templates, so two copies.',
+      overlay(sim,ctx,LH,k){rpC(ctx,k,[['Colors',{s:14,w:800}],['Slate: original strands'],['Pink: new DNA',{c:'#c53a4f'}],['Amber: RNA primers',{c:'#b07a12'}]]);} },
+    { key: 'helicase', title: 'Helicase unzips', fresh: true, speed: 0.25,
+      see: 'Helicase (the purple ring) moves along, splitting the two strands apart. Topoisomerase ahead of it keeps the DNA from over-twisting.',
+      why: 'Helicase uses energy from ATP to break the hydrogen bonds between base pairs. Without that, the bases are locked inside the helix and can’t be read.',
+      overlay(sim,ctx,LH,k){rpC(ctx,k,[['Helicase: the unzipper',{s:14,w:800}],['Fork speed: '+rpM(sim,'speed')+' bases a second',{w:800,c:CE_GREEN}]]);} },
+    { key: 'leading', title: 'The leading strand', fresh: true, speed: 0.25, focus: [0,290,800,95],
+      see: 'On the bottom, DNA polymerase builds the new strand in one smooth piece, following right behind the fork.',
+      why: { bio: 'DNA polymerase can only build in one direction. On this strand that direction points toward the fork, so it just keeps going.', honors: 'Polymerase III adds nucleotides only to a 3′ end, building 5′→3′. On the bottom template that direction points toward the fork, so the leading strand is made continuously from one primer.' },
+      overlay(sim,ctx,LH,k){rpC(ctx,k,[['Leading strand',{s:14,w:800}],['One continuous piece'],['Built toward the fork',{c:CE_BLUE}]]);} },
+    { key: 'lagging', title: 'The lagging strand', fresh: true, speed: 0.25, focus: [0,55,800,110],
+      see: 'On the top, the new strand is built the other way, away from the fork. Watch it grow in short pieces, each one starting near the fork.',
+      why: 'The two strands of DNA run in opposite directions. On the top strand, “the one direction polymerase can build” points backward, so it can only fill in a short stretch each time the fork opens more. These pieces are <b>Okazaki fragments</b>.',
+      overlay(sim,ctx,LH,k){rpC(ctx,k,[['Lagging strand',{s:14,w:800}],['Built in short pieces, away from the fork'],['Pieces started: '+rpM(sim,'frags'),{w:800,c:CE_BLUE}]]);} },
+    { key: 'primase', lvl: 'honors', title: 'Primase starts each piece', fresh: true, speed: 0.2,
+      see: 'Every few moments, primase lays a short RNA starter (amber) near the fork, and polymerase extends it.',
+      why: 'DNA polymerase can’t start a strand from nothing; it can only add to an existing 3′ end. Primase makes that starting point out of RNA.',
+      overlay(sim,ctx,LH,k){rpC(ctx,k,[['Primase: the starter',{s:14,w:800}],['RNA primers in place: '+rpM(sim,'primers'),{w:800,c:'#b07a12'}]]);} },
+    { key: 'join', title: 'Joining the pieces', fresh: true, speed: 0.4, focus: [0,55,800,110],
+      see: 'Behind the fork, the amber RNA starters are swapped for DNA, and the pieces are sealed into one strand.',
+      why: { bio: 'Another polymerase replaces each RNA starter with DNA. That leaves a tiny break in the backbone, which <b>ligase</b> glues shut.', honors: 'DNA polymerase I removes each RNA primer and fills in DNA, leaving a nick. DNA ligase seals the nick with a phosphodiester bond.' },
+      overlay(sim,ctx,LH,k){rpC(ctx,k,[['Ligase: the glue',{s:14,w:800}],['Open gaps right now: '+rpM(sim,'nicks'),{w:800,c:CE_GREEN}]]);} },
+    { key: 'noligase', title: 'If ligase stops working', set: { ligase: false }, fresh: true, speed: 0.4, cause: { from: { ligase: true }, delay: 1.5 },
+      see: 'Copying starts normally. After a moment ligase is switched off. Watch the top strand: the fork keeps going and new pieces keep coming, but the gaps between them stay open.',
+      why: 'Ligase isn’t needed to make DNA, only to join it. Without it the cell ends up with a copy that is all there but full of breaks, and broken DNA can’t be passed on safely.',
+      overlay(sim,ctx,LH,k){rpC(ctx,k,[[sim.p.ligase?'Ligase working':'Ligase off',{s:14,w:800,c:sim.p.ligase?CE_GREEN:CE_RED}],['Fork speed: '+rpM(sim,'speed')+' bases/s'],['Open gaps: '+rpM(sim,'nicks'),{w:800,c:CE_RED}]]);} },
+    { key: 'nohelicase', title: 'If helicase stops working', set: { helicase: false }, fresh: true, speed: 0.4, cause: { from: { helicase: true }, delay: 1.5 },
+      see: 'Copying starts normally, then helicase is switched off. The fork stops, and with no new template exposed, everything behind it stalls too.',
+      why: 'Every other enzyme needs single-stranded DNA to work on. No unzipping, no copying: fork speed drops to zero.',
+      overlay(sim,ctx,LH,k){rpC(ctx,k,[[sim.p.helicase?'Helicase working':'Helicase off',{s:14,w:800,c:sim.p.helicase?CE_GREEN:CE_RED}],['Fork speed: '+rpM(sim,'speed')+' bases/s',{w:800,c:CE_RED}],['New DNA made: '+rpM(sim,'newnt')]]);} },
+    { key: 'proof', lvl: 'honors', title: 'Proofreading', set: { proof: false }, fresh: true, speed: 0.4, cause: { from: { proof: true }, delay: 1.5 },
+      see: 'Proofreading is switched off partway through. The expected number of mistakes in one copy of the genome jumps about 100 times.',
+      why: 'DNA polymerase checks each base it adds and cuts out wrong ones. That proofreading cuts errors about 100-fold; mismatch repair afterward catches most of the rest.',
+      overlay(sim,ctx,LH,k){const e=phM(sim,'errors');rpC(ctx,k,[[sim.p.proof?'Proofreading on':'Proofreading off',{s:14,w:800,c:sim.p.proof?CE_GREEN:CE_RED}],['Expected mistakes per genome copy: '+(isNaN(e)?'…':e),{w:800,c:CE_RED}]]);} },
+    { key: 'semi', title: 'Half old, half new', fresh: true, speed: 0.6, focus: [0,40,800,370],
+      see: 'Look at the two finished double helices on the left: each has one slate strand and one pink strand.',
+      why: 'Each copy keeps one original strand and gets one new one. This is called <b>semiconservative</b> replication.',
+      overlay(sim,ctx,LH,k){rpC(ctx,k,[['Each copy: 1 old + 1 new strand',{s:14,w:800}],['Semiconservative',{w:800,c:CE_BLUE}]]);} },
+    { key: 'ms', lvl: 'ap', title: 'Meselson and Stahl', set: { mode: 'ms' }, fresh: true, speed: 1, run(sim){sim.st.msT=0;},
+      see: 'Bacteria grown in heavy nitrogen (¹⁵N) are moved to light ¹⁴N. A centrifuge sorts their DNA by density, generation by generation.',
+      why: 'After one generation all the DNA is one intermediate band: that rules out conservative copying. After two, half is intermediate and half light: that rules out dispersive copying. Only semiconservative replication fits.' }
+  ],
+  useIt: [
+    { do: 'Wear sunscreen and avoid tanning beds, especially while you are young and your skin cells divide quickly.',
+      why: 'UV damage that isn’t repaired before a cell copies its DNA gets copied into both daughter cells as a permanent mutation.' },
+    { do: 'Finish a full course of antibiotics exactly as prescribed.',
+      why: 'Some antibiotics, like ciprofloxacin, jam bacterial topoisomerase so bacteria can’t copy their DNA. Stopping early leaves survivors that can grow back, sometimes more resistant.' },
+    { do: 'Know that some chemotherapy drugs target DNA copying.', lvl: 'honors',
+      why: 'Cancer cells divide constantly, so drugs that block replication hit them hardest. Hair follicles and the gut lining also divide fast, which is why those side effects are common.' }
+  ],
+  tryIt: [
+    { title: 'the zipper copy (10 minutes)',
+      steps: ['Write a 12-letter DNA sequence on a strip of paper, and its matching strand (A↔T, G↔C) on another. Tape them side by side: that is your double helix.', 'Unzip: cut the tape. Now write the matching strand for each half on two new strips.', 'Tape each new strip to its template.'],
+      look: 'You get two identical double helices, each with one original strip and one new one, exactly the semiconservative pattern.' }
+  ]
+},
+expression: {
+  goals: {
+    bio: ['How DNA’s code is copied into mRNA (transcription)', 'How a ribosome reads mRNA three bases at a time to build a protein (translation)', 'How changing one DNA base can change the protein'],
+    honors: ['Transcription, base pairing with U, and codons', 'tRNA anticodons, start and stop codons', 'Substitutions vs. frameshift mutations'],
+    ap: ['RNA processing: introns, exons, cap and tail', 'Reading the genetic code and predicting mutations’ effects', 'Why a single substitution causes sickle-cell disease']
+  },
+  matters: 'Every protein in your body, from hemoglobin to the keratin in your hair, is built this way. One wrong base in the hemoglobin gene causes sickle-cell disease, and mRNA vaccines work by giving your ribosomes a recipe to read.',
+  startKey: 'start', startRun: false,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'A gene: DNA in the nucleus',560,150,k,{s:12,hi:true});tag(ctx,'Ribosomes work out here',560,260,k,{s:12,hi:true});},
+  steps: [
+    { key: 'gene', title: 'A gene is a recipe', fresh: true, pause: true, focus: [120,28,672,100],
+      see: 'A short gene. The order of its bases (A, T, G, C) is the recipe for one protein.',
+      why: 'DNA stays in the nucleus. To use a recipe, the cell first copies it into a messenger, mRNA, then a ribosome reads the messenger and builds the protein.',
+      overlay(sim,ctx,LH,k){exC(ctx,k,[['DNA → mRNA → protein',{s:15,w:800}],['Transcription: copy the recipe'],['Translation: build from it']]);} },
+    { key: 'tx', title: 'Transcription', fresh: true, speed: 0.25,
+      see: 'RNA polymerase (purple) opens a small bubble in the DNA and builds an mRNA strand base by base along the template strand.',
+      why: 'Each new RNA base pairs with the template: A with U, T with A, G with C, C with G. RNA uses U (uracil) where DNA uses T.',
+      overlay(sim,ctx,LH,k){exC(ctx,k,[['Base pairing for RNA',{s:14,w:800}],['Template A → U   T → A'],['Template G → C   C → G'],['RNA has U instead of T',{c:CE_BLUE}]]);} },
+    { key: 'proc', lvl: 'ap', title: 'RNA processing', set: { introns: true }, fresh: true, speed: 0.3, run(sim){dvAct(sim,'skip');const d=sim.st;d.phase='proc';d.proc=0;d.exp=0;d.ci=0;},
+      see: 'Before the mRNA leaves the nucleus, the intron (gray) loops out and is cut away, and the exons are joined. A cap and a tail are added to the ends.',
+      why: 'Introns are stretches inside a gene that don’t code for the protein. Splicing removes them; the cap and poly-A tail protect the mRNA and help the ribosome find it.',
+      overlay(sim,ctx,LH,k){exC(ctx,k,[['Splicing',{s:14,w:800}],[String(phM(sim,'proc')),{s:12}]]);} },
+    { key: 'export', title: 'Out to the ribosome', fresh: true, speed: 0.35, run(sim){dvAct(sim,'skip');const d=sim.st;d.phase='exp';d.exp=0;d.ci=0;},
+      see: 'The finished mRNA slides out through a pore in the nuclear envelope into the cytoplasm.',
+      why: 'Ribosomes are in the cytoplasm. Keeping DNA in the nucleus protects the master copy; only disposable mRNA copies travel out.',
+      overlay(sim,ctx,LH,k){exC(ctx,k,[['mRNA leaves the nucleus',{s:14,w:800}],['The DNA stays behind',{c:CE_BLUE}]]);} },
+    { key: 'codons', title: 'Reading codons', fresh: true, speed: 0.15, run(sim){dvAct(sim,'skip');const d=sim.st;d.phase='tl';d.ci=0;},
+      see: 'A ribosome clamps onto the mRNA at the start codon, AUG, and reads three bases, one codon, at a time.',
+      why: 'Each codon stands for one amino acid. With 4 bases there are 4 × 4 × 4 = 64 codons, enough for 20 amino acids plus start and stop signals.',
+      overlay(sim,ctx,LH,k){exC(ctx,k,[['3 bases = 1 codon = 1 amino acid',{s:14,w:800}],['Start: AUG (also methionine, Met)']]);} },
+    { key: 'trna', title: 'tRNA brings the amino acids', fresh: true, speed: 0.12, run(sim){dvAct(sim,'skip');const d=sim.st;d.phase='tl';d.ci=1;},
+      see: 'Each tRNA has three bases, an anticodon, that match one codon, and it carries one amino acid. The ribosome links the new amino acid to the chain, then slides along.',
+      why: 'The anticodon pairs with the codon just as DNA bases pair, so the right amino acid always arrives for each codon.',
+      overlay(sim,ctx,LH,k){exC(ctx,k,[['Codon CCG ↔ anticodon GGC',{s:14,w:800}],['C pairs with G, G with C'],['So proline (Pro) arrives next',{c:CE_GREEN}]]);} },
+    { key: 'stop', title: 'Stop', fresh: true, speed: 0.4, run(sim){dvAct(sim,'skip');},
+      see: 'At the stop codon, UAA, no tRNA fits. A release factor frees the finished protein.',
+      why: 'Stop codons (UAA, UAG, UGA) code for no amino acid. That is why this 24-base gene makes a protein of 7 amino acids, not 8.',
+      overlay(sim,ctx,LH,k){exB(ctx,k,[['Protein: '+exProt(sim)+' · '+phM(sim,'len')+' amino acids',{s:13,w:800,c:CE_GREEN}],['The 8th codon, UAA, means stop',{c:CE_RED}]],LH);} },
+    { key: 'sickle', lvl: 'honors', title: 'One base, one disease', set: { gene: 'hbb', pos: 20, base: 'T', introns: false }, fresh: true, speed: 1, run(sim){atReset(sim);dvAct(sim,'skip');sim._exBefore=exProt(sim);},
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.8,'sub',s=>{dvAct(s,'sub');dvAct(s,'skip');});const done=tau>=1.8;
+        exB(ctx,k,[[done?'A → T at base 20':'Watch base 20 of β-globin…',{s:14,w:800,c:done?CE_RED:PAL['cv-ink']}],['Before: '+(sim._exBefore||''),{s:11}],['After:  '+(done?exProt(sim):'…'),{s:11,w:800,c:CE_RED}],['GAG (Glu) → GTG (Val)',{s:12,w:800}]],LH);},
+      see: 'The start of the β-globin gene, which makes part of hemoglobin. Watch one base, number 20, change from A to T, and the protein below rebuild.',
+      why: 'GAG becomes GTG, so one glutamic acid (charged) becomes valine (nonpolar). That single change makes hemoglobin molecules stick together into long fibers that bend red blood cells into sickles.' },
+    { key: 'frame', lvl: 'honors', title: 'A frameshift', set: { gene: 'demo', pos: 6, base: 'A', introns: false }, fresh: true, speed: 1, run(sim){atReset(sim);dvAct(sim,'skip');sim._exBefore=exProt(sim);},
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.8,'ins',s=>{dvAct(s,'ins');dvAct(s,'skip');});const done=tau>=1.8;
+        exB(ctx,k,[[done?'One extra base inserted at 6':'Watch position 6…',{s:14,w:800,c:done?CE_RED:PAL['cv-ink']}],['Before: '+(sim._exBefore||''),{s:11}],['After:  '+(done?exProt(sim):'…'),{s:11,w:800,c:CE_RED}],['Every codon after it shifts',{s:12,w:800}]],LH);},
+      see: 'Back to the demo gene. Watch one extra base slip in at position 6.',
+      why: 'The ribosome reads in fixed groups of three, so one extra base shifts every codon after it. The rest of the protein is scrambled, often with an early stop codon. Insertions and deletions that aren’t multiples of 3 are usually far worse than a single substitution.' }
+  ],
+  useIt: [
+    { do: 'Know what an mRNA vaccine does in your body.',
+      why: 'It delivers an mRNA recipe for one viral protein. Your ribosomes translate it just like the mRNA in this sim, your immune system learns that protein, and the mRNA breaks down within days. It never enters the nucleus or changes your DNA.' },
+    { do: 'If you are of African, Mediterranean, Middle Eastern or South Asian ancestry, ask whether you were screened for sickle-cell trait.',
+      why: 'Every US newborn is screened, but many people don’t know their result. Two parents with the trait have a 1 in 4 chance of each child having sickle-cell disease.' },
+    { do: 'Know why some antibiotics are safe for you but deadly to bacteria.', lvl: 'honors',
+      why: 'Drugs like tetracycline and erythromycin jam bacterial ribosomes, which are built differently from yours, so translation stops in the bacteria but not in your cells.' }
+  ],
+  tryIt: [
+    { title: 'decode a secret message (10 minutes)',
+      steps: ['Use a genetic code table (search “codon chart”).', 'Translate this mRNA, three letters at a time: AUG GCA UGG GAA UAA.', 'Then change one base to make a different amino acid, and add one base to see a frameshift.'],
+      look: 'AUG GCA UGG GAA UAA reads Met-Ala-Trp-Glu, then stop. One substitution changes one amino acid; one added base changes every codon after it.' }
+  ]
+}
+});
+
 })();
