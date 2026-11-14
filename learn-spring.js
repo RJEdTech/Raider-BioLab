@@ -620,4 +620,112 @@ ld50: {
   ]
 }
 });
+/* ---- Apr–May units: dissection and homeostasis (added Nov 14, 2026) ---- */
+const HG=(ctx,k,L)=>card(ctx,k,L,12,280,290);
+const HT=(ctx,k,L)=>card(ctx,k,L,12,60,166);
+
+BioLab.addLearn({
+dissection: {
+  goals: {
+    bio: ['Find the major organs of a mammal and say what each does', 'How the organs connect into systems', 'Why a fetal pig is a good model for a human'],
+    honors: ['Use the right tool and the right cut', 'Trace food from mouth to rectum', 'Compare a mammal with an insect'],
+    ap: ['Fetal circulation: the umbilical vessels and the shunts', 'Why the lungs are bypassed before birth', 'Structure and function across organ systems']
+  },
+  matters: 'Surgeons, vets and nurses all learned anatomy by seeing where organs sit and how they connect. Pigs are close enough to humans that pig heart valves are used in human heart surgery.',
+  question: 'When you open a fetal pig, which big organ do you think you’ll see first?',
+  startKey: 'ext', startRun: false,
+  steps: [
+    { key: 'ext', title: 'Outside the pig', set: { mode: 'pig', sex: 'f', step: 'ext' }, fresh: true, pause: true,
+      see: 'The pig lies on its back. Find the umbilical cord, the rows of mammary papillae and the openings near the tail.',
+      why: 'The umbilical cord connected the fetus to its mother’s placenta: food and oxygen in, wastes out. Mammary papillae appear on both males and females, just like in humans.' },
+    { key: 'cut', title: 'The incisions', set: { mode: 'pig', sex: 'f', step: 'cut' }, fresh: true, pause: true,
+      see: 'The cuts run down the midline and out to the sides, making flaps that fold back like doors.',
+      why: 'Scissors, not a scalpel, are used to lift and cut the body wall so the organs underneath aren’t sliced. Good dissection is about separating tissue, not chopping it.' },
+    { key: 'five', title: 'The first organs', set: { mode: 'pig', sex: 'f', step: 'five' }, fresh: true, pause: true,
+      see: 'The large dark liver fills the upper abdomen. Below it lie the stomach and the coiled small intestine.',
+      why: 'The liver is the largest internal organ. It stores glycogen, makes bile and filters the blood coming from the intestines.' },
+    { key: 'liver', title: 'Under the liver', set: { mode: 'pig', sex: 'f', step: 'liver' }, fresh: true, pause: true,
+      see: 'Lift the liver to find the green gallbladder, the stomach and the spleen.',
+      why: 'The gallbladder stores bile from the liver, which breaks fat into small droplets. The spleen filters old red blood cells.' },
+    { key: 'intest', title: 'The intestines', set: { mode: 'pig', sex: 'f', step: 'intest' }, fresh: true, pause: true,
+      see: 'Move the intestines aside to find the kidneys against the back wall and the bladder low in the abdomen.',
+      why: 'The small intestine absorbs nutrients; the large intestine (a spiral in pigs) absorbs water. The kidneys filter blood and make urine, which the bladder stores.' },
+    { key: 'heart', title: 'The heart', set: { mode: 'pig', sex: 'f', step: 'heart' }, fresh: true, pause: true,
+      see: 'Open the chest and the thin sac around the heart. The heart sits between the lungs.',
+      why: 'Like ours, a pig’s heart has four chambers. The right side pumps blood to the lungs, the left side to the body.' },
+    { key: 'hopper', lvl: 'honors', title: 'Compare: a grasshopper', set: { mode: 'hopper', sex: 'f', hstep: 'hcomp' }, fresh: true, pause: true,
+      see: 'A grasshopper has a crop, gizzard and gut, a tube-shaped heart along its back, and a nerve cord along its belly.',
+      why: 'The same jobs, done differently: insects breathe through spiracles and tubes instead of lungs, and their nerve cord runs on the belly side, the opposite of our spinal cord.' },
+    { key: 'circ', lvl: 'ap', title: 'Fetal circulation', set: { mode: 'pig', sex: 'f', step: 'circ' }, fresh: true, pause: true,
+      see: 'Oxygen-rich blood arrives from the placenta in the umbilical vein and mostly skips the liver and lungs.',
+      why: 'Before birth the lungs are full of fluid, so the foramen ovale and ductus arteriosus send blood around them. At birth the first breath closes these shunts, and the lungs take over.' }
+  ],
+  useIt: [
+    { do: 'Find your own organs: liver under your right ribs, stomach under the left, heart a little left of center.',
+      why: 'Knowing where organs sit helps you describe pain to a doctor and understand what an injury might affect.' }
+  ],
+  tryIt: [
+    { title: 'trace a sandwich (5 minutes)',
+      steps: ['On paper, draw the path of a bite of food from mouth to rectum.', 'Label where it is broken down, where nutrients are absorbed and where water is absorbed.'],
+      look: 'Mouth and stomach break it down; the small intestine absorbs nutrients; the large intestine absorbs water. The liver and pancreas add bile and enzymes along the way.' }
+  ]
+},
+homeostasis: {
+  goals: {
+    bio: ['The body keeps blood sugar and temperature in a narrow range', 'Negative feedback: a change triggers a response that undoes it', 'What goes wrong in diabetes'],
+    honors: ['Insulin vs. glucagon', 'Type 1 vs. type 2 diabetes', 'Shivering, sweating and blood flow to the skin'],
+    ap: ['The hypothalamus set point and fever', 'Glycogen storage in the liver', 'Heat made vs. heat lost']
+  },
+  matters: 'About 1 in 10 Americans has diabetes, and 1 in 3 has prediabetes. Heat stroke and hypothermia happen when temperature control is overwhelmed. Knowing the feedback loops helps you spot when a body is in trouble.',
+  question: 'You eat a big plate of pasta. Why doesn’t your blood sugar just keep climbing?',
+  startKey: 'rest', startRun: true,
+  steps: [
+    { key: 'rest', title: 'At rest', set: { mode: 'glucose', carbs: 75, t1: false, t2: false }, fresh: true, speed: 2,
+      see: 'Blood glucose holds steady at 90 mg/dL with low levels of both hormones.',
+      why: 'Your cells burn glucose constantly, and the liver releases just enough to replace it. That steady state is homeostasis.',
+      overlay(sim,ctx,LH,k){HG(ctx,k,[['Glucose: '+f0(met(sim,'G'))+' mg/dL',700,14],'Insulin: '+f0(met(sim,'I'))+' µU/mL']);} },
+    { key: 'meal', title: 'Eat a meal', set: { mode: 'glucose', carbs: 75, t1: false, t2: false }, fresh: true, speed: 2, run(sim){act(sim,'meal');},
+      see: 'Sugar floods in from the intestine. Glucose rises to about 130 mg/dL, the pancreas releases insulin, and within a few hours glucose is back near 90.',
+      why: 'Insulin opens glucose “doors” in muscle and fat cells and tells the liver to store glucose as glycogen. As glucose falls, insulin falls too: negative feedback.',
+      overlay(sim,ctx,LH,k){HG(ctx,k,[['Glucose: '+f0(met(sim,'G'))+' mg/dL',700,14],'Insulin: '+f0(met(sim,'I'))+' µU/mL']);} },
+    { key: 'ex', title: 'Exercise', set: { mode: 'glucose', carbs: 75, t1: false, t2: false }, fresh: true, speed: 2, run(sim){act(sim,'exercise');},
+      see: 'Thirty minutes of exercise pulls glucose into muscles. Insulin drops and glucagon rises, and the liver releases stored glucose.',
+      why: 'Glucagon is insulin’s opposite: it tells the liver to break glycogen back into glucose. The two hormones push in opposite directions to hold the level steady.',
+      overlay(sim,ctx,LH,k){HG(ctx,k,[['Glucose: '+f0(met(sim,'G'))+' mg/dL',700,14],'Glucagon: '+f0(met(sim,'Gn'))+' pg/mL']);} },
+    { key: 't1', lvl: 'honors', title: 'Type 1 diabetes', set: { mode: 'glucose', carbs: 75, t1: true, t2: false }, fresh: true, speed: 2, run(sim){act(sim,'meal');},
+      see: 'With type 1 diabetes the pancreas makes no insulin. The same meal pushes glucose past 250 mg/dL, and the kidneys spill sugar into the urine.',
+      why: 'In type 1, the immune system destroys the insulin-making β cells. Without insulin, glucose can’t get into cells. People with type 1 take insulin by injection or pump.',
+      overlay(sim,ctx,LH,k){HG(ctx,k,[['Glucose: '+f0(met(sim,'G'))+' mg/dL',700,14,RED],'Insulin: '+f0(met(sim,'I'))+' µU/mL']);} },
+    { key: 't2', lvl: 'honors', title: 'Type 2 diabetes', set: { mode: 'glucose', carbs: 75, t1: false, t2: true }, fresh: true, speed: 2, run(sim){act(sim,'meal');},
+      see: 'With type 2 the pancreas makes plenty of insulin, even more than normal, but glucose still climbs to about 200 mg/dL.',
+      why: 'In type 2 the cells respond weakly to insulin (insulin resistance). Exercise, diet and medicines that improve the response are the main treatments.',
+      overlay(sim,ctx,LH,k){HG(ctx,k,[['Glucose: '+f0(met(sim,'G'))+' mg/dL',700,14],'Insulin: '+f0(met(sim,'I'))+' µU/mL (high)']);} },
+    { key: 'cold', title: 'A cold day', set: { mode: 'temp', ta: 5, fever: false }, fresh: true, speed: 2,
+      cause: { from: { ta: 22 }, delay: 0.6, dur: 2, label: 'Air temperature' },
+      see: 'Drop the air to 5 °C. Blood flow to the skin falls, shivering starts, and core temperature holds near 36.6 °C.',
+      why: 'Your hypothalamus compares core temperature with its 37 °C set point. Too cold: it squeezes skin blood vessels to save heat and makes muscles shiver to produce heat.',
+      overlay(sim,ctx,LH,k){HT(ctx,k,[['Air '+f0(sim.p.ta)+' °C',700,14],'Core: '+f1(met(sim,'Tc'))+' °C','Shivering: '+f0(met(sim,'shiv'))+' W']);} },
+    { key: 'hot', title: 'A hot day', set: { mode: 'temp', ta: 40, fever: false }, fresh: true, speed: 2,
+      cause: { from: { ta: 22 }, delay: 0.6, dur: 2, label: 'Air temperature' },
+      see: 'At 40 °C the skin flushes with blood and sweating starts. Core temperature stays near 37.3 °C.',
+      why: 'Evaporating sweat carries heat away, and extra blood near the skin sheds heat. When it’s humid or you’re dehydrated, sweating fails and heat stroke can follow.',
+      overlay(sim,ctx,LH,k){HT(ctx,k,[['Air '+f0(sim.p.ta)+' °C',700,14],'Core: '+f1(met(sim,'Tc'))+' °C','Sweat: '+f2(met(sim,'sweat'))+' L/h']);} },
+    { key: 'fever', lvl: 'ap', title: 'A fever', set: { mode: 'temp', ta: 22, fever: true }, fresh: true, speed: 2,
+      see: 'An infection raises the set point to 39 °C. The body shivers and feels cold until the core climbs to the new setting.',
+      why: 'A fever isn’t a broken thermostat; it’s the thermostat turned up on purpose, which slows many microbes and speeds immune responses. That is why you get chills as a fever starts.',
+      overlay(sim,ctx,LH,k){HT(ctx,k,[['Fever',700,14],'Set point: '+f1(met(sim,'S'))+' °C','Core: '+f1(met(sim,'Tc'))+' °C']);} }
+  ],
+  useIt: [
+    { do: 'Know the warning signs of low blood sugar if a friend or teammate has diabetes.',
+      why: 'Shakiness, sweating and confusion can mean glucose is dropping too low. Fast sugar, like juice, helps.' },
+    { do: 'Drink water and take breaks during hot practices.', lvl: 'honors',
+      why: 'Sweat is your main cooling system. Without enough water you stop sweating and core temperature can climb dangerously fast.' }
+  ],
+  tryIt: [
+    { title: 'feel the feedback (5 minutes)',
+      steps: ['Hold one hand in cold water for 30 seconds and look at the skin color.', 'Then do 30 jumping jacks and feel your face and neck.'],
+      look: 'The cold hand goes pale as skin blood vessels close; after exercise your face flushes to dump heat. Both are your hypothalamus keeping your core steady.' }
+  ]
+}
+});
 })();
