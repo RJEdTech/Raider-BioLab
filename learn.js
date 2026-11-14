@@ -1518,4 +1518,229 @@ resp:{questions:[
 ]}
 });
 
+
+/* ===== Cell division: division, cellcycle, roottip ===== */
+/* wrapped card: lines are strings or [text,{s,w,c}]; words wrap to fit w */
+function dcCard(ctx,k,x,y,w,L,o){o=o||{};const kk=Math.min(k,1.35),pad=10*kk,rows=[];
+  L.forEach(r=>{const t=Array.isArray(r)?r:[r,{}],op=t[1]||{},sz=(op.s||13)*kk;ctx.font=(op.w||600)+' '+sz+'px '+H.FONT;
+    const words=String(t[0]).split(' ');let cur='';words.forEach(wd=>{const tr=cur?cur+' '+wd:wd;if(cur&&ctx.measureText(tr).width>w-2*pad){rows.push([cur,op,sz]);cur=wd;}else cur=tr;});if(cur)rows.push([cur,op,sz]);});
+  let h=pad*1.6;rows.forEach(r=>h+=r[2]*1.35);if(o.up)y-=h;
+  ctx.save();H.rr(ctx,x,y,w,h,9);ctx.fillStyle=PAL['cv-sol'];ctx.globalAlpha=0.97;ctx.fill();ctx.globalAlpha=1;ctx.lineWidth=o.hi===false?1.2:2.5;ctx.strokeStyle=o.hi===false?PAL['cv-soft']:'#c8102e';ctx.stroke();
+  let yy=y+pad*0.8;rows.forEach(([s,op,sz])=>{yy+=sz*1.1;H.txt(ctx,s,x+pad,yy,{s:sz,w:op.w||600,c:op.c||PAL['cv-ink']});yy+=sz*0.25;});ctx.restore();return h;}
+const dvGo=i=>sim=>{const d=sim.def;d.go(sim,i-1);sim.st.prog=1;d.go(sim,i);};
+const dvAct=(sim,id)=>{const a=(sim.def.actions||[]).find(x=>x.id===id);if(a)a.run(sim);};
+const dvN=(sim)=>{const c=phM(sim,'chrom');return String(c);};
+const dvL=(ctx,k,L)=>dcCard(ctx,k,10,58,218,L);
+const dvR=(ctx,k,L)=>dcCard(ctx,k,572,58,218,L);
+const dvB=(ctx,k,LH,L)=>dcCard(ctx,k,120,(LH||450)-28,560,L,{up:true});
+const DV_RED='#c53a4f',DV_BLUE='#2f6fd0';
+/* cell cycle: fast-forward the model by h hours */
+function ccFF(sim,h){const d=sim.def,dt=d.dtMax||0.05;let t=0;while(t<h-1e-9){const s=Math.min(dt,h-t);d.step(sim,s);t+=s;}sim.t+=h;sim.infoDirty=true;}
+const ccPct=(sim,ph)=>{const c=sim.st.cells,n=c.length||1;return Math.round(100*c.filter(x=>x.ph===ph).length/n);};
+const ccL=(ctx,k,L)=>dcCard(ctx,k,8,40,212,L);
+const ccHrs=sim=>Math.round(sim.t)+' h';
+/* root tip: pick a cell in a phase near the middle of the field */
+function rtCell(sim,ph){const s=sim.st,CX=530,CY=226;return s.cells.find(c=>c.ph===ph&&Math.hypot(c.x+c.w/2-CX,c.y+c.h/2-CY)<146)||s.cells.find(c=>c.ph===ph);}
+const rtSel=ph=>sim=>{const c=rtCell(sim,ph);if(c){sim.st.sel=c.i;sim.infoDirty=true;}};
+const rtRect=ph=>sim=>{const c=rtCell(sim,ph);return c?[c.x-14,c.y-14,c.w+28,c.h+28]:[320,16,420,420];};
+function rtCount(sim,f){for(let i=0;i<f;i++){if(i)dvAct(sim,'field');dvAct(sim,'all');}}
+const rtT=sim=>{const k=sim.p.zone+'|'+sim.p.treat,t=sim.st.tally[k]||{inter:0,pro:0,meta:0,ana:0,telo:0};const n=t.inter+t.pro+t.meta+t.ana+t.telo;return {t,n};};
+const rtL=(ctx,k,L)=>dcCard(ctx,k,8,40,300,L);
+const rtPh=(name,look)=>(sim,ctx,LH,k)=>{rtL(ctx,k,[[name,{s:15,w:800}],['Look for:',{s:12,w:700}],[look,{s:13}]]);};
+
+BioLab.addLearn({
+division: {
+  goals: {
+    bio: ['How a cell copies its DNA and splits into two identical cells', 'What happens in each phase of mitosis', 'How meiosis halves the chromosome number to make egg and sperm cells', 'Why brothers and sisters get different mixes of their parents’ chromosomes'],
+    honors: ['Sister chromatids vs. homologous chromosomes', 'The phases of mitosis and what moves in each', 'Meiosis I separates partners; meiosis II separates sisters', 'How independent assortment and crossing over create variety'],
+    ap: ['Chromosome number (n, 2n) and DNA content (C) through each phase', 'Mitosis vs. meiosis I and meiosis II', 'Independent assortment: 2ⁿ gamete types', 'How nondisjunction makes gametes with the wrong chromosome number']
+  },
+  matters: 'Every scrape that heals and every inch you grow comes from cells splitting their chromosomes exactly right, and every egg and sperm cell comes from a second kind of division. When either goes wrong, the result can be cancer or a baby with an extra chromosome.',
+  startKey: 'g1', startRun: true, startSpeed: 0.5,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Nucleus (DNA inside)',140,100,k,{s:12,hi:true});line(ctx,200,112,330,160);
+    tag(ctx,'Cell membrane',675,120,k,{s:12,hi:true});line(ctx,620,130,545,170);
+    tag(ctx,'Red came from the mother, blue from the father',400,395,k,{s:12,hi:true});},
+  steps: [
+    { key: 'copy', title: 'Copy the DNA first', fresh: true, speed: 0.5, run: dvGo(1),
+      see: { bio: 'Before dividing, the cell copies every chromosome. Each one is now doubled: two identical copies stuck together. There are still 4 chromosomes, but twice as much DNA.',
+             honors: 'In S phase each chromosome is replicated into two identical <b>sister chromatids</b>, joined at the centromere. Still 4 chromosomes (2n = 4), each with 2 chromatids.',
+             ap: 'In S phase every chromosome is replicated into two sister chromatids. The chromosome number stays 2n = 4, but DNA per cell doubles from 2C to 4C.' },
+      why: 'Each new cell needs a complete set of instructions. Copying first gives the cell exactly one full set to hand to each side.',
+      overlay(sim,ctx,LH,k){const L=[['S phase: DNA copied',{s:14,w:800}],['Chromosomes: 4'],['Each one: 2 identical copies']];if(H.atLeast('ap'))L.push(['DNA: 2C → 4C',{w:800}]);dvR(ctx,k,L);} },
+    { key: 'pro', title: 'Prophase: coil up', fresh: true, speed: 0.5, run: dvGo(2),
+      see: 'The long, thin DNA coils into short, thick chromosomes you could see in a microscope. The nucleus breaks down, and the spindle poles (the dots) move to opposite sides.',
+      why: 'Long DNA strands would tangle like earbud wires if you tried to pull them apart. Packed tightly, each chromosome moves in one piece.',
+      overlay(sim,ctx,LH,k){dvL(ctx,k,[['Prophase',{s:14,w:800}],['DNA coils up'],['Nucleus breaks down'],['Spindle poles move apart']]);} },
+    { key: 'meta', title: 'Metaphase: line up', fresh: true, speed: 0.5, run: dvGo(3),
+      see: 'Spindle fibers from both poles grab each chromosome at its middle and line them all up across the center of the cell.',
+      why: 'With every chromosome on the center line, one copy faces each pole. That guarantees each side gets exactly one copy of every chromosome.',
+      so: { honors: 'A checkpoint holds the cell here until every chromosome is attached to both poles. Skipping it can leave a cell with the wrong number.' },
+      overlay(sim,ctx,LH,k){dvR(ctx,k,[['Metaphase',{s:14,w:800}],['All chromosomes in one line across the middle'],['One copy faces each pole']]);} },
+    { key: 'ana', title: 'Anaphase: pull apart', fresh: true, speed: 0.5, run: dvGo(4),
+      see: 'The copies split and are pulled to opposite ends. Each end now has one copy of all 4 chromosomes: two red and two blue.',
+      why: { bio: 'The spindle fibers shorten and reel the copies toward the poles, like pulling in two fishing lines at once.', honors: 'The centromeres split and the spindle fibers attached to each sister chromatid shorten, so the former sisters, now separate chromosomes, move to opposite poles.' },
+      overlay(sim,ctx,LH,k){dvL(ctx,k,[['Anaphase',{s:14,w:800}],['Copies pulled to opposite ends'],['Each end: 4 chromosomes']]);} },
+    { key: 'two', title: 'Two identical cells', fresh: true, speed: 0.5, run: dvGo(6),
+      see: 'Telophase rebuilds a nucleus at each end, and the cell pinches in two. Each new cell has the same 4 chromosomes as the parent.',
+      why: 'Because each side got one copy of every chromosome, the two cells are genetic copies of the parent and of each other.',
+      so: 'This is how you grow and heal. When you scrape a knee, skin cells at the edges divide this way until the gap is filled.',
+      overlay(sim,ctx,LH,k){dvB(ctx,k,LH,[['Mitosis: 2 identical cells, 4 chromosomes each (2n = 4)',{s:14,w:800}]]);} },
+    { key: 'pair', title: 'Meiosis: partners pair up', set: { mode: 'meiosis' }, fresh: true, speed: 0.5, run: dvGo(2),
+      see: 'Now meiosis, which only makes egg and sperm cells. After the DNA is copied, each chromosome finds its partner: the matching one from the other parent.',
+      why: { bio: 'Partners carry the same genes, though maybe different versions. Pairing them up lets meiosis split the partners, so each new cell gets one of each pair.', honors: 'Each <b>homologous pair</b> has the same genes in the same order, one homolog from each parent. Pairing (synapsis) lets meiosis I separate homologs.' },
+      overlay(sim,ctx,LH,k){dvL(ctx,k,[['Prophase I',{s:14,w:800}],['Long red + long blue = a pair'],['Short red + short blue = a pair']]);} },
+    { key: 'cross', lvl: 'honors', title: 'Crossing over', set: { mode: 'meiosis', xo: true }, fresh: true, speed: 0.5, run: dvGo(2),
+      see: 'With crossing over on, partners swap matching pieces where they touch (the yellow X).',
+      why: 'Chromatids from the two homologs break and rejoin at the same point, so a chromosome comes out part mom, part dad. That makes allele combinations neither parent had on one chromosome.',
+      overlay(sim,ctx,LH,k){dvL(ctx,k,[['Crossing over',{s:14,w:800}],['Partners trade matching pieces'],['New mixes of alleles on one chromosome']]);} },
+    { key: 'ai', title: 'Meiosis I: partners separate', set: { mode: 'meiosis' }, fresh: true, speed: 0.5, run: dvGo(4),
+      see: 'In anaphase I the partners are pulled apart, but each chromosome’s two copies stay together. Each side gets one chromosome from each pair: 2 instead of 4.',
+      why: { bio: 'This is the step that halves the number. Which partner goes to which side is random for each pair, like flipping a coin.', honors: 'Anaphase I separates homologs, not sisters, so each daughter is haploid (n = 2). Each pair orients independently: <b>independent assortment</b>.' },
+      overlay(sim,ctx,LH,k){const L=[['Anaphase I',{s:14,w:800}],['Partners separate'],['Copies stay joined'],['Each side: 2 chromosomes']];if(H.atLeast('ap'))L.push(['Each side: n = 2, 2C',{w:800}]);dvL(ctx,k,L);} },
+    { key: 'four', title: 'Four cells with half the chromosomes', set: { mode: 'meiosis' }, fresh: true, speed: 0.5, run: dvGo(9),
+      see: 'Meiosis II splits each chromosome’s two copies, much like mitosis. The result is four cells, each with 2 chromosomes, half of the parent’s 4.',
+      why: 'When an egg (n) and a sperm (n) join, the new cell is back to 2n. If gametes weren’t halved, the chromosome number would double every generation.',
+      overlay(sim,ctx,LH,k){dvB(ctx,k,LH,[['Meiosis: 4 cells, each with 2 chromosomes (n = 2)',{s:14,w:800}],['Egg (n) + sperm (n) → baby (2n)']]);} },
+    { key: 'sort', title: 'Many kinds of gametes', set: { mode: 'meiosis', pairs: 3 }, fresh: true, speed: 0.5, run(sim){dvAct(sim,'run100');},
+      see: 'With 3 pairs, the sim runs 100 meioses (400 gametes) and sorts them by which mix of red and blue chromosomes they got.',
+      why: 'Each pair lines up on its own, so each gamete gets mom’s or dad’s version of each chromosome, like a coin flip per pair: 2 × 2 × 2 = 8 combinations.',
+      so: 'You have 23 pairs: 2²³, about 8.4 million combinations, before crossing over adds more. That is why siblings (except identical twins) are never genetic copies.',
+      overlay(sim,ctx,LH,k){const t=phM(sim,'types');dvR(ctx,k,[['3 pairs, 100 meioses',{s:14,w:800}],['Gamete types seen: '+(isNaN(t)?'–':t),{w:800,c:CE_GREEN}],['Possible: 2 × 2 × 2 = 8'],['Humans: 2²³ ≈ 8.4 million']]);} },
+    { key: 'nd', lvl: 'ap', title: 'Nondisjunction', set: { mode: 'meiosis', nd: true }, fresh: true, speed: 0.5, run: dvGo(9),
+      see: 'Pair 1 fails to separate in meiosis I. Two gametes get both pair-1 chromosomes (3 total) and two get none (1 total).',
+      why: 'A gamete with an extra chromosome makes a zygote with 2n + 1, a trisomy. Most trisomy 21 (Down syndrome) comes from nondisjunction in the egg, and its risk rises with the mother’s age.',
+      overlay(sim,ctx,LH,k){dvB(ctx,k,LH,[['Nondisjunction of pair 1 in meiosis I',{s:14,w:800}],['Chromosomes per gamete: '+dvN(sim),{w:800,c:CE_RED}],['n + 1 and n − 1: every gamete is abnormal']]);} }
+  ],
+  useIt: [
+    { do: 'Clean a scrape, then keep it moist and covered while it heals.',
+      why: 'New skin comes from mitosis at the wound edges. The American Academy of Dermatology advises petroleum jelly and a bandage, because a moist wound heals faster than one that dries into a hard scab.' },
+    { do: 'Aim for 8 to 10 hours of sleep while you are still growing.',
+      why: 'The CDC recommends 8–10 hours for teens. Much of your growth hormone is released in deep sleep, and it signals cells in your growth plates to divide.' },
+    { do: 'If you ever plan a pregnancy, know that screening for chromosome-number changes is offered to every patient.', lvl: 'ap',
+      why: 'Nondisjunction can happen in any pregnancy, though the risk climbs with the egg’s age. The American College of Obstetricians and Gynecologists recommends offering this screening to all pregnant patients, not only older ones.' }
+  ],
+  tryIt: [
+    { title: 'the pipe-cleaner chromosomes (15 minutes)',
+      steps: ['Cut 4 pipe cleaners or pieces of string: a long and a short in one color (mom), a long and a short in another (dad).', 'Copy the DNA: make a matching twin for each one and twist each pair together at the middle.', 'Mitosis: line all four doubled chromosomes up in a row, then untwist and pull the twins to opposite sides.', 'Meiosis: start over. Pair long with long and short with short, pull the partners apart, then split the twins in each half.'],
+      look: 'Mitosis leaves two piles that match the starting set. Meiosis leaves four piles with one long and one short each. Flip a coin for how each pair lines up and you get different color mixes.' }
+  ]
+},
+cellcycle: {
+  goals: {
+    bio: ['The four phases of the cell cycle and how long each takes', 'What tells a cell to divide and what tells it to stop', 'How p53 protects you when DNA is damaged', 'Why cancer usually takes more than one broken rule'],
+    honors: ['G1, S, G2 and M, and the checkpoints between them', 'Growth factors, G0 and contact inhibition', 'p53: arrest, repair or apoptosis', 'Oncogenes (a stuck gas pedal) vs. tumor suppressors (broken brakes)'],
+    ap: ['Checkpoints at G1 and G2 and what each one checks', 'Why the share of cells in a phase matches its length', 'p53, arrest and apoptosis', 'The multi-hit model of cancer']
+  },
+  matters: 'Your skin replaces its outer layer about once a month, and a cut knows when to stop filling in. The same rules explain why a sunburn peels, why sunscreen lowers skin cancer risk, and why cancer is more common as people get older.',
+  startKey: 'grow', startRun: true, startSpeed: 0.5,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Each circle is one skin cell, about 20 µm across',400,38,k,{s:12,hi:true});line(ctx,400,52,400,110);
+    tag(ctx,'The center color shows its phase (key below)',400,405,k,{s:12,hi:true});},
+  steps: [
+    { key: 'phases', title: 'Four phases, one cycle', fresh: true, speed: 0.5, run(sim){ccFF(sim,30);},
+      see: 'The center color shows each cell’s phase. Most cells are green (G1) or blue (S). You rarely catch one dividing.',
+      why: 'A full cycle takes about 23 hours, and mitosis is only about 1 of them. At any moment, the share of cells in a phase matches the share of time that phase takes.',
+      so: { ap: 'That is the idea behind the mitotic index: about 1 h out of 23 means only about 4% of cycling cells are in M at once.' },
+      overlay(sim,ctx,LH,k){ccL(ctx,k,[['One cycle ≈ 23 h',{s:14,w:800}],['G1 grow: ~10 h',{c:'#1b7a3a'}],['S copy DNA: ~8 h',{c:CE_BLUE}],['G2 check, get ready: ~4 h',{c:'#6a3fa0'}],['M divide: ~1 h',{w:800}],['Right now: G1 '+ccPct(sim,'G1')+'%, S '+ccPct(sim,'S')+'%, G2 '+ccPct(sim,'G2')+'%, M '+ccPct(sim,'M')+'%',{s:12}]]);} },
+    { key: 'fill', title: 'Fill the space, then stop', fresh: true, speed: 1, run(sim){ccFF(sim,240);},
+      see: 'Jump ahead to 240 hours, 10 days. The cells have filled the dish in one layer, and most have stopped dividing (grey).',
+      why: { bio: 'Normal cells stop dividing when they touch neighbors on every side. That is how a healing cut knows when the gap is filled.', honors: 'Crowded cells fail the G1 checkpoint and rest in G0. This <b>contact inhibition</b> is how a healing cut knows when to stop.' },
+      overlay(sim,ctx,LH,k){ccL(ctx,k,[['At '+ccHrs(sim),{s:14,w:800}],['Cells: '+Math.round(phM(sim,'cells'))],['Still dividing: '+Math.round(phM(sim,'cyc'))+'%',{w:800}],['Out of room, so most rest',{s:12}]]);} },
+    { key: 'nogf', title: 'No signal, no division', set: { gf: false }, fresh: true, speed: 1, run(sim){ccFF(sim,18);},
+      see: 'Growth factor is off from the start. The cells finish the cycle they were in, then rest (grey), even with plenty of room around them.',
+      why: { bio: 'Cells divide only when their neighbors send a “divide” signal. Without it, they stop.', honors: 'Without growth factor, cells fail the G1 checkpoint (the restriction point) and enter G0. Cells already past it, in S or G2, finish first.' },
+      overlay(sim,ctx,LH,k){ccL(ctx,k,[['No growth factor',{s:14,w:800}],['At '+ccHrs(sim)],['Cells: '+Math.round(phM(sim,'cells'))],['Still dividing: '+Math.round(phM(sim,'cyc'))+'%',{w:800}]]);} },
+    { key: 'uv', title: 'UV damage: p53 steps in', set: { uv: 8 }, fresh: true, speed: 1, run(sim){ccFF(sim,150);},
+      see: 'Strong UV for 150 hours, about 6 days. Damaged cells (yellow bolt) are held in place (orange) while they repair, and badly damaged ones self-destruct.',
+      why: 'The p53 protein checks the DNA before it is copied and again before division. It pauses a damaged cell so it can repair, or makes it self-destruct, so the damage is never passed on.',
+      overlay(sim,ctx,LH,k){ccL(ctx,k,[['UV 8, p53 working',{s:14,w:800}],['At '+ccHrs(sim)],['Cells with mutations: '+Math.round(phM(sim,'mut'))+'%',{w:800,c:CE_GREEN}],['Self-destructed: '+Math.round(phM(sim,'apop'))]]);} },
+    { key: 'nop53', title: 'Broken guard: mutations pile up', set: { uv: 8, p53: false }, fresh: true, speed: 2, run(sim){ccFF(sim,150);},
+      see: 'Same UV, same 150 hours, but p53 is broken. Damaged cells keep dividing and hand the damage to both daughters. Dark red cells pile up in layers.',
+      why: 'Without the checkpoint, damage becomes a permanent mutation. In this model one mutation lets a cell divide without a signal; a second lets it ignore crowding, so those cells stack into a tumor.',
+      overlay(sim,ctx,LH,k){ccL(ctx,k,[['UV 8, p53 broken',{s:14,w:800}],['At '+ccHrs(sim)],['Cells with mutations: '+Math.round(phM(sim,'mut'))+'%',{w:800,c:CE_RED}],['2+ mutations: '+Math.round(phM(sim,'cancer'))],['Cells: '+Math.round(phM(sim,'cells'))]]);} },
+    { key: 'ras', lvl: 'honors', title: 'A stuck gas pedal', set: { gf: false, ras: true }, fresh: true, speed: 1, run(sim){ccFF(sim,40);},
+      see: 'Growth factor is off, but Ras is stuck on. The cells keep dividing as if the signal never stopped, until they run out of room.',
+      why: 'Ras passes the growth signal along inside the cell. A mutation that locks it on turns it into an <b>oncogene</b>, a stuck gas pedal. p53 is a <b>tumor suppressor</b>; losing it is like losing the brakes.',
+      overlay(sim,ctx,LH,k){ccL(ctx,k,[['No growth factor, Ras stuck on',{s:14,w:800}],['At '+ccHrs(sim)],['Still dividing: '+Math.round(phM(sim,'cyc'))+'%',{w:800}],['(about 0% without Ras)',{s:12}]]);} },
+    { key: 'hits', lvl: 'ap', title: 'Cancer takes several hits', set: { uv: 8, p53: false }, fresh: true, speed: 3, run(sim){ccFF(sim,60);},
+      see: 'p53 broken and strong UV, about 60 hours in. Many cells already have one mutation, but only a few have two. Keep watching as the two-hit cells take over.',
+      why: 'Each mutation is rare, and one cell line has to collect several before it escapes every control. That takes many divisions, which is why cancer risk climbs steeply with age.',
+      overlay(sim,ctx,LH,k){const n=Math.max(1,phM(sim,'cells')),c=phM(sim,'cancer'),m=phM(sim,'mut');ccL(ctx,k,[['Multi-hit, at '+ccHrs(sim),{s:14,w:800}],['1 mutation: '+Math.round(m-100*c/n)+'% of cells'],['2+ mutations: '+Math.round(c)+' cells',{w:800,c:CE_RED}],['Piled on top: '+Math.round(phM(sim,'pile'))]]);} }
+  ],
+  useIt: [
+    { do: 'Use sunscreen of SPF 30 or higher outdoors and reapply about every 2 hours.',
+      why: 'The American Academy of Dermatology recommends SPF 30+, reapplied every 2 hours or after swimming. Less UV means fewer damaged cells for p53 to catch, and fewer that slip through.' },
+    { do: 'Check your moles with the ABCDEs, and show a doctor one that is changing.',
+      why: 'Asymmetry, Border, Color, Diameter and Evolving are the AAD’s warning signs for melanoma. A mole that grows or changes can mean cells there have stopped following the rules you just watched.' },
+    { do: 'Skip tanning beds.', lvl: 'honors',
+      why: 'The World Health Organization’s cancer agency (IARC) puts UV tanning devices in its highest-risk group, the same group as tobacco. They deliver DNA-damaging UV on purpose.' }
+  ],
+  tryIt: [
+    { title: 'the UV bead test (10 minutes, on a sunny day)',
+      steps: ['Get UV-sensitive beads (they are white indoors and turn colors in sunlight).', 'Put a few beads in each of 3 clear plastic bags.', 'Smear sunscreen on the outside of one bag, and leave one bag plain. Keep the third indoors.', 'Set the two outdoor bags in the sun for 1 minute and compare the colors.'],
+      look: 'Beads behind sunscreen stay much paler, because the sunscreen absorbs most of the UV. Try it on a cloudy day too: UV gets through clouds.' }
+  ]
+},
+roottip: {
+  goals: {
+    bio: ['Where in a root the cells divide', 'How to spot interphase and each phase of mitosis in a real microscope view', 'How to calculate the mitotic index', 'How to turn cell counts into the time each phase takes'],
+    honors: ['The zones of a root tip and what happens in each', 'How to identify each phase of mitosis in stained cells', 'Mitotic index, and why it is highest in the meristem', 'Turning counts into phase durations'],
+    ap: ['How to identify each phase in stained cells', 'Mitotic index and phase durations from counts', 'How colchicine blocks the spindle and piles cells up in metaphase', 'Testing the difference with chi-square']
+  },
+  matters: 'This is a real lab done with microscopes in classrooms everywhere. The counting trick lets scientists time things they can’t watch happen, and pathologists use a tumor’s mitotic count to help grade some cancers.',
+  startKey: 'tip', startRun: false,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Cells divide here',230,205,k,{s:12,hi:true});line(ctx,215,219,152,292,'#c8102e');},
+  steps: [
+    { key: 'inter', title: 'Interphase: most cells', fresh: true, pause: true, run: rtSel('inter'), focus: rtRect('inter'),
+      see: 'The highlighted cell has a round nucleus with a dark spot (the nucleolus) and no separate chromosomes. Most cells in the field look like this.',
+      why: 'In interphase the cell is growing and copying its DNA. The DNA is spread out so its genes can be read, so you can’t see individual chromosomes.',
+      overlay: rtPh('Interphase', 'Round nucleus, dark nucleolus, grainy DNA, no threads') },
+    { key: 'pro', title: 'Prophase', fresh: true, pause: true, run: rtSel('pro'), focus: rtRect('pro'),
+      see: 'The DNA has coiled into thick, tangled threads that fill the nucleus.',
+      why: 'Coiling packs the copied DNA into chromosomes that can be moved. The nucleus is starting to break down.',
+      overlay: rtPh('Prophase', 'Thick, thread-like chromosomes filling the nucleus') },
+    { key: 'meta', title: 'Metaphase', fresh: true, pause: true, run: rtSel('meta'), focus: rtRect('meta'),
+      see: 'The chromosomes form one dark band across the middle of the cell.',
+      why: 'Spindle fibers from both ends have lined every chromosome up on the center line.',
+      overlay: rtPh('Metaphase', 'One band of chromosomes across the middle') },
+    { key: 'ana', title: 'Anaphase', fresh: true, pause: true, run: rtSel('ana'), focus: rtRect('ana'),
+      see: 'Two groups of chromosomes are moving apart toward opposite ends, often bent into V shapes.',
+      why: 'The copies are being pulled toward the poles at their middles, so the arms trail behind.',
+      overlay: rtPh('Anaphase', 'Two groups pulling apart, often V-shaped') },
+    { key: 'telo', title: 'Telophase', fresh: true, pause: true, run: rtSel('telo'), focus: rtRect('telo'),
+      see: 'Two dense clumps of chromosomes sit at opposite ends, with a faint line, the new cell plate, between them.',
+      why: 'New nuclei form at each end, and the plant cell builds a new wall down the middle. Soon there will be two cells.',
+      overlay: rtPh('Telophase', 'Two dark clumps at the ends, a cell plate between') },
+    { key: 'count', title: 'Count a few hundred cells', fresh: true, speed: 1, run(sim){rtCount(sim,8);},
+      see: 'The sim labels every cell in 8 fields of view, about 320 cells, and adds up the phases.',
+      why: 'One field holds only about 40 cells, too few to trust. Counting several fields evens out chance, the way a poll needs to ask many people.',
+      overlay(sim,ctx,LH,k){const {t,n}=rtT(sim),p=x=>n?(100*x/n).toFixed(1)+'%':'–';rtL(ctx,k,[['Counted: '+n+' cells',{s:15,w:800}],['Interphase: '+t.inter+' ('+p(t.inter)+')'],['Prophase: '+t.pro],['Metaphase: '+t.meta],['Anaphase: '+t.ana],['Telophase: '+t.telo],['Mitotic index: '+p(n-t.inter),{w:800,c:CE_GREEN}],['= dividing cells ÷ all cells',{s:12}]]);} },
+    { key: 'time', title: 'From counts to time', fresh: true, speed: 1, run(sim){rtCount(sim,8);},
+      see: 'Same counts. The share of cells caught in metaphase is the share of the day a cell spends in metaphase.',
+      why: 'The cells are dividing at random times, so a snapshot works like a time log. Fraction in a phase × length of the cycle (about 24 h for onion roots) = time in that phase.',
+      overlay(sim,ctx,LH,k){const {t,n}=rtT(sim),f=n?t.meta/n:0,mi=n?(n-t.inter)/n:0;rtL(ctx,k,[['Metaphase',{s:15,w:800}],[t.meta+' ÷ '+n+' = '+(100*f).toFixed(1)+'% of cells'],[(100*f).toFixed(1)+'% × 24 h ≈ '+Math.round(f*24*60)+' min',{w:800,c:CE_GREEN}],['All of mitosis',{s:15,w:800}],[(100*mi).toFixed(1)+'% × 24 h ≈ '+(mi*24).toFixed(1)+' h',{w:800}]]);} },
+    { key: 'elong', lvl: 'honors', title: 'The elongation zone barely divides', set: { zone: 'elong' }, fresh: true, speed: 1, run(sim){rtCount(sim,8);},
+      see: 'The slide moves up the root to the elongation zone. Count the same way: almost every cell is in interphase.',
+      why: 'These cells were made in the meristem and now stretch instead of dividing. Their stretching is what pushes the root tip down through the soil.',
+      overlay(sim,ctx,LH,k){const {t,n}=rtT(sim);rtL(ctx,k,[['Elongation zone',{s:15,w:800}],['Counted: '+n],['Mitotic index: '+(n?(100*(n-t.inter)/n).toFixed(1):'–')+'%',{w:800,c:CE_GREEN}],['Meristem: about 20%',{s:12}]]);} },
+    { key: 'colch', lvl: 'ap', title: 'Colchicine: stuck in metaphase', set: { treat: 'colch' }, fresh: true, speed: 1, run(sim){rtCount(sim,8);},
+      see: 'This root soaked in colchicine. Count it: far more cells are in metaphase, and few reach anaphase or telophase.',
+      why: 'Colchicine blocks the spindle fibers, so cells can line up but can’t pull apart. They pile up in metaphase. The mitotic index rises without any cell dividing faster.',
+      overlay(sim,ctx,LH,k){const {t,n}=rtT(sim),x=phM(sim,'chi');rtL(ctx,k,[['Colchicine-treated',{s:15,w:800}],['Metaphase: '+(n?(100*t.meta/n).toFixed(1):'–')+'% (untreated: about 4%)',{w:800}],['Anaphase + telophase: '+(n?(100*(t.ana+t.telo)/n).toFixed(1):'–')+'%'],['χ² vs. control: '+(isNaN(x)?'–':x.toFixed(1)),{w:800,c:CE_RED}],['Critical value 9.49 (df 4, p = 0.05)',{s:12}]]);} }
+  ],
+  useIt: [
+    { do: 'When you repot a plant, handle the root tips gently and don’t trim them unless they are rotten.',
+      why: 'A root grows only from its tip, where the meristem is dividing. A crushed tip has to be replaced before that root can grow longer.' },
+    { do: 'Use the snapshot trick to time anything that repeats: glance at a group at a random moment and count.',
+      why: 'If 5 of the 20 cars you see at a light are turning left, about a quarter of cars turn left. Many glances at random times tell you how time is shared, just like the cell counts.' },
+    { do: 'Take colchicine (a gout medicine) only exactly as prescribed.', lvl: 'ap',
+      why: 'It works by blocking spindle fibers, the same effect you saw. A small overdose also stops division in fast-dividing tissues like the gut lining, which is why the safe dose range is narrow.' }
+  ],
+  tryIt: [
+    { title: 'where does a root grow? (one week)',
+      steps: ['Push 3 toothpicks into an onion so it sits on a glass of water with just its base in the water.', 'Wait 3 to 5 days for roots about 2 cm long.', 'With a fine permanent marker, put dots every 2 mm along one root, starting at the tip.', 'Check the next day and the day after. Measure the gaps between the dots.'],
+      look: 'Only the gaps just behind the tip spread apart. The dots farther up stay put, because new cells are made at the tip and stretch just behind it.' }
+  ]
+}
+});
+
 })();
