@@ -14,8 +14,73 @@ const act=(sim,id)=>{const a=(sim.def.actions||[]).find(z=>z.id===id);if(a)a.run
 function actAt(sim,tau,id,at){const key='_ls_'+id;if(sim[key]===sim.lnT0)return;if(tau<(at||0))return;sim[key]=sim.lnT0;act(sim,id);}
 const yr=sim=>2025+Math.min(75,Math.max(0,Math.floor(sim.t)));
 const CL=(ctx,k,L)=>card(ctx,k,L,118,62,262);
+const GX=(ctx,k,L)=>card(ctx,k,L,170,374,460);
 
 BioLab.addLearn({
+expression: {
+  goals: {
+    bio: ['How a gene’s DNA is copied into mRNA (transcription)', 'How a ribosome reads mRNA three bases at a time to build a protein (translation)', 'Why some mutations change nothing and others wreck the protein'],
+    honors: ['Codons, the genetic code and the start and stop codons', 'Silent, missense, nonsense and frameshift mutations', 'How one base change causes sickle-cell disease'],
+    ap: ['RNA processing: introns, exons, the 5′ cap and poly-A tail', 'Why deleting a whole codon is far less harmful than deleting one base', 'Reading frame and the redundancy of the code']
+  },
+  matters: 'Every protein in your body, from the hemoglobin carrying oxygen to the enzymes digesting lunch, is built from a gene this way. mRNA vaccines, insulin made by bacteria and genetic tests for inherited diseases all use it.',
+  question: 'One wrong letter in a 24-letter gene. Will the protein change a little, a lot, or not at all?',
+  startKey: 'dna', startRun: false,
+  steps: [
+    { key: 'dna', title: 'A gene is a stretch of DNA', set: { gene: 'demo', pos: 6, base: 'A', introns: false }, fresh: true, pause: true, run(sim){act(sim,'undo');act(sim,'replay');},
+      see: 'Inside the nucleus, a short gene: two DNA strands, 24 base pairs. The top (coding) strand starts with ATG and ends with TAA.',
+      why: 'DNA stays in the nucleus. To use a gene, the cell first makes a working copy that can travel: messenger RNA.',
+      overlay(sim,ctx,LH,k){GX(ctx,k,[['A 24-base gene',700,13.5],'Starts ATG · ends TAA']);} },
+    { key: 'tx', title: 'Transcription: DNA → mRNA', set: { gene: 'demo', pos: 6, base: 'A', introns: false }, speed: 1, run(sim){act(sim,'replay');},
+      see: 'RNA polymerase (purple) unzips the DNA and slides along the template strand, adding one matching RNA base at a time.',
+      why: 'Base pairing makes it exact: A pairs with U (RNA uses U instead of T), T with A, G with C and C with G. The mRNA ends up matching the coding strand, with U for T.',
+      overlay(sim,ctx,LH,k){GX(ctx,k,[['Transcription',700,13.5,'#6b3fa0'],'A→U  T→A  G→C  C→G']);} },
+    { key: 'tl', title: 'Translation: three bases, one amino acid', set: { gene: 'demo', pos: 6, base: 'A', introns: false }, speed: 1,
+      see: 'The mRNA leaves the nucleus. A ribosome grabs it and reads three bases at a time. For each codon a tRNA brings the matching amino acid, and the chain grows.',
+      why: 'Each three-base codon stands for one amino acid. AUG means “start” (and Met); CCG means Pro; AAG means Lys. 64 codons code for 20 amino acids, so most amino acids have several codons.',
+      overlay(sim,ctx,LH,k){GX(ctx,k,[['Translation',700,13.5,GRN],'mRNA: '+String(met(sim,'mrna')||'')]);} },
+    { key: 'protein', title: 'Stop: the protein is done', set: { gene: 'demo', pos: 6, base: 'A', introns: false }, speed: 1, overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'skip',0.8);GX(ctx,k,[['Protein: '+String(met(sim,'len'))+' amino acids',700,13.5],String(met(sim,'protein')||'')]);},
+      see: 'At the stop codon UAA no tRNA fits. The ribosome lets go, and the chain Met–Pro–Lys–Phe–Gly–Trp–His is finished.',
+      why: 'The order of bases in the gene set the order of amino acids, and that order decides how the protein folds and what it does.' },
+    { key: 'silent', title: 'A change that changes nothing', set: { gene: 'demo', pos: 6, base: 'A', introns: false }, fresh: true, pause: true, run(sim){act(sim,'undo');},
+      overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'sub',1);actAt(sim,tau,'skip',2.5);GX(ctx,k,[[tau<1?'Base 6: G…':'Base 6: G → A ('+String(met(sim,'mtype'))+')',700,13.5,RED],String(met(sim,'protein')||'')]);},
+      see: 'Base 6 changes from G to A, so the codon CCG becomes CCA. The protein comes out exactly the same.',
+      why: 'CCA also codes for proline. Because the code has several codons for most amino acids, many single-base changes are silent.' },
+    { key: 'nonsense', title: 'A change that stops it early', set: { gene: 'demo', pos: 18, base: 'A', introns: false }, fresh: true, pause: true, run(sim){act(sim,'undo');},
+      overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'sub',1);actAt(sim,tau,'skip',2.5);GX(ctx,k,[[tau<1?'Base 18: G…':'Base 18: G → A ('+String(met(sim,'mtype'))+')',700,13.5,RED],String(met(sim,'protein')||'')]);},
+      see: 'Base 18 changes from G to A, so the codon UGG (Trp) becomes UGA: a stop codon. The protein ends after 5 amino acids.',
+      why: 'A single base can turn an amino acid codon into “stop.” A protein cut short usually can’t fold or work. Some cases of cystic fibrosis and muscular dystrophy start this way.' },
+    { key: 'frame', title: 'One extra base scrambles the rest', set: { gene: 'demo', pos: 5, base: 'G', introns: false }, fresh: true, pause: true, run(sim){act(sim,'undo');},
+      overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'ins',1);actAt(sim,tau,'skip',2.5);GX(ctx,k,[[tau<1?'Inserting a G…':'G inserted: '+String(met(sim,'mtype')),700,13.5,RED],String(met(sim,'protein')||'')]);},
+      see: 'One G is inserted after base 5. Every codon after it shifts by one letter: 7 amino acids change, and the stop codon is lost.',
+      why: 'The ribosome reads in fixed groups of three from the start. Add or remove one base and every later group is different: a frameshift. These are usually the most damaging small mutations.' },
+    { key: 'sickle', lvl: 'honors', title: 'One base, one disease', set: { gene: 'hbb', pos: 20, base: 'T', introns: false }, fresh: true, pause: true, run(sim){act(sim,'undo');},
+      overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'sub',1);actAt(sim,tau,'skip',2.5);GX(ctx,k,[[tau<1?'β-globin, codon 7: GAG…':'GAG → GTG: '+String(met(sim,'mtype')),700,13.5,RED],String(met(sim,'protein')||'')]);},
+      see: 'The start of the β-globin gene, part of hemoglobin. One A becomes T in codon 7, so GAG (glutamic acid) becomes GTG (valine).',
+      why: 'That single swap makes hemoglobin molecules stick together when oxygen is low, bending red blood cells into sickles that block small vessels. In 2023 the first gene-editing therapy for sickle-cell disease was approved in the US.' },
+    { key: 'inframe', lvl: 'ap', title: 'Delete a whole codon', set: { gene: 'demo', pos: 7, introns: false }, fresh: true, pause: true, run(sim){act(sim,'undo');},
+      overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'delc',1);actAt(sim,tau,'skip',2.5);GX(ctx,k,[[tau<1?'Deleting codon 3…':String(met(sim,'mtype')),700,13.5,RED],String(met(sim,'protein')||'')]);},
+      see: 'Three bases in a row (one codon, AAG = Lys) are deleted. The protein is just missing Lys; everything after it is unchanged.',
+      why: 'Removing three bases keeps the reading frame. The most common cystic fibrosis mutation, ΔF508, deletes one codon this way.' },
+    { key: 'intron', lvl: 'ap', title: 'Introns are cut out', set: { gene: 'demo', pos: 6, base: 'A', introns: true }, fresh: true, speed: 1, run(sim){act(sim,'undo');act(sim,'replay');},
+      see: 'Now the gene has an intron. The first RNA copy is 34 bases long; before it leaves the nucleus the intron is spliced out, leaving 24.',
+      why: 'Eukaryotic genes are interrupted by introns. Spliceosomes remove them and join the exons, and the mRNA gets a 5′ cap and a poly-A tail for protection and export. Alternative splicing lets one gene make several proteins.',
+      overlay(sim,ctx,LH,k){GX(ctx,k,[['RNA processing',700,13.5],String(met(sim,'proc')||'')]);} }
+  ],
+  useIt: [
+    { do: 'Know what an mRNA vaccine does and doesn’t do.',
+      why: 'It delivers mRNA that your ribosomes translate into one viral protein for your immune system to learn. mRNA never enters the nucleus and can’t change your DNA, and your cells break it down within days.' },
+    { do: 'Put on sunscreen before long days outside.',
+      why: 'UV light damages DNA bases. A damaged base copied wrong becomes a mutation, and mutations in genes that control cell division can lead to skin cancer.' },
+    { do: 'If a relative has a genetic condition, ask a doctor about genetic counseling.', lvl: 'honors',
+      why: 'Many inherited diseases come from a single changed base or codon in one gene. Tests can read those exact letters.' }
+  ],
+  tryIt: [
+    { title: 'the reading-frame sentence (5 minutes)',
+      steps: ['Write THE FAT CAT ATE THE RED RAT in three-letter words.', 'Change one letter (for example FAT → FAR). Read it again.', 'Now insert one extra letter after THE and regroup everything into threes.'],
+      look: 'Changing one letter changes one word. Inserting one letter turns every word after it into nonsense, the same way a frameshift scrambles every codon after the mutation.' }
+  ]
+},
 climate: {
   goals: {
     bio: ['How CO₂ and methane trap heat', 'What happens by 2100 if emissions keep growing', 'How many separate actions (“wedges”) it takes to stop the rise'],
