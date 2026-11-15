@@ -8,6 +8,116 @@
    name agencies and programs, never parties; no em dashes. */
 window.RAIDER_NEWS = [
  {
+  "id": "frisco-creek-bears-2026",
+  "week": "2026-11-15",
+  "date": "2026-11-12",
+  "title": "Colorado: a record 47 orphaned bear cubs were nursed back to health at Frisco Creek",
+  "summary": "Colorado Parks and Wildlife's Frisco Creek Wildlife Rehabilitation Center took in a record 47 orphaned black bear cubs in 2026, after drought, late spring freezes and wildfires caused what CPW calls the worst statewide year for bear food since 2008. Most will go back to the wild this fall.",
+  "numbers": [
+   "47 cubs in 2026, a record for the center; about 20 a year on average over 15 years; 29 in 2025 (<a href=\"https://coloradooutdoorsmag.com/2026/11/12/orphaned-burned-and-broken-the-frisco-creek-bears-of-2026/\" target=\"_blank\" rel=\"noopener\">Colorado Outdoors (CPW), Nov 12, 2026</a>).",
+   "A yearling burned on all four paws in a wildfire arrived on July 20 at 31 lb and is now past 120 lb (<a href=\"https://coloradooutdoorsmag.com/2026/11/12/orphaned-burned-and-broken-the-frisco-creek-bears-of-2026/\" target=\"_blank\" rel=\"noopener\">Colorado Outdoors, Nov 12, 2026</a>).",
+   "Release minimums: 70 lb for males and 60 lb for females; most cubs weigh 80 to 100 lb (<a href=\"https://coloradooutdoorsmag.com/2026/11/12/orphaned-burned-and-broken-the-frisco-creek-bears-of-2026/\" target=\"_blank\" rel=\"noopener\">Colorado Outdoors, Nov 12, 2026</a>).",
+   "About 31 cubs are expected to be released this fall; the rest go to dens or stay until spring. 10 will wear GPS collars, tracked for up to 18 months, paid for by a Great Outdoors Colorado grant (<a href=\"https://coloradooutdoorsmag.com/2026/11/12/orphaned-burned-and-broken-the-frisco-creek-bears-of-2026/\" target=\"_blank\" rel=\"noopener\">Colorado Outdoors, Nov 12, 2026</a>).",
+   "Where they came from: Southeast 21, Northeast 18, Southwest 7, Northwest 1 (<a href=\"https://coloradooutdoorsmag.com/2026/11/12/orphaned-burned-and-broken-the-frisco-creek-bears-of-2026/\" target=\"_blank\" rel=\"noopener\">Colorado Outdoors, Nov 12, 2026</a>)."
+  ],
+  "concept": {
+   "title": "Food webs and a fat budget",
+   "html": "Black bears depend on wild foods such as berries, acorns and other <b>mast</b>. A late freeze can kill flowers before they become fruit, and drought shrinks what plants produce, so less energy moves up the food web from producers to bears. A bear must store enough fat in late summer and fall to survive months in a den without eating. That is why rehab centers set release weights: below a minimum, a cub may not have the energy reserve to make it through winter."
+  },
+  "hook": {
+   "prompt": "Use CPW's numbers.",
+   "parts": [
+    {
+     "label": "(a) How many times the 15-year average (about 20 a year) is this year's 47 cubs?",
+     "answer": 2.35,
+     "tol": 0.02,
+     "unit": "times"
+    },
+    {
+     "label": "(b) By what percent did the number of cubs rise from 2025 (29) to 2026 (47)?",
+     "answer": 62.1,
+     "tol": 0.4,
+     "unit": "%"
+    },
+    {
+     "label": "(c) The burned yearling went from 31 lb on July 20 to at least 120 lb by Nov 12 (115 days). What was its average gain, in lb per day?",
+     "answer": 0.77,
+     "tol": 0.02,
+     "unit": "lb/day"
+    }
+   ],
+   "worked": "(a) 47 &divide; 20 = <b>2.35 times</b>. (b) (47 &minus; 29) &divide; 29 = 18 &divide; 29 = 0.621, a <b>62.1%</b> rise. (c) 120 &minus; 31 = 89 lb. July 20 to Nov 12 is 11 + 31 + 30 + 31 + 12 = 115 days. 89 &divide; 115 = <b>0.77 lb per day</b>, at least, since it is \"past\" 120 lb."
+  },
+  "hides": "The rescue is good news, but the reason for the record is not: a failed food year that pushed hungry bears into trouble. A record at one center also depends on how many cubs people report and how many the center can take. How many released cubs survive is not known yet; the GPS collars are how CPW will find out. The source is CPW's own magazine.",
+  "evidence": "Moderate: counts from the state wildlife agency that runs the center. Release numbers are staff projections. The CPW press release itself could not be opened by this automated run; the numbers come from CPW's Colorado Outdoors article.",
+  "investigate": "The <a href=\"https://droughtmonitor.unl.edu/\" target=\"_blank\" rel=\"noopener\">US Drought Monitor</a> has weekly drought maps. Compare Colorado's map in July 2026 with July 2025. Do the driest areas match the regions most cubs came from?",
+  "related": [
+   {
+    "href": "index.html#popgrowth",
+    "label": "Population growth: deer on an island"
+   },
+   {
+    "href": "index.html#productivity",
+    "label": "Primary productivity"
+   }
+  ]
+ },
+ {
+  "id": "fda-factor-xia-stroke-2026",
+  "week": "2026-11-15",
+  "date": "2026-11-09",
+  "title": "FDA approves the first factor XIa blocker to help prevent a second stroke",
+  "summary": "The US Food and Drug Administration (FDA) approved asundexian, made by Bayer, for adults who recently had a mild to moderate ischemic stroke (a clot blocking blood to the brain) or a high-risk mini-stroke. It blocks one enzyme in the blood clotting cascade and is taken along with antiplatelet medicine.",
+  "numbers": [
+   "The OCEANIC-STROKE trial was phase 3, randomized, double-blind and placebo-controlled, with 12,327 adults (<a href=\"https://www.fda.gov/news-events/press-announcements/fda-approves-first-factor-xla-inhibitor-help-prevent-stroke-certain-adults-high-risk\" target=\"_blank\" rel=\"noopener\">FDA, Nov 9, 2026</a>).",
+   "Patients were enrolled within 72 hours of their symptoms (<a href=\"https://www.fda.gov/news-events/press-announcements/fda-approves-first-factor-xla-inhibitor-help-prevent-stroke-certain-adults-high-risk\" target=\"_blank\" rel=\"noopener\">FDA, Nov 9, 2026</a>).",
+   "Risk of another ischemic stroke was 26% lower than with placebo, over a median of 14.2 months of treatment (<a href=\"https://www.fda.gov/news-events/press-announcements/fda-approves-first-factor-xla-inhibitor-help-prevent-stroke-certain-adults-high-risk\" target=\"_blank\" rel=\"noopener\">FDA, Nov 9, 2026</a>).",
+   "Major bleeding overall was similar to placebo, but higher in patients over 75 and in the first 90 days; stomach and gut bleeding was more common (<a href=\"https://www.fda.gov/news-events/press-announcements/fda-approves-first-factor-xla-inhibitor-help-prevent-stroke-certain-adults-high-risk\" target=\"_blank\" rel=\"noopener\">FDA, Nov 9, 2026</a>).",
+   "It is the FDA's 48th novel drug approval of 2026 (<a href=\"https://www.fda.gov/drugs/novel-drug-approvals-fda/novel-drug-approvals-2026\" target=\"_blank\" rel=\"noopener\">FDA Novel Drug Approvals 2026, as of Nov 9, 2026</a>)."
+  ],
+  "concept": {
+   "title": "A cascade of enzymes",
+   "html": "A blood clot forms through a <b>cascade</b>: one clotting factor, an enzyme, activates many copies of the next, which each activate many of the next, so a small signal is amplified into a large clot. Factor XI (\"eleven\") is one step. Researchers think it matters more for clots growing inside blood vessels than for sealing a cut, so blocking it may prevent strokes with less bleeding than older blood thinners. The trial tested that idea against a placebo."
+  },
+  "hook": {
+   "prompt": "The FDA page gives a relative risk reduction (26%) but not the stroke rate in each group. Suppose, as a made-up example, that 6.0% of the placebo group had another stroke.",
+   "parts": [
+    {
+     "label": "(a) With 26% lower risk, what percent of the drug group would have a stroke?",
+     "answer": 4.44,
+     "tol": 0.03,
+     "unit": "%"
+    },
+    {
+     "label": "(b) What is the absolute risk reduction, in percentage points?",
+     "answer": 1.56,
+     "tol": 0.03,
+     "unit": "points"
+    },
+    {
+     "label": "(c) Number needed to treat: about how many people must take the drug to prevent one stroke?",
+     "answer": 64,
+     "tol": 1,
+     "unit": "people"
+    }
+   ],
+   "worked": "(a) 6.0% &times; (1 &minus; 0.26) = 6.0 &times; 0.74 = <b>4.44%</b>. (b) 6.0 &minus; 4.44 = <b>1.56 percentage points</b>. (c) 1 &divide; 0.0156 = 64.1, so about <b>64 people</b> treated for about 14 months to prevent one stroke. The same 26% would mean a much larger number needed to treat if the starting risk were lower. That is why you need both numbers."
+  },
+  "hides": "A relative reduction sounds the same whether the starting risk is high or low; the absolute numbers decide how much difference it makes to one person. The 6.0% here is invented for practice; the real rates are in the trial report, not on the FDA page. Bleeding risk was higher in people over 75 and early in treatment, and the drug is not approved for strokes caused by atrial fibrillation.",
+  "evidence": "Strong: a federal approval based on a large phase 3 randomized, double-blind, placebo-controlled trial. The stroke rate in each group, the absolute risk reduction and confidence intervals were not on the FDA page and were not checked.",
+  "investigate": "Search <a href=\"https://clinicaltrials.gov/search?term=OCEANIC-STROKE\" target=\"_blank\" rel=\"noopener\">ClinicalTrials.gov for OCEANIC-STROKE</a>. What was the trial's primary outcome, and how long were patients followed?",
+  "related": [
+   {
+    "href": "index.html#enzymes",
+    "label": "Catalase activity: how enzymes work"
+   },
+   {
+    "href": "index.html#homeostasis",
+    "label": "Homeostasis"
+   }
+  ]
+ },
+ {
   "id": "small-populations-2026",
   "week": "2026-11-08",
   "date": "2026-11-05",
