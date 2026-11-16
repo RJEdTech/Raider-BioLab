@@ -3581,4 +3581,57 @@ return {gel:{
 }};
 })());
 
+/* ---------- PCR ---------- */
+BioLab.addLearn((function(){
+const pcM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const pcCard=(ctx,k,rows)=>dcCard(ctx,k,350,380,436,rows,{hi:false});
+const now=sim=>[[String(pcM(sim,'step')),{w:800}],['Copies in the tube: '+pcM(sim,'total'),{w:800,c:CE_RED}]];
+return {pcr:{
+  goals:{
+    bio:['What happens at each of the three temperatures in a PCR cycle','Why the number of copies doubles every cycle','How PCR finds a few molecules of a virus in a swab','Why contamination is such a big deal'],
+    honors:['What happens at each of the three temperatures in a PCR cycle','Why the number of copies doubles every cycle','How primers decide which piece gets copied','Why the annealing temperature matters'],
+    ap:['What happens at each of the three temperatures in a PCR cycle','Exponential doubling, cycle threshold and the plateau','How primers and annealing temperature decide the product','Reading a log-scale growth curve']},
+  matters:'PCR is how COVID and flu tests, crime labs and genetic engineers find and copy DNA. Understanding doubling explains both its power and why a tiny bit of contamination can ruin a result.',
+  startKey:'start',startRun:false,
+  steps:[
+    {key:'cycle',title:'One cycle, three temperatures',set:{start:'1000',cycles:30},speed:0.25,fresh:true,focus:[10,60,690,240],
+     see:'Watch the thermocycler and the DNA molecule through one full cycle: hot, then cool, then warm.',
+     why:'<b>95 °C:</b> heat breaks the hydrogen bonds between the two strands, so they separate. <b>About 52 °C:</b> short pieces of DNA called <b>primers</b> stick to each strand at the two ends of the target. <b>72 °C:</b> Taq polymerase, an enzyme from hot-spring bacteria, adds nucleotides to each primer and builds a new matching strand. One cycle takes about 2 minutes.',
+     overlay(sim,ctx,LH,k){pcCard(ctx,k,[[String(pcM(sim,'step')),{w:800}],['Block temperature: '+Math.round(pcM(sim,'temp'))+' °C',{w:700,c:CE_RED}]]);}},
+    {key:'double',title:'Doubling every cycle',set:{start:'1000',cycles:30},speed:10,fresh:true,focus:[10,280,690,170],
+     see:'Start with 1,000 copies of the target and watch 30 cycles go by quickly.',
+     why:'Every copy made in one cycle becomes a template in the next, so the number doubles each cycle: 1,000, 2,000, 4,000, 8,000… Ten doublings multiply by about 1,000, twenty by about a million, thirty by about a billion. After 30 cycles there are almost a trillion copies.',
+     overlay(sim,ctx,LH,k){pcCard(ctx,k,now(sim));}},
+    {key:'hook',title:'Your question: a few virus copies',set:{start:'10',cycles:27},speed:10,fresh:true,focus:[10,60,780,390],
+     see:'A swab from a sick student with only about 10 copies of a virus gene. A band on a gel needs about a billion. Watch the copies climb.',
+     why:'After about <b>27 cycles</b>, a little under an hour, 10 copies become about <b>1.3 billion</b>, enough to see. Starting with 1,000 copies takes only about 20 cycles, because each 10 times more starting DNA saves a little over 3 cycles.',
+     so:'That is how a PCR test tells a heavy infection from a light one: the cycle when the signal appears (the Ct value) is lower when there is more virus.',
+     overlay(sim,ctx,LH,k){pcCard(ctx,k,now(sim));}},
+    {key:'contam',title:'One stray molecule',set:{start:'10',cycles:27},speed:10,fresh:true,focus:[10,280,690,170],
+     see:'The same 27 cycles starting from just 10 molecules, the kind of amount a careless touch or a reused pipette tip can add.',
+     why:'PCR can’t tell DNA that belongs in the sample from DNA that sneaked in. A few stray molecules become a billion copies too, and look just like a real result. That is why labs change tips for every sample, wear gloves and run a “no-template” control tube that should stay blank.',
+     overlay(sim,ctx,LH,k){pcCard(ctx,k,[['Started with 10 stray molecules',{w:800}],['Copies now: '+pcM(sim,'total'),{w:800,c:CE_RED}]]);}},
+    {key:'anneal',lvl:'honors',title:'Annealing temperature',set:{anneal:66},speed:6,fresh:true,focus:[350,60,450,390],
+     cause:{from:{anneal:52},delay:0.4,label:'Annealing temperature',at:[400,440]},
+     see:'Watch the annealing step change from 52 °C to 66 °C, above the primers’ melting temperatures (about 56 to 58 °C).',
+     why:'Primers only stick below their melting temperature. At 66 °C they can’t hold on, so Taq has nowhere to start and no product forms. Too cold (about 40 °C) and primers stick loosely in the wrong places too, giving extra wrong-sized bands. The sweet spot is a few degrees below the primers’ Tm.',
+     overlay(sim,ctx,LH,k){pcCard(ctx,k,[['Annealing: '+sim.p.anneal+' °C',{w:800}],['Gel: '+pcM(sim,'bands'),{w:700,c:CE_RED}]]);}},
+    {key:'plateau',lvl:'ap',title:'The plateau',set:{cycles:40},speed:8,fresh:true,focus:[10,280,690,170],
+     see:'Run 40 cycles and look at the log-scale growth curve in the graph below.',
+     why:'On a log scale, perfect doubling is a straight line. Late in the run, primers and nucleotides run low and products start re-pairing with each other, so efficiency drops and the curve flattens: the <b>plateau</b>. Real-time PCR measures the cycle where the signal crosses a threshold, in the straight part, because that is where the starting amount shows.',
+     overlay(sim,ctx,LH,k){pcCard(ctx,k,[[String(pcM(sim,'step')),{w:800}],['Efficiency last cycle: '+Math.round(pcM(sim,'eff'))+'%',{w:700,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'If a test says “not detected” but you still feel sick, test again or see a doctor.',
+     why:'“Not detected” means below what the test can find. Very early in an infection there may be too few copies of the virus, even for PCR.'},
+    {do:'In any lab, use a fresh pipette tip for every sample and keep tubes closed.',
+     why:'One stray drop with a few molecules becomes a billion copies and a false result.'},
+    {do:'If you visit Yellowstone, look at the colors of the hot springs from the boardwalk.',
+     why:'The bright colors are mats of heat-loving microbes, like the one that gave scientists Taq polymerase. The water can be hot enough to kill, so stay on the boardwalk.'}],
+  tryIt:[{title:'the folding test (5 minutes)',
+    steps:['Take a sheet of paper and fold it in half. Count the layers.','Keep folding in half and count the layers each time.','Predict how many layers 10 folds would make, and how many 30 would.'],
+    look:'Layers double each fold: 2, 4, 8, 16… You will run out of room after about 7 folds (128 layers). Ten folds would make 1,024 layers, and 30 folds over a billion, the same doubling as PCR.'}]
+}};
+})());
+
 })();
