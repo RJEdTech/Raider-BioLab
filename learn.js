@@ -3142,4 +3142,72 @@ return {islandbio:{
 }};
 })());
 
+/* ---------- Biomes ---------- */
+BioLab.addLearn((function(){
+const bmM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const bmCard=(ctx,k,rows)=>dcCard(ctx,k,66,46,214,rows,{hi:false});
+const cl=sim=>[[bmM(sim,'tavg').toFixed(1)+' °C · '+Math.round(bmM(sim,'ptot'))+' cm a year',{w:800}],['Biome: '+bmM(sim,'biome'),{w:700,c:CE_GREEN}]];
+return {biomes:{
+  goals:{
+    bio:['How to read a climatograph','How temperature and precipitation together decide the biome','Why Denver is prairie while Boston is forest','The world’s major biomes and what limits life in each'],
+    honors:['How to read a climatograph','How temperature and precipitation together decide the biome','Why Denver is prairie while Boston is forest','Why the timing of rain matters, not just the total','The limiting factor in each biome'],
+    ap:['How to read a climatograph and the Whittaker diagram','Why Denver is prairie while Boston is forest','Why the timing of rain matters, not just the total','How climate change can shift a place into a different biome']},
+  matters:'Why does Denver need sprinklers to grow a lawn, while Boston grows forest on its own? Why does Southern California burn every fall? The answer is the same: climate decides what can grow.',
+  startKey:'start',
+  steps:[
+    {key:'read',title:'Reading a climatograph',pause:true,set:{place:'denver'},focus:[400,30,400,270],
+     see:'Denver’s climatograph. The red line is the average temperature each month. The blue bars are the rain and snow (as water) each month.',
+     why:'Denver is cold in winter and warm in summer, with most of its precipitation in spring and summer. Add up the bars and you get about 38 cm a year. On the Whittaker diagram at left, that puts the red dot in temperate grassland: before the city, this was shortgrass prairie.',
+     overlay(sim,ctx,LH,k){tag(ctx,'Temperature each month',640,30,k);tag(ctx,'Precipitation each month',560,282,k);bmCard(ctx,k,cl(sim));}},
+    {key:'water',title:'Water decides forest or grass',pause:true,set:{place:'custom',tmean:10,pcm:120},focus:[40,30,370,380],
+     cause:{from:{pcm:40},delay:2,dur:4,label:'Yearly precipitation',at:[230,412]},
+     see:'A place as warm as Denver, about 10 °C. Watch its yearly precipitation rise from 40 cm to 120 cm, and watch the dot and the landscape.',
+     why:'At 10 °C, under about 25 cm a year is desert, 25 to 60 cm is grassland, and more than about 60 cm is enough water for trees. Trees need more water than grasses, because they have to keep a large body alive all year.',
+     overlay(sim,ctx,LH,k){bmCard(ctx,k,cl(sim));}},
+    {key:'hook',title:'Your question: Denver vs Boston',pause:true,set:{place:'boston'},focus:[40,30,760,400],
+     cause:{from:{place:'denver'},delay:2.5,label:'Place',at:[230,412]},
+     see:'Denver’s climate. Watch it switch to Boston’s, and compare the blue bars and the dot.',
+     why:'The temperatures are almost the same, about 10 °C and 11 °C. But Boston gets about <b>113 cm</b> of precipitation a year, three times Denver’s <b>38 cm</b>, and it falls in every month. At 10 °C the switch from grassland to forest is at about 60 cm, so Denver would need about 22 cm more. Water, not warmth, keeps trees off the Denver plains.',
+     so:'That is why a Denver lawn needs watering and why Denver Water limits summer watering to set days each week. Boston lawns mostly get by on rain.',
+     overlay(sim,ctx,LH,k){bmCard(ctx,k,[[sim.p.place==='boston'?'Boston':'Denver',{w:800}]].concat(cl(sim)));}},
+    {key:'desert',title:'Desert: water is the limit',pause:true,set:{place:'phoenix'},focus:[400,30,400,420],
+     see:'Phoenix, Arizona. Look at the height of the blue bars.',
+     why:'Phoenix is hot all year, with plenty of sunlight, but gets only about 20 cm of rain a year. Under about 25 cm a year is desert. Plants survive by storing water (cacti) or having tiny, waxy leaves that lose little. Here water, not warmth, is the <b>limiting factor</b>.',
+     overlay(sim,ctx,LH,k){bmCard(ctx,k,cl(sim));}},
+    {key:'cold',title:'Tundra and taiga: cold is the limit',pause:true,set:{place:'fairbanks'},focus:[40,30,760,400],
+     cause:{from:{place:'utqiagvik'},delay:3,label:'Place',at:[230,412]},
+     see:'Utqiaġvik, on the Arctic coast of Alaska. Watch it switch to Fairbanks, in the middle of Alaska, and look at the summer months.',
+     why:'Both are dry and bitterly cold in winter. Utqiaġvik’s summer barely gets above freezing, so the ground stays frozen (permafrost) and only mosses, lichens and dwarf shrubs grow: <b>tundra</b>. Fairbanks gets a real summer, about 17 °C for a few months, long enough for spruce and other conifers: <b>taiga</b>.',
+     overlay(sim,ctx,LH,k){bmCard(ctx,k,cl(sim));}},
+    {key:'tropics',title:'Hot and wet all year',pause:true,set:{place:'manaus'},focus:[40,30,760,400],
+     see:'Manaus, Brazil, in the Amazon. Look at how flat the red line is and how tall the bars are.',
+     why:'It is about 27 °C every month and rains about 230 cm a year. Plants can grow all year with no cold season and no dry season, so the forest is tall, dense and layered, with more kinds of plants and animals than any other biome on land: <b>tropical rainforest</b>.',
+     overlay(sim,ctx,LH,k){bmCard(ctx,k,cl(sim));}},
+    {key:'savanna',title:'A dry season makes a savanna',pause:true,set:{place:'serengeti'},focus:[400,30,400,420],
+     see:'The Serengeti in Tanzania. Look at June through September.',
+     why:'It is warm all year like the Amazon, but it gets about 90 cm of rain, and almost none falls for four months. Trees can’t survive the long drought everywhere, so grasses dominate with scattered trees: <b>savanna</b>, home to the great herds of zebras and wildebeest.',
+     overlay(sim,ctx,LH,k){bmCard(ctx,k,cl(sim));}},
+    {key:'chaparral',lvl:'honors',title:'When the rain falls matters',pause:true,set:{place:'losangeles'},focus:[400,30,400,420],
+     see:'Los Angeles. Compare the summer bars with the winter bars.',
+     why:'LA gets about 37 cm a year, like Denver, but almost all of it in winter. Summers are hot and nearly rainless, so tough, fire-adapted shrubs win: <b>chaparral</b>. By fall the shrubs are dry fuel, which is why Southern California burns so often.',
+     overlay(sim,ctx,LH,k){bmCard(ctx,k,cl(sim));}},
+    {key:'shift',lvl:'ap',title:'Climate change shifts biomes',pause:true,set:{place:'denver',warm:3,pchg:-40},focus:[40,30,370,380],
+     cause:{from:{warm:0,pchg:0},delay:2.5,dur:4,label:'Climate change',at:[230,412]},
+     see:'Denver. Watch its climate warm 3 °C and lose 40% of its precipitation.',
+     why:'The dot moves right and down, from about 10 °C and 38 cm to about 13 °C and 23 cm, under the 25 cm desert line. Warmer air also dries soil faster, so even the same rain would go less far. Biome boundaries moving uphill and poleward are one of the major impacts of climate change.',
+     overlay(sim,ctx,LH,k){bmCard(ctx,k,cl(sim));}}
+  ],
+  useIt:[
+    {do:'If your family plants anything, look for “xeric” or native plants labeled for the Front Range.',
+     why:'Denver is a grassland with about 38 cm of precipitation a year. Plants from the prairie need far less watering than a Kentucky bluegrass lawn or plants from wetter climates.'},
+    {do:'On your next drive or hike up into the mountains, watch the plants change with elevation.',
+     why:'Climbing from Denver to about 3,500 m takes you from prairie through pine and then spruce-fir forest to alpine tundra, because higher ground is colder and wetter. It is like driving from Denver to the Arctic.'},
+    {do:'Before you travel, look up the destination’s climatograph.',
+     why:'It tells you what to pack and when to go: the wet season in the tropics, the dry summer in California, or the short summer in Alaska.'}],
+  tryIt:[{title:'make your town’s climatograph (20 minutes)',
+    steps:['Look up your town’s average monthly temperature and precipitation (search “[your town] climate normals”).','On graph paper, draw a bar for each month’s precipitation and a line for each month’s temperature.','Add up the year’s precipitation and average the temperatures, then find your spot on the Whittaker diagram.'],
+    look:'Check whether the biome it predicts matches the plants that grow wild near you, not the watered lawns.'}]
+}};
+})());
+
 })();
