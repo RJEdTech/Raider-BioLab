@@ -3210,4 +3210,62 @@ return {biomes:{
 }};
 })());
 
+/* ---------- Primary productivity ---------- */
+BioLab.addLearn((function(){
+const pdM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const pdCard=(ctx,k,rows)=>dcCard(ctx,k,190,50,330,rows,{hi:false});
+const hrs=sim=>Math.min(24,sim.st.h);
+const three=sim=>[['Hour '+hrs(sim).toFixed(0)+' of 24',{w:800}],['Light bottle: '+pdM(sim,'dol').toFixed(2)+' mg/L',{w:700,c:CE_GREEN}],['Dark bottle: '+pdM(sim,'dod').toFixed(2)+' mg/L',{w:700,c:CE_RED}]];
+return {productivity:{
+  goals:{
+    bio:['How algae both make and use oxygen','How the light and dark bottle lab measures each one','What gross and net primary productivity mean','Why a green pond can run out of oxygen at night'],
+    honors:['How algae both make and use oxygen','How to calculate GPP, NPP and respiration from three bottles','How light, nutrients and temperature change productivity','Why a green pond can run out of oxygen at night'],
+    ap:['How to calculate GPP, NPP and respiration from three bottles','Why photosynthesis levels off at high light','How to convert oxygen to carbon','How nutrients drive eutrophication and dawn fish kills']},
+  matters:'Every food web starts with the energy plants and algae capture. Measuring it explains why fertilizer turns ponds green and why fish die there just before dawn.',
+  startKey:'start',startRun:false,
+  steps:[
+    {key:'bottles',title:'Three bottles of pond water',pause:true,fresh:true,focus:[0,120,800,240],
+     see:'Three bottles filled with the same pond water. One is measured right away. One is clear glass. One is wrapped in foil so no light gets in.',
+     why:'The water holds tiny algae (green dots) and dissolved oxygen (the bubbles). Algae make oxygen by photosynthesis, but only in light. They also use oxygen for respiration all the time, day and night, just like you. The bottles let you measure each process separately.',
+     overlay(sim,ctx,LH,k){tag(ctx,'Measured at the start',78,366,k);tag(ctx,'Light: photosynthesis and respiration',330,140,k,{s:12.5});tag(ctx,'Dark: respiration only',580,140,k,{s:12.5});}},
+    {key:'incubate',title:'24 hours under the lamp',speed:1,fresh:true,focus:[160,40,620,350],
+     see:'The bottles are sealed and sit under the lamp for 24 hours. The clock runs about 2 hours every second. Watch the bubbles and the numbers.',
+     why:'In the clear bottle, the algae make more oxygen than they use, so oxygen builds up. In the foil bottle they can only use it, so oxygen falls. Same water, same algae: the only difference is light.',
+     overlay(sim,ctx,LH,k){pdCard(ctx,k,three(sim));}},
+    {key:'calc',title:'Gross and net productivity',speed:3,fresh:true,focus:[160,40,620,350],
+     see:'The same 24 hours, faster. When it finishes, look at the three numbers the card works out.',
+     why:'The dark bottle’s drop is <b>respiration (R)</b>. The light bottle’s gain is what is left after respiration: <b>net primary productivity (NPP)</b>. Add them and you get all the oxygen the algae made: <b>gross primary productivity (GPP)</b>. So GPP = light − dark, NPP = light − initial, and NPP = GPP − R.',
+     overlay(sim,ctx,LH,k){const done=sim.st.h>=23.9;pdCard(ctx,k,done?[['After 24 hours (mg O₂/L/day)',{w:800}],['Respiration = initial − dark = '+pdM(sim,'rr').toFixed(2),{w:700,c:CE_RED}],['NPP = light − initial = '+pdM(sim,'npp').toFixed(2),{w:700,c:CE_GREEN}],['GPP = light − dark = '+pdM(sim,'gpp').toFixed(2),{w:800}]]:three(sim));}},
+    {key:'night',title:'When the light goes out',speed:1.5,fresh:true,focus:[160,40,620,350],
+     run(sim){atReset(sim);},
+     see:'Watch the clear bottle when the lamp switches off halfway through.',
+     why:'With no light, the clear bottle is no different from the foil one: photosynthesis stops, respiration goes on, and oxygen falls. A real pond does this every night.',
+     overlay(sim,ctx,LH,k){if(sim.st.h>=12&&sim.p.light!==0&&!sim._pdOff){sim._pdOff=1;BioLab.setValues(sim,{light:0});}if(sim.st.h<1)sim._pdOff=0;pdCard(ctx,k,[['Lamp: '+(sim.p.light?'on':'off'),{w:800,c:sim.p.light?PAL['cv-ink']:CE_RED}]].concat(three(sim).slice(1)));}},
+    {key:'hook',title:'Your question: fertilizer in the pond',set:{nut:'high'},speed:2,fresh:true,focus:[160,40,620,350],
+     see:'Fertilizer has washed into the pond and the algae doubled. Watch 24 hours again, especially the dark bottle.',
+     why:'Twice the algae means twice the respiration. The dark bottle drops from 8.23 to about <b>5.59 mg/L</b>, nearly twice as far as with normal nutrients (6.79). In full light the same water climbs to about 14.8 mg/L. More algae means bigger swings: more oxygen by day, less by night.',
+     so:'That is why fish kills in warm, green ponds happen around sunrise, after a whole night of respiration with no photosynthesis. Most fish need several mg/L of oxygen.',
+     overlay(sim,ctx,LH,k){pdCard(ctx,k,[['Nutrients: high (twice the algae)',{w:800}]].concat(three(sim).slice(1)));}},
+    {key:'warm',lvl:'honors',title:'Warm water',set:{temp:30},speed:2,fresh:true,focus:[160,40,620,350],
+     see:'The same bottles in a 30 °C water bath instead of 20 °C. Watch the dark bottle.',
+     why:'Respiration is run by enzymes that speed up as water warms, roughly doubling every 10 °C, so the dark bottle drops faster. Warm water also holds less oxygen to begin with. Together, that is why warm, still ponds in late summer are most at risk.',
+     overlay(sim,ctx,LH,k){pdCard(ctx,k,[['Water bath: '+sim.p.temp+' °C',{w:800}]].concat(three(sim).slice(1)));}},
+    {key:'sat',lvl:'ap',title:'Light saturation',set:{light:50},speed:3,fresh:true,focus:[160,40,620,350],
+     see:'Half the light (50%). Compare the GPP with full light.',
+     why:'At 50% light GPP is about 3.75 mg O₂/L/day, not half of full light’s 4.62 but about 80% of it. As light rises, the algae’s enzymes and pigments become the limit, so photosynthesis levels off. To report productivity as carbon, multiply mg O₂ by 0.375 (12 g of C per 32 g of O₂) and by 1,000 L per m³.',
+     overlay(sim,ctx,LH,k){const done=sim.st.h>=23.9;pdCard(ctx,k,done?[['50% light, after 24 hours',{w:800}],['GPP: '+pdM(sim,'gpp').toFixed(2)+' mg O₂/L/day',{w:700}],['As carbon: '+Math.round(pdM(sim,'gppc')).toLocaleString()+' mg C/m³/day',{w:700,c:CE_GREEN}]]:three(sim));}}
+  ],
+  useIt:[
+    {do:'If you keep an aquarium, run the air pump at night, even in a tank full of plants.',
+     why:'Plants make oxygen only in light. At night they keep using it, so a crowded tank has the least oxygen just before the lights come on.'},
+    {do:'Use less lawn fertilizer, and never before a heavy rain.',
+     why:'Runoff carries nitrogen and phosphorus into ponds and creeks, where it feeds algae blooms. More algae means deeper oxygen crashes at night.'},
+    {do:'If you see a green pond with dead fish, check the time and the weather.',
+     why:'Fish kills usually happen at dawn after warm, still, cloudy days, when algae have made little oxygen but used it all night. Report large fish kills to Colorado Parks and Wildlife.'}],
+  tryIt:[{title:'the bubbling leaf (1 hour)',
+    steps:['Put a fresh spinach leaf or a sprig of an aquarium plant in a clear glass of water with a pinch of baking soda.','Set it in bright sunlight and watch the leaf for 10 minutes.','Move it into a dark closet for 10 minutes, then check again.'],
+    look:'In sunlight, tiny oxygen bubbles form on the leaf. In the dark they stop forming: photosynthesis needs light, the same as in the light bottle.'}]
+}};
+})());
+
 })();
