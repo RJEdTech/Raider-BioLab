@@ -3328,4 +3328,65 @@ return {commons:{
 }};
 })());
 
+/* ---------- Tree carbon ---------- */
+BioLab.addLearn((function(){
+const tcM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const tcCard=(ctx,k,rows)=>dcCard(ctx,k,250,40,296,rows,{hi:false});
+const n0=v=>Math.round(v).toLocaleString();
+const rows=sim=>[['Age '+Math.round(sim.st.age)+' years',{w:800}],['Carbon stored: '+n0(tcM(sim,'C'))+' kg',{w:700,c:CE_GREEN}],['Added this year: '+tcM(sim,'seq').toFixed(1)+' kg',{w:700}]];
+return {treecarbon:{
+  goals:{
+    bio:['Where a tree’s wood comes from: carbon dioxide out of the air','How to estimate a tree’s carbon from two measurements','Why a tree’s carbon keeps growing while its yearly intake rises and then falls','How many trees it takes to offset one person’s carbon'],
+    honors:['Where a tree’s wood comes from: carbon dioxide out of the air','How diameter and height give green weight, dry weight and carbon','Carbon storage vs carbon sequestration','Scaling one tree up to a hectare of forest'],
+    ap:['Where a tree’s wood comes from: carbon dioxide out of the air','Carbon storage vs carbon sequestration','Scaling one tree up to a hectare of forest','What happens to the carbon after a fire or a harvest']},
+  matters:'Planting trees is one of the most talked-about climate fixes. Measuring real trees shows what they can do, and why trees alone can’t offset a modern lifestyle.',
+  question:'A 45-year-old green ash on campus is about 53 cm across and 15 m tall. How much carbon does it store, and how many trees like it would it take to take in one American’s carbon each year (about 4,363 kg)?',
+  startKey:'start',startRun:false,
+  steps:[
+    {key:'grow',title:'Wood made from air',set:{species:'ash',age:1},speed:2,focus:[0,40,560,400],
+     see:'A green ash seedling. Watch it grow, year by year. The blue CO₂ bubbles show carbon dioxide being taken in from the air.',
+     why:'Through photosynthesis, a tree takes carbon dioxide from the air and builds the carbon into sugar, then into wood, bark, roots and leaves. About half of a tree’s dry weight is carbon, and nearly all of it came out of the air, not the soil.',
+     overlay(sim,ctx,LH,k){tcCard(ctx,k,rows(sim));}},
+    {key:'measure',title:'Two measurements tell you its carbon',pause:true,set:{species:'ash',age:45},focus:[0,40,560,400],
+     see:'The same tree at 45 years. The gold band marks the trunk at breast height, 1.4 m above the ground. The ruler on the left measures height.',
+     why:'You can’t weigh a living tree, but you can measure two things: the trunk’s diameter at breast height and the height. Wood weight goes up with diameter squared times height, like the volume of a cylinder. Half the fresh weight is water, and half of what is left is carbon.',
+     so:{honors:'Green weight GW = 0.0346 × d² × h for trunks 28 cm or wider (0.0577 for smaller ones). Dry weight = GW × 0.5. Carbon = dry weight × 0.5.'},
+     overlay(sim,ctx,LH,k){tcCard(ctx,k,[['Diameter: '+tcM(sim,'d').toFixed(0)+' cm · Height: '+tcM(sim,'h').toFixed(1)+' m',{w:700}],['Carbon stored: '+n0(tcM(sim,'C'))+' kg',{w:800,c:CE_GREEN}]]);}},
+    {key:'curves',title:'Storage keeps rising; intake peaks',set:{species:'ash',age:10},speed:3,focus:[0,40,800,400],
+     see:'Watch the ash from 10 to about 120 years. Compare “Carbon stored” with “Added this year.”',
+     why:'Carbon <b>storage</b> is the total in the tree, and it keeps climbing as long as the tree lives. Carbon <b>sequestration</b> is how much it adds each year: it rises while the tree grows fast, peaks around age 40 to 50, then falls as growth slows. Old trees hold the most carbon; middle-aged trees add it fastest.',
+     overlay(sim,ctx,LH,k){tcCard(ctx,k,rows(sim));}},
+    {key:'species',title:'Species matters',set:{species:'cottonwood',age:45},pause:true,focus:[0,40,800,400],
+     cause:{from:{species:'ash'},delay:2.5,label:'Species',at:[280,425]},
+     see:'The 45-year-old ash. Watch it switch to a plains cottonwood of the same age.',
+     why:'Cottonwoods grow fast and huge along Colorado’s rivers: at 45 years about 84 cm across and 22 m tall. This one stores about 1,370 kg of carbon, more than three times the ash’s 381 kg. Wide trunks count most, because carbon goes up with diameter squared.',
+     overlay(sim,ctx,LH,k){tcCard(ctx,k,[[sim.p.species==='cottonwood'?'Plains cottonwood, 45 years':'Green ash, 45 years',{w:800}],['Carbon stored: '+n0(tcM(sim,'C'))+' kg',{w:800,c:CE_GREEN}],['Added this year: '+tcM(sim,'seq').toFixed(1)+' kg',{w:700}]]);}},
+    {key:'hook',title:'Your question: offsetting one person',set:{species:'ash',age:45},pause:true,focus:[0,40,800,400],
+     see:'The 45-year-old green ash on campus.',
+     why:'It stores about <b>381 kg</b> of carbon and adds about <b>12.5 kg a year</b>. One American’s footprint is about 4,363 kg of carbon a year, so it would take about <b>350 trees like this one</b>, each taking in carbon every year, to keep up. Planted 400 to a hectare, that is close to a whole hectare of forest, about two football fields, per person.',
+     so:'Trees help, and forests store huge amounts of carbon, but planting cannot keep up with a modern lifestyle by itself. Cutting emissions matters at least as much.',
+     overlay(sim,ctx,LH,k){const s=tcM(sim,'seq');tcCard(ctx,k,[['Stores '+n0(tcM(sim,'C'))+' kg C · adds '+s.toFixed(1)+' kg/yr',{w:700}],['Trees to offset one person: about '+n0(4363/s),{w:800,c:CE_RED}]]);}},
+    {key:'stand',lvl:'honors',title:'From one tree to a forest',set:{species:'ash',age:45,view:'stand'},pause:true,focus:[0,40,800,400],
+     see:'A hectare of forest (100 m × 100 m) of 45-year-old ash, 400 trees.',
+     why:'Multiply one tree by the number per hectare: 400 × 381 kg ≈ 152 tonnes of carbon stored, and about 5 tonnes added each year. Real forests also store a lot of carbon in roots and soil, which this estimate leaves out.',
+     overlay(sim,ctx,LH,k){tcCard(ctx,k,[['Stored: '+tcM(sim,'standC').toFixed(0)+' t C/ha',{w:800,c:CE_GREEN}],['Added: '+tcM(sim,'standSeq').toFixed(1)+' t C/ha/yr',{w:700}]]);}},
+    {key:'fire',lvl:'ap',title:'Fire or harvest',set:{species:'ash',age:80},speed:1,focus:[0,40,800,400],
+     run(sim){atReset(sim);},
+     see:'An 80-year-old stand. Watch it burn, then follow where its carbon goes.',
+     why:'Fire sends much of the stored carbon back to the air as CO₂ within a few years, as the burned wood decays. A timber harvest keeps part of it in lumber for decades. Either way, a young forest regrows and starts taking carbon in again, but it takes decades to rebuild what was lost.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,2,'burn',s=>{const a=s.def.actions.find(x=>x.id==='burn');if(a)a.run(s);});tcCard(ctx,k,[['CO₂ returned to the air: '+tcM(sim,'air').toFixed(0)+' t CO₂/ha',{w:800,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'If your family plants a tree, pick one that suits Colorado and give it room to grow big.',
+     why:'A tree stores the most carbon, and gives the most shade, when it lives long and gets large. A tree that dies young from drought or crowding gives most of its carbon back.'},
+    {do:'Water young trees deeply during dry spells for their first few years.',
+     why:'Young trees grow fast and take in carbon quickly, but in Colorado’s dry climate they often die before they get big. A few long soaks a month help them survive.'},
+    {do:'Count the trees on your block or campus.',
+     why:'At about 350 mature trees per person per year, you can see why trees help but can’t do the job alone. Cutting energy use, like walking or biking short trips, makes up the rest.'}],
+  tryIt:[{title:'measure a real tree (20 minutes)',
+    steps:['Wrap a string around a tree trunk 1.4 m (about chest height) above the ground and measure the string: that is the circumference.','Diameter = circumference ÷ π.','Estimate height: stand where the top of the tree is at 45° (a folded square of paper helps). Your distance from the trunk plus your eye height is about the height.'],
+    look:'Use GW = 0.0346 × d² × h (or 0.0577 if d is under 28 cm), then halve twice to get kg of carbon. Big old trees often store several tonnes.'}]
+}};
+})());
+
 })();
