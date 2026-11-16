@@ -2997,4 +2997,80 @@ return {humanpop:{
 }};
 })());
 
+/* ---------- Succession ---------- */
+BioLab.addLearn((function(){
+const scM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+/* start a slope at a set point: bare rock or burned slope, run forward `years` */
+function scAt(sim,start,years){if(sim.p.start!==start)BioLab.setValues(sim,{start});BioLab.reset(sim);for(let y=0;y<years;y++){for(let q=0;q<4;q++)sim.def.step(sim,0.25);sim.t+=1;}}
+const scCard=(ctx,k,rows)=>dcCard(ctx,k,10,46,250,rows,{hi:false});
+const base=sim=>[['Year '+Math.floor(sim.t),{w:800}],['Soil: '+scM(sim,'soil').toFixed(1)+' cm',{w:700,c:'#8a5a2a'}],['Stage: '+scM(sim,'stage'),{w:700}]];
+return {succession:{
+  goals:{
+    bio:['How life moves onto bare rock and builds soil','Why each stage of plants makes way for the next','Why a forest comes back so much faster after a fire than after a glacier','What that means for Colorado’s burned forests'],
+    honors:['How life moves onto bare rock and builds soil','Why each stage of plants makes way for the next','Primary vs secondary succession, and why soil is the head start','Why aspen come first after a fire and spruce and fir take over'],
+    ap:['How life moves onto bare rock and builds soil','Why each stage of plants makes way for the next','Primary vs secondary succession, and why soil is the head start','Why species richness peaks in the middle, and the intermediate disturbance hypothesis']},
+  matters:'Colorado has lost large forests to wildfire. Knowing how a slope recovers, and why soil decides how fast, explains what you will see on burned hillsides on your next drive into the mountains.',
+  startKey:'start',startRun:true,startSpeed:0.5,
+  steps:[
+    {key:'rock',title:'Bare rock',pause:true,focus:[0,240,800,210],
+     run(sim){scAt(sim,'primary',0);},
+     see:'A glacier has melted back and left bare rock. No soil, no seeds, no life.',
+     why:'Plants with roots need soil to hold water and nutrients, and there is none. Life starting from bare rock like this is <b>primary succession</b>. It begins with the toughest organisms there are.',
+     overlay(sim,ctx,LH,k){scCard(ctx,k,base(sim));}},
+    {key:'lichens',title:'Pioneers make soil',speed:0.6,focus:[[0,290,800,90],[470,50,280,232]],
+     run(sim){scAt(sim,'primary',0);},
+     see:'Watch the close-up of the rock and the soil depth as the first decades pass.',
+     why:'Lichens, a fungus and an alga living together, are the <b>pioneer species</b>. They cling to bare rock, release acids that slowly break it apart, and add their dead remains. Mosses follow, trapping dust and water. After about a century there are only about 2 cm of soil.',
+     overlay(sim,ctx,LH,k){scCard(ctx,k,base(sim));}},
+    {key:'grass',title:'Grasses and flowers move in',speed:1,focus:[0,150,800,200],
+     run(sim){scAt(sim,'primary',70);},
+     see:'The soil is a couple of centimeters deep. Watch grasses and wildflowers arrive.',
+     why:'Now there is enough soil for roots. Grasses grow fast in full sun and quickly cover the ground. Their roots and dead leaves build soil much faster than lichens did. Each stage changes the ground in a way that lets the next stage in.',
+     overlay(sim,ctx,LH,k){scCard(ctx,k,base(sim));}},
+    {key:'trees',title:'Shrubs, then trees',speed:1.5,focus:[0,40,800,320],
+     run(sim){scAt(sim,'primary',150);},
+     see:'Watch shrubs, then fast-growing trees, take root as the soil deepens.',
+     why:'Woody plants need deep soil, about 5 cm for shrubs and more for trees. Taller plants catch the sunlight first and shade out the grasses below them. Around year 225, trees cover about half the slope.',
+     overlay(sim,ctx,LH,k){scCard(ctx,k,base(sim).concat([['Tree cover: '+Math.round(scM(sim,'trees'))+'%',{w:700,c:CE_GREEN}]]));}},
+    {key:'climax',title:'The climax forest',speed:2,focus:[0,40,800,320],
+     run(sim){scAt(sim,'primary',300);},
+     see:'Watch the forest age, and watch the number of plant species.',
+     why:'Shade-tolerant spruce and fir slowly take over. In their deep shade, the sun-loving grasses, flowers, shrubs and aspen die out, so the number of species drops from about 20 to about 8. This stable, long-lasting stage is the <b>climax community</b>.',
+     overlay(sim,ctx,LH,k){scCard(ctx,k,[['Year '+Math.floor(sim.t),{w:800}],['Plant species: '+Math.round(scM(sim,'rich')),{w:700,c:CE_RED}],['Stage: '+scM(sim,'stage'),{w:700}]]);}},
+    {key:'fire',title:'Fire: secondary succession',speed:0.6,focus:[0,40,800,410],
+     run(sim){atReset(sim);scAt(sim,'primary',420);sim._sc0=null;},
+     see:'An old climax forest. Watch a wildfire burn through it, then watch the slope recover.',
+     why:'Fire kills most of the plants, but the soil survives, along with roots and seeds. So recovery skips the centuries of soil-building: grasses return within a few years and young trees within decades. Recovery where soil survives is <b>secondary succession</b>.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,2,'burn',s=>{const a=s.def.actions.find(x=>x.id==='fire');a.run(s);s._sc0=s.t;});
+       scCard(ctx,k,[[sim._sc0==null?'Old forest':'Years since the fire: '+Math.floor(sim.t-sim._sc0),{w:800}],['Tree cover: '+Math.round(scM(sim,'trees'))+'%',{w:700,c:CE_GREEN}],['Soil: '+scM(sim,'soil').toFixed(1)+' cm (it survived)',{w:700,c:'#8a5a2a'}]]);}},
+    {key:'hook',title:'Your question: fire slope vs glacier slope',speed:0.3,focus:[0,40,800,410],
+     run(sim){scAt(sim,'secondary',0);},
+     see:'The burned slope above the town, starting the year after the fire. Watch the tree cover.',
+     why:'Grasses cover the burned slope within about 7 years, and trees cover <b>half the ground by about year 30</b>. On the bare rock up the valley, lichens and mosses spend about a century building the first 2 cm of soil, and trees reach half cover only around <b>year 225</b>.',
+     so:'Soil is the head start. Where soil is lost, after a glacier, a landslide or severe erosion, recovery takes centuries instead of decades.',
+     overlay(sim,ctx,LH,k){scCard(ctx,k,[['Burned slope, year '+Math.floor(sim.t),{w:800}],['Tree cover: '+Math.round(scM(sim,'trees'))+'%',{w:800,c:CE_GREEN}],['Bare rock reaches 50% around year 225',{s:12,c:PAL['cv-soft']}]]);}},
+    {key:'aspen',lvl:'honors',title:'Aspen first, then spruce and fir',speed:2,focus:[0,40,800,320],
+     run(sim){scAt(sim,'secondary',20);},
+     see:'The burned slope from year 20 on. Watch the light green aspen and the dark spruce and fir.',
+     why:'Aspen sprout from roots that survived underground and grow fast in full sun, so they lead the recovery. But aspen seedlings can’t grow in shade, including their own. Spruce and fir tolerate shade, grow slowly underneath, and by about year 250 they have replaced most of the aspen.',
+     overlay(sim,ctx,LH,k){scCard(ctx,k,[['Year '+Math.floor(sim.t),{w:800}],['Aspen cover: '+Math.round(scM(sim,'aspen'))+'%',{w:700,c:'#6f9a2a'}],['Stage: '+scM(sim,'stage'),{w:700}]]);}},
+    {key:'idh',lvl:'ap',title:'Intermediate disturbance',set:{dist:3},speed:2,focus:[0,40,800,410],
+     run(sim){scAt(sim,'secondary',0);},
+     see:'The same slope, but now a moderate fire burns about every 33 years (3 per century). Watch the number of species and the long-run average.',
+     why:'With no fires, shade-tolerant trees eventually crowd out everything else. With fires every few years, only fast colonizers survive. With fires now and then, the slope keeps a mix of every stage, so the most species can live there: the <b>intermediate disturbance hypothesis</b>.',
+     overlay(sim,ctx,LH,k){scCard(ctx,k,[['Year '+Math.floor(sim.t)+' · fires: 3 per century',{w:800}],['Plant species now: '+Math.round(scM(sim,'rich')),{w:700}],['100-year average: '+scM(sim,'avg').toFixed(1),{w:700,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'On your next drive into the mountains, look for an old burn scar and read its stage.',
+     why:'Grasses and fireweed mean a recent fire; thick, even-aged aspen mean a fire a few decades ago; dark spruce and fir with few aspen mean it has been a long time. You can read a slope’s fire history from its plants.'},
+    {do:'Stay on the trail, especially on steep slopes and above treeline.',
+     why:'Trampling strips the thin soil. Where soil is lost, recovery starts over from almost nothing and can take centuries, as on bare rock.'},
+    {do:'Look closely at the colored crusts on rocks on your next hike.',
+     why:'Those green, orange and gray patches are lichens, the pioneers that start soil on bare rock. Many are decades or centuries old and grow only millimeters a year, so leave them be.'}],
+  tryIt:[{title:'the sidewalk crack survey (15 minutes)',
+    steps:['Find a crack in an old sidewalk or parking lot and a nearby crack in newer pavement.','Look at what is growing in each: nothing, moss, small weeds or bigger plants.','Note how much soil and debris has collected in each crack.'],
+    look:'Older cracks hold more soil and later-stage plants. It is succession in miniature: what can grow depends on how much soil has built up.'}]
+}};
+})());
+
 })();
