@@ -3697,4 +3697,65 @@ return {pipette:{
 }};
 })());
 
+/* ---------- Transformation (pGLO) ---------- */
+BioLab.addLearn((function(){
+const tfM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const tfA=(sim,id)=>{const a=(sim.def.actions||[]).find(x=>x.id===id);if(a)a.run(sim);};
+/* run the whole procedure and 48 h of incubation instantly */
+function tfDone(sim){tfA(sim,'restart');tfA(sim,'runall');for(let i=0;i<1200&&!(sim.st.stage>=9&&sim.st.h>=48);i++)sim.def.step(sim,0.1);}
+const tfCard=(ctx,k,rows)=>dcCard(ctx,k,14,14,300,rows,{hi:false});
+const plates=sim=>[['LB/amp +pGLO: '+tfM(sim,'c3')+' colonies',{w:800}],['LB/amp/ara +pGLO: '+tfM(sim,'c4')+' colonies',{w:700}],['Under UV: '+tfM(sim,'glow'),{w:700,c:CE_GREEN}]];
+return {transformation:{
+  goals:{
+    bio:['What a plasmid is, and the two genes pGLO carries','How heat shock gets a plasmid into bacteria','How an antibiotic finds the rare cells that changed','Why the bacteria glow only with arabinose'],
+    honors:['What a plasmid is, and the two genes pGLO carries','Why each step of the procedure matters','How the four plates and their controls separate cause from effect','How to calculate transformation efficiency'],
+    ap:['How the four plates and their controls separate cause from effect','Selection vs screening','Gene regulation: the arabinose switch','Transformation efficiency, and why it doesn’t depend on volume plated']},
+  matters:'Moving genes into bacteria is how insulin and many medicines are made, and it is also how antibiotic resistance spreads in hospitals. This lab is the basic move behind both.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'plasmid',title:'A plasmid with two genes',pause:true,focus:[0,0,800,450],run(sim){tfA(sim,'restart');},
+     see:'The pGLO plasmid: a small circle of DNA, separate from the bacteria’s own chromosome.',
+     why:'Bacteria pass plasmids around naturally. pGLO carries two useful genes: <b>bla</b>, which lets a cell survive the antibiotic ampicillin, and <b>GFP</b>, a green fluorescent protein borrowed from a glowing jellyfish. If a cell takes in pGLO, both genes come with it.'},
+    {key:'proc',title:'Getting the plasmid in',speed:1,focus:[0,0,800,450],run(sim){atReset(sim);tfA(sim,'restart');},
+     see:'Watch the whole procedure run, step by step.',
+     why:'Ice-cold calcium chloride shields the negative charges on DNA and the cell membrane so the plasmid can get close. A <b>heat shock</b>, 50 seconds at 42 °C then straight back to ice, briefly opens the membrane so a few cells take in a plasmid. Warm broth lets them recover and switch on the new genes before they meet the antibiotic.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1,'go',s=>tfA(s,'runall'));tfCard(ctx,k,[[String(tfM(sim,'stepn')),{w:700,s:12}]]);}},
+    {key:'plates',title:'Four plates',pause:true,focus:[0,0,800,450],run(sim){tfDone(sim);},
+     see:'After 48 hours: two plates of cells that got no plasmid (−pGLO) and two of cells that did (+pGLO).',
+     why:'Without ampicillin, the −pGLO cells grow a solid <b>lawn</b>: proof the cells were alive. With ampicillin, −pGLO cells all die. On the +pGLO ampicillin plates only the cells that took in the plasmid survive, and each one grows into a colony.',
+     overlay(sim,ctx,LH,k){tfCard(ctx,k,[['LB −pGLO: '+tfM(sim,'lawn'),{w:700}]].concat(plates(sim).slice(0,2)));}},
+    {key:'hook',title:'Your question: finding the few that changed',pause:true,focus:[0,0,800,450],run(sim){tfDone(sim);},
+     see:'The LB/amp +pGLO plate: 100 µL of cells, roughly 100 million of them, was spread on it.',
+     why:'About <b>100 to 125 colonies</b> grow (the exact count varies from plate to plate): roughly <b>1 cell in a million</b> took in the plasmid. You don’t search for them. Ampicillin kills every cell without the plasmid, so each survivor grows into a colony you can count. This trick is called <b>selection</b>.',
+     so:'When the change you want is rare, link it to a survival gene so only the successes grow. Genetic engineers do this every day, and resistant bacteria in hospitals “do” it on their own when antibiotics are overused.',
+     overlay(sim,ctx,LH,k){tfCard(ctx,k,[['LB/amp +pGLO: '+tfM(sim,'c3')+' colonies',{w:800,c:CE_RED}],'From about 100 million cells spread']);}},
+    {key:'glow',title:'The green switch',set:{uv:true},pause:true,focus:[0,0,800,450],
+     cause:{from:{uv:false},delay:2,label:'UV light',at:[400,420]},
+     run(sim){tfDone(sim);},
+     see:'Watch the UV light switch on over the plates.',
+     why:'Only the colonies on the plate with <b>arabinose</b>, a sugar, glow green. In pGLO, the GFP gene sits behind a switch that turns on only when arabinose is present. All the +pGLO colonies carry the GFP gene; only the ones given arabinose are using it. Same genes, different environment, different result.',
+     overlay(sim,ctx,LH,k){tfCard(ctx,k,plates(sim));}},
+    {key:'noplasmid',lvl:'honors',title:'The control that proves it',set:{plasmid:false},pause:true,focus:[0,0,800,450],
+     run(sim){tfDone(sim);},
+     see:'Run the whole lab again, but forget to add the plasmid to the +pGLO tube.',
+     why:'Now nothing grows on any ampicillin plate. That shows the colonies came from the plasmid, not from cells that happened to resist ampicillin on their own. A good experiment always includes the control that rules out the other explanations.',
+     overlay(sim,ctx,LH,k){tfCard(ctx,k,plates(sim).slice(0,2));}},
+    {key:'eff',lvl:'ap',title:'Transformation efficiency',pause:true,focus:[0,0,800,450],run(sim){BioLab.setValues(sim,{plasmid:true});tfDone(sim);},
+     see:'The LB/amp +pGLO count and the DNA spread on that plate.',
+     why:'Efficiency = transformants ÷ µg of DNA spread. Spread twice the volume and you get about twice the colonies but also twice the DNA, so efficiency stays the same. It measures how well the cells took in DNA, not how much you plated.',
+     overlay(sim,ctx,LH,k){tfCard(ctx,k,[['Colonies: '+tfM(sim,'c3')+' · DNA spread: '+tfM(sim,'dna').toFixed(3)+' µg',{w:700}],['Efficiency: '+Math.round(tfM(sim,'eff')).toLocaleString()+' per µg',{w:800,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'Take antibiotics exactly as prescribed, and never take leftovers or someone else’s.',
+     why:'Every course of antibiotics selects for resistant bacteria, just like the ampicillin plate. Using them only when needed slows the spread of resistance genes.'},
+    {do:'Wash your hands well, especially in hospitals and locker rooms.',
+     why:'Resistance genes often ride on plasmids that bacteria pass to each other. Keeping bacteria from spreading slows the spread of their plasmids too.'},
+    {do:'Look up how insulin is made.',
+     why:'Since the 1980s, most insulin for people with diabetes has been made by microbes given the human insulin gene, the same basic move as pGLO.'}],
+  tryIt:[{title:'selection with paper clips (10 minutes)',
+    steps:['Mix 100 paper clips with 1 bent one (the “transformed” cell).','Searching: have a partner find the bent one by looking at each clip, and time it.','Selecting: pour all the clips through a slot only the bent clip can’t pass, and time it.'],
+    look:'Selection finds the rare one at once, however many there are. That is why the lab uses ampicillin instead of checking 100 million cells one by one.'}]
+}};
+})());
+
 })();
