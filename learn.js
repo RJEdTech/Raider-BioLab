@@ -3268,4 +3268,64 @@ return {productivity:{
 }};
 })());
 
+/* ---------- Tragedy of the commons ---------- */
+BioLab.addLearn((function(){
+const cmM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const cmCard=(ctx,k,rows)=>dcCard(ctx,k,546,8,246,rows,{hi:false});
+/* keep a running total of your catch, and stop after `n` seasons */
+function cmRun(sim,n){const s=sim.st;if(s._mine==null){s._mine=0;s._seen=0;}if(s._seen<s.season){s._mine+=s.catches[0]*(s.season-s._seen);s._seen=s.season;}
+  if(s.season>=n&&sim.running){sim.running=false;if(sim.ui&&sim.ui.play)sim.ui.play.textContent='Play';}return s._mine;}
+const n0=v=>Math.round(v).toLocaleString();
+return {commons:{
+  goals:{
+    bio:['What a “commons” is, and why shared resources are easy to overuse','How a fish population replaces what is caught, up to a point','Why one fleet taking more can ruin the lake for everyone','How limits keep a shared resource going'],
+    honors:['What a “commons” is, and why shared resources are easy to overuse','How a fish population replaces what is caught, up to a point','Why one fleet taking more can ruin the lake for everyone','How a shared quota saves the lake'],
+    ap:['What a “commons” is, and why shared resources are easy to overuse','How surplus growth sets a sustainable catch','Why overfishing collapses a stock that is slow to recover','How quotas and the maximum sustainable yield work']},
+  matters:'Fisheries, groundwater, the Colorado River, clean air and even a shared group project all work like this lake. Understanding the trap is the first step to avoiding it.',
+  startKey:'start',startRun:false,
+  steps:[
+    {key:'lake',title:'One lake, four fleets',pause:true,fresh:true,focus:[0,90,800,345],
+     see:'Four fishing fleets share one lake of 8,000 fish. The red boat is yours. Each fish drawn stands for 100 real fish.',
+     why:'Nobody owns the fish, so any fleet can take them. A resource that everyone can use but no one owns is a <b>commons</b>. Each season the fish reproduce, then all four fleets fish.',
+     overlay(sim,ctx,LH,k){tag(ctx,'Your fleet',290,70,k,{hi:true});tag(ctx,'The other three fleets',560,70,k);}},
+    {key:'careful',title:'Fishing carefully',speed:6,fresh:true,focus:[0,0,800,450],
+     run(sim){sim.st._mine=null;},
+     see:'Every fleet fishes carefully: you take 300 fish a season. Watch 40 seasons go by, and the fish count.',
+     why:'Each season the lake grows new fish. The fewer fish there are (below the lake’s limit), the faster they reproduce, because each has more food and room. The lake settles at about 5,800 fish, where the new fish each season match what the fleets take. That catch can go on forever.',
+     overlay(sim,ctx,LH,k){const m=cmRun(sim,40);cmCard(ctx,k,[['Season '+sim.st.season,{w:800}],['Fish in the lake: '+n0(cmM(sim,'fish')),{w:700,c:CE_BLUE}],['Your total catch: '+n0(m),{w:700,c:CE_GREEN}]]);}},
+    {key:'hook',title:'Your question: 1,000 fish a season',set:{catch:1000},speed:6,fresh:true,focus:[0,0,800,450],
+     run(sim){sim.st._mine=null;},
+     see:'Same lake, same careful fleets, but now your fleet takes 1,000 fish a season. Watch 40 seasons.',
+     why:'For a few seasons you catch more than ever. But the fleets now take more than the lake can replace, so the fish shrink every season, and around season 15 the lake collapses. After that every fleet catches nothing. Your total ends near <b>11,400 fish</b>, less than the careful plan’s <b>12,000</b>, and the careful plan still leaves a healthy lake of about 5,800 fish.',
+     so:'Taking more now cost you more later, and it cost the other fleets too, even though they fished carefully.',
+     overlay(sim,ctx,LH,k){const m=cmRun(sim,40);cmCard(ctx,k,[['Season '+sim.st.season,{w:800}],['Fish in the lake: '+n0(cmM(sim,'fish')),{w:700,c:CE_BLUE}],['Your total catch: '+n0(m),{w:700,c:CE_RED}]]);}},
+    {key:'tragedy',title:'The tragedy of the commons',set:{catch:1200,others:'greedy'},speed:3,fresh:true,focus:[0,0,800,450],
+     run(sim){sim.st._mine=null;},
+     see:'Now every fleet thinks the same way: “If I don’t take the fish, someone else will.” Watch what happens.',
+     why:'Each fleet keeps all the profit from every extra fish it lands, but the damage to the lake is shared by all four. So each one has a reason to take more, and together they empty the lake in about 5 seasons. Each acted in its own interest, and everyone lost. That is the <b>tragedy of the commons</b>.',
+     overlay(sim,ctx,LH,k){cmRun(sim,15);cmCard(ctx,k,[['Season '+sim.st.season,{w:800}],['Fish in the lake: '+n0(cmM(sim,'fish')),{w:700,c:CE_RED}],['Lake: '+cmM(sim,'status'),{w:700}]]);}},
+    {key:'quota',lvl:'honors',title:'A shared limit',set:{catch:1200,others:'greedy',quota:true,quotaAmt:800},speed:3,fresh:true,focus:[0,0,800,450],
+     run(sim){sim.st._mine=null;},
+     see:'The same greedy fleets, but they agree on a total quota of 800 fish a season, 200 each.',
+     why:'The quota holds everyone’s catch below what the lake can replace. The lake stays healthy, near 7,900 fish, and every fleet keeps catching 200 a season for as long as the agreement holds. Limits work when everyone follows them and someone checks.',
+     overlay(sim,ctx,LH,k){cmRun(sim,30);cmCard(ctx,k,[['Season '+sim.st.season+' · quota 800',{w:800}],['Fish in the lake: '+n0(cmM(sim,'fish')),{w:700,c:CE_GREEN}],['Lake: '+cmM(sim,'status'),{w:700}]]);}},
+    {key:'msy',lvl:'ap',title:'Maximum sustainable yield',set:{catch:300},speed:6,fresh:true,focus:[0,0,800,450],
+     run(sim){sim.st._mine=null;},
+     see:'Back to careful fishing. Watch the surplus growth each season, and the most the lake could ever give.',
+     why:'Surplus growth is highest at a middle population, not when the lake is full (no room) or nearly empty (too few parents). The peak is the <b>maximum sustainable yield (MSY)</b>. Catch more than MSY every year and the stock falls; real managers aim below it because counts and growth rates are uncertain.',
+     overlay(sim,ctx,LH,k){cmRun(sim,40);cmCard(ctx,k,[['Surplus growth: '+n0(cmM(sim,'surplus'))+' fish/season',{w:700}],['MSY: '+n0(cmM(sim,'msy'))+' fish/season',{w:800,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'Follow bag limits and release undersized fish when you fish in Colorado.',
+     why:'Colorado Parks and Wildlife sets daily limits so one person’s catch doesn’t empty a lake for everyone. It is a quota for a commons.'},
+    {do:'In your next group project, agree on who does what before you start.',
+     why:'A group grade is a commons: each person gains by doing less while the cost is shared. Clear roles and checking in are the same fix as a fishing quota.'},
+    {do:'Take shorter showers in a dry year.',
+     why:'Colorado’s rivers and aquifers are shared commons. Each household’s use looks small, but together it decides whether there is enough for everyone downstream.'}],
+  tryIt:[{title:'the cracker game (15 minutes, 4 people)',
+    steps:['Put 16 small crackers or candies in a shared bowl: the “lake.”','Each round, each player takes as many as they want, at the same time.','After each round, add one new piece for every two left in the bowl. Play 6 rounds, or until the bowl is empty.'],
+    look:'Groups that grab early usually empty the bowl by round 2 or 3. Groups that agree on a limit can keep it going and end up with more each.'}]
+}};
+})());
+
 })();
