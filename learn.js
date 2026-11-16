@@ -3997,4 +3997,90 @@ return {carboncycle:{
 }};
 })());
 
+/* ---------- Energy flow ---------- */
+BioLab.addLearn((function(){
+const enM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const enA=(sim,id)=>{const a=(sim.def.actions||[]).find(x=>x.id===id);if(a)a.run(sim);};
+const NM=['Algae','Zooplankton','Minnows','Pike','Osprey'];
+const kc=v=>v>=10?Math.round(v).toLocaleString('en-US'):v>=1?v.toFixed(1):v.toFixed(2);
+const chain=sim=>{const p=sim.p,n=p.levels,npp=p.gpp*(1-p.resp/100),r=[];let e=npp;for(let i=0;i<n;i++){r.push(e);e*=p.eff/100;}return r;};
+const enCard=(ctx,k,rows,x,w)=>dcCard(ctx,k,x==null?112:x,10,w||236,rows,{hi:false});
+const ladder=(sim,hi)=>chain(sim).map((e,i)=>[NM[i]+': '+kc(e)+' kcal',{w:i===hi?800:600,c:i===hi?CE_RED:undefined}]).reverse();
+const cas=sim=>{const s=sim.st;return [['Sea otters: '+s.O.toFixed(1)+' per km',{w:700}],['Sea urchins: '+s.U.toFixed(0)+' per m²',{w:700,c:CE_RED}],['Kelp cover: '+Math.round(s.Kc)+'%',{w:800,c:CE_GREEN}]];};
+const go=s=>{s.running=true;if(s.ui&&s.ui.play)s.ui.play.textContent='Pause';};
+return {energy:{
+  goals:{
+    bio:['Where the energy in a food chain comes from','Why only about 10% passes up each level','Why top predators are always rare','How much lake it takes to feed you on pike versus minnows'],
+    honors:['Why only about 10% passes up each level','Why top predators are rare and need the most space','Biomagnification: why mercury builds up in big fish','Trophic cascades: how sea otters protect a kelp forest'],
+    ap:['The 10% rule and trophic efficiency','GPP, plant respiration and NPP','Biomagnification','Keystone species and trophic cascades']},
+  matters:'The 10% rule explains why a field feeds more people as grain than as beef, why Colorado posts mercury advisories for big reservoir fish, and why losing one predator can wreck a whole ecosystem.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'sun',title:'Energy starts as sunlight',fresh:true,speed:1,focus:[0,0,800,450],
+     see:'Follow the yellow energy packets from the sun into the green algae at the bottom.',
+     why:'Tiny floating algae (phytoplankton) capture sunlight by photosynthesis and store it in their bodies. That stored energy, about <b>10,000 kcal per m² of lake a year</b>, is the food for everything else in the lake.',
+     overlay(sim,ctx,LH,k){enCard(ctx,k,[['Algae store: '+kc(chain(sim)[0])+' kcal',{w:800,c:CE_GREEN}],['per m² of lake, per year',{s:12}]]);}},
+    {key:'tenth',title:'Only about 10% moves up',fresh:true,speed:1,focus:[170,80,630,360],
+     see:'Compare the bars: zooplankton, minnows and pike, each eating the level below.',
+     why:'Each level gets only about a tenth of the energy of the level below: 10,000 → 1,000 → 100 → 10 kcal. Most of the food an animal eats is burned for moving, breathing and keeping warm, and leaves as heat (the orange squiggles). Some is in parts that never get eaten, like shells, bones and waste.',
+     overlay(sim,ctx,LH,k){enCard(ctx,k,ladder(sim,3));}},
+    {key:'long',title:'A fifth level: the osprey',set:{levels:5},fresh:true,speed:1,focus:[0,60,800,390],
+     cause:{from:{levels:4},delay:1.5,dur:0.6,label:'Food chain length',at:[440,436]},
+     see:'An osprey, a fish-eating hawk, joins the chain and eats the pike.',
+     why:'The osprey gets only <b>1 kcal</b> per m² a year, a tenth of the pike’s 10. To find enough food it has to hunt over a huge stretch of water. That is why food chains rarely go past 4 or 5 levels, and why top predators are always few and need large territories.',
+     overlay(sim,ctx,LH,k){enCard(ctx,k,ladder(sim,sim.p.levels-1).slice(0,2));}},
+    {key:'sunny',title:'More sunlight, more of everything',set:{gpp:40000},fresh:true,speed:1,focus:[170,80,630,360],
+     cause:{from:{gpp:20000},delay:1.5,dur:2,label:'Sunlight captured',at:[440,436]},
+     see:'A sunnier, nutrient-rich lake lets algae capture twice as much energy. Watch every bar.',
+     why:'Each level still gets the same 10% of the level below, so doubling the energy at the bottom doubles it at every level: pike go from 10 to 20 kcal. The base of the food chain sets how much life the whole lake can hold.',
+     overlay(sim,ctx,LH,k){enCard(ctx,k,ladder(sim,3));}},
+    {key:'hook',title:'Your question: living on pike or minnows',fresh:true,speed:1,focus:[0,60,800,390],
+     see:'You eat about 2,000 kcal a day, about 730,000 kcal a year. How much of this lake would it take to feed you on pike, compared with minnows?',
+     why:'Minnows get 100 kcal per m² a year, so a year of minnows takes 730,000 ÷ 100 = <b>7,300 m²</b> of lake, about one soccer field. Pike get only 10 kcal, so a year of pike takes <b>73,000 m²</b>, about 10 soccer fields. One step up the chain costs 10 times more lake.',
+     so:'The same rule works on land. Cattle turn only a small share of the grain they eat into meat, so a field feeds several times more people as grain than as steak. That is one reason food costs and land use depend so much on how high on the food chain we eat.',
+     overlay(sim,ctx,LH,k,tau){const c=chain(sim),a=t=>Math.round(730000/c[t]).toLocaleString('en-US');
+       enCard(ctx,k,[['One year of food: 730,000 kcal',{w:700}],['Minnows: '+a(2)+' m² of lake',{w:700,c:CE_BLUE}],tau>2?['Pike: '+a(3)+' m² of lake',{w:800,c:CE_RED}]:['Pike: ?',{w:700}]]);}},
+    {key:'mercury',lvl:'honors',title:'Mercury builds up',set:{toxin:true},fresh:true,speed:1,focus:[170,80,630,360],
+     cause:{from:{toxin:false},delay:1.5,dur:0.6,label:'Mercury in the lake',at:[440,436]},
+     see:'Mercury, from sources like coal-burning power plants and old gold mines, settles into the lake. The algae absorb a tiny amount: 0.01 ppm. Watch the right-hand column.',
+     why:'Energy is burned off at every level, but mercury stays in the body. Each predator eats many times its own weight in prey and keeps most of their mercury, so it gets about 5 times more concentrated per level. Pike end up at about <b>1.2 ppm</b>, above the FDA limit of 1 ppm for fish. This is <b>biomagnification</b>.',
+     so:'Colorado Parks and Wildlife posts fish-eating advisories for some reservoirs, and they are strictest for big predators like pike and walleye. Small panfish and trout from the same water are usually safer to eat.'},
+    {key:'otters',lvl:'honors',title:'A trophic cascade: remove the otters',set:{mode:'cascade'},fresh:true,speed:2,focus:[0,0,800,450],
+     run(sim){sim._rm=null;},
+     see:'A kelp forest off the Pacific coast. Sea otters eat sea urchins, and urchins eat kelp. Watch what happens when hunters remove the otters.',
+     why:'With no otters, urchins multiply and mow down the kelp. Within about 5 years the forest is an <b>urchin barren</b>: bare rock covered in urchins. Otters never eat kelp, yet the kelp depends on them. That makes otters a <b>keystone species</b>. This happened along the Pacific coast when fur traders hunted otters almost to extinction.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'rm',s=>{enA(s,'removeOtters');s._rm=s.t;});const y=sim._rm==null?0:Math.floor(sim.t-sim._rm);
+       if(y>=12&&sim.running){sim.running=false;if(sim.ui&&sim.ui.play)sim.ui.play.textContent='Play';}
+       enCard(ctx,k,[[sim._rm==null?'Otters still here':'Years without otters: '+y,{w:800}]].concat(cas(sim)),12,270);}},
+    {key:'back',lvl:'honors',title:'Bring the otters back',set:{mode:'cascade'},fresh:true,speed:3,focus:[0,0,800,450],
+     run(sim){const s=sim.st;s.O=0;for(let i=0;i<1200;i++)sim.def.step(sim,0.01);sim._bk=null;},
+     see:'Start from an urchin barren. A few otters return. Watch how fast the kelp comes back.',
+     why:'Otters recover in about 10 years and slowly eat the urchins down, but in this model the kelp barely regrows for decades. On real coasts, recovery after otters returned has taken from several years to decades. A barren is hard to undo: it is much easier to keep a predator than to bring an ecosystem back after losing one. Sea otters have been protected since a 1911 treaty, and they slowly spread back along parts of Alaska, British Columbia and California.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'bk',s=>{enA(s,'returnOtters');s._bk=s.t;});const y=sim._bk==null?0:Math.floor(sim.t-sim._bk);
+       if(y>=30&&sim.running){sim.running=false;if(sim.ui&&sim.ui.play)sim.ui.play.textContent='Play';}
+       enCard(ctx,k,[[sim._bk==null?'Urchin barren':'Years since otters returned: '+y,{w:800}]].concat(cas(sim)),12,270);}},
+    {key:'npp',lvl:'ap',title:'GPP, respiration and NPP',set:{resp:70},fresh:true,speed:1,focus:[170,80,630,360],
+     cause:{from:{resp:50},delay:1.5,dur:2,label:'Plant respiration',at:[440,436]},
+     see:'Algae capture 20,000 kcal (GPP) but burn half for their own needs. Hot weather raises that to 70%.',
+     why:'NPP = GPP − plant respiration. NPP falls from 10,000 to 6,000 kcal, a 40% cut, and every consumer level falls by the same 40% because each is a fixed share of NPP. Only NPP, never GPP, is available as food.',
+     overlay(sim,ctx,LH,k){enCard(ctx,k,[['GPP: '+kc(sim.p.gpp)+' kcal',{w:700}],['Plants burn: '+sim.p.resp+'%',{w:700,c:CE_RED}],['NPP: '+kc(enM(sim,'npp'))+' kcal',{w:800,c:CE_GREEN}],['Pike: '+kc(chain(sim)[3])+' kcal',{w:700}]]);}},
+    {key:'eff',lvl:'ap',title:'Efficiency compounds',set:{eff:20},fresh:true,speed:1,focus:[170,80,630,360],
+     cause:{from:{eff:10},delay:1.5,dur:2,label:'Trophic efficiency',at:[440,436]},
+     see:'Trophic efficiency doubles from 10% to 20%. Watch the pike.',
+     why:'Top energy = NPP × efficiency³ in a 4-level chain, so doubling efficiency gives 2³ = <b>8 times</b> as much at the top: 10 → 80 kcal. Cold-blooded consumers like fish and insects burn less energy on body heat, so their efficiency is higher than mammals’ and birds’. That is one reason a pound of farmed fish or chicken takes less feed than a pound of beef.',
+     overlay(sim,ctx,LH,k){enCard(ctx,k,ladder(sim,3));}}
+  ],
+  useIt:[
+    {do:'Before eating fish you catch at a Colorado reservoir, look up the CPW fish consumption advisory for that water.',
+     why:'Mercury builds up most in big predators like pike and walleye, so the advisories limit those most.'},
+    {do:'Compare the price per pound of rice or beans with chicken and beef at the store.',
+     why:'Food from lower on the food chain takes less land and feed to grow, which shows up in what it costs.'},
+    {do:'Next time you see a hawk, eagle or fox, notice how rarely you see one compared with the rabbits, mice or songbirds around it.',
+     why:'Top predators get only a small share of the energy, so there are always far fewer of them, and they need lots of space.'}],
+  tryIt:[{title:'pass the energy (5 minutes, with friends)',
+    steps:['Start with 1,000 grains of rice or 1,000 pennies: the algae’s energy.','Pass 10% (100) to the next person, the zooplankton. They pass 10% (10) to the next, the minnow, and so on.','Count what the fourth and fifth people get.'],
+    look:'The pike gets 1 and the osprey gets almost nothing. You can see why there can only be a few top predators.'}]
+}};
+})());
+
 })();
