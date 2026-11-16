@@ -2838,4 +2838,81 @@ return {enso:{
 }};
 })());
 
+/* ---------- Farm ---------- */
+BioLab.addLearn((function(){
+const fmM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const fmA=(sim,id)=>{const a=(sim.def.actions||[]).find(x=>x.id===id);if(a)a.run(sim);};
+const fmCard=(ctx,k,rows)=>dcCard(ctx,k,300,8,290,rows);
+/* grow one season every `gap` seconds, starting at `t0`, up to n seasons */
+const seasons=(sim,tau,t0,gap,n)=>{for(let i=0;i<n;i++)atT(sim,tau,t0+i*gap,'g'+i,s=>fmA(s,'grow'));};
+return {farm:{
+  goals:{
+    bio:['Why farms on the High Plains pump groundwater, and what happens to the aquifer','Why drip irrigation grows more corn with less water','Why extra fertilizer barely helps the crop but pollutes the water','Why spraying the same pesticide every year stops working','What you can do with water and fertilizer at home'],
+    honors:['Why farms on the High Plains pump groundwater, and what happens to the aquifer','Why drip irrigation grows more corn with less water','Why extra fertilizer barely helps the crop but pollutes the water','How pests evolve resistance, and how IPM slows it','What you can do with water and fertilizer at home'],
+    ap:['Why farms on the High Plains pump groundwater, and what happens to the aquifer','Why drip irrigation grows more corn with less water','Why extra fertilizer barely helps the crop but pollutes the water','How pests evolve resistance, and how IPM slows it','How irrigation slowly salts the soil','What you can do with water and fertilizer at home']},
+  matters:'Eastern Colorado grows corn, wheat and cattle feed on water pumped from an aquifer that refills far slower than it is used. How a farmer waters, fertilizes and fights pests decides how long that water lasts and how clean it stays.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'field',title:'One acre of corn',pause:true,focus:[0,0,600,450],
+     run(sim){fmA(sim,'restart');},
+     see:'One acre of corn in eastern Colorado, about the size of a football field. Under it: soil, then an aquifer of sand and gravel holding groundwater, and a well.',
+     why:'Corn uses about 24 inches of water over a summer, but rain here gives only about 8. The farmer pumps the rest from the aquifer, part of the Ogallala Aquifer under the High Plains.',
+     overlay(sim,ctx,LH,k){tag(ctx,'Rain: about 8 in a summer',170,92,k);tag(ctx,'Corn needs about 24 in',420,130,k,{hi:true});tag(ctx,'Groundwater is pumped up the well',420,380,k);}},
+    {key:'rainonly',title:'Rain alone is not enough',set:{irr:'none'},focus:[0,40,600,200],
+     cause:{from:{irr:'furrow'},delay:2.5,label:'Irrigation',at:[300,282]},
+     run(sim){fmA(sim,'restart');},
+     see:'The field with furrow irrigation. Watch the pumping stop, so the corn gets rain only.',
+     why:'With 8 of the 24 inches it needs, the corn is short and yellow, and the harvest drops from about 183 to about 43 bushels an acre. That is why almost every cornfield out here is irrigated.'},
+    {key:'drip',title:'Same water, different method',set:{irr:'drip'},focus:[0,140,600,110],
+     cause:{from:{irr:'furrow'},delay:3,label:'Irrigation',at:[300,282]},
+     run(sim){fmA(sim,'restart');},
+     see:'20 inches of water running down furrows between the rows. Look at the pale wisps rising off it. Then watch the same 20 inches go through drip lines.',
+     why:'In furrows, water sits in the open sun and wind, so a lot of it evaporates (the wisps) or runs off the end of the field: only about 65% reaches the roots. Drip lines put water right at each plant, so about 95% gets there. The same 20 inches grows about 216 bushels instead of 183.'},
+    {key:'aquifer',title:'Mining the aquifer',set:{irr:'furrow',pest:'ipm'},focus:[0,290,600,160],
+     run(sim){atReset(sim);fmA(sim,'restart');},
+     see:'Furrow irrigation, 20 inches a year. Watch the water table, the dashed blue line, as the farm grows one season after another.',
+     why:'Every inch pumped lowers the water table a little, and rain soaks back down only about half a foot a year here. After 10 seasons the well has to reach about 19 feet deeper. Parts of the Ogallala in Kansas and Texas have dropped more than 100 feet since the 1950s.',
+     overlay(sim,ctx,LH,k,tau){seasons(sim,tau,1.5,0.8,10);fmCard(ctx,k,[['Seasons grown: '+fmM(sim,'year'),{w:700}],['Water table: '+fmM(sim,'depth').toFixed(1)+' ft down (was 100)',{w:700,c:CE_BLUE}]]);}},
+    {key:'hook',title:'Your question: switching to drip',set:{irr:'drip',water:14,pest:'ipm'},focus:[0,0,800,450],
+     cause:{from:{irr:'furrow',water:20},delay:2.5,label:'Irrigation',at:[300,282]},
+     run(sim){atReset(sim);fmA(sim,'restart');},
+     see:'The farmer’s furrows with 20 inches. Watch her switch to drip and cut the water to 14 inches. Then 10 seasons go by.',
+     why:'Drip gets 95% of the water to the roots, so 14 inches grows about <b>186 bushels</b>, a little more than furrow’s 183 with 20 inches. She saves 6 inches, about <b>163,000 gallons per acre</b> every season. After 10 seasons her water table is about 12 feet lower instead of 19.',
+     so:'The aquifer still falls with drip, just more slowly. Saving water buys time; it does not make pumping sustainable on its own.',
+     overlay(sim,ctx,LH,k,tau){seasons(sim,tau,6.5,0.6,10);fmCard(ctx,k,[['Corn: '+Math.round(fmM(sim,'y'))+' bu/acre with '+sim.p.water+' in',{w:700}],['Water table: '+fmM(sim,'depth').toFixed(1)+' ft down',{w:700,c:CE_BLUE}]]);}},
+    {key:'fert',title:'More fertilizer, more pollution',set:{N:250},focus:[0,220,600,230],
+     cause:{from:{N:150},delay:2.5,dur:2.5,label:'Nitrogen fertilizer',at:[300,282]},
+     run(sim){fmA(sim,'restart');},
+     see:'Furrow irrigation with 150 pounds of nitrogen fertilizer per acre. Watch it rise to 250, and watch the green nitrate arrows below the roots.',
+     why:'Corn can only use so much nitrogen. The harvest rises a little, from about 183 to 193 bushels, but nitrate washing out of the field jumps from about 5 to 37 pounds per acre. Nitrate dissolves easily, so water carries it down to the groundwater and into streams, where it feeds algae blooms.',
+     so:'Sandy soils let nitrate wash through fastest, because water drains through them in minutes. Wells near heavily fertilized fields are the ones most often over the EPA’s safe limit for nitrate.'},
+    {key:'treadmill',title:'The pesticide treadmill',set:{pest:'spray'},focus:[0,40,800,220],
+     run(sim){atReset(sim);fmA(sim,'restart');},
+     see:'The same pesticide is sprayed every year. Watch the brown pests and the “Eaten by pests” number as the seasons go by.',
+     why:'The first spray kills almost all the pests, but a few survive because of natural variation in their genes. They breed, and their young inherit the resistance. Each year more of the population survives, so losses climb from about 4% to almost 30% in six seasons, and farmers spray more. That is natural selection happening in a field.',
+     overlay(sim,ctx,LH,k,tau){seasons(sim,tau,1.5,1.2,6);fmCard(ctx,k,[['Season '+(fmM(sim,'year')+1),{w:700}],['Eaten by pests: '+Math.round(fmM(sim,'loss'))+'%',{w:700,c:CE_RED}]]);}},
+    {key:'ipm',title:'Integrated pest management',set:{pest:'ipm'},focus:[0,40,800,220],
+     run(sim){atReset(sim);fmA(sim,'restart');},
+     see:'Same field, same pests, but now the farmer uses IPM. Watch the same six seasons.',
+     why:'IPM means scouting the field, rotating crops, protecting predators like ladybugs (the red dots), and spraying only when pests pass a damage threshold. With far less spraying, there is much less pressure to evolve resistance: losses stay near 6 to 8%.',
+     overlay(sim,ctx,LH,k,tau){seasons(sim,tau,1.5,1.2,6);fmCard(ctx,k,[['Season '+(fmM(sim,'year')+1),{w:700}],['Eaten by pests: '+Math.round(fmM(sim,'loss'))+'%',{w:700,c:CE_GREEN}]]);}},
+    {key:'salt',lvl:'ap',title:'Salt builds up',set:{pest:'ipm'},focus:[0,180,800,80],
+     run(sim){atReset(sim);fmA(sim,'restart');},
+     see:'Furrow irrigation for 20 seasons. Watch the white crust on the soil and the Soil salt number.',
+     why:'Groundwater carries a little dissolved salt. In a dry climate the water evaporates or is taken up by the plants, and the salt stays behind. Corn loses about 12% of its yield for each dS/m above 1.7, so after 20 seasons the harvest has fallen from about 183 to about 136 bushels.',
+     overlay(sim,ctx,LH,k,tau){seasons(sim,tau,1.5,0.4,20);fmCard(ctx,k,[['Seasons grown: '+fmM(sim,'year'),{w:700}],['Soil salt: '+fmM(sim,'salt').toFixed(2)+' dS/m',{w:700,c:CE_RED}],'Corn: '+Math.round(fmM(sim,'y'))+' bu/acre']);}}
+  ],
+  useIt:[
+    {do:'If you water a lawn or garden, do it early in the morning, not in the afternoon heat.',
+     why:'In hot sun and wind, much of the water evaporates before it soaks in, just like the furrows. Many Front Range cities ask people not to water in the middle of the day for that reason.'},
+    {do:'Watch for sprinkler heads that spray the sidewalk or street, and point them back at the grass.',
+     why:'Water on pavement is runoff: it never reaches a root, and it carries fertilizer and dirt into the storm drain.'},
+    {do:'Sweep spilled lawn fertilizer off the driveway and sidewalk, and don’t fertilize right before a big rain.',
+     why:'Storm drains run straight to creeks without treatment. Fertilizer that washes in feeds algae downstream, the same way extra farm nitrogen does.'}],
+  tryIt:[{title:'the catch-can test (30 minutes)',
+    steps:['Set 5 or 6 empty, straight-sided cans (tuna cans work) around a lawn.','Run the sprinkler for 15 minutes.','Measure the water depth in each can with a ruler.'],
+    look:'The cans won’t match: some spots get much more water than others, and some water lands on pavement. Double your 15-minute numbers to find how many inches an hour the sprinkler puts down, and compare with the inch or so a lawn needs each week in summer.'}]
+}};
+})());
+
 })();
