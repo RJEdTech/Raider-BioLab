@@ -3819,4 +3819,63 @@ return {plasmid:{
 }};
 })());
 
+/* ---------- BLAST ---------- */
+BioLab.addLearn((function(){
+const blM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const blA=(sim,id)=>{const a=(sim.def.actions||[]).find(x=>x.id===id);if(a)a.run(sim);};
+const blCard=(ctx,k,rows)=>dcCard(ctx,k,150,300,400,rows,{hi:false});
+const hits=sim=>{const r=sim.st.ranked||[];return r.slice(1,4).map(h=>h.d.name+' '+Math.round(h.ident*100)+'%').join(' · ')||'—';};
+const res=sim=>sim.st.phase!=='done'?[['Searching…',{w:800}]]:[['Top hit: '+blM(sim,'top')+(isFinite(blM(sim,'ident'))?' · '+Math.round(blM(sim,'ident'))+'% identical':''),{w:800,c:CE_RED}],['Next: '+hits(sim),{s:12}]];
+return {blast:{
+  goals:{
+    bio:['How a short stretch of DNA works like a barcode for a species','How BLAST compares a sample with known sequences','How to read percent identity: same species or just a relative','How DNA catches mislabeled food'],
+    honors:['How BLAST compares a sample with known sequences','Reading a hit list: identity, query cover and E value','Same species vs related species','How DNA catches mislabeled food'],
+    ap:['How BLAST seeds hits with short exact words, then extends them','Reading identity, cover, bit score and E value','Why the reverse complement matters','How DNA catches mislabeled food']},
+  matters:'DNA searches catch mislabeled meat and fish, identify bacteria in hospitals and tell researchers what gene they’ve found. It all comes down to how alike two sequences are.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'query',title:'A DNA barcode',pause:true,set:{query:'burger'},focus:[0,40,800,320],
+     see:'The top row is 100 bases of DNA read from a burger patty sold as beef: each color is one base, A, C, G or T. Below are the same stretch of DNA from 12 known species.',
+     why:'This stretch comes from a mitochondrial gene that is a little different in every species, so it works like a barcode. Closely related species have similar barcodes; distant ones differ more. Matching the sample’s barcode to a known one identifies the animal.'},
+    {key:'run',title:'How BLAST searches',set:{query:'burger'},speed:1,focus:[0,40,800,460],
+     run(sim){atReset(sim);},
+     see:'Watch BLAST run: first short exact matches light up, then they grow into full alignments, then the species are ranked.',
+     why:'Comparing every base against billions would take forever, so BLAST first looks for short exact “words” (11 bases) that the sample shares with each database sequence. Only those spots are extended base by base into an alignment. The best-scoring alignments go to the top of the list.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1,'go',s=>blA(s,'run'));blCard(ctx,k,res(sim));}},
+    {key:'hook',title:'Your question: what’s in the burger?',set:{query:'burger'},speed:1,focus:[0,40,800,460],
+     run(sim){blA(sim,'done');},
+     see:'The hit list for the “100% beef” patty.',
+     why:'The top hit is <b>horse, 99% identical</b>: 99 of 100 bases match. The next hits, pig and other mammals at about 87 to 88%, are relatives sharing an ancestor, not matches. About 98% or more usually means the same species, and the big gap to the next hit makes the call clear. The “beef” is horse.',
+     so:'In 2013, DNA tests like this found horse meat in burgers and lasagna sold as beef across Europe, leading to large recalls.',
+     overlay(sim,ctx,LH,k){blCard(ctx,k,res(sim));}},
+    {key:'cheek',title:'Your own DNA',set:{query:'cheek'},speed:1,focus:[0,40,800,460],
+     run(sim){blA(sim,'done');},
+     see:'Now the sample is mitochondrial DNA from your own cheek cells.',
+     why:'The top hit is human at 100%. Cow and pig come next at about 90%: all mammals share this gene from a common ancestor, and the differences piled up over tens of millions of years. Percent identity is a rough measure of how closely related two species are.',
+     overlay(sim,ctx,LH,k){blCard(ctx,k,res(sim));}},
+    {key:'snapper',lvl:'honors',title:'The “red snapper” fillet',set:{query:'snapper'},speed:1,focus:[0,40,800,460],
+     run(sim){blA(sim,'done');},
+     see:'A fish fillet sold as red snapper.',
+     why:'Top hit: tilapia at 98%, with the next hits down near 85%. The E value, the number of hits this good you’d expect by pure chance, is around 10⁻⁴¹: essentially zero. It is tilapia, a much cheaper fish. Surveys have found that a large share of fish sold as red snapper in the US is something else.',
+     overlay(sim,ctx,LH,k){blCard(ctx,k,res(sim).concat([['E value: '+blM(sim,'evalue'),{s:12}]]));}},
+    {key:'rc',lvl:'ap',title:'The other strand',set:{query:'reverse',rc:true},speed:1,focus:[0,40,800,460],
+     cause:{from:{rc:false},delay:3,label:'Reverse complement',at:[300,330]},
+     run(sim){blA(sim,'done');},
+     see:'Sample X finds no match at all. Watch what happens when BLAST searches its reverse complement.',
+     why:'DNA has two strands that run in opposite directions. This sample was read from the other strand, so its sequence is the reverse complement of the database entry: reversed, with A↔T and G↔C swapped. Flip it and the match appears: chicken. Real BLAST searches both strands automatically.',
+     overlay(sim,ctx,LH,k){blCard(ctx,k,res(sim));}}
+  ],
+  useIt:[
+    {do:'When you buy fish, look for the species name and where it came from, or use the Monterey Bay Aquarium’s Seafood Watch guide.',
+     why:'Mislabeling is common for fish like red snapper and tuna. Sellers that list species and origin are easier to check and trust.'},
+    {do:'Try a real search at the NCBI BLAST website with a sequence from class.',
+     why:'It is free and is the same tool scientists use every day, searching billions of bases in seconds.'},
+    {do:'When you see a claim about how closely related two species are, ask what percent of the DNA was compared.',
+     why:'“98% the same” depends on which stretch of DNA was read. A barcode gene, a whole genome and protein-coding genes all give different numbers.'}],
+  tryIt:[{title:'percent identity by hand (10 minutes)',
+    steps:['Write a string of 20 random letters from A, C, G and T.','Copy it three times, changing 1 letter in the first copy, 5 in the second and 10 in the third.','For each copy, count matching positions and divide by 20.'],
+    look:'You get 95%, 75% and 50% identity. A random string of A, C, G and T would match about 25% of positions by chance, which is why a hit has to be well above that to mean anything.'}]
+}};
+})());
+
 })();
