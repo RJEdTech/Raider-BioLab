@@ -2454,4 +2454,136 @@ predprey: {
 }
 });
 
+/* ---------- Soil lab ---------- */
+BioLab.addLearn((function(){
+const SLT={x:470,y:390,w:300};SLT.h=SLT.w*Math.sqrt(3)/2;
+const slP=(S,Si,C)=>[(S*SLT.x+Si*(SLT.x+SLT.w)+C*(SLT.x+SLT.w/2))/100,(S*SLT.y+Si*SLT.y+C*(SLT.y-SLT.h))/100];
+const slTj=sim=>Math.max(0,sim.t-sim.st.shakeT);
+const slAct=(sim,id)=>{const a=(sim.def.actions||[]).find(a=>a.id===id);if(a)a.run(sim);};
+function slDash(ctx,a,b,f,col){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=3.2;ctx.setLineDash([7,5]);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(lerp(a[0],b[0],f),lerp(a[1],b[1],f));ctx.stroke();ctx.restore();}
+function slDot(ctx,x,y,r,col){ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,6.29);ctx.fillStyle=col;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();ctx.restore();}
+function slRing(ctx,x,y,r){ctx.save();ctx.strokeStyle='#c8102e';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,r,0,6.29);ctx.stroke();ctx.restore();}
+/* a quartz sand grain: irregular, rounded, pale tan */
+function slGrain(ctx,x,y,r,seed,fill){ctx.save();ctx.beginPath();for(let i=0;i<=24;i++){const a=i/24*6.283,q=0.9+0.07*Math.sin(i*2.1+seed*1.3)+0.04*Math.sin(i*4.7+seed*2.9);const px=x+Math.cos(a)*r*q,py=y+Math.sin(a)*r*q*0.9;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+  ctx.closePath();ctx.fillStyle=fill||'#d9c49a';ctx.fill();ctx.strokeStyle='rgba(90,70,40,.55)';ctx.lineWidth=1.2;ctx.stroke();
+  if(r>12){ctx.beginPath();ctx.ellipse(x-r*0.3,y-r*0.32,r*0.22,r*0.12,-0.5,0,6.29);ctx.fillStyle='rgba(255,255,255,.45)';ctx.fill();}ctx.restore();}
+/* a zoom bubble showing the pores between grains, with water moving through at its own pace */
+function slBubble(ctx,cx,cy,R,kind,tau,k){ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.fillStyle='#eef5fb';ctx.fill();ctx.clip();
+  if(kind==='sand'){const g=[[-30,-34],[22,-38],[-44,6],[2,-2],[44,4],[-24,40],[24,42],[-2,-62],[58,-34],[-60,-30]];g.forEach((p,i)=>slGrain(ctx,cx+p[0],cy+p[1],21,i,'#dcc48e'));
+    ctx.fillStyle='#2f78c8';for(let i=0;i<6;i++){const y=cy-R+((tau*70+i*26)%(2*R)),x=cx+[-12,10,-35,34,-8,22][i];ctx.beginPath();ctx.arc(x,y,3.4,0,6.29);ctx.fill();}}
+  else{ctx.strokeStyle='#7d5a4a';ctx.lineWidth=2.4;for(let r=-R;r<R;r+=6.5)for(let c=-R;c<R;c+=15){const o=((r/6.5)|0)%2?7:0;ctx.beginPath();ctx.moveTo(cx+c+o,cy+r);ctx.lineTo(cx+c+o+11,cy+r+0.8);ctx.stroke();}
+    ctx.fillStyle='#2f78c8';for(let i=0;i<5;i++){const y=cy-R+((tau*6+i*24)%(2*R)),x=cx+[-20,6,30,-36,16][i];ctx.beginPath();ctx.arc(x,y,2.6,0,6.29);ctx.fill();}}
+  ctx.restore();ctx.save();ctx.lineWidth=2.5;ctx.strokeStyle=PAL['cv-ink'];ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.stroke();ctx.restore();}
+/* a crop plant: leafy top above ground, roots below */
+function slPlant(ctx,x,g,rootD,ok){ctx.save();ctx.strokeStyle=ok?'#6b5a3a':'#7a6a52';ctx.lineWidth=1.4;for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(x,g);ctx.quadraticCurveTo(x+i*7,g+rootD*0.5,x+i*13,g+rootD);ctx.stroke();}
+  ctx.strokeStyle=ok?'#3f8a2e':'#8a8a3a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,g);ctx.lineTo(x,g-34);ctx.stroke();ctx.fillStyle=ok?'#4f9a36':'#9aa04a';
+  [[-12,-22],[12,-26],[-10,-36],[10,-40],[0,-46]].forEach(l=>{ctx.beginPath();ctx.ellipse(x+l[0],g+l[1],10,5,l[0]<0?-0.5:0.5,0,6.29);ctx.fill();});ctx.restore();}
+function slField(ctx,x0,w,kind,tau,k){const g=178,bot=410,soil=kind==='sand'?'#c9a86a':'#8c5a3c';
+  ctx.fillStyle='#dbe9f4';ctx.fillRect(x0,60,w,g-60);ctx.fillStyle=soil;ctx.fillRect(x0,g,w,bot-g);
+  const r=H.rng(kind==='sand'?3:8);ctx.fillStyle='rgba(0,0,0,.13)';for(let i=0;i<260;i++){const s=kind==='sand'?2.6:1.2;ctx.fillRect(x0+r()*w,g+r()*(bot-g),s,s);}
+  const rootD=kind==='sand'?92:62;[0.2,0.5,0.8].forEach(f=>slPlant(ctx,x0+w*f,g,rootD,kind==='sand'));
+  ctx.save();ctx.setLineDash([5,5]);ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x0,g+rootD+6);ctx.lineTo(x0+w,g+rootD+6);ctx.stroke();ctx.restore();
+  H.txt(ctx,'bottom of the roots',x0+w-8,g+rootD+20,{s:11*k,w:600,a:'right',c:'#fff'});
+  if(kind==='sand'){ctx.fillStyle='#777';ctx.fillRect(x0+10,96,w-20,6);ctx.fillStyle='#2f78c8';
+    for(let i=0;i<14;i++){const x=x0+18+i*(w-36)/13,y=104+((tau*90+i*17)%(g-104));ctx.beginPath();ctx.arc(x,y,2.6,0,6.29);ctx.fill();}
+    for(let i=0;i<12;i++){const x=x0+20+i*(w-40)/11,y=g+((tau*55+i*41)%(bot-g-6));ctx.fillStyle='#2f78c8';ctx.beginPath();ctx.arc(x,y,3,0,6.29);ctx.fill();
+      const fy=g+((tau*55+i*41+20)%(bot-g-6)),below=fy>g+rootD+6;ctx.fillStyle=below?'#c8102e':'#e06a00';ctx.beginPath();ctx.arc(x+8,fy,3.8,0,6.29);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();}}
+  else{ctx.fillStyle='rgba(47,120,200,.75)';[[0.32,46],[0.66,40]].forEach(p=>{ctx.beginPath();ctx.ellipse(x0+w*p[0],g-1,p[1],5,0,0,6.29);ctx.fill();});
+    ctx.fillStyle='#2f78c8';for(let i=0;i<10;i++){const x=x0+24+i*(w-48)/9,y=g+4+((tau*9+i*31)%150);ctx.beginPath();ctx.arc(x,y,2.6,0,6.29);ctx.fill();}
+    const py=g+170;ctx.fillStyle='#9a9a9a';H.rr(ctx,x0+8,py-8,w-16,16,8);ctx.fill();ctx.fillStyle='#555';for(let xx=x0+20;xx<x0+w-16;xx+=18){ctx.beginPath();ctx.arc(xx,py,2,0,6.29);ctx.fill();}
+    ctx.fillStyle='#2f78c8';for(let i=0;i<7;i++){const x=x0+12+((tau*60+i*(w/7))%(w-24));ctx.beginPath();ctx.arc(x,py,3,0,6.29);ctx.fill();}
+    H.txt(ctx,'buried drain pipe → ditch',x0+w-12,py-14,{s:11.5*k,w:700,a:'right',c:'#fff'});}}
+const SAMPLE_PTS=[['Sandy riverbank',88,7,5,'#b89a68'],['Front Range garden',65,22,13,'#8a6a48'],['Garden loam',40,40,20,'#6b4a2e'],['Clay subsoil',20,25,55,'#8c5a3c']];
+return {soil:{
+  goals:{
+    bio:['What soil is made of: sand, silt and clay','How to name a soil with the texture triangle','Why the name tells you how fast water drains and how much the soil holds','What that means for a farmer, a lawn and a house'],
+    honors:['What soil is made of: sand, silt and clay','How to name a soil with the texture triangle','Why the name tells you how fast water drains and how much the soil holds','What that means for a farmer, a lawn and a house','How slope and plant cover change erosion'],
+    ap:['What soil is made of: sand, silt and clay','How to name a soil with the texture triangle','Why the name tells you how fast water drains and how much the soil holds','What that means for a farmer, a lawn and a house','How slope and plant cover change erosion','How compost and clay hold nutrients (CEC)']},
+  matters:'Every farm, lawn, sports field and house sits on soil. Its mix of sand, silt and clay decides how often it needs water, whether crops drown in a wet spring, and whether Front Range clay will crack a driveway.',
+  startKey:'start',startRun:true,startSpeed:2,
+  steps:[
+    {key:'grains',title:'Three sizes of grain',pause:true,
+     see:'Soil is mostly rock broken into grains of three sizes. Watch them appear, drawn to scale and magnified 400 times.',
+     why:'<b>Sand</b> (0.05 to 2 mm) is big enough to see and feels gritty. <b>Silt</b> (0.002 to 0.05 mm) feels smooth, like flour. <b>Clay</b> (under 0.002 mm) is made of tiny flat plates and feels sticky when wet. If a sand grain were a basketball, a silt grain would be a pea and a clay particle a grain of salt.',
+     overlay(sim,ctx,LH,k,tau){dim(ctx,LH,0.96);tag(ctx,'The three grain sizes, to scale (400× magnified)',400,34,k);
+       if(tau>0.3){slGrain(ctx,180,205,100,2);tag(ctx,'Sand · 0.5 mm',180,338,k,{w:700});tag(ctx,'feels gritty',180,372,k,{s:12.5});}
+       if(tau>1.8){slDot(ctx,420,205,4,'#a07a52');slRing(ctx,420,205,16);tag(ctx,'Silt · 0.02 mm',420,338,k,{w:700});tag(ctx,'feels smooth, like flour',420,372,k,{s:12.5});}
+       if(tau>3.3){ctx.fillStyle='#7f6a5c';ctx.fillRect(649.5,204.5,1.2,1.2);slRing(ctx,650,205,12);tag(ctx,'Clay · 0.001 mm',650,338,k,{w:700});tag(ctx,'feels sticky when wet',650,372,k,{s:12.5});}
+       if(tau>4.8){ctx.save();ctx.beginPath();ctx.arc(690,130,46,0,6.29);ctx.fillStyle='#f4efe9';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=PAL['cv-ink'];ctx.stroke();ctx.strokeStyle='#7d5a4a';ctx.lineWidth=4;for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(662+(i%2)*6,112+i*9);ctx.lineTo(712+(i%2)*6,112+i*9);ctx.stroke();}ctx.restore();line(ctx,668,172,654,198);H.txt(ctx,'50× more: flat plates',690,92,{s:11*k,w:700,a:'center'});}
+       scaleBar(ctx,40,420,40,'0.1 mm',k);}},
+    {key:'shake',title:'Shake the jar: sand falls first',speed:0.04,focus:[236,40,214,400],
+     run(sim){sim.st.shakeT=sim.t;},
+     see:'Your garden sample has been shaken in a jar of water so every grain floats free. The clock runs about 2 minutes every second.',
+     why:'Big, heavy sand grains sink fastest, so a sand layer forms on the bottom in about a minute. The tiny silt and clay grains are still swirling, so the water stays cloudy.',
+     so:{honors:'A grain’s sinking speed rises with the square of its width. Sand about 1,000 times wider than clay sinks roughly a million times faster.'},
+     overlay(sim,ctx,LH,k){const tj=slTj(sim);dcCard(ctx,k,478,60,300,[[Math.round(tj*60)+' minutes after shaking',{w:700}],tj>0.04?['Sand is down: big grains sink fastest',{c:CE_RED}]:'Watch the bottom of the jar']);}},
+    {key:'wait',title:'Silt, then clay, settle',speed:3,focus:[236,40,214,400],
+     run(sim){sim.st.shakeT=sim.t;},
+     see:'Now the clock runs 3 hours every second. Watch silt build a layer on top of the sand, and the cloudy water slowly clear.',
+     why:'Silt settles over a few hours. Clay plates are so small that the water keeps bumping them around, so they can stay floating for a day or more. That is why a creek stays brown long after a storm. To measure the layers you wait a day or two.',
+     overlay(sim,ctx,LH,k){const tj=slTj(sim);dcCard(ctx,k,478,60,300,[[(tj<1?Math.round(tj*60)+' minutes':tj.toFixed(0)+' hours')+' after shaking',{w:700}],tj<3?'Silt is settling on the sand':tj<30?['Water still cloudy: clay is still floating',{c:CE_RED}]:'Water clearing: clay has settled']);}},
+    {key:'read',title:'Name the soil with the triangle',speed:0.5,focus:[450,90,345,330],
+     run(sim){sim.st.shakeT=sim.t-200;},
+     see:'The jar has settled: 40% sand, 40% silt and 20% clay. Watch each percentage become a line on the triangle.',
+     why:'Clay is read straight across from the left edge. Silt is read down and to the left from the right edge. Sand is read up and to the left from the bottom. Where the three lines meet, the colored region names the soil: <b>Loam</b>.',
+     overlay(sim,ctx,LH,k,tau){const pt=slP(40,40,20),f=t=>clamp((tau-t)/1.4,0,1);
+       slDash(ctx,slP(80,0,20),pt,f(0.6),'#1f5fbf');slDash(ctx,slP(0,40,60),pt,f(2.4),'#1b7a3a');slDash(ctx,slP(40,60,0),pt,f(4.2),'#b3261e');
+       if(tau>6)slRing(ctx,pt[0],pt[1],16);
+       dcCard(ctx,k,14,40,214,[['Reading the triangle',{w:700}],tau>0.6?['1. Clay 20%: straight across',{c:'#1f5fbf',w:700}]:'',tau>2.4?['2. Silt 40%: down and left',{c:'#1b7a3a',w:700}]:'',tau>4.2?['3. Sand 40%: up and left',{c:'#b3261e',w:700}]:'',tau>6?['4. They meet in Loam',{w:800}]:''].filter(Boolean),{hi:false});}},
+    {key:'compare',title:'Different soils land in different places',speed:0.5,focus:[450,90,345,330],
+     run(sim){sim.st.shakeT=sim.t-200;},
+     see:'Four real soils are placed on the triangle one at a time: a sandy riverbank, a Front Range garden, your garden loam and a clay subsoil.',
+     why:'Each mix of sand, silt and clay lands in its own region, so each gets its own name. The name is useful because soils in the same region act alike: they drain at about the same speed and hold about the same water.',
+     overlay(sim,ctx,LH,k,tau){SAMPLE_PTS.forEach((s,i)=>{if(tau<0.8+i*1.6)return;const q=slP(s[1],s[2],s[3]);slDot(ctx,q[0],q[1],7,s[4]);});
+       dcCard(ctx,k,14,40,214,[['Where each soil lands',{w:700}]].concat(SAMPLE_PTS.filter((s,i)=>tau>=0.8+i*1.6).map(s=>[s[0]+': '+s[1]+'/'+s[2]+'/'+s[3],{s:12}])).concat([['(sand / silt / clay %)',{s:11,c:PAL['cv-soft']}]]),{hi:false});}},
+    {key:'drain',title:'Why sand drains and clay holds',set:{mode:'drain'},speed:0.3,
+     run(sim){atReset(sim);sim.st.poured=false;},
+     see:'Three columns: sand, your loam and clay. Watch 100 mL of water poured on each, and the zoomed-in views of the gaps between grains.',
+     why:'Water flows through the gaps between grains. Sand’s gaps are big, so water rushes through in minutes and only about 10 mL stays behind. Clay’s gaps are tiny, so water crawls through over hours, and its huge surface of flat plates holds on to about 43 mL.',
+     so:'This is why the name matters. Sandy soil dries out fast and needs water more often. Clay soil stays wet and can go soggy.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.2,'pour',s=>{s.st.poured=true;s.st.pourT=s.t;});
+       slBubble(ctx,275,170,52,'sand',tau,k);line(ctx,236,150,206,150);tag(ctx,'Sand: big gaps',275,240,k,{s:13});
+       slBubble(ctx,525,170,52,'clay',tau,k);line(ctx,564,150,594,150);tag(ctx,'Clay: tiny gaps',525,240,k,{s:13});}},
+    {key:'hook',title:'Your question: the sandy garden bed',set:{mode:'drain',sample:'front'},speed:0.3,focus:[335,55,130,385],
+     run(sim){atReset(sim);sim.st.poured=false;},
+     see:'The middle column is now the Front Range sandy loam garden bed from the question, 65% sand. Watch the same 100 mL go in.',
+     why:'The sandy loam keeps about <b>22 mL</b> for roots and lets about 78 mL drain, most of it within half an hour. Sand keeps about 10 mL and clay about 43 mL. Sandy loam sits between them, closer to sand.',
+     so:'Water this bed a little and often. A big soaking once a week mostly drains past the roots.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1,'pour',s=>{s.st.poured=true;s.st.pourT=s.t;});}},
+    {key:'farm',title:'What it means on a farm',pause:true,
+     see:'Two farm fields after the same watering. Left: sandy soil. Right: clay soil. Blue dots are water; orange dots are fertilizer.',
+     why:'In sand, water and fertilizer race down past the bottom of the roots (they turn red when they are lost). In clay, water sits on top and soaks in slowly, and soggy soil leaves roots short of the air they need.',
+     so:'<b>Sandy farm:</b> irrigate often and fertilize in small doses so it isn’t washed away. Loose sand is good for root crops like potatoes and carrots. <b>Clay farm:</b> the soil holds plenty of water and nutrients, but fields stay wet and cold in spring, so planting waits. Farmers bury drain pipes to dry fields out, and keep tractors off wet clay, which packs it hard.',
+     overlay(sim,ctx,LH,k,tau){dim(ctx,LH,0.97);slField(ctx,20,370,'sand',tau,k);slField(ctx,410,370,'clay',tau,k);
+       tag(ctx,'Sandy field',205,34,k,{w:700});tag(ctx,'Clay field',595,34,k,{w:700});
+       tag(ctx,'Water and fertilizer wash past the roots',205,432,k,{s:12.5,c:CE_RED});tag(ctx,'Water sits; soggy roots run short of air',595,432,k,{s:12.5,c:CE_RED});}},
+    {key:'erode',lvl:'honors',title:'Rain on bare soil',set:{mode:'erosion',cover:false,slope:15},speed:1,fresh:true,
+     see:'A bare, plowed field on a 15% slope in a heavy storm. Watch the muddy runoff and the soil piling up in the collector.',
+     why:'Raindrops knock grains loose. Rain that can’t soak in becomes runoff and carries them downhill. It takes hundreds of years to build 2.5 cm of topsoil, and one storm can strip it off bare ground.'},
+    {key:'cover',lvl:'honors',title:'Plant cover holds the soil',set:{mode:'erosion',cover:true,slope:15},speed:1,fresh:true,
+     cause:{from:{cover:false},delay:2,ring:[330,230,140],at:[175,62],label:'Plant cover'},
+     see:'Same field and storm. Watch grass cover switch on.',
+     why:'Leaves break the force of the raindrops, roots hold soil in place, and covered soil soaks up more water, so far less runs off. In this model, cover cuts soil loss about 50 times. That is why farmers plant cover crops and leave crop stubble over winter.'},
+    {key:'compost',lvl:'ap',title:'Compost holds nutrients',set:{sample:'forest'},speed:0.5,
+     run(sim){atReset(sim);sim.st.shakeT=sim.t-200;sim._slC0=null;},
+     see:'The acidic forest soil, 20% clay and 6% organic matter. Watch compost get added.',
+     why:'Clay plates and humus (decayed organic matter) carry negative charges that hold positive nutrient ions like Ca²⁺, K⁺ and Mg²⁺ so rain can’t wash them away. CEC ≈ 0.5 × %clay + 2 × %OM, so each 1% of organic matter adds about four times as much as 1% clay.',
+     overlay(sim,ctx,LH,k,tau){if(sim._slC0==null)sim._slC0=sim.st.om;atT(sim,tau,2,'c',s=>slAct(s,'compost'));const om=sim.st.om,c0=0.5*20+2*sim._slC0,c=0.5*20+2*om;
+       dcCard(ctx,k,478,60,300,[['Organic matter: '+sim._slC0.toFixed(0)+'% → '+om.toFixed(0)+'%',{w:700}],['Nutrient-holding (CEC): '+c0.toFixed(0)+' → '+c.toFixed(0)+' cmol/kg',{c:c>c0?CE_RED:PAL['cv-ink'],w:700}]]);}}
+  ],
+  useIt:[
+    {do:'Do the squeeze test on a handful of damp soil from your yard, a park or a school planter.',
+     why:'Gritty and it falls apart: sandy. Smooth like flour: silty. Sticky, and it pushes out into a long ribbon between your thumb and finger: clay. Gardeners and farmers use this 30-second test to estimate texture without a lab.'},
+    {do:'Water to match the soil: sandy soil a little and more often, clay soil slowly and less often.',
+     why:'Sand drains in minutes, so one big soaking mostly runs past the roots. Clay drains slowly, so fast watering puddles and runs off before it soaks in.'},
+    {do:'Make sure gutters and downspouts send water at least a few feet away from your house.',
+     why:'Much of the Front Range sits on clay that swells when wet and shrinks when dry. Water pooling against a foundation makes the clay swell and can crack basements, driveways and sidewalks.'},
+    {do:'On a muddy trail, walk straight through the mud or turn back. Don’t step around it.',
+     why:'Wet clay-rich soil packs and ruts easily. Stepping around the mud tramples the plants at the edge and widens the trail, which is why trail crews ask hikers and bikers to stay off muddy trails.'}],
+  tryIt:[{title:'the jar test (2 days)',
+    steps:['Fill a clear jar about one-third with soil from your yard, with rocks and roots picked out.','Add water to near the top and a squirt of dish soap, which helps clay grains separate.','Shake hard for 3 minutes, then set it down.','Mark the top of the bottom layer after 1 minute (sand), after 2 hours (silt), and after 2 days (clay).'],
+    look:'Measure each layer’s height as a percentage of the total, then find your soil on the texture triangle. The name tells you how to water it.'}]
+}};
+})());
+
 })();
