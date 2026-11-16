@@ -2586,4 +2586,92 @@ return {soil:{
 }};
 })());
 
+/* ---------- Seasons ---------- */
+BioLab.addLearn((function(){
+const OC={x:218,y:245,rx:152,ry:80};
+const snD=sim=>((sim.st.d0+sim.t)%365+365)%365;
+const snJump=(sim,day)=>{sim.st.d0=day-sim.t;};
+const snE=sim=>{const ph=Math.PI+2*Math.PI*(snD(sim)-171)/365;return [OC.x+OC.rx*Math.cos(ph),OC.y-OC.ry*Math.sin(ph)];};
+const snM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const snDate=d=>{const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],L=[31,28,31,30,31,30,31,31,30,31,30,31];d=Math.floor(d);let m=0;while(m<11&&d>=L[m]){d-=L[m];m++;}return M[m]+' '+(d+1);};
+function snRing(ctx,x,y,r){ctx.save();ctx.strokeStyle='#c8102e';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,r,0,6.29);ctx.stroke();ctx.restore();}
+function snBox(ctx,x,y,w,h){ctx.save();ctx.strokeStyle='#c8102e';ctx.lineWidth=2.5;H.rr(ctx,x,y,w,h,8);ctx.stroke();ctx.restore();}
+/* June first, then December partway through the step, so the student sees the before and the after */
+const flip=(t)=>({run(sim){atReset(sim);snJump(sim,171);},
+  pre(sim,tau){atT(sim,tau,t,'dec',s=>snJump(s,354));return tau>=t;}});
+const F1=flip(3.5),F2=flip(3.5),F3=flip(3.5);
+return {seasons:{
+  goals:{
+    bio:['Why the tilt of Earth’s axis, not its distance from the Sun, causes the seasons','How a high Sun and a low Sun spread the same sunlight differently','Why the equator barely has seasons and the Arctic has months of darkness','How to use the Sun’s angle in your own life'],
+    honors:['Why the tilt of Earth’s axis, not its distance from the Sun, causes the seasons','How a high Sun and a low Sun spread the same sunlight differently','Why the equator barely has seasons and the Arctic has months of darkness','How uneven heating drives the winds that place rainforests and deserts','How to use the Sun’s angle in your own life'],
+    ap:['Why the tilt of Earth’s axis, not its distance from the Sun, causes the seasons','How a high Sun and a low Sun spread the same sunlight differently','Why the equator barely has seasons and the Arctic has months of darkness','How uneven heating drives the Hadley cells, and how the Coriolis effect bends the winds','How to use the Sun’s angle in your own life']},
+  matters:'The Sun’s angle decides more than the weather: which way solar panels face, which ski runs keep their snow, how bad the glare is on your drive home in December, and why rainforests and deserts sit where they do.',
+  startKey:'start',startRun:true,startSpeed:1,
+  steps:[
+    {key:'orbit',title:'One trip around the Sun',speed:1,focus:[0,40,425,400],
+     see:'Earth travels around the Sun once a year. Watch its axis, the black line through the poles.',
+     why:'The axis is tilted 23.5° and always points the same way in space, toward the North Star, wherever Earth is in its orbit. So for half the year the north half of Earth leans toward the Sun, and for the other half it leans away.',
+     overlay(sim,ctx,LH,k){const e=snE(sim);snRing(ctx,e[0],e[1],34);tag(ctx,'Axis always points the same way',218,62,k);}},
+    {key:'june',title:'June: the north leans toward the Sun',pause:true,focus:[0,40,425,400],
+     run(sim){snJump(sim,171);},
+     see:'Earth on the June solstice. The north end of the axis tips toward the Sun, and the red dot (Denver) is in the lit half most of the day.',
+     why:'Leaning in puts the Sun high over the Northern Hemisphere. At noon the Sun is directly overhead at 23.5° N, the Tropic of Cancer. It is summer in the north and winter in Australia and Argentina.',
+     overlay(sim,ctx,LH,k){const e=snE(sim);snRing(ctx,e[0],e[1],34);tag(ctx,'North Pole tips toward the Sun',e[0]+80,e[1]-62,k,{hi:true});}},
+    {key:'angle',title:'High Sun vs low Sun',focus:[430,40,370,215],pause:true,
+     run:F1.run,
+     see:'Denver’s noon Sun on June 21. Watch it jump to December 21 and look at the orange patch of ground the same beam lights.',
+     why:'In June the Sun is 74° up, so the beam lands on a small patch and its energy is concentrated. In December it is only 27° up, so the same beam spreads over more than twice as much ground (2.2×), and each square meter gets less than half the energy. Shine a flashlight straight down, then tip it: same light, bigger, dimmer spot.',
+     overlay(sim,ctx,LH,k,tau){const dec=F1.pre(sim,tau);snBox(ctx,436,190,358,52);dcCard(ctx,k,14,48,250,[[dec?'Dec 21':'Jun 21',{w:800}],['Noon Sun: '+snM(sim,'angle').toFixed(0)+'° up',{w:700,c:dec?CE_RED:PAL['cv-ink']}],['Beam spread over '+(1/Math.sin(snM(sim,'angle')*Math.PI/180)).toFixed(1)+'× the ground',{c:dec?CE_RED:PAL['cv-ink']}]]);}},
+    {key:'daylen',title:'Long days vs short days',focus:[430,250,370,70],pause:true,
+     run:F2.run,
+     see:'Watch the yellow daylight bar when the date jumps from June 21 to December 21.',
+     why:'Leaning toward the Sun, Denver spends more of each spin in the lit half of Earth: about 15 hours of daylight. Leaning away, it spends less: about 9 hours. Fewer hours of sun means fewer hours of heating and longer nights to cool off.',
+     overlay(sim,ctx,LH,k,tau){const dec=F2.pre(sim,tau);dcCard(ctx,k,14,48,250,[[dec?'Dec 21':'Jun 21',{w:800}],['Daylight: '+snM(sim,'daylen').toFixed(1)+' hours',{w:700,c:dec?CE_RED:PAL['cv-ink']}]]);}},
+    {key:'distance',title:'Closest to the Sun in January',focus:[0,40,425,400],pause:true,
+     run(sim){atReset(sim);snJump(sim,184);},
+     see:'Earth on July 4, when it is farthest from the Sun. Watch it jump to January 3, when it is closest.',
+     why:'Earth’s orbit is almost a circle. The distance only changes from about 152 to 147 million km, about 3%. That changes sunlight by only about 7%, far less than the tilt does. Denver is in winter while Earth is closest, so distance cannot be what causes the seasons.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,3.5,'jan',s=>snJump(s,2));const jan=tau>=3.5,e=snE(sim);snRing(ctx,e[0],e[1],34);
+       dcCard(ctx,k,452,48,330,[[jan?'Jan 3: closest to the Sun':'Jul 4: farthest from the Sun',{w:800}],['Distance: '+(149.6*(1-0.0167*Math.cos(2*Math.PI*(snD(sim)-3)/365))).toFixed(1)+' million km',{w:700}],['Season in Denver: '+(jan?'winter':'summer'),{w:700,c:CE_RED}]]);}},
+    {key:'hook',title:'Your question: December vs June sunlight',focus:[430,40,370,330],pause:true,
+     run:F3.run,
+     see:'Denver on June 21. Watch the date jump to December 21 and the day’s total sunlight change.',
+     why:'Both effects stack up. In December the noon Sun is only 27° up instead of 74°, and the day lasts about 9 hours instead of almost 15. Together Denver gets about <b>160 W/m²</b> averaged over the day instead of about <b>480</b>: roughly a third as much.',
+     so:'Being 3% closer to the Sun in December barely helps. The tilt sets the seasons.',
+     overlay(sim,ctx,LH,k,tau){const dec=F3.pre(sim,tau),q=snM(sim,'insol');dcCard(ctx,k,14,48,270,[[dec?'Dec 21':'Jun 21',{w:800}],['Sunlight energy: '+Math.round(q)+' W/m² (day average)',{w:700,c:dec?CE_RED:PAL['cv-ink']}],dec?['About a third of June’s 483',{c:CE_RED}]:'Watch it change']);}},
+    {key:'lat',title:'Equator and Arctic',set:{lat:0},pause:true,focus:[430,40,370,400],
+     cause:{from:{lat:39.7},delay:2,dur:2.5,label:'Latitude',at:[218,428]},
+     run(sim){atReset(sim);snJump(sim,354);},
+     see:'December 21 again. Watch the place slide from Denver south to the equator. Then it slides north to 70° N, in the Arctic.',
+     why:'At the equator the noon Sun is still 66° up and the day is 12 hours long in every month, so it never gets a cold season. At 70° N the Sun never rises in late December: polar night. In June the same place has the midnight Sun. The farther you are from the equator, the bigger the swing between seasons.',
+     overlay(sim,ctx,LH,k,tau){if(tau>8.5){const v=Math.round(lerp(0,70,ease((tau-8.5)/2.5)));if(sim.p.lat!==v)BioLab.setValues(sim,{lat:v});}const l=sim.p.lat;dcCard(ctx,k,14,48,250,[['Latitude: '+l.toFixed(0)+'° N',{w:800}],['Noon Sun: '+Math.max(0,snM(sim,'angle')).toFixed(0)+'° · daylight '+snM(sim,'daylen').toFixed(1)+' h',{w:700,c:CE_RED}]]);}},
+    {key:'notilt',lvl:'honors',title:'What if Earth had no tilt?',set:{tilt:0},speed:1,focus:[430,40,370,400],
+     cause:{from:{tilt:23.5},delay:2,dur:2.5,label:'Axis tilt',at:[218,428]},
+     run(sim){snJump(sim,150);},
+     see:'Denver as the year runs. Watch the tilt shrink from 23.5° to 0°.',
+     why:'With no tilt, the Sun stays over the equator all year. Denver would get the same 50° noon Sun and 12-hour days every day, with only the tiny 3% distance effect left. No real seasons.',
+     overlay(sim,ctx,LH,k){dcCard(ctx,k,14,48,250,[[snDate(snD(sim)),{w:800}],['Noon Sun: '+snM(sim,'angle').toFixed(0)+'° · daylight '+snM(sim,'daylen').toFixed(1)+' h',{w:700,c:CE_RED}]]);}},
+    {key:'cells',lvl:'honors',title:'Uneven heating makes the winds',set:{view:'winds'},speed:1,focus:[520,10,280,430],
+     see:'Now the whole planet. Follow the dots around the red Hadley cells on the right.',
+     why:'The equator gets the most direct sunlight, so warm, moist air rises there, cools and dumps its rain: rainforests. That air spreads toward the poles high up and sinks near 30°. Sinking air warms and dries out, so deserts like the Sahara and Arizona’s line up near 30°.'},
+    {key:'coriolis',lvl:'ap',title:'The spin bends the winds',set:{view:'winds',coriolis:true},speed:1,focus:[160,40,360,400],
+     cause:{from:{coriolis:false},delay:2,label:'Earth’s rotation',at:[338,428]},
+     see:'Watch the surface wind arrows when Earth’s spin is switched on.',
+     why:'On a spinning planet, moving air curves: to the right in the Northern Hemisphere, to the left in the Southern. Air heading back to the equator becomes the northeast and southeast trade winds, and the flow toward the poles becomes the westerlies that push Denver’s weather in from the west.'}
+  ],
+  useIt:[
+    {do:'Put a houseplant in a south-facing window for the winter.',
+     why:'The low winter Sun shines deep into south-facing rooms, while the high summer Sun barely gets past the window frame. That is also why houses built for passive solar heat face south.'},
+    {do:'Keep sunglasses in the car from November to February.',
+     why:'The low winter Sun sits right at windshield height during morning and afternoon drives, especially on east–west roads. Glare is worst when the Sun is low, not when it is high.'},
+    {do:'Wear sunscreen on a spring ski day, even when it is cold.',
+     why:'By mid-April Denver’s noon Sun is as high as in late August. Snow reflects much of the UV back up at you, and mountain altitude adds more. Cold air does nothing to block it.'},
+    {do:'Check which way a slope faces before a spring hike or ski.',lvl:'honors',
+     why:'North-facing slopes get the Sun at a low angle all winter, so they stay icy and hold snow weeks longer than south-facing ones.'}],
+  tryIt:[{title:'the noon shadow (a few weeks)',
+    steps:['Stand a meter stick straight up, or use your own height, at the same spot.','Measure the shadow at solar noon (about 12:00 in winter, 1:00 pm in daylight time) once a week.','Find the Sun’s angle: tan(angle) = stick height ÷ shadow length.'],
+    look:'From November to late December the shadow grows longer, about twice the stick’s height at the solstice (27° Sun). After December 21 it starts shrinking again.'}]
+}};
+})());
+
 })();
