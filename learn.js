@@ -2674,4 +2674,95 @@ return {seasons:{
 }};
 })());
 
+/* ---------- Albedo ---------- */
+BioLab.addLearn((function(){
+const ORD=['blacktop','concrete','brick','grass','roof','snow'];
+const alCell=s=>{const i=ORD.indexOf(s),c=i%3,r=(i/3)|0;return [16+c*176,214+r*116,168,108];};
+const alF=(sim,s)=>(sim.st.L[s].T1-273.15)*1.8+32;
+const alAir=sim=>{const m=(sim.def.metrics||[]).find(x=>x.id==='Tair');return m?m.get(sim):NaN;};
+function alBox(ctx,s,col){const r=alCell(s);ctx.save();ctx.strokeStyle=col||'#c8102e';ctx.lineWidth=4;H.rr(ctx,r[0]-4,r[1]-4,r[2]+8,r[3]+8,10);ctx.stroke();ctx.restore();}
+function alSteam(ctx,s,tau){const r=alCell(s);ctx.save();ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=2;for(let i=0;i<6;i++){const ph=(tau*0.6+i/6)%1,x=r[0]+18+i*26,y=r[1]+r[3]-10-ph*70;ctx.globalAlpha=1-ph;ctx.beginPath();for(let j=0;j<=8;j++){const yy=y-j*3,xx=x+Math.sin(j*0.9+tau*3+i)*4;j?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);}ctx.stroke();}ctx.restore();}
+const T=(sim,s)=>Math.round(alF(sim,s))+' °F';
+return {albedo:{
+  goals:{
+    bio:['What albedo is: how much sunlight a surface bounces back','Why dark surfaces get so much hotter than light ones in the same sun','Why grass and shade stay cool, and why blacktop stays hot after sunset','How to use this to stay cool and keep pets safe'],
+    honors:['What albedo is: how much sunlight a surface bounces back','Why dark surfaces get so much hotter than light ones in the same sun','Why grass and shade stay cool, and why blacktop stays hot after sunset','How wind and water carry heat away','How to use this to stay cool and keep pets safe'],
+    ap:['What albedo is: how much sunlight a surface bounces back','Why dark surfaces get so much hotter than light ones in the same sun','Why grass and shade stay cool, and why blacktop stays hot after sunset','How wind and water carry heat away','How roofs make an urban heat island, and how melting sea ice feeds on itself','How to use this to stay cool and keep pets safe']},
+  matters:'Albedo is why a parking lot can burn a dog’s paws while the lawn next to it is fine, why cities run hotter than the countryside, and why melting Arctic ice speeds up warming.',
+  question:'On a sunny 78 °F September afternoon in Aurora, how hot does the blacktop in the student parking lot get at 1 PM, compared with the lawn right next to it? Why are they so different in the same sun?',
+  startKey:'start',startRun:true,startSpeed:0.5,
+  steps:[
+    {key:'morning',title:'Same sun, different temperatures',speed:3,focus:[8,206,536,236],
+     run(sim){sim.def.actions.find(a=>a.id==='j6').run(sim);},
+     see:'Six squares of ground side by side under the same sky, from 6 AM into the afternoon. Watch the temperatures pull apart as the Sun climbs.',
+     why:'Every square gets the same sunlight and the same air. The only thing that differs is the surface itself. Some surfaces turn far more of that sunlight into heat than others.',
+     overlay(sim,ctx,LH,k){const h=((sim.st.h0+sim.t)%24+24)%24,hh=Math.floor(h);dcCard(ctx,k,14,60,250,[[(hh%12===0?12:hh%12)+(hh<12?' AM':' PM')+' · air '+Math.round(alAir(sim))+' °F',{w:700}],['Blacktop: '+T(sim,'blacktop'),{w:700,c:CE_RED}],['Grass: '+T(sim,'grass'),{w:700,c:CE_GREEN}]]);}},
+    {key:'bounce',title:'Bounced back or soaked up',set:{surf:'roof'},speed:0.3,focus:[548,6,244,440],
+     cause:{from:{surf:'blacktop'},delay:3,label:'Surface',at:[280,190]},
+     run(sim){sim.def.actions.find(a=>a.id==='j13').run(sim);},
+     see:'Yellow dots are sunlight hitting the blacktop. A few bounce back; the rest disappear and become heat (the red wiggles). Watch the bars on the right when the thermometer moves to the white roof.',
+     why:'The share of sunlight a surface bounces back is its <b>albedo</b>. Blacktop’s is 0.10: it reflects 10% and absorbs 90%. A white roof’s is 0.70: it reflects 70% and absorbs only 30%. Absorbed sunlight is what heats a surface, so the blacktop gets about three times as much heat.'},
+    {key:'grass',title:'Grass sweats',set:{surf:'grass'},speed:0.3,focus:[8,206,536,236],
+     cause:{from:{surf:'concrete'},delay:3,label:'Surface',at:[280,190]},
+     run(sim){sim.def.actions.find(a=>a.id==='j13').run(sim);},
+     see:'Concrete and grass at 1 PM. Grass reflects less sunlight than concrete, so it should be hotter. Look at the numbers.',
+     why:'Grass is about 20 °F cooler. A living plant pulls water up from the soil and lets it evaporate from its leaves. Evaporating water carries heat away, the same way sweat cools your skin. Pavement has no water to give up.',
+     overlay(sim,ctx,LH,k,tau){alBox(ctx,'concrete','#5b8fd9');alBox(ctx,'grass','#1b7a3a');if(tau>3)alSteam(ctx,'grass',tau);
+       dcCard(ctx,k,14,60,290,[['Concrete (reflects 32%): '+T(sim,'concrete'),{w:700}],['Grass (reflects 23%): '+T(sim,'grass'),{w:700,c:CE_GREEN}]]);}},
+    {key:'shade',title:'Into the shade',set:{shade:'shade'},speed:1,focus:[8,206,536,236],
+     cause:{from:{shade:'sun'},delay:2,label:'Shade',at:[280,190]},
+     run(sim){sim.def.actions.find(a=>a.id==='j13').run(sim);},
+     see:'All six surfaces at 1 PM. Watch a tree’s shade fall over them.',
+     why:'In shade only scattered light gets through, so every surface drifts toward the air temperature. The blacktop takes an hour or more to get there: it is heavy and has stored a lot of heat, which it gives back slowly.',
+     overlay(sim,ctx,LH,k){alBox(ctx,'blacktop');dcCard(ctx,k,14,60,250,[['Blacktop: '+T(sim,'blacktop'),{w:700,c:CE_RED}],'Air: '+Math.round(alAir(sim))+' °F']);}},
+    {key:'night',title:'Still hot after sunset',speed:1.5,focus:[8,206,536,236],
+     run(sim){sim.def.actions.find(a=>a.id==='j19').run(sim);},
+     see:'From 7 PM into the night. Watch the blacktop and brick compared with the grass as the Sun goes down.',
+     why:'Blacktop and brick soaked up heat all day and stored it below the surface. After sunset they keep releasing it into the evening air, while grass cools off fast. That stored heat is why a parking lot still feels warm at 9 PM and why cities stay warmer at night.',
+     overlay(sim,ctx,LH,k){alBox(ctx,'blacktop');alBox(ctx,'grass','#1b7a3a');const h=((sim.st.h0+sim.t)%24+24)%24,hh=Math.floor(h);dcCard(ctx,k,14,60,250,[[(hh%12===0?12:hh%12)+(hh<12?' AM':' PM'),{w:800}],['Blacktop: '+T(sim,'blacktop'),{w:700,c:CE_RED}],['Grass: '+T(sim,'grass'),{w:700,c:CE_GREEN}]]);}},
+    {key:'hook',title:'Your question: the parking lot and the lawn',pause:true,focus:[8,206,536,236],
+     run(sim){sim.def.actions.find(a=>a.id==='j13').run(sim);},
+     see:'1 PM on the 78 °F September day. The student lot’s blacktop and the lawn next to it.',
+     why:'The blacktop is about <b>124 °F</b> and the lawn about <b>84 °F</b>, 40 degrees apart in the same sun, while the air is about 76 °F. The blacktop absorbs 90% of the sunlight and has no water to evaporate. The grass reflects a bit more and cools itself by evaporation.',
+     so:'Blacktop that hot can burn a dog’s paw pads and bare feet. The lawn a few steps away is safe.',
+     overlay(sim,ctx,LH,k){alBox(ctx,'blacktop');alBox(ctx,'grass','#1b7a3a');dcCard(ctx,k,14,60,250,[['Blacktop: '+T(sim,'blacktop'),{w:800,c:CE_RED}],['Grass: '+T(sim,'grass'),{w:800,c:CE_GREEN}],'Air: '+Math.round(alAir(sim))+' °F']);}},
+    {key:'snow',title:'Snow stays at 32 °F',set:{surf:'snow'},speed:0.3,focus:[548,6,244,440],
+     cause:{from:{surf:'blacktop'},delay:2.5,label:'Surface',at:[280,190]},
+     run(sim){sim.def.actions.find(a=>a.id==='j13').run(sim);},
+     see:'Watch most of the sunlight bounce off the snow, and its temperature.',
+     why:'Fresh snow reflects about 85% of the sunlight, the most of any surface here. The little it absorbs goes into melting snow, not warming it, so snow stays at 32 °F until it is gone. Once it melts, the darker ground underneath absorbs much more.'},
+    {key:'wind',lvl:'honors',title:'Wind carries heat away',set:{wind:25},speed:1,focus:[548,6,244,440],
+     cause:{from:{wind:5},delay:2,dur:3,label:'Wind',at:[280,190]},
+     run(sim){BioLab.setValues(sim,{surf:'blacktop'});sim.def.actions.find(a=>a.id==='j13').run(sim);},
+     see:'The blacktop at 1 PM. Watch the wind pick up from 5 to 25 mph, and the “Warms the air” bar.',
+     why:'Moving air keeps replacing the hot air touching the surface with cooler air, so it carries heat off faster. The blacktop cools even though the same sunlight still hits it. That is why a breeze makes a hot day bearable.'},
+    {key:'drought',lvl:'honors',title:'A lawn in a drought',set:{moist:'dry',surf:'grass'},speed:1,focus:[548,6,244,440],
+     cause:{from:{moist:'normal'},delay:2,label:'Moisture',at:[280,190]},
+     run(sim){sim.def.actions.find(a=>a.id==='j13').run(sim);},
+     see:'The lawn at 1 PM. Watch the Evaporation bar when the soil dries out.',
+     why:'With no water to spare, grass closes the pores on its leaves to save water, so it evaporates much less. Without that cooling, a dry lawn heats up almost like bare ground.'},
+    {key:'island',lvl:'ap',title:'Roofs and the urban heat island',set:{set:'roofs',surf:'darkroof'},speed:0.3,focus:[8,206,536,236],fresh:true,
+     run(sim){sim.def.actions.find(a=>a.id==='j13').run(sim);},
+     see:'A dark roof, a white roof, a green roof, a parking lot and a park lawn at 1 PM.',
+     why:'Cities replace grass and trees with dark roofs and pavement, so they absorb more sunlight and have less water to evaporate. They run hotter than the countryside, day and night: the <b>urban heat island</b>. White roofs reflect the sunlight; green roofs cool by evaporation.'},
+    {key:'ice',lvl:'ap',title:'The ice–albedo feedback',set:{set:'ice',surf:'ocean'},speed:0.3,focus:[8,206,536,236],fresh:true,
+     run(sim){sim.def.actions.find(a=>a.id==='j13').run(sim);},
+     see:'Snow-covered sea ice, bare ice, a melt pond and open ocean in the Arctic summer. Compare the energy each absorbs per day.',
+     why:'Snow reflects 85% of the sunlight; open ocean only 6%. When warming melts sea ice, dark water takes its place and absorbs far more energy, which melts more ice. A change that speeds itself up is a <b>positive feedback</b>, and it is a big reason the Arctic is warming faster than the rest of the planet.'}
+  ],
+  useIt:[
+    {do:'Before walking a dog on a hot afternoon, press the back of your hand on the pavement for 7 seconds.',
+     why:'If it is too hot for your hand, it is too hot for paws. Blacktop in full sun can run 40 °F or more hotter than the air. Walk on grass or go in the morning or evening.'},
+    {do:'Use a windshield sunshade, or park in the shade.',
+     why:'A dark dashboard absorbs most of the sunlight that comes through the glass. A shiny sunshade reflects it back out before it turns into heat.'},
+    {do:'Wear light-colored clothes for practice on hot, sunny days.',
+     why:'Light fabric reflects more sunlight; dark fabric absorbs more and warms up. In full sun the difference is easy to feel.'},
+    {do:'On a hot day, take breaks in the shade or on grass, not on turf or blacktop.',lvl:'honors',
+     why:'Artificial turf and pavement are dark and have no water to evaporate, so they can be tens of degrees hotter than natural grass. Shade cuts the sunlight that drives it all.'}],
+  tryIt:[{title:'the two cups (30 minutes)',
+    steps:['Fill two identical cups with the same amount of cool tap water.','Wrap one in black paper or cloth and the other in white paper or foil.','Set both in direct sun for 30 minutes.','Measure each with a kitchen thermometer, or compare by touch.'],
+    look:'The black cup’s water ends up noticeably warmer. Same sun, same water: only the albedo differs.'}]
+}};
+})());
+
 })();
