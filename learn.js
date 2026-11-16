@@ -3634,4 +3634,67 @@ return {pcr:{
 }};
 })());
 
+/* ---------- Micropipettes ---------- */
+BioLab.addLearn((function(){
+const piM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const piA=(sim,id)=>{const a=(sim.def.actions||[]).find(x=>x.id===id);if(a)a.run(sim);};
+const piCard=(ctx,k,rows)=>dcCard(ctx,k,226,40,290,rows,{hi:false});
+const LAB={first:'Press to the 1st stop',second:'Press to the 2nd stop',sample:'Tip into the sample',slow:'Release slowly',fast:'Let go quickly',tube:'Tip into your tube'};
+/* play a list of moves, one every `gap` seconds, and show the last move on the card */
+function moves(sim,tau,list,gap){list.forEach((m,i)=>atT(sim,tau,1+i*gap,'m'+i,s=>{piA(s,m);s._piLast=LAB[m];}));}
+const out=sim=>[['Last move: '+(sim._piLast||'none yet'),{w:700}],['In your tube: '+piM(sim,'tube').toFixed(2)+' µL',{w:800,c:CE_RED}]];
+const prep=sim=>{atReset(sim);sim._piLast=null;BioLab.setValues(sim,{mode:'pip',pip:'P20',dial:75,task:'7.5'});piA(sim,'newtip');};
+return {pipette:{
+  goals:{
+    bio:['How small a microliter is','How to pick the right micropipette and read its dial','The two stops: which one draws up and which one pushes out','What goes wrong with a careless press or a quick release'],
+    honors:['How to pick the right micropipette and read its dial','The two-stop technique and its common errors','How to plan a dilution with C₁V₁ = C₂V₂','Serial dilutions for counting bacteria'],
+    ap:['How to pick the right micropipette and read its dial','The two-stop technique, and percent error','Planning dilutions with C₁V₁ = C₂V₂','Serial dilutions and the 30–300 colony rule']},
+  matters:'Every DNA, enzyme and medicine experiment depends on measuring tiny volumes right. A one-microliter slip on a 7.5 µL measurement is a 13% error.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'dial',title:'Reading the dial',pause:true,focus:[120,40,140,270],run(sim){prep(sim);},
+     see:'A P20 micropipette. Its three-digit display reads 0-7-5.',
+     why:'A P20 measures 2 to 20 microliters (µL). One microliter is a millionth of a liter, about a pinhead-sized drop; a raindrop is about 50 µL. On a P20 the red digit is tenths, so 0-7-5 means <b>7.5 µL</b>.',
+     overlay(sim,ctx,LH,k){piCard(ctx,k,[['Display 0-7-5 on a P20 = '+piM(sim,'set')+' µL',{w:800}],['Range: '+piM(sim,'range'),{w:700}]]);}},
+    {key:'pick',title:'Same digits, different pipette',set:{mode:'pip',pip:'P200',dial:75,task:'7.5'},pause:true,focus:[120,40,140,270],
+     cause:{from:{pip:'P20'},delay:2.5,label:'Micropipette',at:[300,420]},
+     see:'Watch the P20 swap for a P200 with the same 0-7-5 on the dial.',
+     why:'On a P200 the same digits mean <b>75 µL</b>, ten times as much, and a P200 can’t measure below 20 µL anyway. Rule: use the smallest pipette whose range covers your volume, and read the dial the way that pipette is marked.',
+     overlay(sim,ctx,LH,k){piCard(ctx,k,[[sim.p.pip+' with 0-7-5 = '+piM(sim,'set')+' µL',{w:800,c:sim.p.pip==='P200'?CE_RED:PAL['cv-ink']}],[String(piM(sim,'choice')),{s:12}]]);}},
+    {key:'right',title:'The right way',pause:true,focus:[120,40,500,400],run(sim){prep(sim);},
+     see:'Watch each move: press to the first stop, dip into the sample, release slowly, move to your tube, press to the first stop, then the second.',
+     why:'The <b>first stop</b> pushes out exactly the set volume of air, so releasing it slowly draws up exactly 7.5 µL. Delivering, the first stop pushes the liquid out and the <b>second stop</b> blows out the last drop. Result: exactly 7.5 µL in your tube.',
+     overlay(sim,ctx,LH,k,tau){moves(sim,tau,['first','sample','slow','tube','first','second'],1.2);piCard(ctx,k,out(sim));}},
+    {key:'hook',title:'Your question: pressing to the second stop first',pause:true,focus:[120,40,500,400],run(sim){prep(sim);},
+     see:'Same 7.5 µL, but this time the plunger goes all the way to the <b>second</b> stop before the tip goes into the sample.',
+     why:'The second stop pushes out extra air, so releasing draws up extra liquid: about <b>9.5 µL</b>, 27% too much. Letting the plunger snap back instead draws about 7.0 µL, 7% too little, plus air bubbles. Only the first stop measures.',
+     so:'In a DNA experiment, 27% too much enzyme or DNA can change the result. In medicine, small measuring errors on small doses matter just as much, which is why liquid medicines come with marked syringes, not kitchen spoons.',
+     overlay(sim,ctx,LH,k,tau){moves(sim,tau,['second','sample','slow','tube','first','second'],1.2);piCard(ctx,k,out(sim));}},
+    {key:'fast',title:'Letting go too fast',pause:true,focus:[120,40,500,400],run(sim){prep(sim);},
+     see:'Correct first stop, but the plunger is let go all at once.',
+     why:'The liquid rushes up, air gets pulled in and bubbles form, so less liquid fits: about 7.0 µL instead of 7.5, and some can splash into the pipette itself, contaminating it.',
+     overlay(sim,ctx,LH,k,tau){moves(sim,tau,['first','sample','fast','tube','first','second'],1.2);piCard(ctx,k,out(sim));}},
+    {key:'dilute',lvl:'honors',title:'Planning a dilution',set:{mode:'dil',c1:10,c2:1,v2:50},pause:true,focus:[0,40,800,400],
+     see:'You have a 10× stock and need 50 mL of 1× solution.',
+     why:'C₁V₁ = C₂V₂, so V₁ = C₂V₂ ÷ C₁ = 1 × 50 ÷ 10 = <b>5 mL</b> of stock, plus 45 mL of water. You can only dilute down, never up to a higher concentration.',
+     overlay(sim,ctx,LH,k){piCard(ctx,k,[['Stock: '+piM(sim,'v1').toFixed(1)+' mL + water: '+piM(sim,'water').toFixed(1)+' mL',{w:800}],['Dilution: '+piM(sim,'factor'),{w:700}]]);}},
+    {key:'serial',lvl:'ap',title:'Serial dilution and counting',set:{mode:'ser',n0:9,plated:6},speed:1,focus:[0,40,800,400],
+     run(sim){atReset(sim);},
+     see:'A 10-fold series of 6 tubes. Watch 100 µL from tube 6 get plated and incubated.',
+     why:'Each tube is a tenth as concentrated as the one before, so tube 6 is a 10⁻⁶ dilution. Count only plates with 30 to 300 colonies: fewer and random error is large; more and colonies merge. Cells in the original = colonies ÷ (dilution × volume plated).',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'pl',s=>piA(s,'plate'));dcCard(ctx,k,520,350,270,[['Colonies: '+piM(sim,'cols'),{w:800}],['Original culture: '+piM(sim,'cfu')+' cells/mL',{w:700,c:CE_RED}]],{hi:false});}}
+  ],
+  useIt:[
+    {do:'Give liquid medicine with the syringe or cup that comes with it, not a kitchen spoon.',
+     why:'Kitchen teaspoons vary a lot in size. On small doses, that error is a big share of the dose.'},
+    {do:'Before you draw up anything in lab, say “first stop” out loud.',
+     why:'Starting from the second stop draws about a quarter too much. It is the most common pipetting mistake.'},
+    {do:'Check which pipette is in your hand before you trust the dial.',
+     why:'The same three digits mean 7.5, 75 or 750 µL on a P20, P200 or P1000.'}],
+  tryIt:[{title:'how big is a microliter? (10 minutes)',
+    steps:['Fill a medicine dropper or a straw with water.','Let drops fall one at a time into a teaspoon (about 5 mL = 5,000 µL), counting until it is full.','Divide 5,000 by your count to find the volume of one drop.'],
+    look:'Most drops are about 50 µL, so a teaspoon takes about 100. A 7.5 µL measurement is about a seventh of one drop.'}]
+}};
+})());
+
 })();
