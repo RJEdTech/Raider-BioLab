@@ -63,6 +63,62 @@ function triImage(){const key=PAL['card']+PAL['cv-ink'];if(triCache&&triKey===ke
 const TEX_LABEL={'Sand':[92,4,4],'Loamy sand':[82,12,6],'Sandy loam':[65,25,10],'Loam':[42,40,18],'Silt loam':[22,65,13],'Silt':[6,88,6],
   'Sandy clay loam':[60,12,28],'Clay loam':[33,34,33],'Silty clay loam':[10,56,34],'Sandy clay':[52,6,42],'Silty clay':[7,47,46],'Clay':[20,18,62]};
 
+/* ---- printed-style USDA texture triangle (SVG) for questions that ask students to read the chart ----
+   Same orientation as the canvas triangle: sand corner bottom-left, silt bottom-right, clay top.
+   Clay is read on the left edge (horizontal lines), silt on the right edge (lines parallel to the left edge),
+   sand along the bottom (lines parallel to the right edge). ans=[sand,silt,clay] draws the three reading lines. */
+const TEX_POLY={'Sand':[[100,0,0],[85,15,0],[90,0,10]],
+  'Loamy sand':[[85,15,0],[70,30,0],[85,0,15],[90,0,10]],
+  'Sandy loam':[[70,30,0],[50,50,0],[43,50,7],[52,41,7],[52,28,20],[80,0,20],[85,0,15]],
+  'Loam':[[43,50,7],[52,41,7],[52,28,20],[45,28,27],[23,50,27]],
+  'Silt loam':[[50,50,0],[20,80,0],[8,80,12],[0,88,12],[0,73,27],[23,50,27]],
+  'Silt':[[20,80,0],[0,100,0],[0,88,12],[8,80,12]],
+  'Sandy clay loam':[[80,0,20],[52,28,20],[45,28,27],[45,20,35],[65,0,35]],
+  'Clay loam':[[45,28,27],[20,53,27],[20,40,40],[45,15,40]],
+  'Silty clay loam':[[20,53,27],[0,73,27],[0,60,40],[20,40,40]],
+  'Sandy clay':[[65,0,35],[45,20,35],[45,0,55]],
+  'Silty clay':[[20,40,40],[0,60,40],[0,40,60]],
+  'Clay':[[45,15,40],[20,40,40],[0,40,60],[0,0,100],[45,0,55]]};
+const FIG_LABEL={'Sand':[94,3,3,8],'Loamy sand':[83.5,10,6.5,8,'rot'],'Sandy loam':[63,26,11,10.5],'Loam':[44,43,13,10.5],'Silt loam':[24,63,13,10.5],'Silt':[7,87,6,10],
+  'Sandy clay loam':[60,13,27,9],'Clay loam':[32,35,33,10],'Silty clay loam':[11,56,33,8.5],'Sandy clay':[53,5,42,8.5],'Silty clay':[7,45,48,9.5],'Clay':[22,18,60,13]};
+function triFig(ans){const X0=46,Y0=308,W=330,H=W*Math.sqrt(3)/2,f=n=>n.toFixed(1);
+  const P=(S,Si,C)=>[(S*X0+Si*(X0+W)+C*(X0+W/2))/100,(S*Y0+Si*Y0+C*(Y0-H))/100];
+  const L=(a,b,at)=>`<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" ${at}/>`;
+  const T=(x,y,s,at)=>`<text x="${f(x)}" y="${f(y)}" ${at||''}>${s}</text>`;
+  let o=`<svg viewBox="0 0 422 ${ans?380:356}" role="img" aria-label="USDA soil texture triangle. Percent clay is read on the left edge, percent silt on the right edge and percent sand along the bottom. ${ans?'Dashed lines at '+ans[2]+'% clay, '+ans[1]+'% silt and '+ans[0]+'% sand meet in the '+texture(ans[0],ans[1],ans[2])+' region.':'The twelve texture classes are labeled.'}" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,system-ui,sans-serif">`;
+  o+=`<rect width="422" height="${ans?380:356}" fill="#fff"/>`;
+  const hit=ans?texture(ans[0],ans[1],ans[2]):null;
+  for(const n in TEX_POLY){const pts=TEX_POLY[n].map(v=>P(...v).map(f).join(',')).join(' ');
+    o+=`<polygon points="${pts}" fill="${TEX_COL[n]}" fill-opacity="${hit?(n===hit?0.75:0.18):0.38}"/>`;}
+  // 10% grid in all three directions
+  let g='';for(let v=10;v<100;v+=10){g+=L(P(100-v,0,v),P(0,100-v,v),'')+L(P(100-v,v,0),P(0,v,100-v),'')+L(P(v,100-v,0),P(v,0,100-v),'');}
+  o+=`<g stroke="#8a8a8a" stroke-width=".6">${g}</g>`;
+  // class boundaries
+  o+='<g fill="none" stroke="#1b1b1b" stroke-width="1.6" stroke-linejoin="round">';for(const n in TEX_POLY)o+=`<polygon points="${TEX_POLY[n].map(v=>P(...v).map(f).join(',')).join(' ')}"/>`;o+='</g>';
+  // tick numbers
+  o+='<g font-size="10" fill="#333">';
+  for(let v=10;v<=90;v+=10){let q=P(100-v,0,v);o+=T(q[0]-12,q[1]+3.5,v,'text-anchor="middle"');
+    q=P(0,v,100-v);o+=T(q[0]+12,q[1]+3.5,v,'text-anchor="middle"');
+    q=P(v,100-v,0);o+=T(q[0],q[1]+15,v,'text-anchor="middle"');}
+  o+='</g>';
+  // axis titles with reading arrows
+  const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+  let m=mid(P(100,0,0),P(0,0,100));o+=T(m[0]-34,m[1]-16,'Percent clay  ⟶','font-size="12.5" font-weight="700" fill="#1b1b1b" text-anchor="middle" transform="rotate(-60 '+f(m[0]-34)+' '+f(m[1]-16)+')"');
+  m=mid(P(0,100,0),P(0,0,100));o+=T(m[0]+34,m[1]-16,'Percent silt  ⟶','font-size="12.5" font-weight="700" fill="#1b1b1b" text-anchor="middle" transform="rotate(60 '+f(m[0]+34)+' '+f(m[1]-16)+')"');
+  m=mid(P(100,0,0),P(0,100,0));o+=T(m[0],m[1]+36,'⟵  Percent sand','font-size="12.5" font-weight="700" fill="#1b1b1b" text-anchor="middle"');
+  // class names
+  o+='<g fill="#111" font-weight="600" text-anchor="middle">';
+  const sa1=P(77.5,22.5,0),sa2=P(87.5,0,12.5),rot=Math.atan2(sa2[1]-sa1[1],sa2[0]-sa1[0])*180/Math.PI+180;
+  for(const n in FIG_LABEL){const v=FIG_LABEL[n],q=P(v[0],v[1],v[2]);o+=T(q[0],q[1]+3,n,`font-size="${v[3]}"${v[4]?` transform="rotate(${rot.toFixed(1)} ${f(q[0])} ${f(q[1])})"`:''}${n===hit?' font-weight="800"':''}`);}
+  o+='</g>';
+  if(ans){const [S,Si,C]=ans,pt=P(S,Si,C),cl=P(100-C,0,C),sl=P(0,Si,100-Si),sa=P(S,100-S,0);
+    o+=`<g stroke="#C11430" stroke-width="2.4" stroke-dasharray="6 4" stroke-linecap="round">${L(cl,pt,'')}${L(sl,pt,'')}${L(sa,pt,'')}</g>`;
+    o+=`<circle cx="${f(pt[0])}" cy="${f(pt[1])}" r="6" fill="#C11430" stroke="#fff" stroke-width="2"/>`;
+    o+='<g fill="#fff" stroke="#C11430" stroke-width="2">'+[[cl[0]-12,cl[1]],[sl[0]+12,sl[1]],[sa[0],sa[1]+11.5]].map(c=>`<circle cx="${f(c[0])}" cy="${f(c[1])}" r="9.5"/>`).join('')+'</g>';
+    o+='<g font-size="10.5" font-weight="800" fill="#C11430" text-anchor="middle">'+T(cl[0]-12,cl[1]+3.6,C)+T(sl[0]+12,sl[1]+3.6,Si)+T(sa[0],sa[1]+15.2,S)+'</g>';
+    o+=T(211,372,C+'% clay  +  '+Si+'% silt  +  '+S+'% sand  →  '+hit,'font-size="13" font-weight="800" fill="#C11430" text-anchor="middle"');}
+  return o+'</svg>';}
+
 function jarParticles(){const r=rng(41),P=[];['sand','silt','clay'].forEach(cls=>{for(let i=0;i<70;i++)P.push({cls,u:r(),x:r(),y0:r(),j:r()*6.28,own:-Math.log(1-r()*0.98)});});return P;}
 
 const SOIL={
@@ -118,7 +174,7 @@ const SOIL={
      choices:['Sand','Silt','Clay'],correct:0,baseline:{mode:'jar',sample:'loam'},baselineAction:'shake',watch:'jar',at:0.01,reveal:0.5,changeText:'Jar set down',
      explain:'The heaviest, largest particles fall fastest. Sand settles in under a minute, silt over a few hours, and clay can stay suspended for a day or more. That is why the jar ends up layered: sand on the bottom, then silt, then clay.'},
     {lvl:'bio',instant:true,q:'A soil is 40% sand, 40% silt and 20% clay. Using the texture triangle, what is it called?',
-     choices:['Sandy loam','Loam','Clay loam','Silt loam'],correct:1,
+     choices:['Sandy loam','Loam','Clay loam','Silt loam'],correct:1,fig:(sim,phase)=>triFig(phase==='done'?[40,40,20]:null),
      explain:'Find 20% clay on the left edge, 40% silt on the right edge and 40% sand along the bottom. The lines meet in the Loam region. Loam is the classic “good garden soil” because it balances drainage and water holding.'},
     {lvl:'honors',q:'Rain falls at 50 mm/h on bare soil on a 15% slope. What happens to the soil loss rate when you plant grass cover?',
      choices:['It barely changes','It drops sharply','It rises, because roots loosen the soil'],correct:1,baseline:{mode:'erosion',slope:15,cover:false},change:{cover:true},changeText:'Grass cover planted',watch:'lossrate',at:0.3,reveal:1.2,
