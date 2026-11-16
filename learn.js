@@ -3073,4 +3073,73 @@ return {succession:{
 }};
 })());
 
+/* ---------- Island biogeography ---------- */
+BioLab.addLearn((function(){
+const ibM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const ibCard=(ctx,k,rows)=>dcCard(ctx,k,452,10,336,rows,{hi:false});
+const ibEq=(sim,w)=>Math.round(ibM(sim,w==='A'?'eqA':'eqB'));
+return {islandbio:{
+  goals:{
+    bio:['How species reach an island, and why some die out there','Why big islands near the mainland hold the most species','Why parks and forests act like islands','How to help wildlife move between them'],
+    honors:['How species reach an island, and why some die out there','Why the number of species levels off at an equilibrium, while the species keep changing','How island size and distance move that equilibrium','Why parks and forests act like islands'],
+    ap:['The MacArthur–Wilson balance of immigration and extinction','How island size and distance move the equilibrium','Why habitat fragmentation loses species','How wildlife corridors win some back']},
+  matters:'Every park, open space and forest cut by roads and houses works like an island. The same rules decide how many species a Denver open space can keep, and why Colorado builds wildlife overpasses.',
+  startKey:'start',startRun:true,startSpeed:0.5,
+  steps:[
+    {key:'pool',title:'A mainland full of species',pause:true,focus:[0,0,110,450],fresh:true,
+     see:'The green strip on the left is the mainland. Each little icon is one species of bird, insect or plant: 100 species in all.',
+     why:'Any of them could reach an island by flying, floating on driftwood or riding a storm. Island A (top) is big and only 10 km offshore. Island B (bottom) is small and 500 km away. Both start empty, like new volcanic islands.',
+     overlay(sim,ctx,LH,k){tag(ctx,'Island A: big, 10 km away',330,40,k);tag(ctx,'Island B: small, 500 km away',560,420,k);}},
+    {key:'arrive',title:'Species arrive',speed:1,focus:[100,0,700,450],fresh:true,
+     see:'Watch species fly across and settle on each island. The clock runs about 20 years every second.',
+     why:'Island A is close, so seeds and animals reach it often. Island B is far away, and few make it across 500 km of ocean. A fills up fast; B stays nearly empty.',
+     overlay(sim,ctx,LH,k){ibCard(ctx,k,[['Year '+Math.floor(sim.t),{w:800}],['Island A: '+ibM(sim,'spA')+' species',{w:700,c:CE_GREEN}],['Island B: '+ibM(sim,'spB')+' species',{w:700,c:CE_BLUE}]]);}},
+    {key:'balance',title:'Arrivals balance extinctions',speed:1,focus:[100,0,700,450],
+     see:'Keep watching island A after its number of species levels off. Look at the icons, and at the arrivals and extinctions.',
+     why:'The number levels off, but the island is not frozen. New species keep arriving and others keep dying out, at about the same rate. The count holds steady near an <b>equilibrium</b> while the list of species keeps changing.',
+     overlay(sim,ctx,LH,k){const s=sim.st;ibCard(ctx,k,[['Island A, year '+Math.floor(sim.t),{w:800}],['Species now: '+s.SA,{w:700,c:CE_GREEN}],['Species that arrived so far: '+s.arrA],['Species that died out so far: '+s.extinctA,{c:CE_RED}]]);}},
+    {key:'size',title:'Small islands lose species',set:{aArea:10},speed:1,focus:[100,0,700,260],
+     cause:{from:{aArea:1000},delay:2.5,label:'Island A size',at:[300,412]},
+     see:'Island A is full. Watch it shrink from 1,000 km² to 10 km², at the same distance.',
+     why:'A small island holds small populations, and a small population can be wiped out by one bad winter, a storm or a disease. Extinctions rise while arrivals stay the same, so island A slides down to a lower equilibrium.',
+     overlay(sim,ctx,LH,k){ibCard(ctx,k,[['Island A: '+ibM(sim,'spA')+' species',{w:800,c:CE_GREEN}],['Area: '+sim.p.aArea.toLocaleString()+' km²',{w:700}]]);}},
+    {key:'dist',title:'Closer islands gain species',set:{bDist:10},speed:1,focus:[100,200,700,250],
+     cause:{from:{bDist:500},delay:2.5,label:'Island B distance',at:[300,412]},
+     see:'Island B, small and far. Watch it move from 500 km to 10 km offshore.',
+     why:'At 10 km, birds, insects and seeds cross easily. Arrivals jump, so island B climbs to a much higher equilibrium, even though it is still small.',
+     overlay(sim,ctx,LH,k){ibCard(ctx,k,[['Island B: '+ibM(sim,'spB')+' species',{w:800,c:CE_BLUE}],['Distance: '+sim.p.bDist+' km',{w:700}]]);}},
+    {key:'hook',title:'Your question: bigger or closer?',set:{aArea:10,aDist:10,bArea:1000,bDist:500},speed:1.5,focus:[100,0,700,450],fresh:true,
+     see:'The two choices side by side, both starting empty. Island A: the same small 10 km² island moved to 10 km offshore. Island B: made 100 times bigger, 1,000 km², but still 500 km out.',
+     why:'Moving it closer wins. The small, close island levels off near <b>52 species</b>, because far more species arrive. The big, far island levels off near <b>32</b>, because big populations rarely die out but few species ever reach it. Big <i>and</i> close would hold about 84.',
+     so:'For a remote place, being reachable matters more than being big. That is why connecting parks and open spaces can save as many species as making them larger.',
+     overlay(sim,ctx,LH,k){ibCard(ctx,k,[['Year '+Math.floor(sim.t),{w:800}],['A (small, close): '+ibM(sim,'spA')+' species, heading for '+ibEq(sim,'A'),{w:700,c:CE_GREEN}],['B (big, far): '+ibM(sim,'spB')+' species, heading for '+ibEq(sim,'B'),{w:700,c:CE_BLUE}]]);}},
+    {key:'storm',lvl:'honors',title:'After a disaster',speed:1,focus:[100,0,700,260],
+     run(sim){atReset(sim);},
+     see:'Island A at equilibrium. Watch a hurricane wipe out about half its species.',
+     why:'With fewer species present, there are more empty spots for newcomers and fewer species left to die out. Arrivals outpace extinctions, so the island refills toward the same equilibrium. Its size and distance, not its history, set the target.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,2,'hit',s=>{const a=s.def.actions.find(x=>x.id==='hurricane');a.run(s);});ibCard(ctx,k,[['Island A: '+ibM(sim,'spA')+' species',{w:800,c:CE_GREEN}],['Equilibrium: about '+ibEq(sim,'A'),{w:700}]]);}},
+    {key:'frag',lvl:'ap',title:'Fragmenting a forest',set:{frag:true},speed:1,focus:[100,0,700,260],
+     cause:{from:{frag:false},delay:2.5,label:'Fragmentation',at:[300,412]},
+     see:'Treat island A as a 1,000 km² forest. Watch roads and development cut it into 10 separate patches.',
+     why:'Each patch acts like a small island with small populations, so extinction rises and the number of species each patch can keep falls. Habitat fragmentation is one of the biggest causes of biodiversity loss.',
+     overlay(sim,ctx,LH,k){ibCard(ctx,k,[['Each patch: '+ibM(sim,'spA')+' species, heading for '+ibEq(sim,'A'),{w:800,c:CE_RED}]]);}},
+    {key:'corr',lvl:'ap',title:'Wildlife corridors',set:{frag:true,corr:true,aDist:200},speed:1,focus:[100,0,700,260],
+     cause:{from:{corr:false},delay:2.5,label:'Corridors',at:[300,412]},
+     see:'The fragments, now 200 km from the nearest big forest. Watch strips of habitat connect them.',
+     why:'Corridors make the patches easier to reach, as if they were much closer. Higher immigration offsets some of the extra extinction, so the equilibrium rises. Colorado’s wildlife overpasses on Highway 9 do this for deer and elk.',
+     overlay(sim,ctx,LH,k){ibCard(ctx,k,[['Patches: '+ibM(sim,'spA')+' species, heading for '+ibEq(sim,'A'),{w:800,c:CE_GREEN}]]);}}
+  ],
+  useIt:[
+    {do:'Keep cats indoors.',
+     why:'Outdoor cats kill huge numbers of birds and small animals. In a small, isolated patch of habitat, that extra loss can wipe out a population that can’t be replaced from outside.'},
+    {do:'Plant a few native flowers or shrubs in a yard, balcony pot or school garden.',
+     why:'Small patches of habitat act as stepping stones between parks, making it easier for bees, butterflies and birds to reach other green spaces, like a closer island.'},
+    {do:'Watch for wildlife at dusk on mountain highways, and look for the overpasses on Highway 9 near Kremmling.',
+     why:'Roads split habitat in two. Crossings and fencing reconnect it: on Highway 9 they cut collisions with deer and elk by about 90%.'}],
+  tryIt:[{title:'the park bird count (two 15-minute visits)',
+    steps:['Visit a large park or open space and sit still for 15 minutes.','Tally each different kind of bird you see or hear (you don’t need names; “small brown one” counts).','Do the same in a small pocket park or a schoolyard surrounded by buildings.'],
+    look:'The large park usually holds more kinds of birds. Then compare two parks of similar size, one next to other green space and one cut off: connection matters too.'}]
+}};
+})());
+
 })();
