@@ -2765,4 +2765,77 @@ return {albedo:{
 }};
 })());
 
+/* ---------- ENSO ---------- */
+BioLab.addLearn((function(){
+const enM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+/* the ocean at equilibrium for a trade-wind strength W (same formulas as the model) */
+function enEq(sim,W){const st=sim.st,De=Math.max(15,Math.min(170,40+110*(1-W))),Dw=160+40*W,U=Math.max(0,Math.min(1.5,W*(1.2-(De-40)/120)/1.2));
+  Object.assign(st,{W,De,Dw,U,Te:28-7*Math.min(U,1.4),F:100*Math.pow(Math.min(U,1.3),1.2)});}
+const card=(ctx,k,rows)=>dcCard(ctx,k,250,342,290,rows);
+return {enso:{
+  goals:{
+    bio:['How steady winds push the ocean and pile warm water on one side of the Pacific','Why cold, rising water off Peru feeds one of the world’s biggest fisheries','What goes wrong in an El Niño year, from Peru’s fish to Australia’s fires','How El Niño and La Niña reach Colorado’s snow'],
+    honors:['How steady winds push the ocean and pile warm water on one side of the Pacific','Why cold, rising water off Peru feeds one of the world’s biggest fisheries','What goes wrong in an El Niño year, and what La Niña does','How the thermocline tilts and flattens','How the global conveyor belt moves heat around the planet'],
+    ap:['How steady winds push the ocean and pile warm water on one side of the Pacific','Why upwelling off Peru feeds one of the world’s biggest fisheries','What goes wrong in an El Niño year, and what La Niña does','How the Walker circulation and the thermocline respond','How ENSO shifts the jet stream and Colorado’s winter snow']},
+  matters:'A change in wind over the Pacific can crash a fishery in Peru, set off fires in Australia and decide whether Colorado’s southern or northern mountains get the big snow year.',
+  startKey:'start',startRun:true,startSpeed:1,
+  steps:[
+    {key:'slice',title:'The Pacific, sliced along the equator',pause:true,focus:[0,20,800,430],set:{state:'normal'},
+     see:'A slice through the Pacific Ocean along the equator: Indonesia on the left, Peru 15,000 km away on the right. Depth is stretched so you can see the layers.',
+     why:'Sunlight warms only the top layer of the ocean. That warm water is lighter, so it floats on top of cold, deep water. The boundary between them, where the temperature drops fast, is the <b>thermocline</b> (the dashed line).',
+     overlay(sim,ctx,LH,k){tag(ctx,'Warm surface layer',300,205,k);tag(ctx,'Cold deep water',300,395,k);tag(ctx,'Thermocline',520,250,k,{hi:true});}},
+    {key:'trades',title:'Wind pushes the ocean',speed:2,focus:[0,100,800,340],set:{state:'custom',trade:1},
+     cause:{from:{trade:0.2},delay:2,dur:2,label:'Trade winds',at:[610,24]},
+     run(sim){enEq(sim,0.2);},
+     see:'Start with almost no wind. Watch the trade winds pick up, blowing from east to west, and watch the warm layer.',
+     why:'Wind drags the sun-warmed surface water along with it. Steady trade winds push it west until it piles up near Indonesia as a thick <b>warm pool</b>, and the sea surface there ends up about half a meter higher than near Peru. The thermocline tilts: deep in the west, shallow in the east.'},
+    {key:'upwell',title:'Cold water rises off Peru',speed:0.6,focus:[560,150,240,300],set:{state:'normal'},fresh:true,
+     see:'Zoom in on the coast of Peru. Watch the arrows, the green dots and the fish.',
+     why:'As the wind pushes surface water away from Peru, cold water from below rises to take its place: <b>upwelling</b>. Deep water carries nitrate and phosphate (green dots). In sunlight, those nutrients feed plankton, which feed huge schools of anchovies. Upwelling zones cover about 1% of the ocean but produce a large share of the world’s fish.',
+     overlay(sim,ctx,LH,k){dcCard(ctx,k,236,250,300,[['Wind pushes surface water west',{w:700}],'→ cold, deep water rises','→ nutrients reach the sunlight','→ plankton bloom → anchovies']);}},
+    {key:'rain',title:'Rain follows the warm water',speed:0.6,focus:[0,10,800,170],set:{state:'normal'},fresh:true,
+     see:'Look at the sky: the clouds over the warm pool, and the dry air on the Peru side.',
+     why:'Warm water heats the air above it. Warm, moist air rises, cools and rains, so Indonesia gets heavy rain. That air flows east high up and sinks over the cold water near Peru, where sinking air stays dry. That is why the coast of Peru and northern Chile is one of the driest deserts on Earth, right next to the ocean.'},
+    {key:'elnino',title:'El Niño: the winds weaken',speed:2,focus:[0,10,800,440],set:{state:'elnino'},
+     cause:{from:{state:'normal'},delay:2,label:'Conditions',at:[610,24]},
+     run(sim){enEq(sim,1);},
+     see:'A normal year. Every 2 to 7 years the trade winds weaken. Watch what happens to the warm water, the rain and the fish.',
+     why:'Without strong winds to hold it in the west, the warm pool sloshes back east across the Pacific. The thermocline off Peru sinks, so upwelling stops bringing up nutrients, and the fish disappear. The rain moves east with the warm water: floods in Peru and Ecuador, drought and fire risk in Indonesia and Australia.',
+     overlay(sim,ctx,LH,k){card(ctx,k,[['Heaviest rain: '+enM(sim,'rainc'),{w:700}],['Water off Peru: '+enM(sim,'sst').toFixed(1)+' °C',{w:700,c:CE_RED}]]);}},
+    {key:'hook',title:'Your question: the Peruvian fishing boat',speed:1.5,focus:[560,150,240,300],set:{state:'normal'},fresh:true,
+     run(sim){atReset(sim);enEq(sim,1);sim._en0=null;},
+     see:'You run the red fishing boat. Forecasters announce El Niño. Watch your water and your catch for a year.',
+     why:'The water off your coast warms from about 21 °C to over 27 °C within six months. Upwelling falls under 10% of normal, so plankton and anchovies crash: your catch drops to about 40% of normal by six months and about 13% after a year.',
+     so:'That is what happened in 1972, when El Niño collapsed Peru’s anchovy fishery, then the largest in the world. Fishmeal from anchovies feeds farm animals worldwide, so prices rose far from Peru.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'nino',s=>{BioLab.setValues(s,{state:'elnino'});s._en0=s.t;});const mo=sim._en0==null?null:Math.max(0,sim.t-sim._en0);
+       card(ctx,k,[[mo==null?'Normal year':'El Niño + '+mo.toFixed(0)+' months',{w:800}],['Water off Peru: '+enM(sim,'sst').toFixed(1)+' °C',{w:700}],['Upwelling: '+Math.round(enM(sim,'upw'))+'% of normal'],['Anchovy catch: '+Math.round(enM(sim,'fish'))+'% of normal',{w:700,c:CE_RED}]]);}},
+    {key:'lanina',lvl:'honors',title:'La Niña: the opposite swing',speed:2,focus:[0,10,800,440],set:{state:'lanina'},
+     cause:{from:{state:'normal'},delay:2,label:'Conditions',at:[610,24]},
+     run(sim){enEq(sim,1);},
+     see:'A normal year again. Watch the trade winds get stronger than normal.',
+     why:'La Niña is a normal year, exaggerated. Stronger winds push even more warm water west, the thermocline rises off Peru, upwelling gets stronger and the eastern Pacific gets colder. Fishing is good, but Indonesia and Australia get extra rain.',
+     overlay(sim,ctx,LH,k){card(ctx,k,[['Thermocline off Peru: '+Math.round(enM(sim,'thermo'))+' m deep',{w:700}],['Water off Peru: '+enM(sim,'sst').toFixed(1)+' °C',{w:700,c:'#1f5fbf'}]]);}},
+    {key:'global',lvl:'honors',title:'The global conveyor belt',speed:1,focus:[0,20,800,420],set:{view:'global'},
+     see:'Zoom out to the whole planet. Follow the warm surface path (red) and the cold deep path (blue).',
+     why:'Winds spin each ocean basin into a big loop, a <b>gyre</b>. Deep down, very cold, salty water near Greenland and Antarctica is dense, so it sinks and creeps along the sea floor around the world. The full loop takes about 1,000 years, and it carries tropical heat toward the poles.'},
+    {key:'colorado',lvl:'ap',title:'From the Pacific to Colorado',speed:2,focus:[0,10,800,170],set:{state:'elnino'},
+     cause:{from:{state:'normal'},delay:2,label:'Conditions',at:[610,24]},
+     run(sim){enEq(sim,1);},
+     see:'Watch the rain center move east, and the Colorado winter outlook.',
+     why:'Where the tropical rain falls, the air rises and heats the atmosphere. Moving that heat source east bends the Pacific jet stream, which steers winter storms. In El Niño winters the jet tends to dip south, bringing storms to the southern US and often to Colorado’s southern mountains. La Niña tends to favor the northern mountains. A far-away link like this is a <b>teleconnection</b>.',
+     overlay(sim,ctx,LH,k){card(ctx,k,[['Rain center: '+Math.round(enM(sim,'rain'))+'° E',{w:700}],[enM(sim,'co'),{s:12,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'This fall, look up whether NOAA expects El Niño, La Niña or neutral before you plan winter ski days.',
+     why:'El Niño winters tend to bring extra snow to Colorado’s southern mountains, and La Niña winters to the northern ones. It shifts the odds; it does not guarantee a single storm.'},
+    {do:'Follow your town’s watering rules after a low-snow winter.',
+     why:'Most of Colorado’s water starts as mountain snow. A winter that misses the storms means less runoff in spring and summer, and less water for lawns, farms and rivers.'},
+    {do:'When an El Niño is announced, watch for it in the news far from here.',
+     why:'The same shift in warm water can flood Peru and Ecuador, dry out Indonesia and Australia, and change fish and food prices. Knowing the chain helps you understand those headlines.'}],
+  tryIt:[{title:'upwelling in a pan (15 minutes)',
+    steps:['Fill a clear baking dish halfway with cold tap water.','Slowly pour a thin layer of warm water with a few drops of food coloring over the back of a spoon so it floats on top.','Point a hair dryer on the cool setting, or blow through a straw, across the surface from one end.'],
+    look:'The colored warm layer piles up at the far end, and clear cold water rises at the end where the wind starts: the same tilt and upwelling as the Pacific.'}]
+}};
+})());
+
 })();
