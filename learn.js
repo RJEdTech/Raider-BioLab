@@ -2915,4 +2915,86 @@ return {farm:{
 }};
 })());
 
+/* ---------- Human population ---------- */
+BioLab.addLearn((function(){
+const hpM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const hpGo=(sim,key)=>{BioLab.setValues(sim,{preset:key});const a=sim.def.actions.find(x=>x.id==='load');if(a)a.run(sim);};
+const hpPop=sim=>{const v=hpM(sim,'pop');return v>=1000?(v/1000).toFixed(2)+' billion':v.toFixed(1)+' million';};
+const hpCard=(ctx,k,rows)=>dcCard(ctx,k,10,36,232,rows,{hi:false});
+const rateRows=(sim,hiB,hiD)=>[['Births: '+hpM(sim,'cbr').toFixed(0)+' per 1,000',{w:700,c:hiB?CE_RED:PAL['cv-ink']}],['Deaths: '+hpM(sim,'cdr').toFixed(0)+' per 1,000',{w:700,c:hiD?CE_RED:PAL['cv-ink']}],['Growth: '+hpM(sim,'gr').toFixed(1)+'% a year',{w:700}]];
+/* the row of the pyramid holding the people born since the step began: it climbs one bar every 5 years */
+function band(ctx,i){if(i>20)return;const top=54,y=top+(20-i)*16.8;ctx.save();ctx.strokeStyle='#c8102e';ctx.lineWidth=3;H.rr(ctx,24,y-2,512,18.6,6);ctx.stroke();ctx.restore();}
+return {humanpop:{
+  goals:{
+    bio:['How to read a population pyramid','Why death rates fall first and populations boom','Why a country keeps growing for decades after families get smaller','Why some countries, like Japan, are shrinking and aging'],
+    honors:['How to read a population pyramid','The stages of the demographic transition, and which rate falls first','Why a country keeps growing for decades after families get smaller','Why some countries are shrinking and aging, and what migration adds'],
+    ap:['How to read a population pyramid','The stages of the demographic transition, and which rate falls first','Population momentum, the rule of 70 and doubling time','Aging, the dependency ratio and what migration adds']},
+  matters:'The size of your freshman class, the future of Social Security, which jobs will be in demand and why some countries close schools while others build them can all be read from a population pyramid.',
+  startKey:'start',startRun:true,startSpeed:0.3,
+  steps:[
+    {key:'read',title:'Reading a pyramid',pause:true,focus:[20,40,520,400],run(sim){hpGo(sim,'niger');},
+     see:'Niger’s population pyramid. Babies are at the bottom, the oldest people at the top. Males on the left, females on the right.',
+     why:'Each bar is a 5-year age group, and its length is that group’s share of the whole country. Niger’s pyramid is very wide at the bottom: almost half its people are under 15, because families average nearly 7 children.',
+     overlay(sim,ctx,LH,k){tag(ctx,'Babies and toddlers (0–4)',150,404,k,{hi:true});tag(ctx,'Oldest people',150,70,k);tag(ctx,'Each bar: one 5-year age group',420,250,k);}},
+    {key:'cohort',title:'Watch a generation move up',speed:1.5,focus:[20,40,520,400],
+     run(sim){hpGo(sim,'niger');sim._hp0=sim.t;},
+     see:'The red box follows the babies born when this step began. Watch it climb one bar every 5 years.',
+     why:'Every year each group gets one year older and slides up the pyramid, losing some people to death along the way. The bars you see rising are real generations. Today’s wide base is tomorrow’s huge group of parents.',
+     overlay(sim,ctx,LH,k){band(ctx,Math.floor((sim.t-(sim._hp0||0))/5));}},
+    {key:'village',title:'Stage 1: many births, many deaths',speed:1.5,focus:[20,40,780,400],
+     run(sim){hpGo(sim,'stage1');},
+     see:'A farming village in 1750. Watch the birth rate, the death rate and the pyramid.',
+     why:'Families are large, but with no vaccines, clean water or antibiotics, many children die young and few people reach old age. Births and deaths nearly cancel out, so the population barely grows. The pyramid has steep sides: each age group is much smaller than the one below it.',
+     overlay(sim,ctx,LH,k){hpCard(ctx,k,rateRows(sim));}},
+    {key:'medicine',title:'Stage 2: deaths fall first',speed:1.5,focus:[20,40,780,400],
+     run(sim){atReset(sim);hpGo(sim,'stage1');},
+     see:'The same village. Watch clean water, vaccines and better food arrive: life expectancy jumps from 30 to 62 years.',
+     why:'The death rate drops from about 37 to about 10 per 1,000 within a decade. Families are still large, so births stay above 30. The gap between births and deaths opens, and growth jumps from under 1% to about 2.5% a year: a population boom. Death rates fall first because medicine spreads faster than ideas about family size.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,2.5,'e0',s=>BioLab.setValues(s,{e0:62}));hpCard(ctx,k,[['Life expectancy: '+sim.p.e0+' years',{w:800,c:tau>2.5?CE_RED:PAL['cv-ink']}]].concat(rateRows(sim,false,tau>2.5)));}},
+    {key:'smaller',title:'Stage 3: families get smaller',speed:1.5,focus:[20,40,780,400],
+     run(sim){atReset(sim);hpGo(sim,'niger');},
+     see:'Niger today, in Stage 2. Watch average family size fall from 6.7 to 3 children.',
+     why:'When parents expect their children to survive, when girls stay in school longer and when more women work outside the home, families tend to choose fewer children. The birth rate falls toward the death rate, growth slows, and the base of the pyramid narrows.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,2.5,'tfr',s=>BioLab.setValues(s,{tfr:3}));hpCard(ctx,k,[['Children per woman: '+sim.p.tfr,{w:800,c:tau>2.5?CE_RED:PAL['cv-ink']}]].concat(rateRows(sim,tau>2.5,false)));}},
+    {key:'hook',title:'Your question: Niger at 2 children',speed:3,pause:true,focus:[20,40,780,400],
+     run(sim){atReset(sim);hpGo(sim,'niger');sim._hp0=null;},
+     see:'Niger’s 27 million people. Watch every family drop to about 2 children (2.1) this year, then 50 years go by.',
+     why:'Niger does not stop growing. It reaches about <b>34 million in 20 years</b> and about <b>41 million in 50</b>, half again as many people, before it levels off. Almost half the country is under 15, so a huge generation is about to become parents. Even at 2 children each, that many parents make a lot of babies. This is <b>population momentum</b>.',
+     so:'At 6.7 children per woman, Niger would pass 170 million in the same 50 years. Changes in family size take a whole generation to show.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.2,'tfr',s=>{BioLab.setValues(s,{tfr:2.1});s._hp0=s.t;s.running=true;if(s.ui&&s.ui.play)s.ui.play.textContent='Pause';});const yrs=sim._hp0==null||tau<1.2?0:Math.floor(sim.t-sim._hp0);if(yrs>=50&&sim.running){sim.running=false;if(sim.ui&&sim.ui.play)sim.ui.play.textContent='Play';}
+       hpCard(ctx,k,[['Children per woman: '+sim.p.tfr,{w:800}],['Years later: '+yrs,{w:700}],['Population: '+hpPop(sim),{w:800,c:CE_RED}]]);}},
+    {key:'us',title:'Stage 4: a column',speed:1,focus:[20,40,520,400],
+     run(sim){hpGo(sim,'us');},
+     see:'The United States today. Compare the shape with Niger’s.',
+     why:'Low birth rates and low death rates: most people survive to old age, and each age group is about the same size as the next. The pyramid looks more like a column. The bulge in the 60s and 70s is the baby boom generation, born 1946 to 1964.',
+     overlay(sim,ctx,LH,k){hpCard(ctx,k,rateRows(sim));}},
+    {key:'japan',title:'Shrinking and aging: Japan',speed:1.4,focus:[20,40,780,400],
+     run(sim){hpGo(sim,'japan');},
+     see:'Japan, where families average 1.2 children. Watch 30 years go by.',
+     why:'With fewer than 2 children per couple, each generation is smaller than the one before. The base narrows, the top grows, deaths outnumber births, and the population shrinks. Fewer workers support more retirees, and schools close for lack of children.',
+     overlay(sim,ctx,LH,k){hpCard(ctx,k,[['Population: '+hpPop(sim),{w:800,c:CE_RED}],['Age 65 and older: '+hpM(sim,'old').toFixed(0)+'%',{w:700}],['Growth: '+hpM(sim,'gr').toFixed(1)+'% a year',{w:700}]]);}},
+    {key:'migration',lvl:'honors',title:'What migration adds',speed:1,focus:[20,40,780,400],
+     run(sim){atReset(sim);hpGo(sim,'us');},
+     see:'The United States again. Watch net migration (immigrants minus emigrants) set to zero.',
+     why:'US births and deaths are now nearly equal, so almost all of its growth comes from migration. Most migrants arrive as young adults, so they add to the working-age bars and later to births. With zero net migration, growth drops to about zero right away, then below zero as the population ages.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,2.5,'mig',s=>BioLab.setValues(s,{mig:0}));hpCard(ctx,k,[['Net migration: '+sim.p.mig+' per 1,000',{w:800,c:tau>2.5?CE_RED:PAL['cv-ink']}],['Growth: '+hpM(sim,'gr').toFixed(2)+'% a year',{w:700}]]);}},
+    {key:'dep',lvl:'ap',title:'Doubling time and dependency',speed:2,focus:[20,40,780,400],
+     run(sim){hpGo(sim,'japan');},
+     see:'Japan over 30 years. Watch the dependency ratio: children plus people 65 and older, per 100 people aged 15 to 64.',
+     why:'As the large post-war generations pass 65 and fewer young people start work, the ratio climbs toward 100 dependents per 100 workers, straining pensions and health care. For a growing country, use the rule of 70: Niger growing 3.9% a year doubles in about 70 ÷ 3.9 ≈ 18 years.',
+     overlay(sim,ctx,LH,k){hpCard(ctx,k,[['Dependency ratio: '+Math.round(hpM(sim,'dep'))+' per 100 workers',{w:800,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'Ask a grandparent how many brothers and sisters they had, then count your parents’ and your own.',
+     why:'Most American families went from 4 or more children a few generations ago to about 2 today. Your own family tree probably shows the demographic transition.'},
+    {do:'Look up any country’s pyramid in the US Census Bureau’s International Database.',
+     why:'The shape tells you its future before the news does: a wide base means decades of growth and new schools; a top-heavy pyramid means more retirees and fewer workers.'},
+    {do:'When you think about careers, think about the pyramid.',
+     why:'As the baby boom generation ages, the US needs more nurses, physical therapists, home health aides and doctors. Health care is one of the fastest-growing kinds of work for that reason.'}],
+  tryIt:[{title:'your family’s fertility rate (20 minutes)',
+    steps:['List your great-grandparents’ generation (as far as you know), your grandparents’, and your parents’.','For each couple, count how many children they had.','Average the number of children per couple in each generation.'],
+    look:'Compare each generation with 2.1, replacement level. Many families fall from well above it to near or below it in three generations: Stages 2, 3 and 4 in one family tree.'}]
+}};
+})());
+
 })();
