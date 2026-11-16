@@ -3518,4 +3518,67 @@ return {footprint:{
 }};
 })());
 
+/* ---------- Gel electrophoresis ---------- */
+BioLab.addLearn((function(){
+const glM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const glCard=(ctx,k,rows)=>dcCard(ctx,k,466,352,324,rows,{hi:false});
+const stopAt=(sim,min)=>{if(sim.st.runMin>=min&&sim.running){sim.running=false;if(sim.ui&&sim.ui.play)sim.ui.play.textContent='Play';}};
+const run=sim=>[['Running time: '+Math.floor(glM(sim,'runmin'))+' min at '+sim.p.volts+' V',{w:800}],['Blue dye: '+glM(sim,'front').toFixed(1)+' cm of 7',{w:700,c:'#1f5fbf'}],['Smallest band: '+glM(sim,'smallest'),{w:700}]];
+return {gel:{
+  goals:{
+    bio:['Why an electric field pulls DNA through a gel','Why small pieces of DNA move farther than big ones','How to read a gel to match DNA evidence','How long to run a gel, and what goes wrong'],
+    honors:['Why an electric field pulls DNA through a gel','Why small pieces of DNA move farther than big ones','How to read a gel for crime-scene and paternity cases','How voltage, time and agarose change the run'],
+    ap:['Why an electric field pulls DNA through a gel, and why size sorts it','How to read a gel for crime-scene and paternity cases','How voltage, time and agarose change the run','How to size unknown DNA with a semi-log standard curve']},
+  matters:'Gels are how DNA evidence, paternity tests and genetic-engineering checks are read. Knowing what a band means helps you judge a DNA match in the news or in court.',
+  startKey:'start',startRun:false,
+  steps:[
+    {key:'gel',title:'The gel box',pause:true,fresh:true,set:{power:false},focus:[10,30,440,420],
+     see:'A slab of agarose gel in a box of salty buffer. Samples sit in the wells at the top. The black lead is at the top, the red lead at the bottom.',
+     why:'Agarose, a jelly made from seaweed, forms a mesh full of tiny pores, like a sponge. When the power is on, current flows through the buffer from one end to the other. Each well holds billions of copies of a few DNA pieces, plus blue dye so you can see where you loaded.',
+     overlay(sim,ctx,LH,k){tag(ctx,'Wells: samples go in here',270,60,k,{hi:true});tag(ctx,'Agarose gel: a mesh of tiny pores',270,280,k);tag(ctx,'Red (+) end',150,400,k);}},
+    {key:'power',title:'DNA runs to red',set:{power:true},speed:1,fresh:true,focus:[10,30,440,420],
+     cause:{from:{power:false},delay:2,label:'Power supply',at:[230,436]},
+     see:'Watch the power supply switch on, and watch the samples leave the wells.',
+     why:'Every DNA backbone is lined with phosphate groups that carry a negative charge. Opposite charges attract, so the electric field pulls DNA away from the black (negative) lead toward the red (positive) one. Lab rule: “Black at the wells, run to red.”',
+     overlay(sim,ctx,LH,k){glCard(ctx,k,run(sim));}},
+    {key:'size',title:'Small pieces win the race',speed:3,fresh:true,focus:[60,60,400,370],
+     see:'Watch the ladder (lane L), DNA pieces of known sizes, spread out as the gel runs.',
+     why:'Every piece feels a pull in proportion to its length, but long pieces get tangled in the mesh far more. Short pieces slip through the pores faster, like a small kid weaving through a crowded hallway, so they end up farther down. After the run, position tells you size.',
+     overlay(sim,ctx,LH,k){stopAt(sim,30);glCard(ctx,k,run(sim));}},
+    {key:'match',title:'Reading a DNA match',speed:4,fresh:true,focus:[60,60,400,370],
+     see:'Lane E is DNA from a crime scene. S1, S2 and S3 are suspects. Watch the gel run, then compare the band patterns.',
+     why:'Each person’s DNA, cut the same way, gives a pattern of bands that is very unlikely to be the same for two people (except identical twins). Suspect 2’s four bands line up exactly with the evidence. Suspects 1 and 3 each have bands that don’t match, so they are ruled out.',
+     overlay(sim,ctx,LH,k){stopAt(sim,40);glCard(ctx,k,sim.st.runMin>=39?[['Evidence matches Suspect 2',{w:800,c:CE_RED}],'Suspects 1 and 3 are ruled out']:run(sim));}},
+    {key:'reverse',title:'Leads plugged in backward',set:{leads:'reversed'},speed:2,fresh:true,focus:[10,30,440,420],
+     cause:{from:{leads:'correct'},delay:1.5,label:'Leads',at:[230,436]},
+     see:'Watch what happens if someone plugs the red lead in at the wells.',
+     why:'Now the positive end is above the wells, so the negative DNA moves up, out of the wells and into the buffer, where it is lost. Nothing on the gel will show up. That is why every lab checks the leads before pressing start.',
+     overlay(sim,ctx,LH,k){stopAt(sim,10);glCard(ctx,k,[['Leads: '+(sim.p.leads==='correct'?'black at wells':'red at wells'),{w:800,c:CE_RED}],['Smallest band: '+glM(sim,'smallest'),{w:700}]]);}},
+    {key:'hook',title:'Your question: the 50-minute run',speed:4,fresh:true,focus:[10,30,780,420],
+     see:'100 V, and you walk away for 50 minutes. Watch the bottom ladder band (250 base pairs) and the blue dye.',
+     why:'At 100 V the 250 bp band moves about 0.15 cm a minute. It reaches the end of the 7 cm gel at about <b>47 minutes</b> and runs off into the buffer. The blue dye runs just behind it, so stop when the dye is about 80% of the way down, at about <b>38 minutes</b>.',
+     so:'Nothing stops DNA at the end of the gel. Distance depends on voltage × time, so at 150 V the same band is gone by about 31 minutes. Watch the dye, not the clock.',
+     overlay(sim,ctx,LH,k){stopAt(sim,50);glCard(ctx,k,run(sim));}},
+    {key:'paternity',lvl:'honors',title:'A paternity test',set:{case:'paternity'},speed:4,fresh:true,focus:[60,60,400,370],
+     see:'Mother (M), child (C) and two men (F1, F2). Watch the run, then account for each of the child’s bands.',
+     why:'Every band in the child came from the mother or the father. The child’s 8,200 and 2,600 bp bands match the mother. The other two, 3,900 and 1,500, must come from the father. F2 has both; F1 has no 3,900 band, so F1 is ruled out.',
+     overlay(sim,ctx,LH,k){stopAt(sim,40);glCard(ctx,k,sim.st.runMin>=39?[['F2 has both of the child’s non-maternal bands',{w:800,c:CE_RED}],'F1 is missing the 3,900 bp band']:run(sim));}},
+    {key:'curve',lvl:'ap',title:'Sizing unknowns',set:{case:'lambda'},speed:4,fresh:true,focus:[10,30,780,420],
+     see:'λ DNA cut with HindIII gives bands of known sizes. Run it next to two unknowns.',
+     why:'Over the useful range, distance traveled is linear in the log of fragment size. Plot log(size) against distance for the ladder bands, fit a line, then read each unknown’s size from its distance. Check the standard curve graph below.',
+     overlay(sim,ctx,LH,k){stopAt(sim,45);glCard(ctx,k,[['Unknown sizes from the curve:',{w:800}],[String(glM(sim,'est')),{s:11.5}]]);}}
+  ],
+  useIt:[
+    {do:'When a news story says “DNA match,” look for how rare the pattern is.',
+     why:'A match means two samples share the same bands at the places tested. Labs report how rare that pattern is in the population; that number, not the word “match,” tells you how strong the evidence is.'},
+    {do:'Talk with your family before anyone sends DNA to an ancestry or genealogy company.',
+     why:'You share large parts of your DNA with your parents, siblings and cousins, so one person’s test also reveals information about relatives who never agreed to it. Police have used genealogy databases to solve cases this way.'},
+    {do:'In your own lab, say it out loud before you press start: “Black at the wells, run to red.”',
+     why:'A reversed lead sends every sample out into the buffer, and the whole run is lost.'}],
+  tryIt:[{title:'marker race on a coffee filter (20 minutes)',
+    steps:['Draw a thick dot of black washable marker 2 cm from the bottom of a strip of coffee filter.','Dip the bottom edge in a little water, keeping the dot above the water.','Watch for 10 minutes as the water climbs.'],
+    look:'The black splits into colors that travel different distances, because different dye molecules move at different speeds through the paper. A gel sorts DNA the same way, by how easily each piece moves through a mesh.'}]
+}};
+})());
+
 })();
