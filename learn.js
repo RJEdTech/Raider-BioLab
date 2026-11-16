@@ -3389,4 +3389,67 @@ return {treecarbon:{
 }};
 })());
 
+/* ---------- Mining ---------- */
+BioLab.addLearn((function(){
+const mnM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const mnCard=(ctx,k,rows)=>dcCard(ctx,k,440,296,350,rows,{hi:false});
+const n0=v=>Math.round(v).toLocaleString();
+const money=v=>(v<0?'−$':'$')+n0(Math.abs(v))+' million a year';
+return {mining:{
+  goals:{
+    bio:['How an open-pit copper mine works','Why low-grade ore means far more waste rock for each tonne of copper','Why deep ore and low prices can make a mine lose money','How acid drainage happens, and what reclamation does'],
+    honors:['How an open-pit copper mine works','Why low-grade ore means far more waste rock and tailings','How cost, depth and price decide whether a mine pays','How acid drainage happens, and what reclamation does'],
+    ap:['Ore grade, strip ratio and rock moved per tonne of copper','When underground mining beats an open pit','Break-even grade and the role of the copper price','Acid mine drainage chemistry and reclamation']},
+  matters:'Every phone, charger, electric car and wind turbine is full of copper. Getting it means moving mountains of rock, and Colorado still lives with the streams that old mines left acidic.',
+  question:'In 1900, copper ore was about 5% copper. Today it is about 0.6%. To get one tonne of copper, roughly the wiring in a dozen electric cars, how much rock does a mine have to move now compared with then?',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'pit',title:'An open-pit copper mine',pause:true,focus:[0,40,800,380],
+     see:'A cross-section of a large open-pit copper mine, about 1.8 km across. The trucks carry rock up the benches.',
+     why:'The copper is spread through the green ore body as tiny grains. To reach it, the mine first removes the <b>overburden</b>, the rock on top, and piles it as waste rock. The ore goes to the mill, where it is crushed and the copper is separated out. The ground-up leftovers become <b>tailings</b>.',
+     overlay(sim,ctx,LH,k){tag(ctx,'Overburden becomes waste rock',140,200,k);tag(ctx,'Ore: about 0.6% copper',420,300,k,{hi:true});tag(ctx,'Leftover ground rock',700,190,k);}},
+    {key:'hook',title:'Your question: then and now',set:{grade:0.6},pause:true,focus:[0,40,800,400],
+     cause:{from:{grade:5},delay:2.5,dur:3.5,label:'Ore grade',at:[300,425]},
+     see:'The same mine with 1900’s rich ore, 5% copper. Watch the grade fall to today’s 0.6%, and watch the numbers.',
+     why:'At 5% copper, a mine digs about 23 tonnes of ore and moves about <b>84 tonnes</b> of rock in all for each tonne of copper. At 0.6%, it digs about 189 tonnes of ore and moves about <b>700 tonnes</b>, more than 8 times as much. Almost all of it ends up as waste rock and tailings.',
+     so:'The rich, easy ore was mined first. As the world uses more copper, each tonne takes more digging, more energy, more water and more land.',
+     overlay(sim,ctx,LH,k){mnCard(ctx,k,[['Ore grade: '+sim.p.grade.toFixed(1)+'% copper',{w:800}],['Ore per tonne of copper: '+n0(mnM(sim,'orePer'))+' t',{w:700}],['All rock moved: '+n0(mnM(sim,'rockPer'))+' t',{w:800,c:CE_RED}]]);}},
+    {key:'deep',title:'Deeper ore costs more',set:{depth:500},pause:true,focus:[0,40,800,400],
+     cause:{from:{depth:150},delay:2.5,dur:3,label:'Depth to the ore',at:[300,425]},
+     see:'Watch the ore body sink from 150 m to 500 m below the surface.',
+     why:'An open pit has sloping sides, so a deeper pit is much wider at the top. Moving all that extra overburden quadruples the rock per tonne of copper, and the mine goes from earning about $870 million a year to losing about $1.3 billion.',
+     overlay(sim,ctx,LH,k){mnCard(ctx,k,[['Depth: '+sim.p.depth+' m',{w:800}],['All rock moved: '+n0(mnM(sim,'rockPer'))+' t per t of copper',{w:700}],['Profit: '+money(mnM(sim,'profit')),{w:800,c:mnM(sim,'profit')<0?CE_RED:CE_GREEN}]]);}},
+    {key:'under',title:'Going underground',set:{depth:500,method:'under'},pause:true,focus:[0,40,800,400],
+     cause:{from:{method:'surface'},delay:2.5,label:'Mining method',at:[300,425]},
+     see:'The deep ore again. Watch the mine switch from an open pit to tunnels underground.',
+     why:'Underground, the mine digs only the ore and a little tunnel rock, so it moves far less rock and disturbs much less land. But tunneling costs more per tonne. For deep ore it loses much less money than an open pit; for shallow ore the pit is cheaper.',
+     overlay(sim,ctx,LH,k){mnCard(ctx,k,[['Method: '+(sim.p.method==='under'?'underground':'open pit'),{w:800}],['All rock moved: '+n0(mnM(sim,'rockPer'))+' t per t of copper',{w:700}],['Profit: '+money(mnM(sim,'profit')),{w:800,c:mnM(sim,'profit')<0?CE_RED:CE_GREEN}]]);}},
+    {key:'acid',title:'Acid drainage and reclamation',set:{recl:'full'},pause:true,focus:[0,40,800,400],
+     cause:{from:{recl:'none'},delay:3,label:'Reclamation',at:[300,425]},
+     see:'The waste rock is left bare. Watch what happens when the company regrades, covers and replants it and treats the water.',
+     why:'Waste rock often holds pyrite (FeS₂). Rain and air turn it into sulfuric acid, which dissolves metals like iron, copper and zinc into streams and can kill fish: <b>acid mine drainage</b>. Covering the rock, replanting and treating the water cut the risk from severe to low, for a small share of the mine’s profit.',
+     overlay(sim,ctx,LH,k){mnCard(ctx,k,[['Reclamation: '+{none:'none',basic:'regrade and replant',full:'full, with water treatment'}[sim.p.recl],{w:800}],['Acid drainage risk: '+mnM(sim,'risk'),{w:800,c:CE_RED}],['Profit: '+money(mnM(sim,'profit')),{w:700}]]);}},
+    {key:'price',lvl:'honors',title:'When the price drops',set:{price:6000},pause:true,focus:[0,40,800,400],
+     cause:{from:{price:9000},delay:2.5,dur:3,label:'Copper price',at:[300,425]},
+     see:'Watch the copper price fall from $9,000 to $6,000 a tonne.',
+     why:'The cost of moving rock doesn’t change, but each tonne of copper now sells for less. Profit drops from about $870 million to about $270 million a year. If the price falls further, low-grade mines close, and the grade a mine needs to break even rises.'},
+    {key:'pyrite',lvl:'ap',title:'Pyrite and pH',set:{recl:'none',pyrite:5},speed:2,focus:[0,40,800,400],fresh:true,
+     cause:{from:{pyrite:0},delay:2,dur:3,label:'Pyrite in waste rock',at:[300,425]},
+     see:'Watch the stream below the mine as pyrite in the uncovered waste rock rises.',
+     why:'2FeS₂ + 7O₂ + 2H₂O → 2Fe²⁺ + 4SO₄²⁻ + 4H⁺. The hydrogen ions lower the pH, and acid water dissolves more metal from the rock. Iron hydroxide coats the streambed orange. Once it starts, acid drainage can go on for centuries.',
+     overlay(sim,ctx,LH,k){mnCard(ctx,k,[['Stream pH: '+mnM(sim,'ph').toFixed(1),{w:800,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'Recycle old phones, chargers and cords at an electronics drop-off instead of throwing them away.',
+     why:'Recycled copper comes back without moving hundreds of tonnes of rock for every tonne. Many electronics stores and city drop-offs take them.'},
+    {do:'Keep your phone and laptop longer, and repair them when you can.',
+     why:'Every new device means new copper, gold and other metals dug from low-grade ore, with all the waste rock and tailings that come with them.'},
+    {do:'Near old mine sites, don’t drink from streams and stay out of old mine openings.',
+     why:'Colorado has thousands of abandoned mines. Orange streams below them are a sign of acid drainage carrying dissolved metals, and old tunnels can collapse or hold bad air.'}],
+  tryIt:[{title:'cookie mining (20 minutes)',
+    steps:['Lay a chocolate chip cookie on graph paper and trace it. Count the squares it covers.','Using toothpicks and a paper clip only, dig out the chips in 5 minutes. Don’t use your fingers.','Then try to fit the crumbs back inside the outline, and count the squares they now cover.'],
+    look:'The chips are the ore; everything else is waste. It is hard to get every chip, and the crumbs never fit back in the outline: that is why reclamation costs money and land stays disturbed.'}]
+}};
+})());
+
 })();
