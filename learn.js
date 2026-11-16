@@ -3878,4 +3878,60 @@ return {blast:{
 }};
 })());
 
+/* ---------- Sanger sequencing ---------- */
+BioLab.addLearn((function(){
+const sgM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const sgA=(sim,id)=>{const a=(sim.def.actions||[]).find(x=>x.id===id);if(a)a.run(sim);};
+const sgCard=(ctx,k,rows)=>dcCard(ctx,k,496,10,296,rows,{hi:false});
+const rd=sim=>[['Read length: '+sgM(sim,'len')+' of 36 bases',{w:800,c:CE_RED}],['ddNTPs: '+sim.p.dd+'% of nucleotides',{w:700}]];
+return {sanger:{
+  goals:{
+    bio:['How chain-stopping letters make copies of every length','How sorting the copies by size reads the gene in order','How to read a chromatogram','Why the mix of stop letters has to be just right'],
+    honors:['How chain-stopping letters make copies of every length','Why sorting by size reads the gene in order, and why the read is the complement','How to read a chromatogram','How a single-letter change like sickle cell shows up'],
+    ap:['Why a ddNTP stops the chain','How the ddNTP ratio sets the read length','Reading a chromatogram, including double peaks','Finding the sickle-cell mutation and a carrier']},
+  matters:'Sanger sequencing read most of the first human genome, and it is still how labs check a gene, confirm a CRISPR edit or test for sickle-cell disease.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'tube',title:'What’s in the tube',pause:true,set:{sample:'normal',dd:3},focus:[0,40,800,180],
+     see:'The template strand of the β-globin gene, a short primer, and copies being built from it.',
+     why:'The tube holds the DNA to read, a primer that marks where to start, DNA polymerase to build copies, lots of the four normal nucleotides, and a pinch (3%) of colored <b>ddNTPs</b>. Each ddNTP carries a dye: green A, red T, black G, blue C.'},
+    {key:'stop',title:'Copies that stop at random',set:{sample:'normal',dd:3},speed:1,focus:[0,40,800,180],
+     run(sim){atReset(sim);},
+     see:'Watch the copies grow and stop. The colored dot at the end of each copy is the ddNTP that stopped it.',
+     why:'A ddNTP is missing the oxygen the next nucleotide needs to attach, so once the polymerase adds one, that copy stops. Which spot it stops at is random, so across billions of copies there is a copy ending at every letter, each tagged with the color of its last letter.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,0.8,'run',s=>sgA(s,'run'));}},
+    {key:'sort',title:'Sorting by size reads the gene',speed:1,set:{sample:'normal',dd:3},focus:[0,200,800,260],
+     run(sim){atReset(sim);},
+     see:'The copies race through a thin tube (the capillary) past a laser. Watch the peaks appear left to right.',
+     why:'Short pieces move fastest, so the copy that stopped at letter 1 arrives first, then letter 2, then 3. The laser reads each color as it passes, so the colors come out in the gene’s order. Each peak is one letter. Because the copies are built to match the template, the read is its complement.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,0.5,'run',s=>sgA(s,'run'));sgCard(ctx,k,[['Read: '+String(sgM(sim,'read')).slice(0,18)+'…',{w:800}]]);}},
+    {key:'hook',title:'Your question: more stop letters?',set:{sample:'normal',dd:30},pause:true,focus:[0,200,800,260],
+     cause:{from:{dd:3},delay:2.5,dur:3,label:'ddNTP share',at:[300,215]},
+     see:'The read at 3% ddNTPs. Watch a labmate raise it to 30% for “stronger peaks.”',
+     why:'At 3% you read all 36 letters. At 30% almost every copy stops in the first few letters: the first peaks are tall, but the later ones fade into the noise, and you can read <b>only 12</b>. Going the other way fails too: at 0.3% no peak is tall enough to read at all.',
+     so:'A good read needs balance. Real sequencing services tune this ratio to read about 800 letters in one run.',
+     overlay(sim,ctx,LH,k){sgCard(ctx,k,rd(sim));}},
+    {key:'sickle',lvl:'honors',title:'Finding sickle cell',set:{sample:'sickle',dd:3},pause:true,focus:[0,200,800,260],
+     cause:{from:{sample:'normal'},delay:2.5,label:'DNA sample',at:[300,215]},
+     see:'A normal β-globin read. Watch it switch to a sickle-cell patient’s DNA and look at letter 20.',
+     why:'One letter changes: A becomes T (GAG to GTG), so the protein gets valine instead of glutamic acid at that spot. That single change makes hemoglobin stick together when oxygen is low, bending red blood cells into sickles.',
+     overlay(sim,ctx,LH,k){sgCard(ctx,k,[['Letter 20: '+sgM(sim,'b20'),{w:800,c:CE_RED}]]);}},
+    {key:'carrier',lvl:'ap',title:'A carrier’s double peak',set:{sample:'het',dd:3},pause:true,focus:[0,200,800,260],
+     see:'DNA from a carrier: one normal copy of the gene and one sickle copy.',
+     why:'Half the copies have A at letter 20 and half have T, so two half-height peaks, green and red, sit at the same spot. The base caller writes W (A or T). Carriers usually have no symptoms but can pass the sickle copy to their children.',
+     overlay(sim,ctx,LH,k){sgCard(ctx,k,[['Letter 20: '+sgM(sim,'b20'),{w:800,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'If sickle-cell disease or another genetic condition runs in your family, ask a doctor about carrier testing before starting a family.',
+     why:'Carriers usually feel fine. A simple test, often by sequencing one gene, tells you your chances of passing it on.'},
+    {do:'When you hear about a “gene test,” ask what was read: one gene, a few markers or the whole genome.',
+     why:'Different tests read very different amounts of DNA, so they can answer very different questions.'},
+    {do:'Look up the Human Genome Project.',
+     why:'Read mostly with Sanger sequencing, a few hundred letters at a time, it took about 13 years to finish in 2003. Today a whole genome can be read in about a day.'}],
+  tryIt:[{title:'beaded sequencing (15 minutes)',
+    steps:['Write a 10-letter “gene,” like ATGGTGCATC.','Make paper strips: one ending at letter 1, one ending at letter 2, and so on, each with only its last letter colored.','Shuffle the strips, then sort them shortest to longest and read the colored last letters.'],
+    look:'Sorted by length, the colored ends spell your gene in order. That is exactly how the capillary turns random stops into a readable sequence.'}]
+}};
+})());
+
 })();
