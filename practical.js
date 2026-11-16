@@ -1112,6 +1112,7 @@ soil: {
   answer: 'The sandy loam keeps about 22 mL and lets about 78 mL drain, most of it within half an hour. Sand keeps only about 10 mL and drains in minutes. Clay keeps about 43 mL but takes hours to drain. Sandy soil needs water more often; clay stays soggy longer.',
   uses: [
     'Cracked basements: many Front Range homes sit on expansive clay that swells when wet and shrinks when dry, which is why gutters should carry water away from the foundation.',
+    'Farming: on clay, farmers bury drain pipes so fields dry out enough to plant in spring. On sand, they irrigate often and split fertilizer into small doses so it doesn’t wash below the roots.',
     'Golf greens and sports fields: they are built on mostly sand so rain drains through within minutes and play can start again soon after a storm.',
     'Jar test at home: shake garden soil in a jar of water with a little dish soap, then measure the layers after a day or two to estimate sand, silt and clay.'
   ],

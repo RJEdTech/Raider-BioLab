@@ -119,6 +119,21 @@ function triFig(ans){const X0=46,Y0=308,W=330,H=W*Math.sqrt(3)/2,f=n=>n.toFixed(
     o+=T(211,372,C+'% clay  +  '+Si+'% silt  +  '+S+'% sand  →  '+hit,'font-size="13" font-weight="800" fill="#C11430" text-anchor="middle"');}
   return o+'</svg>';}
 
+/* what a texture name means in practice: shown under the triangle once the triangle question is answered */
+const TEX_WHY=[
+  ['Sand','Drains in minutes. Holds little water or fertilizer.',
+   'Irrigate often. Fertilizer washes down past the roots, so feed in small doses. Loose soil is good for potatoes and carrots.',
+   'Water the lawn a little and often. Sports fields are built on sand so play can restart soon after rain.'],
+  ['Loam','Drains well but still holds water and nutrients.',
+   'The best all-around cropland. Most crops grow well with the least extra work.',
+   'The soil gardeners try to build by mixing compost into sand or clay.'],
+  ['Clay','Holds lots of water and nutrients but drains slowly.',
+   'Fertile, but fields stay wet and cold in spring, so planting waits. Buried drain pipes help, and tractors on wet clay pack it hard.',
+   'Water slowly and less often. Front Range clay swells when wet and shrinks when dry, cracking driveways and foundations.']];
+function texWhy(){return '<div class="tex-why"><p class="tw-h">Why the name matters: it tells you how the soil will act</p><div class="tw-g">'+
+  TEX_WHY.map(r=>`<div class="tw-c"><p class="tw-n"><i style="background:${TEX_COL[r[0]]}"></i>${r[0]}</p><p class="tw-w">${r[1]}</p><p><b>Farmer:</b> ${r[2]}</p><p><b>At home:</b> ${r[3]}</p></div>`).join('')+
+  '</div><p class="tw-f">Compost helps every soil: it lets sand hold more water and helps clay drain.</p></div>';}
+
 function jarParticles(){const r=rng(41),P=[];['sand','silt','clay'].forEach(cls=>{for(let i=0;i<70;i++)P.push({cls,u:r(),x:r(),y0:r(),j:r()*6.28,own:-Math.log(1-r()*0.98)});});return P;}
 
 const SOIL={
@@ -174,8 +189,8 @@ const SOIL={
      choices:['Sand','Silt','Clay'],correct:0,baseline:{mode:'jar',sample:'loam'},baselineAction:'shake',watch:'jar',at:0.01,reveal:0.5,changeText:'Jar set down',
      explain:'The heaviest, largest particles fall fastest. Sand settles in under a minute, silt over a few hours, and clay can stay suspended for a day or more. That is why the jar ends up layered: sand on the bottom, then silt, then clay.'},
     {lvl:'bio',instant:true,q:'A soil is 40% sand, 40% silt and 20% clay. Using the texture triangle, what is it called?',
-     choices:['Sandy loam','Loam','Clay loam','Silt loam'],correct:1,fig:(sim,phase)=>triFig(phase==='done'?[40,40,20]:null),
-     explain:'Find 20% clay on the left edge, 40% silt on the right edge and 40% sand along the bottom. The lines meet in the Loam region. Loam is the classic “good garden soil” because it balances drainage and water holding.'},
+     choices:['Sandy loam','Loam','Clay loam','Silt loam'],correct:1,fig:(sim,phase)=>triFig(phase==='done'?[40,40,20]:null),after:()=>texWhy(),
+     explain:'Find 20% clay on the left edge, 40% silt on the right edge and 40% sand along the bottom. The lines meet in the Loam region. Loam is the classic “good garden soil” because it balances drainage and water holding. The name is useful because it predicts how the soil will act: how fast it drains, how much water and fertilizer it holds, and what it is good for.'},
     {lvl:'honors',q:'Rain falls at 50 mm/h on bare soil on a 15% slope. What happens to the soil loss rate when you plant grass cover?',
      choices:['It barely changes','It drops sharply','It rises, because roots loosen the soil'],correct:1,baseline:{mode:'erosion',slope:15,cover:false},change:{cover:true},changeText:'Grass cover planted',watch:'lossrate',at:0.3,reveal:1.2,
      explain:{honors:'Leaves break the force of raindrops, roots hold soil in place, and covered soil soaks up more water so less runs off. Cover cuts erosion by roughly 50 times in this model.',
