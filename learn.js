@@ -3661,16 +3661,16 @@ return {pipette:{
      see:'Watch the P20 swap for a P200 with the same 0-7-5 on the dial.',
      why:'On a P200 the same digits mean <b>75 µL</b>, ten times as much, and a P200 can’t measure below 20 µL anyway. Rule: use the smallest pipette whose range covers your volume, and read the dial the way that pipette is marked.',
      overlay(sim,ctx,LH,k){piCard(ctx,k,[[sim.p.pip+' with 0-7-5 = '+piM(sim,'set')+' µL',{w:800,c:sim.p.pip==='P200'?CE_RED:PAL['cv-ink']}],[String(piM(sim,'choice')),{s:12}]]);}},
-    {key:'right',title:'The right way',pause:true,focus:[120,40,500,400],run(sim){prep(sim);},
+    {key:'right',title:'The right way',speed:1,focus:[120,40,500,400],run(sim){prep(sim);},
      see:'Watch each move: press to the first stop, dip into the sample, release slowly, move to your tube, press to the first stop, then the second.',
      why:'The <b>first stop</b> pushes out exactly the set volume of air, so releasing it slowly draws up exactly 7.5 µL. Delivering, the first stop pushes the liquid out and the <b>second stop</b> blows out the last drop. Result: exactly 7.5 µL in your tube.',
      overlay(sim,ctx,LH,k,tau){moves(sim,tau,['first','sample','slow','tube','first','second'],1.2);piCard(ctx,k,out(sim));}},
-    {key:'hook',title:'Your question: pressing to the second stop first',pause:true,focus:[120,40,500,400],run(sim){prep(sim);},
+    {key:'hook',title:'Your question: pressing to the second stop first',speed:1,focus:[120,40,500,400],run(sim){prep(sim);},
      see:'Same 7.5 µL, but this time the plunger goes all the way to the <b>second</b> stop before the tip goes into the sample.',
      why:'The second stop pushes out extra air, so releasing draws up extra liquid: about <b>9.5 µL</b>, 27% too much. Letting the plunger snap back instead draws about 7.0 µL, 7% too little, plus air bubbles. Only the first stop measures.',
      so:'In a DNA experiment, 27% too much enzyme or DNA can change the result. In medicine, small measuring errors on small doses matter just as much, which is why liquid medicines come with marked syringes, not kitchen spoons.',
      overlay(sim,ctx,LH,k,tau){moves(sim,tau,['second','sample','slow','tube','first','second'],1.2);piCard(ctx,k,out(sim));}},
-    {key:'fast',title:'Letting go too fast',pause:true,focus:[120,40,500,400],run(sim){prep(sim);},
+    {key:'fast',title:'Letting go too fast',speed:1,focus:[120,40,500,400],run(sim){prep(sim);},
      see:'Correct first stop, but the plunger is let go all at once.',
      why:'The liquid rushes up, air gets pulled in and bubbles form, so less liquid fits: about 7.0 µL instead of 7.5, and some can splash into the pipette itself, contaminating it.',
      overlay(sim,ctx,LH,k,tau){moves(sim,tau,['first','sample','fast','tube','first','second'],1.2);piCard(ctx,k,out(sim));}},
@@ -3755,6 +3755,67 @@ return {transformation:{
   tryIt:[{title:'selection with paper clips (10 minutes)',
     steps:['Mix 100 paper clips with 1 bent one (the “transformed” cell).','Searching: have a partner find the bent one by looking at each clip, and time it.','Selecting: pour all the clips through a slot only the bent clip can’t pass, and time it.'],
     look:'Selection finds the rare one at once, however many there are. That is why the lab uses ampicillin instead of checking 100 million cells one by one.'}]
+}};
+})());
+
+/* ---------- Plasmid maps and digests ---------- */
+BioLab.addLearn((function(){
+const plM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const plA=(sim,id)=>{const a=(sim.def.actions||[]).find(x=>x.id===id);if(a)a.run(sim);};
+const plCard=(ctx,k,rows)=>dcCard(ctx,k,370,150,300,rows,{hi:false});
+const frag=sim=>[['Cuts: '+plM(sim,'cuts')+' · fragments: '+plM(sim,'nfrag'),{w:800}],['Sizes: '+plM(sim,'sizes'),{w:700,c:CE_RED}],['Add up to: '+plM(sim,'total').toLocaleString()+' bp',{w:700}]];
+return {plasmid:{
+  goals:{
+    bio:['How to read a plasmid map','How a restriction enzyme finds and cuts one exact sequence','Why cutting a ring n times gives n pieces','How to check a plasmid with a digest and a gel'],
+    honors:['How to read a plasmid map like the ones in ApE','How restriction enzymes cut and leave sticky ends','How to predict fragment sizes for any enzyme combination','How a gene is cloned into a plasmid'],
+    ap:['How to predict fragment sizes for rings and straight DNA','Sticky ends and ligation','Insertional inactivation: screening for recombinant plasmids','Choosing a diagnostic digest']},
+  matters:'Cutting and pasting DNA with restriction enzymes is how insulin, vaccines and GMO crops are made, and how labs check that a plasmid is what the label says.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'map',title:'Reading a plasmid map',pause:true,set:{mol:'pBR322',e1:'EcoRI',e2:'none'},focus:[0,40,340,380],
+     see:'The map of pBR322, a plasmid used in thousands of labs. The ring is its DNA: 4,361 base pairs.',
+     why:'Positions are numbered in base pairs, starting at the top and going clockwise, like a clock. The colored arcs are genes: <b>ampR</b> and <b>tetR</b> make the cell resistant to ampicillin and tetracycline, and <b>ori</b> is where copying starts. The labels around the outside are the spots where restriction enzymes cut.'},
+    {key:'cut',title:'An enzyme that reads DNA',speed:1,set:{mol:'pBR322',e1:'EcoRI',e2:'none'},focus:[0,40,800,380],
+     run(sim){plA(sim,'digest');},
+     see:'EcoRI cuts the ring. Look at the cut site in the middle panel.',
+     why:'EcoRI recognizes only GAATTC, reading the same on both strands, and cuts between G and A. pBR322 has just one GAATTC, so EcoRI cuts once and the ring opens into one straight piece of 4,361 bp. The staggered cut leaves short single-stranded tails called <b>sticky ends</b>.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,frag(sim));}},
+    {key:'two',title:'Two cuts, two pieces',speed:1,set:{mol:'pBR322',e1:'HindIII',e2:'BamHI'},focus:[0,40,800,410],
+     cause:{from:{e2:'none'},delay:2.5,label:'Enzyme 2',at:[300,425]},
+     see:'HindIII cuts once. Watch BamHI join it, and watch the fragments and the gel.',
+     why:'In a ring, every cut makes one more fragment: one cut gives one piece, two cuts give two. HindIII at 29 and BamHI at 375 cut out a 346 bp piece and leave 4,015 bp, and the pieces always add back up to the whole plasmid, 4,361 bp.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,frag(sim));}},
+    {key:'hook',title:'Your question: checking an old tube',speed:1,set:{mol:'pBR322',e1:'HindIII',e2:'BamHI'},focus:[0,40,800,410],
+     run(sim){plA(sim,'digest');},
+     see:'A tube labeled pBR322 has sat in the freezer for years. You get one digest to check it.',
+     why:'EcoRI alone gives one 4,361 bp band, which any plasmid that size with one EcoRI site would also give. <b>HindIII plus BamHI</b> gives two bands, <b>346 bp and 4,015 bp</b>, adding up to 4,361. Two bands at the right sizes is a much stronger fingerprint.',
+     so:'Labs run a quick diagnostic digest like this, about an hour, before paying to sequence a plasmid. Pick enzymes that give a distinctive pattern.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,frag(sim));}},
+    {key:'linear',lvl:'honors',title:'Straight DNA',speed:1,set:{mol:'lambda',e1:'HindIII',e2:'none'},focus:[0,40,800,410],
+     see:'Now λ phage DNA, a straight molecule of 48,502 bp, cut with HindIII.',
+     why:'A straight piece has two free ends, so n cuts give n + 1 fragments. HindIII cuts λ DNA 7 times, giving 8 fragments: the classic λ/HindIII ladder used to size DNA on gels.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,frag(sim));}},
+    {key:'clone',lvl:'honors',title:'Pasting in a gene',speed:1,set:{mol:'pBR322',e1:'BamHI',e2:'none',insEnz:'BamHI'},focus:[0,40,800,410],
+     run(sim){atReset(sim);plA(sim,'clear');},
+     see:'pBR322 cut with BamHI, and a GFP gene cut with BamHI too. Watch the insert join the plasmid.',
+     why:'Both cuts leave the same sticky ends, so the insert’s tails pair with the plasmid’s, and DNA ligase seals the backbone. The result is a <b>recombinant plasmid</b>: the plasmid plus a new gene. Ends cut by different enzymes usually won’t match.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,2,'lig',s=>plA(s,'clone'));plCard(ctx,k,[['Recombinant: '+plM(sim,'recomb'),{w:800,c:CE_GREEN}]]);}},
+    {key:'inact',lvl:'ap',title:'Insertional inactivation',speed:1,set:{mol:'pBR322',e1:'BamHI',e2:'none',insEnz:'BamHI'},focus:[0,40,800,410],
+     run(sim){plA(sim,'clone');},
+     see:'The GFP insert sits at BamHI, inside the tetR gene.',
+     why:'An insert in the middle of tetR breaks that gene, so cells with the recombinant plasmid are still ampicillin resistant but now tetracycline sensitive. Grow them on ampicillin, then copy the colonies onto tetracycline: the ones that die there carry the insert. That screen finds recombinants without sequencing.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,[['Ampicillin: '+plM(sim,'amp'),{w:700}],['Tetracycline: '+plM(sim,'tet'),{w:700,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'Look up how insulin is made today.',
+     why:'Since 1982 most insulin has come from microbes carrying the human insulin gene on a plasmid, cut and pasted in with restriction enzymes and ligase, the same tools in this lab.'},
+    {do:'In your lab notebook, add up the fragment sizes before you trust a predicted gel.',
+     why:'For a ring they must add up to the whole plasmid. If they don’t, a cut site or a subtraction is wrong.'},
+    {do:'When you hear “genetically modified,” ask which gene was added and why.',
+     why:'Most GM crops and medicines start with this same cut-and-paste step. Knowing the gene and its job tells you much more than the label.'}],
+  tryIt:[{title:'paper plasmid (15 minutes)',
+    steps:['Write positions 0 to 100 around a paper ring made from a strip of paper taped into a loop.','Mark “cut sites” at 10, 35 and 70, then cut there.','Measure each piece and add them up. Then cut a straight strip at the same marks and count the pieces.'],
+    look:'Three cuts make three pieces from the ring but four from the straight strip, and the ring’s pieces always add back to 100.'}]
 }};
 })());
 
