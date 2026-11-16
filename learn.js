@@ -3452,4 +3452,70 @@ return {mining:{
 }};
 })());
 
+/* ---------- Carbon footprint ---------- */
+BioLab.addLearn((function(){
+const fpM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const fpCard=(ctx,k,rows)=>dcCard(ctx,k,226,12,214,rows,{hi:false});
+const tot=sim=>['Your year: '+fpM(sim,'total').toFixed(1)+' t CO₂',{w:800,c:CE_RED}];
+return {footprint:{
+  goals:{
+    bio:['Where one person’s CO₂ comes from in a year','Why driving is usually the biggest slice you control','Which changes cut the most, and which barely matter','How your year compares with the US and world averages'],
+    honors:['Where one person’s CO₂ comes from in a year','Which changes cut the most, and which barely matter','Why an electric car or heat pump is only as clean as its grid','How your year compares with the US and world averages'],
+    ap:['The arithmetic: gallons × 8.89 kg, kWh × grid intensity','Which changes cut the most, and which barely matter','Why an electric car or heat pump is only as clean as its grid','Why personal changes alone can’t reach the 2050 goal']},
+  matters:'You will hear endless advice about cutting carbon. Doing the math shows which choices actually matter, so your effort goes where it counts.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'where',title:'Where the CO₂ comes from',pause:true,focus:[0,40,800,410],run(sim){sim.def.actions.find(a=>a.id==='default').run(sim);},
+     see:'A typical student’s year. Each source puffs out bubbles of CO₂. The stack on the right adds them up.',
+     why:'Burning gasoline, natural gas and the coal and gas in power plants releases CO₂. Food, the things you buy and shared services like schools and roads add more. This student’s year comes to about 12.5 tons, less than the US average of 15 but more than 2½ times the world average.',
+     overlay(sim,ctx,LH,k){fpCard(ctx,k,[tot(sim)]);}},
+    {key:'drive',title:'Driving is the biggest slice you control',pause:true,set:{miles:60},focus:[0,330,520,120],
+     cause:{from:{miles:120},delay:2.5,dur:3,label:'Car miles per week',at:[260,418]},
+     see:'Watch weekly driving fall from 120 miles to 60, and watch the red “getting around” slice.',
+     why:'Every gallon of gas makes about 8.9 kg (about 20 lb) of CO₂. At 120 miles a week in a 25 mpg car, that is 250 gallons and about 2.2 tons a year. Halving the miles halves it, cutting about 1.1 tons.',
+     overlay(sim,ctx,LH,k){fpCard(ctx,k,[['Driving: '+sim.p.miles+' mi/week',{w:800}],['Getting around: '+fpM(sim,'transport').toFixed(1)+' t',{w:700}],tot(sim)]);}},
+    {key:'hook',title:'Your question: which change cuts most?',pause:true,set:{mpg:50},focus:[0,40,800,410],
+     cause:{from:{mpg:25},delay:2.5,dur:3,label:'Car fuel economy',at:[260,418]},
+     see:'The typical student again. Watch the car go from 25 to 50 miles per gallon.',
+     why:'The 50 mpg car saves about <b>1.1 tons</b> a year, because it halves the 250 gallons burned. Going vegetarian saves about <b>0.8 tons</b>, and skipping the one 2,000-mile flight about <b>0.4 tons</b>. Together the three cut about 2.3 tons, from 12.5 to about 10.2.',
+     so:'Find your biggest slice before you cut. For most teenagers in Colorado, that is how much and in what you drive.',
+     overlay(sim,ctx,LH,k){fpCard(ctx,k,[['Car: '+sim.p.mpg+' mpg',{w:800}],tot(sim)]);}},
+    {key:'grid',title:'Where your electricity comes from',pause:true,set:{grid:'renew'},focus:[350,100,450,260],
+     cause:{from:{grid:'colorado'},delay:2.5,label:'Electricity source',at:[260,418]},
+     see:'Watch the power plant switch from Colorado’s current mix to 100% renewable electricity.',
+     why:'Much of Colorado’s electricity still comes from burning coal and natural gas, about half a kilogram of CO₂ per kilowatt-hour. Wind and solar make almost none. Your share of home electricity drops from about 1 ton to almost nothing.',
+     overlay(sim,ctx,LH,k){fpCard(ctx,k,[['Home energy: '+fpM(sim,'home').toFixed(1)+' t',{w:800}],tot(sim)]);}},
+    {key:'food',title:'Food',pause:true,set:{diet:'veg'},focus:[0,180,200,170],
+     cause:{from:{diet:'avg'},delay:2.5,label:'Diet',at:[260,418]},
+     see:'Watch the diet change from average to vegetarian.',
+     why:'Cattle burp methane and need huge amounts of feed and land, so beef has a much bigger climate footprint per gram of protein than beans, chicken or eggs. Going vegetarian cuts about 0.8 tons a year; even cutting back on beef helps.',
+     overlay(sim,ctx,LH,k){fpCard(ctx,k,[['Food: '+fpM(sim,'food').toFixed(1)+' t',{w:800}],tot(sim)]);}},
+    {key:'together',title:'Doing everything',pause:true,focus:[520,40,280,410],
+     run(sim){atReset(sim);sim.def.actions.find(a=>a.id==='default').run(sim);},
+     see:'Now make every big change at once: an electric car on renewable power, a vegetarian diet, no flight and buying less. Watch the stack.',
+     why:'The footprint falls by almost half, to about 7 tons. But it can’t reach the 2-ton goal for 2050, because about 2.5 tons come from shared services, like schools, roads, hospitals and the military, that no one person controls. Reaching the goal takes cleaner power plants, buildings and transportation for everyone, not just personal choices.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,2.5,'all',s=>BioLab.setValues(s,{car:'ev',grid:'renew',diet:'veg',flights:0,stuff:'low'}));fpCard(ctx,k,[tot(sim),['US average 15 · world 4.7 · goal 2',{s:12}]]);}},
+    {key:'hp',lvl:'honors',title:'Only as clean as the grid',pause:true,set:{heat:'hp'},focus:[150,100,500,260],
+     cause:{from:{heat:'gas'},delay:2.5,label:'Home heating',at:[260,418]},
+     see:'Watch the gas furnace swap for an electric heat pump, on today’s Colorado grid.',
+     why:'A heat pump moves heat instead of burning fuel, so it uses about a third as much energy. But on a grid that burns coal and gas, the savings are tiny here. On a 100% renewable grid the same heat pump cuts home heating to nearly zero. Electric cars work the same way.',
+     overlay(sim,ctx,LH,k){fpCard(ctx,k,[['Home energy: '+fpM(sim,'home').toFixed(2)+' t',{w:800}],tot(sim)]);}},
+    {key:'math',lvl:'ap',title:'Show the arithmetic',pause:true,focus:[0,330,520,120],run(sim){sim.def.actions.find(a=>a.id==='default').run(sim);},
+     see:'The typical student’s car and electricity, worked out.',
+     why:'Car: 120 mi × 52 weeks = 6,240 mi ÷ 25 mpg = 250 gal × 8.89 kg = 2,219 kg CO₂. Electricity: 700 kWh × 12 ÷ 4 people = 2,100 kWh × 0.50 kg = 1,050 kg. Flights: 2,000 mi × 0.2 kg = 400 kg. Watch units cancel at every step, the way the AP exam expects.',
+     overlay(sim,ctx,LH,k){dcCard(ctx,k,14,12,420,[[fpM(sim,'carmath'),{s:12}],[fpM(sim,'elecmath'),{s:12}]],{hi:false});}}
+  ],
+  useIt:[
+    {do:'Bundle errands, carpool to school or practice, and bike or walk trips under 2 miles.',
+     why:'Driving is usually the biggest slice a teenager controls, and short trips burn the most fuel per mile because the engine is cold.'},
+    {do:'Try one or two meatless days a week, especially swapping beef for beans, chicken or eggs.',
+     why:'Beef’s footprint per gram of protein is many times higher. Small regular swaps add up over a year.'},
+    {do:'Ask whether your family’s electric company offers a renewable-energy option.',
+     why:'Clean electricity cuts the home-energy slice to almost zero and makes any electric car or heat pump you use later much cleaner.'}],
+  tryIt:[{title:'your real year (20 minutes)',
+    steps:['Find your family’s monthly kWh on an electric bill and the miles you ride in a typical week.','Enter them here with your car’s mpg, your flights and your diet.','Read the biggest slice, then test the top change in the list.'],
+    look:'Compare your number with the US average (15 tons), the world average (4.7) and the 2050 goal (2). Note which single change would cut the most.'}]
+}};
+})());
+
 })();
