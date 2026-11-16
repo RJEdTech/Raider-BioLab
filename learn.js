@@ -3934,4 +3934,67 @@ return {sanger:{
 }};
 })());
 
+/* ---------- Carbon cycle ---------- */
+BioLab.addLearn((function(){
+const ccM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const ccCard=(ctx,k,rows)=>dcCard(ctx,k,14,12,268,rows,{hi:false});
+const yr=sim=>Math.floor(2025+sim.t);
+const stopAt=(sim,y)=>{if(yr(sim)>=y&&sim.running){sim.running=false;if(sim.ui&&sim.ui.play)sim.ui.play.textContent='Play';}};
+const co2=sim=>[['Year '+yr(sim),{w:800}],['CO₂ in the air: '+Math.round(ccM(sim,'ppm'))+' ppm',{w:800,c:CE_RED}],['Changing '+(ccM(sim,'rate')>=0?'+':'')+ccM(sim,'rate').toFixed(1)+' ppm a year',{w:700}]];
+const budget=sim=>{const f=sim.st.f;if(!f)return [];const e=f.E+f.Df,u=f.land+f.ocean;return [['People add: '+e.toFixed(1)+' GtC a year',{w:700,c:CE_RED}],['Land and ocean soak up: '+u.toFixed(1)+' GtC',{w:700,c:CE_GREEN}],['Left in the air: '+(e-u).toFixed(1)+' GtC',{w:800}]];};
+return {carboncycle:{
+  goals:{
+    bio:['Where Earth’s carbon is stored: air, plants, soil, ocean and fossil fuels','How photosynthesis, respiration and decay move carbon around','Why burning fossil fuels makes CO₂ rise','Why cutting emissions in half slows the rise but doesn’t reverse it'],
+    honors:['The carbon reservoirs and the flows between them','Why plants and the ocean absorb only part of what people add','Why cutting emissions slows the rise but doesn’t reverse it','How a warmer ocean and new forests change the balance'],
+    ap:['Reservoirs, fluxes and residence times','Sources, sinks and the airborne fraction','Why cutting emissions slows the rise but doesn’t reverse it','Ocean acidification']},
+  matters:'Every gallon of gas, every forest cut and every tree planted moves carbon between these boxes. The bathtub idea in this tool explains why climate goals talk about cutting emissions to near zero, not just a little.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'store',title:'Where the carbon is',pause:true,fresh:true,focus:[0,0,800,450],
+     see:'The labeled boxes show how much carbon each part of the Earth holds, in billions of tonnes (GtC).',
+     why:'Carbon is in the air as CO₂, in plants and soil as living and dead matter, dissolved in the ocean, and locked underground as coal, oil and gas. The deep ocean and fossil fuels hold by far the most. The atmosphere holds less, but even small changes there change the climate.',
+     overlay(sim,ctx,LH,k){ccCard(ctx,k,[['The air holds about 2.12 GtC for every 1 ppm of CO₂',{s:12}]]);}},
+    {key:'life',title:'Plants take it in, life gives it back',speed:0.5,fresh:true,focus:[0,40,400,300],
+     see:'Watch the dots moving down into the trees and back up from the trees, the deer and the soil.',
+     why:'Plants pull about 120 GtC a year out of the air by <b>photosynthesis</b>, building it into sugar and wood. Plants, animals and decomposers breathing (<b>respiration</b>) and rotting leaves return about the same amount. That is why CO₂ dips a little every northern summer, when forests leaf out, and rises again in winter.'},
+    {key:'ocean',title:'The ocean soaks it up',speed:0.5,fresh:true,focus:[395,40,405,370],
+     see:'Now the ocean side: dots moving into the water and down into the deep ocean.',
+     why:'CO₂ dissolves into the ocean surface, and slow currents carry some of it into the deep ocean, where it can stay for centuries. The ocean holds about 50 times as much carbon as the air.'},
+    {key:'fossil',title:'Burning fossil fuels',set:{fossil:10},speed:1,fresh:true,focus:[300,40,200,370],
+     cause:{from:{fossil:0},delay:2,dur:2,label:'Fossil-fuel burning',at:[400,430]},
+     see:'Watch the smokestack as fossil-fuel burning goes from zero to today’s 10 GtC a year.',
+     why:'Coal, oil and gas are carbon that plants captured millions of years ago and that got buried before it decayed. Burning it puts that carbon back in the air in seconds, far faster than nature ever buried it. CO₂ goes from slowly falling to rising more than 2 ppm a year.',
+     overlay(sim,ctx,LH,k){ccCard(ctx,k,co2(sim));}},
+    {key:'half',title:'Only half is absorbed',speed:1,fresh:true,focus:[0,0,800,450],
+     see:'Today’s world: compare what people add each year with what land and ocean take up.',
+     why:'Plants and the ocean absorb more when there is extra CO₂, but only a bit more than half of what people add. The rest stays in the air, so CO₂ keeps climbing about 2 ppm every year, the rise measured at Mauna Loa, Hawaii, since 1958.',
+     overlay(sim,ctx,LH,k){ccCard(ctx,k,budget(sim));}},
+    {key:'hook',title:'Your question: cutting emissions in half',pause:true,speed:1.5,fresh:true,focus:[0,0,800,450],
+     see:'Starting in 2025, the whole world cuts fossil-fuel burning in half, from 10 to 5 GtC a year. Watch CO₂ until 2045.',
+     why:'CO₂ keeps rising, just more slowly: it reaches about <b>424 ppm</b> by 2045 instead of about <b>458</b>, rising about 0.6 ppm a year instead of 2. CO₂ falls only when emissions drop below what plants and the ocean soak up. With zero emissions it slides to about 385 ppm by 2045.',
+     so:'Think of a bathtub: the level keeps rising as long as the tap adds more than the drain removes. Turning the tap down slows the rise; only turning it down below the drain makes the level fall. That is why climate goals aim for net zero.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'cut',s=>{BioLab.setValues(s,{fossil:5});s.running=true;if(s.ui&&s.ui.play)s.ui.play.textContent='Pause';});stopAt(sim,2045);ccCard(ctx,k,[['Fossil fuels: '+(sim.p.fossil<10?'cut to 5':'10')+' GtC a year',{w:700}]].concat(co2(sim)));}},
+    {key:'warm',lvl:'honors',title:'A warmer ocean holds less',set:{otemp:3},speed:1.5,fresh:true,focus:[395,40,405,370],
+     cause:{from:{otemp:0},delay:1.5,dur:2,label:'Ocean warming',at:[400,430]},
+     see:'Watch the ocean warm by 3 °C, and the ocean uptake.',
+     why:'Warm water holds less dissolved gas, the reason a warm soda goes flat faster. A warmer ocean lets more CO₂ escape and absorbs less, so more of each year’s emissions stays in the air. Warming that weakens a sink is a <b>positive feedback</b>.',
+     overlay(sim,ctx,LH,k){ccCard(ctx,k,[['Ocean uptake: '+ccM(sim,'ocean').toFixed(1)+' GtC a year',{w:800,c:CE_RED}]].concat(co2(sim).slice(1)));}},
+    {key:'ph',lvl:'ap',title:'Ocean acidification',speed:1.5,fresh:true,focus:[395,40,405,370],
+     see:'Today’s emissions for 20 years. Watch the ocean’s surface pH.',
+     why:'CO₂ dissolving in seawater forms carbonic acid: CO₂ + H₂O → H₂CO₃ → H⁺ + HCO₃⁻. Extra H⁺ lowers pH and ties up carbonate ions that corals, clams and some plankton need to build shells. Surface pH has already fallen from about 8.2 to about 8.05, which means about a third more H⁺ ions.',
+     overlay(sim,ctx,LH,k){stopAt(sim,2045);ccCard(ctx,k,[['Year '+yr(sim),{w:800}],['Ocean surface pH: '+ccM(sim,'ph').toFixed(3),{w:800,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'Count how many short car trips your family takes in a week, and swap one or two for walking or biking.',
+     why:'Each gallon of gasoline burned puts about 8.9 kg of CO₂ into the air, carbon that was underground for millions of years.'},
+    {do:'Look up the Mauna Loa CO₂ record (the Keeling Curve).',
+     why:'You can see the yearly rise and the summer dip from forests leafing out, the same two flows this tool shows.'},
+    {do:'Help keep Colorado’s forests healthy: follow fire restrictions and burn only dead, down wood where campfires are allowed.',
+     why:'Forests are carbon sinks while they grow. A forest killed by fire or beetles stops taking in CO₂ and releases its carbon, switching from sink to source.'}],
+  tryIt:[{title:'the bathtub (10 minutes)',
+    steps:['Put a stopper loosely in a sink so it drains slowly.','Run the tap faster than it drains and mark the water level every minute.','Turn the tap to half, then to below the drain rate, and watch the level each time.'],
+    look:'At half flow the level still rises, just slower. It only falls once the tap is below the drain, exactly like CO₂ in the air.'}]
+}};
+})());
+
 })();
