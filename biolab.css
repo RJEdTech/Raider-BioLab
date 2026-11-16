@@ -149,7 +149,8 @@ select.sel{border:1px solid var(--line);background:var(--card2);border-radius:8p
 .graph canvas{display:block;width:100%;height:250px}
 
 .predict .q{font-weight:600;font-size:17px;line-height:1.4;margin:0 0 12px}
-.predict .ch-fig{margin:-2px 0 12px}.predict .ch-fig svg{display:block;width:100%;max-width:460px;height:auto;margin:0 auto;border-radius:8px}
+.predict .ch-fig{margin:-2px 0 12px}.predict .tex-why{margin:4px 0 14px}.tex-why .tw-h{font-weight:700;margin:0 0 8px}.tex-why .tw-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}.tex-why .tw-c{border:1px solid var(--line,#ddd);border-radius:8px;padding:8px 10px;font-size:14px;line-height:1.35}.tex-why .tw-c p{margin:0 0 6px}.tex-why .tw-n{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px}.tex-why .tw-n i{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.35);display:inline-block}.tex-why .tw-w{font-style:italic}.tex-why .tw-f{margin:8px 0 0;font-size:14px}
+.predict .ch-fig svg{display:block;width:100%;max-width:460px;height:auto;margin:0 auto;border-radius:8px}
 .choices{display:flex;flex-direction:column;gap:8px}
 .choice{text-align:left;border:1px solid var(--line);background:var(--card2);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:15px;line-height:1.35}
 .choice:hover{border-color:var(--rj)}
