@@ -3969,7 +3969,7 @@ return {carboncycle:{
      see:'Today’s world: compare what people add each year with what land and ocean take up.',
      why:'Plants and the ocean absorb more when there is extra CO₂, but only a bit more than half of what people add. The rest stays in the air, so CO₂ keeps climbing about 2 ppm every year, the rise measured at Mauna Loa, Hawaii, since 1958.',
      overlay(sim,ctx,LH,k){ccCard(ctx,k,budget(sim));}},
-    {key:'hook',title:'Your question: cutting emissions in half',pause:true,speed:1.5,fresh:true,focus:[0,0,800,450],
+    {key:'hook',title:'Your question: cutting emissions in half',pause:true,speed:1.5,fresh:true,focus:[0,0,800,450],run(sim){atReset(sim);},
      see:'Starting in 2025, the whole world cuts fossil-fuel burning in half, from 10 to 5 GtC a year. Watch CO₂ until 2045.',
      why:'CO₂ keeps rising, just more slowly: it reaches about <b>424 ppm</b> by 2045 instead of about <b>458</b>, rising about 0.6 ppm a year instead of 2. CO₂ falls only when emissions drop below what plants and the ocean soak up. With zero emissions it slides to about 385 ppm by 2045.',
      so:'Think of a bathtub: the level keeps rising as long as the tap adds more than the drain removes. Turning the tap down slows the rise; only turning it down below the drain makes the level fall. That is why climate goals aim for net zero.',
@@ -4046,14 +4046,14 @@ return {energy:{
      why:'Energy is burned off at every level, but mercury stays in the body. Each predator eats many times its own weight in prey and keeps most of their mercury, so it gets about 5 times more concentrated per level. Pike end up at about <b>1.2 ppm</b>, above the FDA limit of 1 ppm for fish. This is <b>biomagnification</b>.',
      so:'Colorado Parks and Wildlife posts fish-eating advisories for some reservoirs, and they are strictest for big predators like pike and walleye. Small panfish and trout from the same water are usually safer to eat.'},
     {key:'otters',lvl:'honors',title:'A trophic cascade: remove the otters',set:{mode:'cascade'},fresh:true,speed:2,focus:[0,0,800,450],
-     run(sim){sim._rm=null;},
+     run(sim){atReset(sim);sim._rm=null;},
      see:'A kelp forest off the Pacific coast. Sea otters eat sea urchins, and urchins eat kelp. Watch what happens when hunters remove the otters.',
      why:'With no otters, urchins multiply and mow down the kelp. Within about 5 years the forest is an <b>urchin barren</b>: bare rock covered in urchins. Otters never eat kelp, yet the kelp depends on them. That makes otters a <b>keystone species</b>. This happened along the Pacific coast when fur traders hunted otters almost to extinction.',
      overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'rm',s=>{enA(s,'removeOtters');s._rm=s.t;});const y=sim._rm==null?0:Math.floor(sim.t-sim._rm);
        if(y>=12&&sim.running){sim.running=false;if(sim.ui&&sim.ui.play)sim.ui.play.textContent='Play';}
        enCard(ctx,k,[[sim._rm==null?'Otters still here':'Years without otters: '+y,{w:800}]].concat(cas(sim)),12,270);}},
     {key:'back',lvl:'honors',title:'Bring the otters back',set:{mode:'cascade'},fresh:true,speed:3,focus:[0,0,800,450],
-     run(sim){const s=sim.st;s.O=0;for(let i=0;i<1200;i++)sim.def.step(sim,0.01);sim._bk=null;},
+     run(sim){const s=sim.st;s.O=0;for(let i=0;i<1200;i++)sim.def.step(sim,0.01);atReset(sim);sim._bk=null;},
      see:'Start from an urchin barren. A few otters return. Watch how fast the kelp comes back.',
      why:'Otters recover in about 10 years and slowly eat the urchins down, but in this model the kelp barely regrows for decades. On real coasts, recovery after otters returned has taken from several years to decades. A barren is hard to undo: it is much easier to keep a predator than to bring an ecosystem back after losing one. Sea otters have been protected since a 1911 treaty, and they slowly spread back along parts of Alaska, British Columbia and California.',
      overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'bk',s=>{enA(s,'returnOtters');s._bk=s.t;});const y=sim._bk==null?0:Math.floor(sim.t-sim._bk);
@@ -4080,6 +4080,84 @@ return {energy:{
   tryIt:[{title:'pass the energy (5 minutes, with friends)',
     steps:['Start with 1,000 grains of rice or 1,000 pennies: the algae’s energy.','Pass 10% (100) to the next person, the zooplankton. They pass 10% (10) to the next, the minnow, and so on.','Count what the fourth and fifth people get.'],
     look:'The pike gets 1 and the osprey gets almost nothing. You can see why there can only be a few top predators.'}]
+}};
+})());
+
+/* ---------- Biodiversity sampling ---------- */
+BioLab.addLearn((function(){
+const bdM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const bdA=(sim,id)=>{const a=(sim.def.actions||[]).find(x=>x.id===id);if(a)a.run(sim);};
+const bdCard=(ctx,k,rows)=>dcCard(ctx,k,526,10,262,rows,{hi:false});
+const f2=v=>Number.isFinite(v)?v.toFixed(2):'—';
+const found=sim=>[['Hoops thrown: '+bdM(sim,'hoops'),{w:700}],['Species found: '+bdM(sim,'rich')+' of '+bdM(sim,'richT'),{w:800,c:CE_RED}]];
+const simp=sim=>[['Simpson’s index (hoops): '+f2(bdM(sim,'simpS')),{w:700,c:CE_BLUE}],['Simpson’s, whole field: '+f2(bdM(sim,'simpT')),{w:700}]];
+const mrCard=(ctx,k,LH,sim)=>{const N=bdM(sim,'Nhat');dcCard(ctx,k,526,(LH||450)-12,262,[[Number.isFinite(N)?'N = '+bdM(sim,'M')+' × '+bdM(sim,'C')+' ÷ '+bdM(sim,'R'):'N = M × C ÷ R',{w:700}],['Estimate: '+(Number.isFinite(N)?Math.round(N):'—')+' beetles',{w:800,c:CE_RED}],['True: '+bdM(sim,'Ntrue'),{w:700}]],{up:true,hi:false});};
+const toss=(sim,tau,n,t0,gap)=>{for(let i=0;i<n;i++)atT(sim,tau,t0+i*gap,'h'+i,s=>bdA(s,'throw'));};
+return {biodiversity:{
+  goals:{
+    bio:['Why ecologists sample instead of counting everything','Why rare species take many samples to find','Species richness versus Simpson’s diversity index','Why a lawn with 4 species can still have low diversity'],
+    honors:['Why rare and clumped species take many samples','Richness versus evenness','Why evenness changes Simpson’s index','Estimating density from samples'],
+    ap:['Sampling effort and species accumulation','Simpson’s index and evenness','Estimating density from quadrats','Mark–recapture and its assumptions']},
+  matters:'Every biodiversity number you hear, from bird counts to endangered species surveys, comes from samples like these. Knowing how sampling works tells you when to trust a number and when it is missing something.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'field',title:'Too many plants to count',fresh:true,speed:1,focus:[0,0,800,450],
+     see:'A real-size patch of meadow, 10 m by 5.6 m, seen from above. Each mark is one plant.',
+     why:'This patch has about 2,500 plants of 8 species. Counting every one would take hours, and a real meadow is thousands of times bigger. So ecologists <b>sample</b>: they count small, randomly placed areas and use them to estimate the whole field.',
+     overlay(sim,ctx,LH,k){bdCard(ctx,k,[['Plants in this patch: '+sim.st.plants.length.toLocaleString('en-US'),{w:700}],['Species: '+bdM(sim,'richT'),{w:800,c:CE_GREEN}]]);}},
+    {key:'hoop',title:'Toss one hoop',fresh:true,speed:1,focus:[0,0,800,450],
+     run(sim){atReset(sim);},
+     see:'A hula hoop 0.75 m across lands at a random spot. Count every plant of every species inside it.',
+     why:'One hoop covers 0.44 m², less than 1% of the patch. It usually finds about 5 of the 8 species: the common ones like grass, clover and dandelions. Rare plants, especially ones growing in clumps like milkweed, are easy to miss.',
+     overlay(sim,ctx,LH,k,tau){toss(sim,tau,1,1.5,1);bdCard(ctx,k,found(sim));}},
+    {key:'hook',title:'Your question: how many hoops to find them all?',fresh:true,speed:1,focus:[0,0,800,450],
+     run(sim){atReset(sim);},
+     see:'Hoops land one at a time, up to 10. Watch the species count climb.',
+     why:'One hoop finds about 5 species, three find about 7, and ten find all 8 about 9 times in 10. The count rises fast at first and then levels off, because only the rare species are left to find. By ten hoops, Simpson’s index from the hoops also lands near the whole field’s 0.85.',
+     so:'Keep sampling until a few more samples add nothing new, and toss at random. If you aim the hoop at the pretty flowers, you will measure what you hoped to see. Pollsters pick voters at random for the same reason.',
+     overlay(sim,ctx,LH,k,tau){toss(sim,tau,10,1.5,0.9);bdCard(ctx,k,found(sim).concat(tau>10.5?simp(sim):[]));}},
+    {key:'lawn',title:'A mowed lawn',set:{habitat:'lawn'},fresh:true,speed:1,focus:[0,0,800,450],
+     run(sim){atReset(sim);},
+     see:'A mowed front lawn. Ten hoops land at once.',
+     why:'The lawn has 4 species, but grass is about 5 of every 6 plants. <b>Simpson’s index</b> is the chance that two plants picked at random are different species. Here it is only about <b>0.28</b>, because two random plants are almost always both grass. The meadow scores 0.85.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'t10',s=>bdA(s,'throw10'));bdCard(ctx,k,found(sim).concat(tau>1.6?simp(sim):[]));}},
+    {key:'lot',title:'A disturbed lot',set:{habitat:'disturbed'},fresh:true,speed:1,focus:[0,0,800,450],
+     run(sim){atReset(sim);},
+     see:'A vacant lot that was scraped bare a few years ago. Ten hoops land.',
+     why:'Bare, disturbed ground is taken over first by fast-spreading weeds like dandelions and plantain. The plants are sparse (about 21 per m², half the meadow) and grow in patches, so ten hoops often find only 4 of the 5 species. Patchy fields need more samples.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'t10',s=>bdA(s,'throw10'));bdCard(ctx,k,found(sim).concat(tau>1.6?simp(sim):[]));}},
+    {key:'even',lvl:'honors',title:'Same species, more even',set:{habitat:'lawnEven'},fresh:true,speed:1,focus:[0,0,800,450],
+     run(sim){atReset(sim);},
+     see:'A lawn nobody has mowed or treated for a summer. It has the same 4 species as the mowed lawn. Ten hoops land.',
+     why:'Now grass, clover, dandelion and plantain are about equally common. Richness is still 4, but Simpson’s index jumps from about 0.28 to <b>0.75</b>. Diversity has two parts: <b>richness</b> (how many species) and <b>evenness</b> (how equally common they are).',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'t10',s=>bdA(s,'throw10'));bdCard(ctx,k,found(sim).concat(tau>1.6?simp(sim):[]));}},
+    {key:'dens',lvl:'honors',title:'Estimating density',fresh:true,speed:1,focus:[0,0,800,450],
+     run(sim){atReset(sim);},
+     see:'Back to the meadow. Ten hoops land. Compare the estimate with the true number.',
+     why:'Density = plants counted ÷ area sampled. Ten hoops cover 4.4 m², so if they hold about 200 plants, that is about 45 plants per m². Multiply by the field’s area to estimate the total. Any one estimate is off a little; more hoops narrow it. This is how foresters estimate trees per acre and range scientists estimate how much grass a pasture holds.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'t10',s=>bdA(s,'throw10'));const est=bdM(sim,'dens');
+       bdCard(ctx,k,[['Hoops: '+bdM(sim,'hoops')+' ('+(bdM(sim,'hoops')*0.44).toFixed(1)+' m²)',{w:700}],['Estimate: '+(Number.isFinite(est)?est.toFixed(0):'—')+' plants per m²',{w:800,c:CE_RED}],['True: '+(sim.st.plants.length/56.25).toFixed(0)+' per m²',{w:700}]]);}},
+    {key:'mrnow',lvl:'ap',title:'Mark and recapture, too soon',set:{method:'mr'},fresh:true,speed:1,focus:[0,0,800,450],
+     run(sim){atReset(sim);},
+     see:'Beetles move, so hoops won’t work. Traps catch some beetles, each gets a paint dot, and they are released. Then the traps are checked again right away.',
+     why:'The idea: the fraction of marked beetles in the second catch should match the fraction in the whole population, so N = M × C ÷ R. But the marked beetles are still sitting next to the traps, so most of the second catch is marked. R is too big and the estimate comes out far too low.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'m',s=>bdA(s,'mark'));atT(sim,tau,3.5,'r',s=>bdA(s,'recap'));mrCard(ctx,k,LH,sim);}},
+    {key:'mr',lvl:'ap',title:'Mark, wait, recapture',set:{method:'mr'},fresh:true,speed:1,focus:[0,0,800,450],
+     run(sim){atReset(sim);},
+     see:'Same traps, but this time the beetles get a day to mix back into the population before the second catch.',
+     why:'Now the estimate lands in the right range, though one run can miss by 30% or more because R is a small number (often under 15). The method assumes the marks don’t fall off or hurt the beetle, the marked ones mix evenly, and no beetles are born, die or move away between catches. Real surveys repeat the recapture several times and average.',
+     overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'m',s=>bdA(s,'mark'));atT(sim,tau,3.5,'w',s=>bdA(s,'wait'));atT(sim,tau,5,'r',s=>bdA(s,'recap'));mrCard(ctx,k,LH,sim);}}
+  ],
+  useIt:[
+    {do:'Toss a hula hoop (or a loop of string) at random in your yard or a park and count the different kinds of plants inside. Try 5 tosses.',
+     why:'You will see the species count rise quickly and then level off, just like the graph here.'},
+    {do:'Join a citizen-science count, like the Great Backyard Bird Count each February, or log a few plants in iNaturalist.',
+     why:'Many people sampling in many places is how scientists track which species are spreading or disappearing.'},
+    {do:'If your family has a lawn, leave one small corner unmowed for a month and compare it with the rest.',
+     why:'Mowing favors grass. A few weeks without it lets other plants catch up, which raises evenness and feeds pollinators.'}],
+  tryIt:[{title:'the candy-jar estimate (10 minutes)',
+    steps:['Fill a bowl with dried beans and count out 50. Mark them with a marker and mix them back in.','Grab a handful, count all the beans (C) and the marked ones (R).','Estimate the total as 50 × C ÷ R, then count the whole bowl to check.'],
+    look:'Your estimate should be close. Grab before mixing and it comes out far too low, the same mistake as recapturing beetles too soon.'}]
 }};
 })());
 
