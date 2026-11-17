@@ -18,7 +18,10 @@ function nextP(pp,p,rand){const q=1-pp,wDD=fitness(0,p),wDd=fitness(1,p),wdd=fit
   if(!rand)return x;const n=2*p.N;return binom(n,clamp(x,0,1),rand)/n;}
 function sampleGen(p,pp,n,rand){const out=[];for(let i=0;i<n;i++){const a=rand()<pp,b=rand()<pp;out.push(a&&b?0:(a||b)?1:2);}return out;}
 function newDisplay(sim){const s=sim.st,p=sim.p,r=s.r,M=Math.min(p.N,120),gen=sampleGen(p,s.P[0],M,r);
-  s.disp=gen.map(g=>({g,x:30+r()*740,y:88+r()*318,face:r()<.5?1:-1,doomed:r()>fitness(g,p)}));
+  /* which alleles are brand-new mutations: about μ·q of the D copies came from d this generation, and μ·p of the d copies from D */
+  const P0=s.P[0],fD=p.mu>0&&P0>0?Math.min(1,p.mu*(1-P0)/P0):0,fd=p.mu>0&&P0<1?Math.min(1,p.mu*P0/(1-P0)):0,hit=(n,f)=>{for(let i=0;i<n;i++)if(r()<f)return true;return false;};
+  s.disp=gen.map(g=>({g,x:30+r()*740,y:88+r()*318,face:r()<.5?1:-1,doomed:r()>fitness(g,p),mut:hit(2-g,fD)?'D':hit(g,fd)?'d':''}));
+  s.nMutD=s.disp.filter(d=>d.mut==='D').length;s.nMutd=s.disp.filter(d=>d.mut==='d').length;
   const doomed=s.disp.filter(d=>d.doomed);doomed.forEach((d,i)=>{d.tk=0.18+0.55*(i+0.5)/doomed.length;});
   const big=sampleGen(p,s.P[0],p.N,r),c=[0,0,0];big.forEach(g=>c[g]++);s.obs=c.map(x=>x/p.N);}
 function generation(sim){const s=sim.st,p=sim.p;s.P=s.P.map(x=>nextP(x,p,s.r));s.pdet=nextP(s.pdet,p,null);s.g++;
@@ -57,7 +60,7 @@ const EVO={
     {id:'p0',label:'Starting dark-fur allele',type:'range',min:0.01,max:0.99,step:0.01,def:0.1,unit:'',d:2,lvl:'bio',help:'Changing this restarts the populations.',onChange(sim){BioLab.reset(sim);}},
     {id:'m',label:'Migration rate',type:'range',min:0,max:0.2,step:0.01,def:0,unit:'',d:2,lvl:'honors',help:'Fraction of each generation that are migrants from a mainland'},
     {id:'pm',label:'Dark allele in migrants',type:'range',min:0,max:1,step:0.05,def:0.5,unit:'',d:2,lvl:'honors'},
-    {id:'mu',label:'Mutation rate (D ↔ d)',type:'range',min:0,max:0.01,step:0.001,def:0,unit:'',d:3,lvl:'ap'},
+    {id:'mu',label:'Mutation rate (D ↔ d)',type:'range',min:0,max:0.01,step:0.001,def:0,unit:'',d:3,lvl:'ap',help:'Above 0, a gold ring marks each mouse carrying a brand-new dark mutation.'},
     {id:'dom',label:'Dark allele is dominant',type:'toggle',def:true,lvl:'ap',help:'Off: heterozygotes have medium fur'}
   ],
   init(sim){const p=sim.p,s={r:rng((Math.random()*1e9)|0),P:new Array(NPOP).fill(p.p0),pdet:p.p0,g:0,acc:0,hist:[],obs:[0,0,0],disp:[]};
@@ -70,7 +73,8 @@ const EVO={
     {id:'spread',label:'Spread between the 5 populations',unit:'points',lvl:'honors',min:0,max:100,d:0,get:s=>100*(Math.max(...s.st.P)-Math.min(...s.st.P))},
     {id:'fixed',label:'Populations that lost or fixed D',unit:'of 5',lvl:'honors',text:true,get:s=>String(s.st.P.filter(x=>x<=0||x>=1).length)},
     {id:'hwe',label:'Expected DD · Dd · dd',unit:'',lvl:'ap',text:true,get:s=>{const p=s.st.P[0],q=1-p;return fmtP(p*p)+' · '+fmtP(2*p*q)+' · '+fmtP(q*q);}},
-    {id:'hwo',label:'Observed DD · Dd · dd',unit:'',lvl:'ap',text:true,get:s=>s.st.obs.map(fmtP).join(' · ')}
+    {id:'hwo',label:'Observed DD · Dd · dd',unit:'',lvl:'ap',text:true,get:s=>s.st.obs.map(fmtP).join(' · ')},
+    {id:'newD',label:'New dark mutations on screen',unit:'',lvl:'ap',d:0,get:s=>s.st.nMutD||0}
   ],
   graphs:[{id:'freq',label:'Dark allele frequency over generations',custom:true},{id:'dark',label:'Mice born with dark fur',lines:['dark']}],
   defaultGraph:'freq',
@@ -139,7 +143,8 @@ const EVO={
     const u=clamp(sim.t-s.g,0,1);
     // mice: newborns appear, then the hunt removes doomed ones in order
     const doomed=s.disp.filter(d=>d.doomed&&d.tk>u);let target=null;
-    for(const d of s.disp){if(d.doomed&&d.tk<=u)continue;const a=clamp(u/0.1,0,1),wob=RM?0:Math.sin(t*2+d.x)*1.2;mouse(ctx,d.x+wob,d.y,COL[phen(d.g,p.dom)],a,d.face,1.15);}
+    for(const d of s.disp){if(d.doomed&&d.tk<=u)continue;const a=clamp(u/0.1,0,1),wob=RM?0:Math.sin(t*2+d.x)*1.2;mouse(ctx,d.x+wob,d.y,COL[phen(d.g,p.dom)],a,d.face,1.15);
+      if(d.mut==='D'&&p.mu>0){/* a brand-new dark mutation: gold ring and sparkle */ctx.save();ctx.globalAlpha=a;ctx.strokeStyle='#f2c230';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(d.x+wob,d.y,17,0,6.29);ctx.stroke();ctx.fillStyle='#f2c230';for(let j=0;j<4;j++){const an=j*1.571+(RM?0:t*1.5);ctx.beginPath();ctx.arc(d.x+wob+Math.cos(an)*22,d.y+Math.sin(an)*22,2,0,6.29);ctx.fill();}ctx.restore();}}
     // feathers where a mouse was just caught
     for(const d of s.disp){if(d.doomed&&d.tk<=u&&u-d.tk<0.08){ctx.fillStyle='rgba(255,255,255,.75)';for(let j=0;j<5;j++){ctx.beginPath();ctx.ellipse(d.x+Math.cos(j*1.3)*9*(1+(u-d.tk)*12),d.y+Math.sin(j*1.3)*6,3,1.4,j,0,6.29);ctx.fill();}}}
     if(doomed.length&&u>0.12&&u<0.76){target=doomed.reduce((a,b)=>a.tk<b.tk?a:b);}
@@ -156,7 +161,8 @@ const EVO={
     // legend
     const items=p.dom?[['dark','dark fur (DD, Dd)'],['light','light fur (dd)']]:[['dark','dark (DD)'],['mid','medium (Dd)'],['light','light (dd)']];
     ctx.font='400 '+12*k+'px '+FONT;let w=16;items.forEach(it=>{w+=ctx.measureText(it[1]).width+44;});ctx.fillStyle=PAL['card'];rr(ctx,8,414,w,30,8);ctx.fill();
-    let lx=22;items.forEach(it=>{mouse(ctx,lx+8,430,COL[it[0]],1,1,0.75);txt(ctx,it[1],lx+24,434,{s:12*k,c:PAL['cv-ink']});lx+=ctx.measureText(it[1]).width+44;});}
+    let lx=22;items.forEach(it=>{mouse(ctx,lx+8,430,COL[it[0]],1,1,0.75);txt(ctx,it[1],lx+24,434,{s:12*k,c:PAL['cv-ink']});lx+=ctx.measureText(it[1]).width+44;});
+    if(p.mu>0){const lab2='New dark mutation';ctx.font='400 '+12*k+'px '+FONT;const w2=ctx.measureText(lab2).width+44;ctx.fillStyle=PAL['card'];rr(ctx,w+16,414,w2,30,8);ctx.fill();ctx.strokeStyle='#f2c230';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(w+32,429,8,0,6.29);ctx.stroke();txt(ctx,lab2,w+46,434,{s:12*k,c:PAL['cv-ink']});}}
 };
 BioLab.register(EVO);
 })();

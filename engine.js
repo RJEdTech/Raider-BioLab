@@ -82,6 +82,7 @@ const PRACT={};BL.addPractical=o=>{Object.assign(PRACT,o||{});};
 const REVIEWS={};BL.addReview=o=>{Object.assign(REVIEWS,o||{});};
 /* Learn layer (learn.js): a teaching walkthrough for students meeting the idea for the first time. Each step says what you see and why it happens. Replaces the tour when present. */
 const LEARN={};BL.addLearn=o=>{Object.assign(LEARN,o||{});};
+const BORDER={};BL.addBorder=o=>{Object.assign(BORDER,o||{});};
 const lnPick=(v,l)=>{if(v==null)return v;if(typeof v!=='object'||Array.isArray(v))return v;let o=v.bio;if(LV[l]>=LV.honors&&v.honors!=null)o=v.honors;if(LV[l]>=LV.ap&&v.ap!=null)o=v.ap;return o;};
 const lnLv=f=>({bio:f('bio'),honors:f('honors'),ap:f('ap')});
 function applyLearn(d){const L=LEARN[d.id];if(!L)return;d.learn=L;const P=d.practical||{},defs={};(d.controls||[]).forEach(c=>defs[c.id]=c.def);
@@ -263,7 +264,7 @@ function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(si
   if(sim.game&&mode!=='game')gameStop(sim);
   if(sim.tour&&sim.tour.on)tourExit(sim,'mode');
   if(was==='vlab'&&mode!=='vlab')vlabExit(sim);
-  sim.mode=mode;if(user)store.set(modeKey(sim),mode);
+  sim.mode=mode;if(user)store.set(modeKey(sim),mode);try{bdEnsure(sim);}catch(e){}
   const sec=sim.ui.sec;const cm=mode==='test'?'guided':mode;MODES.forEach(m=>sec.classList.toggle('m-'+m,m===cm));sec.classList.toggle('m-test',mode==='test');sec.classList.toggle('has-learn',!!d.learn);sec.classList.remove('g-try','g-done','rv-see','fq-see');
   sec.querySelectorAll('.modebar button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode||(!!d.learn&&mode==='review'&&b.dataset.mode==='test'))));
   sim.ui.donecard.hidden=true;sim.ui.gamecard.hidden=true;sim.guide=null;
@@ -630,6 +631,35 @@ document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.targ
   const fb=box.querySelector('.rv-fb');if(fb)pace(sim,box.querySelectorAll('[data-rv=next]'),k+':done',fb,'Read why');};}
 {const f=vlGo;vlGo=function(sim){f.apply(this,arguments);const v=sim.ui&&sim.ui.vstep,V=sim.vlab;if(!v||v.hidden||!V||!V.data)return;
   pace(sim,v.querySelector('[data-vs=next]'),'vs:'+(V.lab&&V.lab.id)+':'+(V.data.step||0),v.querySelector('.vs-x')||v,'Read the step');};}
+/* ---------- Border question + How exact (Nov 17, 2026) ----------
+   BioLab.addBorder({toolId:{q, saw, assumes:[...], stops, church?, views:[{who,when?,says}], margin:{lead?, rows:[{what,value,range,how,enough}], note?}}})
+   Shown below the stage in Full lab and at the end of Learn it. The student picks the view closest to theirs and writes one sentence; saved per browser. */
+function bdKey(sim){return 'raider-border-'+sim.def.id;}
+function bdLoad(sim){try{return JSON.parse(localStorage.getItem(bdKey(sim))||'{}')||{};}catch(e){return {};}}
+function bdSave(sim,o){try{localStorage.setItem(bdKey(sim),JSON.stringify(o));}catch(e){}}
+function bdEnsure(sim){const B=BORDER[sim.def.id],ui=sim.ui;if(!B||!ui||!ui.stage||ui.bdBox)return;
+  const box=el('div',{class:'bd-box'});const sec=ui.sec,ref=sec&&sec.querySelector(':scope > details.about');if(ref)ref.before(box);else if(sec)sec.append(box);else ui.stage.parentNode.after(box);ui.bdBox=box;
+  const L=x=>lvText(x),vw=(B.views||[]).filter(v=>atLeast(v.lvl)),as=(B.assumes||[]).filter(a=>typeof a==='string'||atLeast(a.lvl)).map(a=>typeof a==='string'?a:a.t),M=B.margin;
+  const saved=bdLoad(sim);
+  let h='';
+  if(B.q){h+=`<h3 class="ln-uh">Where science meets philosophy</h3><p class="bd-q">${L(B.q)}</p><div class="bd-grid">`+
+    (B.saw?`<div class="bd-cell"><p class="ln-k">What you saw</p><p>${L(B.saw)}</p></div>`:'')+
+    (as.length?`<div class="bd-cell"><p class="ln-k">What science has to assume</p><ul>${as.map(a=>`<li>${L(a)}</li>`).join('')}</ul></div>`:'')+
+    (B.stops?`<div class="bd-cell"><p class="ln-k">Where the science stops</p><p>${L(B.stops)}</p></div>`:'')+`</div>`+
+    (B.church?`<p class="bd-church"><b>What the Church teaches:</b> ${L(B.church)}</p>`:'')+
+    (vw.length?`<p class="ln-k">Your call</p><p class="bd-ask">${L(B.ask||'Which answer comes closest to yours? Pick one, then write one sentence saying why.')}</p><div class="bd-views" role="radiogroup">${vw.map((v,i)=>`<button type="button" class="bd-view" role="radio" aria-checked="${saved.pick===i?'true':'false'}" data-bd-pick="${i}"><b>${esc(v.who)}</b>${v.when?` <span class="bd-when">(${L(v.when)})</span>`:''}<span class="bd-says">${L(v.says)}</span></button>`).join('')}</div>
+      <label class="bd-lab" for="${sim.def.id}-bd-why">One sentence: why that one?</label><textarea id="${sim.def.id}-bd-why" class="bd-why" rows="2"></textarea>
+      <div class="row"><button type="button" class="btn" data-bd="copy">Copy my answer</button><span class="bd-msg" aria-live="polite"></span></div><p class="bd-note">There is no answer key. Bring your sentence to class.</p>`:'');}
+  if(M&&M.rows&&M.rows.length){h+=`<h3 class="ln-uh">How exact does it need to be?</h3><p class="bd-lead">${L(M.lead||'Every measured number comes with a range. The real question is whether the range is small enough for the job.')}</p><div class="bd-tw"><table class="bd-t"><thead><tr><th>Number</th><th>Range</th><th>How we know</th><th>Exact enough for</th></tr></thead><tbody>${M.rows.filter(r=>atLeast(r.lvl)).map(r=>`<tr><td><b>${L(r.what)}</b><br>${L(r.value)}</td><td>${L(r.range)}</td><td>${L(r.how)}</td><td>${L(r.enough)}</td></tr>`).join('')}</tbody></table></div>${M.note?`<p class="bd-lead">${L(M.note)}</p>`:''}`;}
+  box.innerHTML=h;
+  const ta=box.querySelector('.bd-why'),msg=box.querySelector('.bd-msg');if(ta)ta.value=saved.why||'';
+  const st=()=>{const o=bdLoad(sim);if(ta)o.why=ta.value;bdSave(sim,o);};
+  box.querySelectorAll('[data-bd-pick]').forEach(b=>b.onclick=()=>{const o=bdLoad(sim);o.pick=+b.dataset.bdPick;bdSave(sim,o);box.querySelectorAll('[data-bd-pick]').forEach(x=>x.setAttribute('aria-checked',x===b?'true':'false'));if(ta)ta.focus();});
+  if(ta)ta.oninput=st;
+  const cp=box.querySelector('[data-bd=copy]');if(cp)cp.onclick=()=>{const o=bdLoad(sim),v=vw[o.pick];const plain=s=>String(s||'').replace(/<[^>]+>/g,'');
+    const t=`${plain(L(B.q))}\nClosest to my view: ${v?v.who:'(none picked)'}\nWhy: ${(ta&&ta.value)||''}`;
+    const done=ok=>{if(msg)msg.textContent=ok?'Copied. Paste it into your assignment.':'Select the text and copy it yourself.';};
+    try{navigator.clipboard.writeText(t).then(()=>done(true),()=>done(false));}catch(e){done(false);}};}
 /* ---------- "Embed this tool in Canvas" panel ---------- */
 function embedUrl(sim,o){let base=location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');const q=new URLSearchParams();q.set('embed','1');if(o.mode)q.set('mode',o.mode);if(o.mode==='vlab'&&o.lab)q.set('lab',o.lab);if(o.level)q.set('level',o.level);return base+'?'+q.toString()+'#'+sim.def.hash;}
 function buildEmbed(sim){const box=sim.ui.sec.querySelector('.embed-b');if(!box||EMBED){const d=sim.ui.sec.querySelector('.embed-box');if(d&&EMBED)d.hidden=true;return;}const d=sim.def,id=d.id;

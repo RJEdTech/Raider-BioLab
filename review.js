@@ -998,6 +998,9 @@ succession:{questions:[
     steps:['The resin melts in the heat of a fire.','The cones open and drop seeds onto ash-rich soil with plenty of light.','After Yellowstone’s 1988 fires, lodgepole seedlings sprang up across the burns.']}
 ]},
 evolution:{questions:[
+  {id:'samechance',kind:'test',lvl:'bio',q:'New dark mutations appear at the same rate on sand and on lava, yet dark fur spreads only on lava. What made the difference?',
+    choices:['Mutations on lava happen because they help','The ground changed which mice the owls caught','Dark mice on lava chose to have more babies','Sand mice mutate back to light fur faster'],correct:1,
+    steps:['The mutation rate was the same on both grounds: chance supplies variation without aiming at what helps.','On sand the new dark mice stand out and are caught; on lava they hide and survive.','So the environment, not the mutation, decides which variation spreads. “Fittest” means fittest for this ground.'],lab:{set:{bg:'lava',mu:0.01,p0:0.01},look:'Watch the gold rings: new dark mutations. Then switch the ground to light sand.'}},
   {id:'lava',kind:'test',lvl:'bio',q:'On dark lava, dark-furred mice become more common over generations. Why?',
     choices:['The mice decide to change color to match','The lava dyes their fur over their lives','Owls spot light mice more, so dark mice breed more','Dark mice are stronger and win more fights'],correct:2,
     steps:['Fur color is inherited.','On dark rock, light mice stand out and are caught more.','Dark mice survive to have more babies, so the dark allele spreads: natural selection.'],lab:{set:{bg:'lava'},look:'Watch the dark-fur allele frequency over generations.'}},

@@ -2299,7 +2299,7 @@ hardyweinberg: {
 },
 evolution: {
   goals: {
-    bio: ['How natural selection works: variation, inheritance and survival', 'Why fur color matches the ground for rock pocket mice', 'Why evolution acts on populations, not on individuals'],
+    bio: ['How natural selection works: variation, inheritance and survival', 'Mutations happen by chance; the environment decides which ones last', 'Why “fittest” means fittest for this ground, not best overall', 'Why evolution acts on populations, not on individuals'],
     honors: ['Selection changes allele frequencies over generations', 'Genetic drift and migration', 'Why a hidden recessive allele lingers'],
     ap: ['Selection coefficients and the speed of change', 'Selection, drift, migration and mutation together', 'Comparing replicate populations']
   },
@@ -2319,9 +2319,17 @@ evolution: {
       see: 'Each second is one generation. Watch the share of dark mice, and the dark allele, climb.',
       why: 'Survivors breed, so each generation inherits more D alleles than the last. No mouse changes its fur; the population changes because some mice leave more offspring than others.',
       overlay(sim,ctx,LH,k){evC(ctx,k,[['Generation '+Math.round(sim.st.g),{s:14,w:800}],['Dark allele D: '+evD(sim)+'%',{w:800,c:CE_GREEN}],['Dark mice: '+Math.round(phM(sim,'dark'))+'%']],LH);} },
-    { key: 'flip', title: 'Change the ground', set: { bg: 'lava', p0: 0.5 }, fresh: true, speed: 1, cause: { from: { bg: 'sand' }, delay: 5, label: 'Ground' },
+    { key: 'chance', title: 'Mutations come by chance', set: { bg: 'sand', s: 0.4, p0: 0.01, mu: 0.01 }, fresh: true, speed: 0.35,
+      see: 'Light sand, with almost no dark alleles. Gold rings mark mice born with a brand-new mutation. A few dark mutants appear every generation, and the owls catch most of them.',
+      why: 'A mutation is a copying error in DNA. It happens at random: the mouse does not need dark fur, and nothing aims the mutation at what would help. Here 1 in 100 copies of the gene changes each generation, and on sand the new dark mice stand out.',
+      overlay(sim,ctx,LH,k){evC(ctx,k,[['On light sand',{s:14,w:800}],['New dark mutations this generation: '+(sim.st.nMutD||0),{c:'#b8860b',w:800}],['Dark allele D: '+evD(sim)+'%',{c:CE_RED}]],LH);} },
+    { key: 'chance2', title: 'Same chance, different ground', set: { bg: 'lava', s: 0.4, p0: 0.01, mu: 0.01 }, fresh: true, speed: 0.6,
+      see: 'Exactly the same mutation rate, now on dark lava. The new dark mutants hide, survive and have babies. On sand the dark allele stayed near 2%; here it passes 50% in about 10 generations, and almost every dark mouse now inherited its fur, so few carry a gold ring.',
+      why: 'Chance supplies the new variation; the environment decides which variations last. Nothing about the mutation changed between the two steps. Only the ground did. Real rock pocket mice show the same thing: on two lava flows hundreds of kilometers apart, different mutations produced the same dark fur (Nachman, Hoekstra and D’Agostino, 2003).',
+      overlay(sim,ctx,LH,k){evC(ctx,k,[['On dark lava',{s:14,w:800}],['Same 1% mutation rate'],['Dark allele D: '+evD(sim)+'%',{w:800,c:CE_GREEN}]],LH);} },
+    { key: 'flip', title: 'Change the ground: “fittest” flips', set: { bg: 'lava', p0: 0.5 }, fresh: true, speed: 1, cause: { from: { bg: 'sand' }, delay: 5, label: 'Ground' },
       see: 'Start on light sand with half the alleles dark. For a few generations dark mice lose ground. Then the ground switches to dark lava, and the trend reverses.',
-      why: 'Selection depends on the environment. The same dark fur that is a liability on sand is an advantage on lava. Evolution has no goal; it follows whatever survives where the mice live.',
+      why: 'Selection depends on the environment. The same dark fur that is a liability on sand is an advantage on lava. Selection has no foresight: it favors whatever survives where the mice live now, so “fittest” always means fittest for this ground.',
       overlay(sim,ctx,LH,k){evC(ctx,k,[[sim.p.bg==='sand'?'Light sand':'Dark lava',{s:14,w:800}],['Generation '+Math.round(sim.st.g)],['Dark allele D: '+evD(sim)+'%',{w:800,c:sim.p.bg==='sand'?CE_RED:CE_GREEN}]],LH);} },
     { key: 'noowls', title: 'Remove the owls', set: { s: 0, p0: 0.3 }, fresh: true, speed: 1, cause: { from: { s: 0.3 }, delay: 4, label: 'Owl hunting pressure' },
       see: 'Dark mice gain for a few generations, then the owls are taken away. The dark allele stops climbing.',

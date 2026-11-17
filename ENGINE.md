@@ -104,3 +104,17 @@ A course in `courses.js` can carry `finals:[{t, units, note}]`. Each becomes a p
 A Learn it step can show its cause happening instead of jumping to the result:
 `cause:{from:{T:300}, delay:1.2, dur:2.5, label:'Temperature', ring:[x,y,r] or sim=>[x,y,r], at:[x,y]}`.
 The step starts at the `from` values, then after `delay` seconds slides numbers to the step's `set` values over `dur` seconds (choices and toggles switch at `delay`). A banner names what is changing with before → now, and `ring` circles the part of the picture that changes. Use it whenever a step is about what one setting does. For actions (add a serum, breed, arrange), trigger them partway through the step from the overlay (see `atT` in BioLab learn.js) so the student sees the before state first.
+
+## Where science meets philosophy + How exact does it need to be? (Nov 17, 2026)
+- `BioLab.addBorder({toolId:{...}})` registers a border card, kept in each site's `borders.js` (loaded last), separate from Learn it files so sessions don't collide.
+- Fields:
+  - `q`: the border question.
+  - `saw`: what the student just saw, tied to the picture.
+  - `assumes`: what science has to assume here (presuppositions no experiment can prove without already using them).
+  - `stops`: where the science stops.
+  - `church` (optional): definitive Church teaching, stated as the Church's teaching.
+  - `views`: `[{who,when,says}]`, named thinkers who answer the open part differently.
+  - `margin`: `{lead, rows:[{what,value,range,how,enough}], note}`.
+- The card shows below the stage in Full lab and at the end of Learn it. The student picks the view closest to theirs and writes one sentence, saved per browser (`raider-border-<id>`), with a "Copy my answer" button. There is no answer key.
+- Standard: teach, don't preach (claude/raider-labs-teach-not-preach-standard.md). Every view is stated fairly, with sources and years on every number.
+- Pilot tools: BioLab evolution, cladogram, division; PhysLab gravity, photoelectric.
