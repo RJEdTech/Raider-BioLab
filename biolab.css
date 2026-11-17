@@ -103,6 +103,8 @@ button,select,input{font:inherit;color:inherit}
 
 .sim-head h2{font-size:26px;line-height:1.2;margin:0 0 6px}
 .lede{color:var(--muted);margin:0;max-width:72ch}
+.lede-lv{display:block;margin-top:.45em;padding-left:.7em;border-left:3px solid var(--rj,#c8102e)}
+.lede-lv b{color:var(--fg,inherit)}
 .bench{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px;margin-top:18px;align-items:start}
 .stage{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0}
 .stage canvas{display:block;width:100%;aspect-ratio:16/9;max-width:100%}

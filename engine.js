@@ -693,8 +693,16 @@ function toCSV(sim){if(!sim.trials.length)return '';const cols=trialCols(sim),q=
   return [['Trial',...cols.map(c=>c.label)].map(q).join(','),...sim.trials.map(r=>[r._n!==undefined?r._n:r.n,...cols.map(c=>cellText(c,r[c.id]))].map(x=>q(String(x))).join(','))].join('\n');}
 
 /* ---------- level-dependent refresh ---------- */
+/* Lede at every level (Nov 17, 2026, from Jason on MathLab's Books on the shelf: "I don't know why they would understand this without the larger context").
+   The Big picture lede is the story, so it always shows; at Closer look and Deep dive that level's point follows it, labeled, instead of replacing it. */
+const LEDE_LV={honors:'Closer look',ap:'Deep dive'};
+function setLede(el,t){el.textContent='';if(!t||typeof t==='string'){el.textContent=t||'';return;}
+  let top='bio';['honors','ap'].forEach(l=>{if(t[l]&&atLeast(l))top=l;});
+  if(!t.bio||top==='bio'){el.textContent=t[top]||t.bio||'';return;}
+  el.appendChild(document.createTextNode(t.bio));const s=document.createElement('span');s.className='lede-lv';
+  const b=document.createElement('b');b.textContent=LEDE_LV[top]+': ';s.appendChild(b);s.appendChild(document.createTextNode(t[top]));el.appendChild(s);}
 function applyLevel(sim){const ui=sim.ui,d=sim.def;
-  ui.lede.textContent=lvText(d.lede);if(ui.uses){const P=d.practical,u=P&&P.uses?(Array.isArray(P.uses)?P.uses:lvText(P.uses)):null;const hk=P&&P.hook?lvText(P.hook):'';ui.uses.hidden=!(hk||(u&&u.length));ui.uses.innerHTML=(hk?'<p class="ru-q">'+hk+'</p>':'')+(u&&u.length?'<details class="ru-d"><summary>Where this shows up</summary><ul>'+u.map(x=>'<li>'+x+'</li>').join('')+'</ul></details>':'');}if(ui.scale)ui.scale.textContent=lvText(d.scale);
+  setLede(ui.lede,d.lede);if(ui.uses){const P=d.practical,u=P&&P.uses?(Array.isArray(P.uses)?P.uses:lvText(P.uses)):null;const hk=P&&P.hook?lvText(P.hook):'';ui.uses.hidden=!(hk||(u&&u.length));ui.uses.innerHTML=(hk?'<p class="ru-q">'+hk+'</p>':'')+(u&&u.length?'<details class="ru-d"><summary>Where this shows up</summary><ul>'+u.map(x=>'<li>'+x+'</li>').join('')+'</ul></details>':'');}if(ui.scale)ui.scale.textContent=lvText(d.scale);
   if(ui.lab)ui.lab.innerHTML='<p class="lab-h">Investigation</p>'+lvText(d.lab);
   if(sim.tour&&sim.tour.on)tourExit(sim,'level');
   if(sim.mode==='review')renderReview(sim);
