@@ -738,7 +738,7 @@ carboncycle:{questions:[
     choices:['Photosynthesis and plant growth','Evaporation and condensation','Respiration and burning','Sedimentation and erosion'],correct:2,
     steps:['Respiration breaks down sugar and releases CO₂, in plants and animals.','Burning does the same thing much faster.','Decomposers release CO₂ by respiration too.']},
   {id:'fossil',kind:'test',lvl:'bio',q:'Why does burning fossil fuels raise CO₂ in the air, when breathing doesn’t raise it over the long run?',
-    choices:['Fossil fuels release carbon locked underground for ages','Fossil fuels contain more oxygen, which makes more CO₂','Breathing makes no CO₂, so it can’t raise the level','Fossil fuels are burned at night, when plants can’t take CO₂ up'],correct:1,
+    choices:['Fossil fuels contain more oxygen, which makes more CO₂','Fossil fuels release carbon locked underground for ages','Breathing makes no CO₂, so it can’t raise the level','Fossil fuels are burned at night, when plants can’t take CO₂ up'],correct:1,
     steps:['The carbon you breathe out came from food that grew recently, from the air.','Fossil fuels hold carbon buried for millions of years, outside the fast cycle.','Burning them adds new carbon to the air faster than plants and oceans take it up.'],lab:{set:{fossil:10},look:'Turn up fossil-fuel burning and watch CO₂ climb.'}},
   {id:'defor',kind:'test',lvl:'bio',q:'How does cutting down forests raise CO₂ in the air?',
     choices:['Living trees give off CO₂, so loggers cut more','It cools the planet, which slows ocean uptake','Logging machines use up oxygen and release CO₂','Fewer trees take up CO₂, and the wood releases its carbon'],correct:3,
