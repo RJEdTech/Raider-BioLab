@@ -123,7 +123,7 @@ const DIV={
      explain:{bio:'Each chromosome was copied in S phase, and mitosis gives one copy of each to each new cell. Both cells get the full set, identical to the parent. That is how your body grows and heals.',
               honors:'Sister chromatids are identical copies. Mitosis pulls them to opposite poles, so each daughter receives exactly one chromatid of every chromosome: two genetically identical diploid (2n) cells.'}},
     {lvl:'bio',q:'Meiosis: how many cells do you end with, and how many chromosomes does each have?',
-     choices:['Two cells with the full set','Four cells, each with half the chromosomes','Four cells with the full set'],correct:1,
+     choices:['Two cells with the full set','Four cells, each with half the set','Four cells with the full set'],correct:1,
      baseline:{mode:'meiosis'},baselineAction:'play',reveal:20.6,changeText:'Playing meiosis',watch:'counts',
      explain:{bio:'Meiosis divides twice but copies the DNA only once, so you get four cells with half the chromosomes, one from each pair. When egg and sperm join, the full number is restored.',
               honors:'One round of replication followed by two divisions gives four haploid (n) cells. Each has one chromosome from every homologous pair.'}},

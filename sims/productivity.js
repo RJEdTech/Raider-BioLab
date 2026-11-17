@@ -53,7 +53,7 @@ const SIM={
     {lvl:'bio',q:'After 24 hours in the foil-wrapped (dark) bottle, what happens to the dissolved oxygen?',choices:['It goes up','It goes down','It stays the same'],correct:1,
      change:{},changeText:'Bottles sealed and incubating',watch:'do',
      explain:'In the dark, algae cannot photosynthesize, but they and the bacteria with them keep respiring. Respiration only uses oxygen, so the dark bottle always loses O₂.'},
-    {lvl:'bio',q:'Halfway through, the lamp is switched off. What happens to the oxygen in the clear (light) bottle?',choices:['It keeps rising at the same rate','It starts dropping, like the dark bottle','It jumps to zero'],correct:1,
+    {lvl:'bio',q:'Halfway through, the lamp is switched off. What happens to the oxygen in the clear (light) bottle?',choices:['It keeps rising at the same rate','It starts dropping, like the dark bottle','It jumps straight to zero'],correct:1,
      baseline:{light:100},change:{light:0},at:12,changeText:'Lamp switched off at 12 hours',watch:'do',
      explain:'With no light, the clear bottle is no different from the foil bottle. Photosynthesis stops, respiration continues, and dissolved oxygen slowly falls.'},
     {lvl:'honors',q:'After 24 hours, which is larger: gross primary productivity (GPP) or net primary productivity (NPP)?',choices:['GPP','NPP','They are equal'],correct:0,
@@ -66,7 +66,7 @@ const SIM={
      explain:`Photosynthesis saturates. As light rises, the algae’s enzymes and pigments become the limit, so GPP rises from ${(P50*24).toFixed(2)} to only ${(P100*24).toFixed(2)} mg O₂/L/day. Record trials from 0% to 100% light to see the curve flatten.`},
     {lvl:'ap',q:`A lake’s GPP is ${GPP0.toFixed(2)} mg O₂/L/day. Using 0.375 mg C per mg O₂, what is its GPP in mg C/m³/day?`,choices:[`${Math.round(GPP0*0.375*1000).toLocaleString()} mg C/m³/day`,`${Math.round(GPP0*1000).toLocaleString()} mg C/m³/day`,`${(GPP0*0.375).toFixed(2)} mg C/m³/day`,`${Math.round(GPP0/0.375*1000).toLocaleString()} mg C/m³/day`],correct:0,instant:true,
      explain:`${GPP0.toFixed(2)} mg O₂/L × 0.375 = ${(GPP0*0.375).toFixed(2)} mg C/L. There are 1,000 L in a cubic meter, so that is ${Math.round(GPP0*0.375*1000).toLocaleString()} mg C/m³/day. The 0.375 comes from 12 g of carbon per 32 g of O₂ in photosynthesis.`},
-    {lvl:'ap',q:'Fertilizer runoff raises the nutrients from medium to high. What happens to GPP?',choices:['It rises, because more algae grow','It falls','No change'],correct:0,
+    {lvl:'ap',q:'Fertilizer runoff raises the nutrients from medium to high. What happens to GPP?',choices:['It rises, as more algae grow','It falls, as the water clouds','No change in GPP'],correct:0,
      baseline:{nut:'med'},change:{nut:'high'},changeText:'Nutrients raised to high',watch:'rates',
      explain:'Nitrogen and phosphorus are limiting nutrients in most lakes. More nutrients means more algae, so both GPP and respiration rise. That is the first step of eutrophication.'}
   ],

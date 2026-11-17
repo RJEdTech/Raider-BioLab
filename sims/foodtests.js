@@ -92,10 +92,10 @@ const SIM={
     const words=RKEYS.map(k=>{const o=outcome(A,k,5);return RG[k].name+': '+o.txt.replace(/ \(.*/,'').toLowerCase();}).join('; ');
     const opts=[A.name].concat(others.map(o=>o.name)).map((n,i)=>({n,k:r()})).sort((a,b)=>a.k-b.k).map(o=>o.n);
     return [
-    {lvl:'bio',q:'You add Benedict’s reagent to the glucose tube and heat it in the water bath. What color will it turn?',choices:['It stays blue','Orange to brick red','Purple'],correct:1,
+    {lvl:'bio',q:'You add Benedict’s reagent to the glucose tube and heat it in the water bath. What color will it turn?',choices:['It stays blue','Orange to brick red','It turns purple'],correct:1,
      baseline:{reagent:'benedict',tube:'1'},baselineAction:'addAll',at:1.5,changeAction:'heat',changeText:'Rack placed in the hot water bath',reveal:7,
      explain:{bio:'Glucose is a reducing sugar. When heated, it changes the blue copper ions in Benedict’s to a red-orange solid. Lots of sugar gives brick red.',ap:'Glucose’s free aldehyde group reduces Cu²⁺ (blue) to Cu⁺, which precipitates as red-orange copper(I) oxide. Heat is needed to drive the reaction.'}},
-    {lvl:'bio',q:'Why does the lab include a tube of plain water?',choices:['To dilute the reagents','As a negative control, to show what a “no” result looks like','Water contains a little of every nutrient'],correct:1,instant:true,
+    {lvl:'bio',q:'Why does the lab include a tube of plain water?',choices:['To dilute the reagents so they work better','As a negative control: what “no” looks like','Water contains a little of every nutrient'],correct:1,instant:true,
      explain:'Water has none of the nutrients, so its color is what a negative result looks like. Comparing every other tube with it keeps you from mistaking the reagent’s own color for a positive.'},
     {lvl:'bio',q:'You add iodine to every tube. What color does the potato tube turn?',choices:['Stays amber-brown','Blue-black','Violet'],correct:1,
      baseline:{reagent:'iodine',tube:'6'},at:0.5,changeAction:'addAll',changeText:'Iodine added to every tube',reveal:4,
@@ -105,11 +105,11 @@ const SIM={
     {lvl:'honors',q:'You add Benedict’s to every tube but skip the water bath. After a few minutes, what does the glucose tube look like?',choices:['Brick red','Still blue','Green'],correct:1,
      baseline:{reagent:'benedict',tube:'1'},at:0.5,changeAction:'addAll',changeText:'Benedict’s added, no heating',reveal:5,
      explain:'Benedict’s reaction needs heat. Without the water bath, even a strong sugar solution stays blue, a common reason for a false negative.'},
-    {lvl:'honors',q:'Which nutrients will the tests find in milk?',choices:['Only protein','Reducing sugar, protein and fat','Only fat'],correct:1,instant:true,
+    {lvl:'honors',q:'Which nutrients will the tests find in milk?',choices:['Only protein, from the casein','Sugar, protein and fat','Only fat, from the cream'],correct:1,instant:true,
      explain:'Milk contains lactose (a reducing sugar), casein proteins and fat droplets, so it is positive for Benedict’s, Biuret and Sudan III. It has no starch.'},
     {lvl:'ap',q:'After heating with Benedict’s, apple juice turns brick red and a sports drink turns green. What can you conclude?',choices:['The sports drink has more reducing sugar','Apple juice has much more reducing sugar','They have the same amount'],correct:1,instant:true,
      explain:'Benedict’s is semi-quantitative: the more reducing sugar, the more copper(I) oxide forms, shifting color from green to yellow, orange and brick red. Apple juice is about 10% sugar; many sports drinks are about 2%.'},
-    {lvl:'ap',q:'A solution of table sugar (sucrose) stays blue with Benedict’s, even after heating. Why?',choices:['Sucrose is not a sugar','Sucrose is a non-reducing sugar: both reducing ends are tied up in the glycosidic bond','The water bath was too cold'],correct:1,instant:true,
+    {lvl:'ap',q:'A solution of table sugar (sucrose) stays blue with Benedict’s, even after heating. Why?',choices:['Sucrose isn’t a sugar, so Benedict’s can’t see it','Non-reducing: its reducing ends are tied up','The water bath was too cold to start the reaction'],correct:1,instant:true,
      explain:'In sucrose, the glycosidic bond joins the reducing carbons of glucose and fructose, so no free aldehyde or ketone remains. Boiling it with acid (or adding sucrase) first hydrolyzes it into glucose and fructose, which then test positive.'}];},
   narrate(sim){const st=sim.st,r=sim.p.reagent,rg=RG[r],tubes=st.tubes[r],sel=+sim.p.tube,sm=samples(sim)[sel],tb=tubes[sel];
     if(st.bath&&st.bath.on)return r==='benedict'?'<b>Heating…</b> In the 80 °C water bath, reducing sugars change blue Cu²⁺ ions into a red-orange solid. More sugar means a redder color.':'Heating doesn’t matter for '+rg.name+'. Only Benedict’s needs heat.';

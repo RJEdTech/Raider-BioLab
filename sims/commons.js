@@ -82,7 +82,7 @@ const COM={
   ],
   onTourExit(sim){BioLab.setValues(sim,{others:'cautious',catch:300,quota:false,quotaAmt:1200});BioLab.reset(sim);},
   challenges:[
-    {lvl:'bio',q:'Every fleet starts fishing as hard as it can. What happens over the next 20 seasons?',choices:['Everyone catches lots of fish forever','Catches boom, then the fish collapse and catches crash','Nothing changes'],correct:1,
+    {lvl:'bio',q:'Every fleet starts fishing as hard as it can. What happens over the next 20 seasons?',choices:['Everyone catches lots of fish forever','Catches boom, then the fish collapse','Nothing changes, since the lake is big'],correct:1,
      baseline:{},change:{others:'greedy',catch:1500},changeText:'All fleets fish hard',watch:'fish',
      explain:{bio:'The fleets take far more fish than the lake can replace. The stock crashes, and with few fish left, every fleet’s catch falls to almost nothing. This is the tragedy of the commons.'}},
     {lvl:'bio',q:'The other fleets are cautious, and you also keep your catch small (200 fish). What happens to the fish over 20 seasons?',choices:['They stay healthy','They slowly run out','They grow without limit'],correct:0,
@@ -94,9 +94,9 @@ const COM={
     {lvl:'honors',q:'All fleets are greedy, and after one season a total quota of 600 fish per season is set. What happens to the fish?',choices:['They still collapse','They recover and level off','The quota has no effect'],correct:1,
      baseline:{others:'greedy',catch:1500},change:{quota:true,quotaAmt:600},changeText:'A 600-fish quota starts',watch:'fish',at:1,reveal:22,
      explain:{honors:'With the quota, the fleets can only take 600 fish a season, less than the lake can regrow at that size. The stock rebuilds, and the fleets keep a steady catch instead of a crash.'}},
-    {lvl:'ap',q:'To catch the most fish year after year, at about what level should the stock be kept?',choices:['As close to the carrying capacity (10,000) as possible','About half the carrying capacity','As low as possible'],correct:1,instant:true,
+    {lvl:'ap',q:'To catch the most fish year after year, at about what level should the stock be kept?',choices:['Near the carrying capacity','About half the carrying capacity','As low as possible'],correct:1,instant:true,
      explain:{ap:'Surplus growth rN(1 − N/K) peaks at N = K/2. Near K, fish compete for food and barely add young. With few fish, there are too few parents. This model’s mild Allee effect moves the peak slightly above 5,000. Check the “Surplus growth” graph.'}},
-    {lvl:'ap',q:'A quota is set 20% above the maximum sustainable yield, and all fleets fish up to it. What happens?',choices:['The stock holds steady','The stock slowly declines and collapses','The stock grows'],correct:1,
+    {lvl:'ap',q:'A quota is set 20% above the maximum sustainable yield, and all fleets fish up to it. What happens?',choices:['The stock holds steady at a lower level','The stock slowly declines and collapses','The stock grows, since 20% is small'],correct:1,
      baseline:{others:'greedy',quota:true,quotaAmt:1400},change:{},changeText:'Quota at 1,400 (MSY ≈ 1,160)',watch:'fish',at:1,reveal:30,
      explain:{ap:'No stock size can regrow more than the MSY each season. A catch above it always removes more than the lake adds, so the stock falls every season until it collapses. Quotas only work if they are set below the MSY.'}}
   ],

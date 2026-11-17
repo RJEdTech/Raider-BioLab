@@ -70,7 +70,7 @@ const NICHE={
   defaultGraph:'pops',
   challenges:[
     {lvl:'bio',q:'Gause grew Paramecium aurelia and P. caudatum together in one tube, both eating the same bacteria. What happened to P. caudatum?',
-     choices:['It died out','Both settled at half their usual numbers','It took over the tube'],correct:0,baseline:{sc:'gause1',grow:'both',sep:0.15},watch:'popB',at:1,reveal:22,
+     choices:['It died out','Both settled at half','It took over the tube'],correct:0,baseline:{sc:'gause1',grow:'both',sep:0.15},watch:'popB',at:1,reveal:22,
      explain:'P. caudatum died out within a few weeks. Both species needed the same food in the same place, and P. aurelia grows faster and packs in more tightly, so it got the bacteria first. This is the competitive exclusion principle: two species can’t share exactly the same niche for long.'},
     {lvl:'bio',q:'Now Gause pairs P. caudatum with green P. bursaria, which feeds on yeast near the bottom of the tube. What happens?',
      choices:['Both survive','P. bursaria dies out','P. caudatum dies out'],correct:0,baseline:{sc:'gause2',grow:'both',sep:2.6},watch:'popB',at:1,reveal:22,
@@ -78,7 +78,7 @@ const NICHE={
     {lvl:'bio',instant:true,q:'Five kinds of warblers eat insects in the same spruce trees, yet all five live there. How?',choices:['Each hunts in a different part of the tree','They take turns year by year','There are always more than enough insects','They eat each other’s eggs'],correct:0,
      explain:'Robert MacArthur watched them in Maine in the 1950s: one hunts the treetop, another the middle near the trunk, another the lower branches. By splitting the tree into zones, they avoid competing head to head.'},
     {lvl:'honors',q:'Two warbler species that split a spruce tree are pushed to hunt in the same zone. Lower “How different their niches are” from 2.2 to 0.3. What happens?',
-     choices:['The bay-breasted warbler dies out','Both keep the same numbers','Both die out'],correct:0,baseline:{sc:'warblers',grow:'both',sep:2.2},change:{sep:0.3},changeText:'Niches pushed together',watch:'popB',at:4,reveal:38,
+     choices:['The bay-breasted warbler dies out','Both keep the same numbers','Both species die out'],correct:0,baseline:{sc:'warblers',grow:'both',sep:2.2},change:{sep:0.3},changeText:'Niches pushed together',watch:'popB',at:4,reveal:38,
      explain:'With almost the same niche, the overlap is about 98%, so they compete head to head. The Cape May warbler, the stronger competitor here, slowly pushes the bay-breasted warbler out. Separation keeps both.'},
     {lvl:'honors',instant:true,q:'A barnacle can live anywhere on a rocky shore when it is alone, but with a competitor around it survives only high on the rocks. What do we call its high-on-the-rocks range?',choices:['Its realized niche','Its fundamental niche','Its carrying capacity','Its trophic level'],correct:0,
      explain:'Its fundamental niche is everywhere it could live alone. Competition shrinks that to the realized niche, the part it actually holds. Joseph Connell showed this with barnacles in Scotland. Compare the dashed and solid curves when the species grow together.'},

@@ -112,11 +112,11 @@ const FARM={
     let s={...st0};for(let i=0;i<10;i++){s.depth+=C({}).drop;}
     const saltLoss=Math.round(12*(3.2-1.7));
     return [
-      {lvl:'bio',instant:true,q:'A farmer pumps 20 inches of water onto the field. Which irrigation method gets the most of it to the corn roots?',choices:['Furrow','Flood','Center-pivot spray','Drip'],correct:3,
+      {lvl:'bio',instant:true,q:'A farmer pumps 20 inches of water onto the field. Which irrigation method gets the most of it to the corn roots?',choices:['Furrow','Flood','Spray','Drip'],correct:3,
        explain:'Drip puts water right at each plant, so about 95% reaches the roots. Spray gets about 85%, flood about 80% and furrow only about 65%; the rest evaporates or runs off.'},
-      {lvl:'bio',instant:true,q:'The farmer sprays the same pesticide every year. What happens to the pests over the next several seasons?',choices:['They die out for good','Nothing changes','The survivors breed and the pests become resistant, so the spray works less and less'],correct:2,
+      {lvl:'bio',instant:true,q:'The farmer sprays the same pesticide every year. What happens to the pests over the next several seasons?',choices:['They die out for good after a few sprays','Nothing changes; the spray works the same','Survivors breed, and the pests become resistant'],correct:2,
        explain:'A few pests survive each spray because of natural variation. They pass on that resistance, so each year more of the population survives. That is evolution by natural selection, and it is why pest losses creep back up.'},
-      {lvl:'bio',instant:true,q:'Raising fertilizer from 150 to 250 lb per acre does what?',choices:['Raises the harvest a lot','Raises the harvest a little, but much more nitrogen washes out of the field','Lowers the harvest'],correct:1,
+      {lvl:'bio',instant:true,q:'Raising fertilizer from 150 to 250 lb per acre does what?',choices:['Raises the harvest a lot, enough to pay for it','Raises it a little, but much more nitrogen washes out','Lowers the harvest, since too much burns the roots'],correct:1,
        explain:`The harvest goes from about ${Math.round(n150.y)} to ${Math.round(n250.y)} bushels, but nitrate washed out goes from about ${Math.round(n150.no3)} to ${Math.round(n250.no3)} lb per acre. The corn can only use so much.`},
       {lvl:'honors',instant:true,q:'Drip irrigation with 14 inches pumped, or furrow with 20 inches. Which grows more corn?',choices:['Furrow with 20 in','About the same','Drip with 14 in'],correct:Math.abs(d14-f20)<5?1:(d14>f20?2:0),
        explain:`Drip with 14 in gives about ${Math.round(d14)} bushels; furrow with 20 in gives about ${Math.round(f20)}. Drip gets 95% of 14 in = 13.3 in to the roots, a bit more than furrow’s 65% of 20 in = 13 in, while pumping 30% less.`},

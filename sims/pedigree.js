@@ -117,7 +117,7 @@ function buildChallenges(f){const P=f.P,T=f.truth,nm=i=>P[i].id,an=f.an,list=[];
   list.push({lvl:'bio',instant:true,reveals:true,q:'Which inheritance pattern fits this family?',choices:f.choices.map(NAME),correct:f.choices.indexOf(T),explain:q1x});
   // Q2: dominant or recessive (or who passes it on)
   const W=clues(f).W;
-  if(T==='MT')list.push({lvl:'bio',instant:true,q:'Who passes this trait on to their children?',choices:['Only mothers','Only fathers','Both mothers and fathers'],correct:0,explain:'Only mothers. Children get all their mitochondria from the egg, so an affected mother passes the trait to every child and an affected father passes it to none.'});
+  if(T==='MT')list.push({lvl:'bio',instant:true,q:'Who passes this trait on to their children?',choices:['Only mothers','Only fathers','Both parents'],correct:0,explain:'Only mothers. Children get all their mitochondria from the egg, so an affected mother passes the trait to every child and an affected father passes it to none.'});
   else{const dom=T==='AD'||T==='XD',w=dom?(W.bothAff()||W.inlawAR()):W.bothUnaff();
     list.push({lvl:'bio',instant:true,q:'Is the allele for this trait dominant or recessive?',choices:['Dominant','Recessive'],correct:dom?0:1,
       explain:(w?w.text:(dom?'Every affected person has an affected parent, so the trait never skips a generation. That points to a dominant allele.':'The trait skips generations: affected people can have unaffected parents, who must be carriers. That points to a recessive allele.'))});}
@@ -132,10 +132,10 @@ function buildChallenges(f){const P=f.P,T=f.truth,nm=i=>P[i].id,an=f.an,list=[];
     else why=`Their genotypes aren’t certain, but adding up every possibility the shading allows gives ${clean[q.v]} for a ${kid}.`;
     list.push({lvl:'honors',instant:true,q:`If ${nm(q.c.f)} and ${nm(q.c.m)} have another ${kid}, what is the chance ${pr} will have the trait?`,choices:vals.map(v=>clean[v]),correct:vals.indexOf(q.v),explain:why});}
   // Q4 (honors): the transmission rule for this pattern
-  const RULE={AD:{q:'With this trait, can two unaffected parents have an affected child?',choices:['Yes, if both are carriers','No, unless a new mutation happens'],correct:1,explain:'A dominant allele shows whenever it is present. Unaffected parents have no copy to pass on.'},
+  const RULE={AD:{q:'With this trait, can two unaffected parents have an affected child?',choices:['Yes, if both parents are carriers','No, unless a new mutation happens'],correct:1,explain:'A dominant allele shows whenever it is present. Unaffected parents have no copy to pass on.'},
     AR:{q:'With this trait, can two unaffected parents have an affected child?',choices:['Yes, if both are carriers','No, unless a new mutation happens'],correct:0,explain:'Carriers have one recessive allele and look unaffected. Two carriers have a 1 in 4 chance of an affected child each time.'},
     XR:{q:'Can a father with this trait pass it to his son?',choices:['Yes','No'],correct:1,explain:'A father gives his son a Y chromosome, not his X, so X-linked traits never pass from father to son. He passes the allele to all his daughters, who become carriers.'},
-    XD:{q:'A father with this trait has a daughter. Will she have it?',choices:['Always','About half the time','Never'],correct:0,explain:'A father passes his only X to every daughter, and one dominant allele is enough. His sons get his Y and are unaffected.'},
+    XD:{q:'A father with this trait has a daughter. Will she have it?',choices:['Always','Half the time','Never'],correct:0,explain:'A father passes his only X to every daughter, and one dominant allele is enough. His sons get his Y and are unaffected.'},
     MT:{q:'Can a father with this trait pass it to his children?',choices:['Yes, to all of them','Yes, to about half','No'],correct:2,explain:'Sperm contribute essentially no mitochondria, so the father’s mitochondria are not passed on.'}};
   list.push(Object.assign({lvl:'honors',instant:true},RULE[T]));
   // Q5 (AP): carrier probability or genotype

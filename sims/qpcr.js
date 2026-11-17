@@ -148,7 +148,7 @@ const QPCR={
     {lvl:'ap',q:'A treated sample gives ΔΔCt = −3. What fold change is that?',choices:['3× more target mRNA','8× more target mRNA','8× less target mRNA'],correct:1,
      baseline:{mode:'expr',fold:'8'},changeText:'Running control and treated samples',watch:'curves',at:0,reveal:40.5,
      explain:{ap:'Fold change = 2^(−ΔΔCt) = 2³ = 8. A negative ΔΔCt means the target crossed the threshold earlier in treated cells, so it is more abundant.'}},
-    {lvl:'ap',q:'Efficiency drops from 100% to 80%. What happens to the standard curve?',choices:['The slope gets steeper (standards farther apart)','The slope gets flatter (standards closer)','No change'],correct:0,
+    {lvl:'ap',q:'Efficiency drops from 100% to 80%. What happens to the standard curve?',choices:['The slope gets steeper (standards farther apart)','The slope gets flatter (standards closer together)','No change in the standard curve'],correct:0,
      baseline:{mode:'std',eff:80},changeText:'Running at 80% efficiency',watch:'std',at:0,reveal:40.5,
      explain:{ap:'At 80% each cycle multiplies DNA by 1.8, so a 10-fold gap takes log₁.₈10 ≈ 3.9 cycles. The slope goes from −3.32 to about −3.9, and efficiency = 10^(−1/slope) − 1 recovers 80%.'}}
   ],

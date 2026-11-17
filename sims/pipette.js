@@ -98,7 +98,7 @@ const PIP={
      explain:{bio:'Use the smallest pipette whose range includes the volume. A P20 measures 2–20 µL, so 7.5 µL fits. A P200 starts at 20 µL and could not measure it accurately.'}},
     {lvl:'bio',q:'A P200’s display reads 0-7-5. What volume will it measure?',choices:['7.5 µL','75 µL','750 µL'],correct:1,instant:true,show:{mode:'pip',pip:'P200',dial:75,task:'50'},
      explain:{bio:'On a P200 you read the three digits straight across, in microliters: 0-7-5 means 75 µL. On a P20 the same digits would mean 7.5 µL, and on a P1000 they would mean 750 µL. Always check which pipette you are holding.'}},
-    {lvl:'bio',q:'You press to the second stop before dipping into the sample, then release in the liquid. What happens?',choices:['You draw up exactly the set volume','You draw up too much','You draw up nothing'],correct:1,instant:true,show:{mode:'pip',pip:'P20',dial:75,task:'7.5'},
+    {lvl:'bio',q:'You press to the second stop before dipping into the sample, then release in the liquid. What happens?',choices:['Exactly the set volume','Too much','Nothing at all'],correct:1,instant:true,show:{mode:'pip',pip:'P20',dial:75,task:'7.5'},
      explain:{bio:'The second stop is only for pushing out the last drop. Starting from the second stop sucks up an extra 20–30%. Draw up from the first stop; dispense to the first stop, then push to the second to blow out the rest. Try both ways with the buttons and compare the tube.'}},
     {lvl:'bio',q:'How many microliters are in 0.25 mL?',choices:['25 µL','250 µL','2,500 µL'],correct:1,instant:true,show:{mode:'pip',pip:'P1000',dial:25,task:'250'},
      explain:{bio:'There are 1,000 µL in 1 mL, so 0.25 mL × 1,000 = 250 µL. Moving from mL to µL, multiply by 1,000; going the other way, divide by 1,000.'}},

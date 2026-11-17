@@ -418,7 +418,7 @@ const MIC={
      baseline:{obj:10,coarse:50},change:{obj:40},changeText:'Switched to 40×. Try the fine focus knob',
      explain:{honors:'The objectives are parfocal: switching keeps the image nearly in focus. At 40× the depth of focus is only about 1.5 µm, but one click of the coarse knob moves the stage 20 µm. Only the fine knob can make that small an adjustment.'}},
     {lvl:'honors',q:'At 40× you crank the coarse focus knob from 50 up to 75. What happens?',
-     choices:['The image gets sharper','The stage rises into the objective and cracks the slide'],correct:1,
+     choices:['The image gets sharper, since 40× needs more turning','The stage rises into the lens and cracks the slide'],correct:1,
      baseline:{obj:40,coarse:50,fine:10},change:{coarse:75},changeText:'Coarse focus turned up to 75',
      explain:{honors:'The 40× objective sits only 0.6 mm above the slide (its working distance). The coarse knob raises the stage 0.5 mm here, so the slide hits the lens. This is how real slides and lenses get broken.'}},
     {lvl:'ap',q:'At 100× the blood cells look dim and fuzzy even when focused. You add a drop of immersion oil. What happens?',

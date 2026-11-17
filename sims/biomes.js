@@ -48,13 +48,13 @@ const wX=T=>WX.x0+(T-WX.tmin)/(WX.tmax-WX.tmin)*(WX.x1-WX.x0),wY=P=>WX.y1-Math.s
 const yP=y=>Math.pow(clamp((WX.y1-y)/(WX.y1-WX.y0),0,1),2)*WX.pmax;
 
 function quizList(sim){return [
-  {lvl:'bio',q:'Denver averages about 10 °C and gets about 38 cm of precipitation a year. Which biome is Denver in?',choices:['Temperate deciduous forest','Temperate grassland (shortgrass prairie)','Desert','Taiga'],correct:1,instant:true,
+  {lvl:'bio',q:'Denver averages about 10 °C and gets about 38 cm of precipitation a year. Which biome is Denver in?',choices:['Temperate deciduous forest (oak and maple)','Temperate grassland (shortgrass prairie)','Hot desert (cactus and sand)','Taiga (spruce and fir forest)'],correct:1,instant:true,
    explain:'38 cm is more than a desert gets but far too little for a forest. On the Whittaker diagram, Denver falls in temperate grassland. Before the city was built, it was shortgrass prairie with bison and prairie dogs.'},
-  {lvl:'bio',q:'What mostly limits plant growth in the arctic tundra?',choices:['Too little rain','Cold temperatures and a very short growing season','Too much sunlight'],correct:1,instant:true,
+  {lvl:'bio',q:'What mostly limits plant growth in the arctic tundra?',choices:['Too little rain and snow all year','Cold and a very short growing season','Too much sunlight in the long summer days'],correct:1,instant:true,
    explain:'Tundra is dry, but cold is the bigger limit. Only a few weeks a year are warm enough for plants to grow, and frozen permafrost below the surface blocks deep roots.'},
   {lvl:'bio',city:'phoenix',q:'Mystery city: read its climatograph. Which biome is it in?',choices:['Desert','Tropical rainforest','Tundra','Temperate deciduous forest'],correct:0,instant:true,
    explain:'It is hot all year (the red line stays above 12 °C) but the blue rain bars are tiny: about 20 cm a year. Under 25 cm of precipitation means desert. This is Phoenix, Arizona.'},
-  {lvl:'bio',city:'manaus',q:'Mystery city: which biome matches this climatograph?',choices:['Savanna','Tropical rainforest','Desert','Taiga'],correct:1,instant:true,
+  {lvl:'bio',city:'manaus',q:'Mystery city: which biome matches this climatograph?',choices:['Tropical savanna','Tropical rainforest','Hot desert','Taiga (boreal forest)'],correct:1,instant:true,
    explain:'The temperature line is flat and high, around 27 °C every month, and the rain bars are tall: about 230 cm a year. Hot and wet all year is tropical rainforest. This is Manaus, in the Amazon.'},
   {lvl:'honors',city:'losangeles',q:'Mystery city: it is mild and gets about 37 cm of rain a year. Which biome?',choices:['Desert','Chaparral','Temperate grassland','Savanna'],correct:1,instant:true,
    explain:'Look at the timing of the rain bars: almost all the rain falls in winter, and the summer months are nearly bone-dry. Wet winters and dry summers mark chaparral. This is Los Angeles.'},

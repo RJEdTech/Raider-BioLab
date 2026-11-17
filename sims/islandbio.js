@@ -79,7 +79,7 @@ const SIM={
     {lvl:'honors',q:'Island A shrinks from 1,000 km² to 10 km², at the same distance. What happens to its equilibrium number of species?',choices:['It rises','It falls','It stays the same'],correct:1,
      change:{aArea:10},at:100,reveal:280,changeText:'Island A shrunk to 10 km² at year 100',watch:'rich',
      explain:'Small islands hold small populations, and small populations die out more easily from bad luck, storms or disease. A higher extinction rate lowers the equilibrium even though arrivals stay the same.'},
-    {lvl:'honors',q:'Once island A reaches equilibrium, do species stop arriving and going extinct?',choices:['Yes, the island is full and frozen','No, species still arrive and go extinct at about equal rates'],correct:1,instant:true,
+    {lvl:'honors',q:'Once island A reaches equilibrium, do species stop arriving and going extinct?',choices:['Yes, the island is full and its species list is frozen','No, species still arrive and go extinct at equal rates'],correct:1,instant:true,
      explain:'Equilibrium is dynamic. The number of species stays about the same, but which species are present keeps changing. This is called species turnover. Watch the icons on island A blink in and out even after the graph levels off.'},
     {lvl:'ap',q:'A 1,000 km² forest is cut into 10 separate 100 km² patches. What happens to the number of species each patch can hold?',choices:['It falls','It rises','No change'],correct:0,
      change:{frag:true},at:120,reveal:300,changeText:'Forest fragmented at year 120',watch:'rich',

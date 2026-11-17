@@ -162,7 +162,7 @@ const SIM={
      baseline:{sol:'cell',reag:'acid'},changeAction:'drop5',changeText:'5 drops of acid added',watch:'curve',
      explain:'HPO₄²⁻ catches almost every H⁺ and becomes H₂PO₄⁻. The H⁺ is no longer free, so the pH only slips to 7.16. That steadiness is what a buffer is for.'},
     {lvl:'bio',q:'Pepsin is cutting proteins in stomach acid at pH 2. The same pepsin ends up in blood at pH 7.4. What happens to its activity?',
-     choices:['It speeds up, because neutral is gentler','It drops to almost nothing','It stays the same, because pH does not affect enzymes'],correct:1,
+     choices:['It speeds up, since neutral is gentler','It drops to almost nothing as it unfolds','It stays the same; pH doesn’t matter'],correct:1,
      baseline:{sol:'stomach',enz:'pepsin'},change:{sol:'blood'},changeText:'Pepsin moved into blood buffer',watch:'curve',
      explain:'Each enzyme has a pH range it is built for. Pepsin’s best is about pH 2. At 7.4 the charges that hold its shape change, the active site no longer fits, and its activity falls to about 0%.'},
     {lvl:'honors',q:'In a sealed beaker, 5 drops of acid push blood buffer from 7.40 down to about 7.24. Now breathing removes the CO₂. You add the same 5 drops. The pH…',
@@ -184,7 +184,7 @@ const SIM={
      choices:['7.10','7.40','6.80','7.70'],correct:0,instant:true,
      explain:{ap:'pH = 6.1 + log(24 ÷ 2.4) = 6.1 + log(10) = 7.10. That is respiratory acidosis: too little breathing leaves CO₂ in the blood, which lowers the pH.'}},
     {lvl:'ap',q:'In a sealed beaker the blood buffer moves more than the phosphate buffer for the same 5 drops (about −0.16 vs. −0.04), even though it holds more buffer. Why?',
-     choices:['Its pKa (6.1) is far below 7.4, so its acid member, CO₂, is small and fills up fast','Bicarbonate cannot react with H⁺','Phosphate is a stronger acid, so it adds H⁺ of its own'],correct:0,instant:true,
+     choices:['Its pKa (6.1) is far below 7.4, so its CO₂ fills up fast','Bicarbonate can’t react with H⁺ at all','Phosphate is a stronger acid, so it adds H⁺ of its own'],correct:0,instant:true,
      explain:{ap:'At pH 7.4 the ratio HCO₃⁻ : CO₂ is 20 : 1, so only 1.2 mM of CO₂ is there. 0.5 mM of new acid raises that by 40%, and the log ratio moves a lot. Phosphate sits right at its pKa (7.21), where both members are large. In the body, the lungs fix this by removing CO₂.'}}
   ],
   lab:{bio:'<p><b>Question:</b> Which liquid holds its pH steadiest when acid is added?</p><ol><li>Choose <b>Pure water</b> with acid in the dropper. Press <b>Record trial</b> at 0 drops.</li><li>Press <b>Add 5 drops</b> and record a trial. Repeat until you reach 30 drops.</li><li>Press <b>Rinse and refill</b>, switch to <b>Phosphate buffer</b>, and repeat. Then do <b>Blood buffer</b>.</li><li>The graph draws each liquid’s line for you. Copy it, or plot drops (x) against pH (y).</li></ol><p>Write a claim: which liquid is the best buffer? Use the pH change after 30 drops for each one as your evidence.</p>',

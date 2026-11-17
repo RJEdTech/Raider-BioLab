@@ -104,15 +104,15 @@ const BLOOD={
        explain:'O− cells carry no A, B or Rh antigens, so a recipient’s antibodies have nothing to grab. That makes O− the universal red-cell donor. AB+ patients can receive any type.'},
       {lvl:'honors',instant:true,q:'Can a parent with type AB blood have a type O child?',choices:['No','Yes, if the other parent is type O','Yes, but only if Rh negative'],correct:0,
        explain:'Type O needs genotype ii. An AB parent (IᴬIᴮ) always passes on either Iᴬ or Iᴮ, never i, so their child can’t be type O.'},
-      {lvl:'honors',instant:true,q:'Two Rh-positive parents have an Rh-negative child. Is that possible?',choices:['Yes, if both parents are Dd','No, Rh+ is dominant','Only if the mother is Dd'],correct:0,
+      {lvl:'honors',instant:true,q:'Two Rh-positive parents have an Rh-negative child. Is that possible?',choices:['Yes, if both parents are Dd','No, because Rh+ is dominant','Only if the mother is Dd'],correct:0,
        explain:'Rh+ is dominant, so an Rh+ parent can be DD or Dd. Two Dd parents have a 1 in 4 chance of a dd (Rh−) child.'},
       {lvl:'honors',instant:true,q:`Switch to Family case and test the child. The mother is ${ft} and the father is ${dt}. Could this child belong to them?`,choices:['Yes, it is possible','No, it is impossible'],correct:f.belongs?0:1,
        explain:`The child is ${ct}. ${fe}`},
-      {lvl:'honors',instant:true,q:'A person with type A blood has which antibodies in their plasma?',choices:['Anti-B','Anti-A','Both anti-A and anti-B','Neither'],correct:0,
+      {lvl:'honors',instant:true,q:'A person with type A blood has which antibodies in their plasma?',choices:['Anti-B','Anti-A','Anti-A and anti-B','Neither'],correct:0,
        explain:'You make antibodies against the ABO antigens you don’t have. Type A has A antigens, so the plasma carries anti-B. Type O plasma has both anti-A and anti-B.'},
       {lvl:'ap',instant:true,q:'In a population, 49% of people are type O. Assuming Hardy–Weinberg equilibrium, what is the frequency of the i allele?',choices:['0.70','0.49','0.24','0.51'],correct:0,
        explain:'Type O is ii, so its frequency is r². r = √0.49 = 0.70. Try Sample 100 people and compare the estimate with the real US value of about 0.66.'},
-      {lvl:'ap',instant:true,q:'A type O patient is given type A red cells by mistake. What happens?',choices:['The patient’s anti-A antibodies clump the donor cells','The donor’s anti-B antibodies attack the patient','Nothing; O patients can receive any type'],correct:0,
+      {lvl:'ap',instant:true,q:'A type O patient is given type A red cells by mistake. What happens?',choices:['The patient’s anti-A antibodies clump the donor cells','The donor’s anti-B antibodies attack the patient’s cells','Nothing; type O patients can safely receive any type'],correct:0,
        explain:'Type O plasma contains anti-A and anti-B. They bind the A antigens on the donated cells, clumping and destroying them: a dangerous transfusion reaction.'}
     ];},
   infoPanel(sim){const s=sim.st,v=sim.p.view,hon=atLeast('honors');let h='';

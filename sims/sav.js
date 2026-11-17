@@ -66,7 +66,7 @@ const SAV={
   onTourExit(sim){BioLab.setValues(sim,{shape:'cube'});BioLab.reset(sim);},
   challenges:[
     {lvl:'bio',q:'All three blocks soak in the same vinegar. Which one turns completely clear first?',
-     choices:['The biggest block','The smallest block','They all clear at the same time'],correct:1,change:{},changeText:'Soaking',watch:'pct',
+     choices:['The biggest block','The smallest block','All at the same time'],correct:1,change:{},changeText:'Soaking',watch:'pct',
      explain:'Acid moves into every block the same distance per minute. The small block’s center is only 0.5 cm from the surface, so it clears first, while bigger blocks still have pink centers.'},
     {lvl:'bio',q:'Cube A’s side doubles from 1 cm to 2 cm. What happens to its surface-area-to-volume ratio (SA:V)?',
      choices:['It doubles','It is cut in half','It stays the same'],correct:1,change:{sA:2},changeText:'Cube A is now 2 cm',watch:'pct',reveal:2.5,
@@ -78,7 +78,7 @@ const SAV={
      choices:['Faster','Slower','No change'],correct:0,change:{temp:35},changeText:'Vinegar warmed to 35 °C',watch:'pct',reveal:9,
      explain:{honors:'Warmer molecules move faster, so diffusion speeds up and the acid moves in farther each minute.'}},
     {lvl:'ap',q:'Keep the same volume but flatten each block into a thin slab. What happens to the time for acid to reach the center?',
-     choices:['Longer','Much shorter','The same, because the volume is the same'],correct:1,change:{shape:'slab'},changeText:'Blocks flattened into slabs',watch:'pct',reveal:9,
+     choices:['Longer','Much shorter','The same'],correct:1,change:{shape:'slab'},changeText:'Blocks flattened into slabs',watch:'pct',reveal:9,
      explain:{ap:'A 2 × 2 × 0.25 cm slab has SA 10 cm² vs 6 cm² for a 1 cm cube of the same volume, and no point is more than 0.125 cm from the surface. Time to clear scales with (half-thickness)², so it drops from 10 min to under 1 min.'}},
     {lvl:'ap',q:'Time for diffusion to reach the center of a cube scales with…',
      choices:['the side length','the side length squared','the side length cubed'],correct:1,instant:true,

@@ -167,11 +167,11 @@ const BL={
   onTourExit(sim){BioLab.setValues(sim,{query:'burger',rc:false});},
   chChange:0.3,chReveal:4.2,challengeTitle:'Solve the case',
   challenges:[
-    {lvl:'bio',q:'A burger patty is sold as beef. BLAST its DNA. What animal is it really from?',choices:['Cow','Horse','Pig'],correct:1,baseline:{query:'burger'},baselineAction:'run',changeText:'Searching',
+    {lvl:'bio',q:'A burger patty is sold as beef. BLAST its DNA. What animal is it really from?',choices:['Cow (beef)','Horse','Pig (pork)'],correct:1,baseline:{query:'burger'},baselineAction:'run',changeText:'Searching',
      explain:'The top hit is horse, nearly 100% identical. In 2013, DNA tests like this found horse meat in “beef” products across Europe and led to recalls in several countries.'},
-    {lvl:'bio',q:'You BLAST mitochondrial DNA from your own cheek cells. What will the top hit be?',choices:['Human, about 100% identical','Pig, about 85% identical','No match at all'],correct:0,baseline:{query:'cheek'},baselineAction:'run',changeText:'Searching',
+    {lvl:'bio',q:'You BLAST mitochondrial DNA from your own cheek cells. What will the top hit be?',choices:['Human, about 100% identical','Pig, about 85% identical','No match at all in the database'],correct:0,baseline:{query:'cheek'},baselineAction:'run',changeText:'Searching',
      explain:'Your DNA matches the human sequence almost exactly. Other mammals still match partway, because we share a common ancestor, but with many more differences.'},
-    {lvl:'honors',q:'The venison sample differs from the deer reference at one base. What will its percent identity be?',choices:['About 50%','About 99%','No match: one difference breaks it'],correct:1,baseline:{query:'venison'},baselineAction:'run',changeText:'Searching',
+    {lvl:'honors',q:'The venison sample differs from the deer reference at one base. What will its percent identity be?',choices:['About 50%','About 99%','No match'],correct:1,baseline:{query:'venison'},baselineAction:'run',changeText:'Searching',
      explain:'One mismatch in 100 bases gives 99% identity. Individuals of the same species often differ at a few bases, so BLAST hits of about 98% or more usually mean the same species.'},
     {lvl:'honors',q:'A fish market sells a fillet as “red snapper”. What does its DNA say?',choices:['Red snapper','Tilapia','Salmon'],correct:1,baseline:{query:'snapper'},baselineAction:'run',changeText:'Searching',
      explain:'The top hit is tilapia, a cheaper fish. DNA barcoding surveys have found that a large share of fish sold as red snapper in the US is actually another species.'},
@@ -179,7 +179,7 @@ const BL={
      explain:'The read is the reverse complement of the database sequence, so it shares no 11-base words with it. Without a seed there is no alignment.'},
     {lvl:'ap',q:'Now search the reverse complement of sample X. What will the top hit be?',choices:['Still nothing','Chicken','GFP gene'],correct:1,baseline:{query:'reverse'},baselineAction:'run',change:{rc:true},changeText:'Searching the reverse complement',reveal:4.8,
      explain:'Reversing the read and swapping A↔T and G↔C turns it back into the strand stored in the database. It now matches chicken almost exactly. Real BLASTN does this automatically.'},
-    {lvl:'ap',instant:true,q:'Two hits: one with E = 1e-40 and one with E = 0.5. Which is the real match?',choices:['E = 1e-40','E = 0.5','Both are equally good'],correct:0,
+    {lvl:'ap',instant:true,q:'Two hits: one with E = 1e-40 and one with E = 0.5. Which is the real match?',choices:['E = 1e-40','E = 0.5','Both equally'],correct:0,
      explain:'The E value is how many hits this good you would expect by chance. 1e-40 means essentially none; 0.5 means a hit this good turns up by chance about every other search.'}
   ],
   lab:{bio:'<p><b>Question:</b> What species is each sample from?</p><ol><li>Choose each sample in turn and press Run BLAST.</li><li>Record a trial for each, with the top hit and percent identity.</li></ol><p>Which samples were labeled honestly? Which were not?</p>',

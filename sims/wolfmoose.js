@@ -276,16 +276,16 @@ function copyTable(sim,el){const r=tableRows(sim).filter(x=>x.W!==''&&Number.isF
 Object.assign(SIM,{
   challenges:[
     {lvl:'bio',q:'All the wolves are removed from the game. What happens to the moose over the next several years?',
-     choices:['They grow and stay high forever','They boom, then crash once they have eaten most of the grass','They die out right away'],correct:1,
+     choices:['They grow and then stay high forever','They boom, then crash once the grass is gone','They die out right away without wolves'],correct:1,
      baseline:{luck:'avg'},changeAction:'nowolves',changeText:'All wolves removed',watch:'pop',at:2,reveal:8,
      explain:{bio:'With nothing hunting them, almost every moose reaches grass and the herd doubles. Soon there are more moose than grass, many find nothing to eat, and the herd crashes. Predators actually help keep prey from eating themselves out of food.',
               ap:'Removing the predator removes top-down control. The prey overshoots the grass it depends on, then crashes and swings up and down, because the food (grass) is now the only limit.'}},
     {lvl:'bio',q:'A drought dries up half the grass this year. Which population is hit first, and which feels it later?',
-     choices:['Wolves drop first, then moose','Moose drop first, and wolves fall behind a few years later','Only the grass changes'],correct:1,
+     choices:['Wolves drop first, then the moose','Moose drop first; wolves fall years later','Only the grass changes; animals adjust'],correct:1,
      baseline:{luck:'avg'},changeAction:'drought',changeText:'Drought this year',watch:'pop',at:4,reveal:10,
      explain:{bio:'Less grass means fewer moose get food, so the moose drop the next year. Fewer moose then means fewer meals for wolves, so the wolves fall below the dashed line (the same game with no drought) a few years later. A change at the bottom of the food chain ripples up.'}},
     {lvl:'honors',q:'An exceptionally cold winter kills extra moose. What happens to the wolves compared with a normal year?',
-     choices:['Wolves increase because moose are weaker','Moose drop right away, and wolves end up lower than they would have been','Nothing happens to the wolves'],correct:1,
+     choices:['Wolves increase because the moose are weaker and easy to catch','Moose drop right away, and wolves end up lower than usual','Nothing happens to the wolves'],correct:1,
      baseline:{luck:'avg'},changeAction:'winter',changeText:'Cold winter',watch:'pop',at:4,reveal:10,
      explain:{honors:'The cold (an abiotic factor) removes moose directly. With fewer moose to catch, fewer moose turn into wolves, so the wolf line falls below the dashed line for several years. Meanwhile the grass gets a break.'}},
     {lvl:'honors',q:'Watch a whole game. Which population reaches its highest point first?',
@@ -299,7 +299,7 @@ Object.assign(SIM,{
      choices:['0.89 per year','0.67 per year','4 per year','0.17 per year'],correct:0,instant:true,
      explain:{ap:'ΔN = 10 − 6 = 4 in one year. N(1 − N/K) = 6 × (1 − 6/24) = 6 × 0.75 = 4.5. So r = 4 ÷ 4.5 ≈ 0.89 per year. Use the starting population (6) for N.'}},
     {lvl:'ap',q:'Turn on “Wolves can die of old age” (a death rate). Compared with the dashed line, what happens?',
-     choices:['More wolves, fewer moose','Fewer wolves, and the moose stay higher','No change'],correct:1,
+     choices:['More wolves, fewer moose','Fewer wolves; moose stay higher','No change at all'],correct:1,
      baseline:{luck:'avg'},change:{wd:true},changeText:'Wolf death rate on',watch:'pop',at:2,reveal:13,
      explain:{ap:'In the gym game a wolf only dies if it catches nothing. Adding a death rate removes wolves even in good years, so the wolf population stays low, hunting pressure drops and the moose stay higher. Real populations have both birth and death rates.'}}
   ],

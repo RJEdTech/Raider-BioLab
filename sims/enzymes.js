@@ -341,7 +341,7 @@ const ENZYME={
   defaultGraph:'rate',
   challenges:[
     {lvl:'bio',q:'You heat amylase from 37 °C to 70 °C. What happens to the reaction rate?',
-     choices:['It rises, because molecules move faster when hot','It drops to almost zero','It stays the same'],correct:1,
+     choices:['It rises, since hot molecules move faster','It drops to almost zero as amylase unfolds','It stays the same'],correct:1,
      baseline:{enzyme:'amylase'},change:{temp:70},changeText:'Temperature raised to 70 °C',watch:'rate',
      explain:{bio:'Heat makes molecules move faster, but too much heat shakes the enzyme out of shape. The active site no longer fits the substrate, so the reaction nearly stops. This is called denaturation.'}},
     {lvl:'bio',q:'Amylase works in your mouth (about pH 7). What happens at pH 2, the acidity of the stomach?',

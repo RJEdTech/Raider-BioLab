@@ -98,7 +98,7 @@ const SB={
      baseline:{preset:'toggle'},changeAction:'pulseIPTG',changeText:'One-hour pulse of IPTG',watch:'reporters',reveal:8,
      explain:{honors:'IPTG lifts LacI off pLac, so TetR and GFP come on. TetR then shuts off the LacI gene. Once LacI is gone, nothing is left to block TetR, so the cell stays green after the IPTG disappears. The circuit remembers.',
               ap:'Mutual repression with cooperativity (n = 2) makes the toggle bistable. The pulse pushes the cell past the separatrix into the other basin of attraction, and it stays there.'}},
-    {lvl:'ap',q:'You delete the cI gene from the repressilator, breaking the ring. What happens to the oscillation?',choices:['It gets faster','It stops and the levels settle','Nothing changes'],correct:1,
+    {lvl:'ap',q:'You delete the cI gene from the repressilator, breaking the ring. What happens to the oscillation?',choices:['It gets faster and faster','It stops; levels settle','Nothing changes; it keeps cycling'],correct:1,
      baseline:{preset:'rep'},change:{broken:true},changeText:'cI gene deleted',watch:'reps',reveal:10,
      explain:{ap:'Without cI, nothing represses the LacI gene, so LacI goes high and stays high. LacI keeps TetR off, TetR stops repressing pTet, and GFP sits at a constant level. No loop, no clock.'}},
     {lvl:'ap',q:'The toggle is green. You give it a one-hour pulse of aTc. What happens?',choices:['Stays green','Flips to red and stays red','Flips to red, then back to green'],correct:1,
