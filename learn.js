@@ -4161,4 +4161,77 @@ return {biodiversity:{
 }};
 })());
 
+/* ---------- Wolf, Moose, Grass ---------- */
+BioLab.addLearn((function(){
+const wmA=(sim,id)=>{const a=(sim.def.actions||[]).find(x=>x.id===id);if(a)a.run(sim);};
+const wmCard=(ctx,k,rows)=>dcCard(ctx,k,150,4,300,rows,{hi:false});
+const H=sim=>sim.st.hist||[];
+const peak=(sim,r)=>{let b=null;H(sim).forEach(x=>{if(!b||Math.round(x[r])>Math.round(b[r]))b=x;});return b;};
+const stopY=(sim,y)=>{if(sim.st.year>=y&&sim.running){sim.running=false;if(sim.ui&&sim.ui.play)sim.ui.play.textContent='Play';}};
+const at=(sim,y,key,fn)=>{sim._wm=sim._wm||{};if(sim.st.year>=y&&!sim._wm[key]){sim._wm[key]=1;fn(sim);}};
+const AVG={luck:'avg'};
+return {wolfmoose:{
+  goals:{
+    bio:['How the Wolf, Moose, Grass game models an ecosystem','Why moose boom when grass is plentiful and wolves are few','Why wolf numbers rise and fall after the moose','What happens to moose when every wolf is removed'],
+    honors:['How predators, prey and food limit each other','Why predator peaks lag behind prey peaks','Top-down and bottom-up control','Why small populations can vanish by bad luck'],
+    ap:['Predator–prey cycles and lag','Top-down and bottom-up control','Chance in small populations','What the game model gets right and wrong']},
+  matters:'Colorado released its first gray wolves in 2023. Whether wolves help or hurt elk, deer and the plants they eat is exactly the question this game models.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'rules',title:'The game',set:AVG,fresh:true,speed:0.5,focus:[0,40,800,410],
+     run(sim){sim._wm={};},
+     see:'Watch one round. Moose (M) race from home to the meadow to tag a grass player (G). Wolves (W) try to tag moose on the way.',
+     why:'Every student is one animal or one patch of grass, and each round is one year. Players never leave the game; they just change roles. That is how matter cycles in a real ecosystem: the same atoms move from grass to moose to wolf and back to soil.',
+     overlay(sim,ctx,LH,k){stopY(sim,2);}},
+    {key:'roles',title:'Who becomes what',set:AVG,fresh:true,speed:0.5,focus:[0,40,800,410],
+     run(sim){sim._wm={};},
+     see:'Watch each player at the end of the round.',
+     why:'A moose that tags grass eats and has a calf: the grass player becomes a moose. A moose tagged by a wolf becomes a wolf (the wolf ate and had a pup). A moose that finds no grass starves, and a wolf that catches nothing starves; both become grass, like a body returning to the soil.',
+     overlay(sim,ctx,LH,k){stopY(sim,2);}},
+    {key:'boom',title:'Moose boom',set:AVG,fresh:true,speed:1.5,focus:[0,40,800,410],
+     run(sim){sim._wm={};},
+     see:'The first years: plenty of grass and only 2 wolves.',
+     why:'With lots of grass and few wolves, almost every moose eats and has a calf. Moose go from 6 to 14 in two years while the grass is eaten down from 16 to 8.',
+     overlay(sim,ctx,LH,k){stopY(sim,3);wmCard(ctx,k,[['Year '+sim.st.year+': moose '+Math.round(sim.st.M)+', grass '+Math.round(sim.st.G),{w:800,c:CE_RED}]]);}},
+    {key:'cycle',title:'Wolves follow the moose',set:AVG,fresh:true,speed:4,focus:[0,40,800,410],
+     run(sim){sim._wm={};},
+     see:'Fifteen years, fast. Watch the wolves and moose counts at the top right, then the graph below.',
+     why:'Moose peak first (14 in year 3). Wolves keep growing for years because there are still plenty of moose to catch, and they peak later (about 10 in year 12). By then they have eaten most of the moose, so the moose crash, and then the wolves starve and crash too. Predator peaks <b>lag</b> behind prey peaks.',
+     overlay(sim,ctx,LH,k){const m=peak(sim,'M'),w=peak(sim,'W');
+       wmCard(ctx,k,[['Most moose: '+Math.round(m.M)+' (year '+m.y+')',{w:700,c:CE_RED}],['Most wolves: '+Math.round(w.W)+' (year '+w.y+')',{w:700}]]);}},
+    {key:'hook',title:'Your question: remove every wolf',set:AVG,fresh:true,speed:3,focus:[0,40,800,410],
+     run(sim){sim._wm={};},
+     see:'In year 5 the teacher pulls every wolf out of the game. Watch the moose for the next ten years.',
+     why:'The moose don’t take over and stay. They jump to about <b>19</b> of the 24 players the next year, but then there is too little grass: most starve, and the herd drops to about <b>8</b>. From then on the moose swing between about 7 and 19, booming and crashing against their food supply.',
+     so:'Every population is held back by something. Without a predator, prey grow until food runs short, then crash. Yellowstone had no wolves from about 1926 to 1995, and elk browsed streamside willows and aspen hard; after wolves returned, some of those willow stands began to recover.',
+     overlay(sim,ctx,LH,k){at(sim,5,'nw',s=>wmA(s,'nowolves'));stopY(sim,15);
+       wmCard(ctx,k,[[sim.st.year<6?'Year '+sim.st.year+': wolves still in the game':'Year '+sim.st.year+': no wolves',{w:700}],['Moose: '+Math.round(sim.st.M)+'   Grass: '+Math.round(sim.st.G),{w:800,c:CE_RED}]]);}},
+    {key:'drought',title:'A drought year',set:AVG,fresh:true,speed:2,focus:[0,40,800,410],
+     run(sim){sim._wm={};},
+     see:'In year 4, a drought: half the grass doesn’t grow.',
+     why:'With half the grass gone, many moose can’t find food and starve: the herd drops from 13 to about 6. Over the next few years the wolves grow more slowly, because there are fewer moose to catch. Food at the bottom limits everything above it. Ecologists call this <b>bottom-up control</b>; wolves limiting moose is <b>top-down control</b>.',
+     overlay(sim,ctx,LH,k){at(sim,4,'dr',s=>wmA(s,'drought'));stopY(sim,8);
+       wmCard(ctx,k,[['Year '+sim.st.year+(sim.st.year===4?': drought':''),{w:700}],['Moose: '+Math.round(sim.st.M)+'   Wolves: '+Math.round(sim.st.W),{w:800,c:CE_RED}]]);}},
+    {key:'luck',lvl:'honors',title:'A real game has luck',set:{luck:'real'},fresh:true,speed:4,focus:[0,40,800,410],
+     run(sim){sim._wm={};},
+     see:'Now each tag is a real chance, like in the gym. Fifteen years, fast.',
+     why:'In a real game, a few lucky or unlucky rounds swing small populations hard. Here the wolves climb to 12, then crash to a single wolf after the moose run out. Without <b>migration</b> (one player rejoining a species that hits zero), they would be gone for good. Isle Royale’s wolves fell to just 2 by 2016, and the park brought in new wolves in 2018 and 2019.',
+     overlay(sim,ctx,LH,k){const w=peak(sim,'W');wmCard(ctx,k,[['Year '+sim.st.year+': wolves '+Math.round(sim.st.W)+', moose '+Math.round(sim.st.M),{w:800,c:CE_RED}],['Most wolves so far: '+Math.round(w.W),{w:700}]]);}},
+    {key:'model',lvl:'ap',title:'What the game gets wrong',set:AVG,fresh:true,pause:true,focus:[0,40,800,410],
+     see:'Think about the game as a model of a real ecosystem.',
+     why:'It gets the big ideas right: matter cycles, predators lag prey, and food and predators both limit a population. But the class size is fixed, so the total number of organisms can’t grow; every animal breeds or dies in a single year; wolves never die of old age unless you add a death rate; and grass never regrows on its own. A real wolf eats many prey a year, not one, and real ecosystems have many species, not three. A good model is simple on purpose, and you should know what it leaves out.'}
+  ],
+  useIt:[
+    {do:'Look up where Colorado Parks and Wildlife has released gray wolves and how many packs there are now.',
+     why:'Colorado’s first 10 wolves were released in Grand and Summit counties in December 2023. Whether they change elk and deer numbers is happening in your state right now.'},
+    {do:'Next time you hike in the mountains, notice whether young aspen and willows along streams are chewed down or growing tall.',
+     why:'Heavy browsing is a sign of many elk or deer and few predators, the same pattern as the moose without wolves.'},
+    {do:'Play the game in the gym, write down your class’s numbers each round, and enter them under Our class data.',
+     why:'You will see whether your real game shows the same lag between moose and wolves as the model.'}],
+  tryIt:[{title:'the game at a table (15 minutes, 3 or more people)',
+    steps:['Use 24 coins or cards: 2 wolves, 6 moose and 16 grass (mark them W, M, G).','Each round, roll a die for each moose: 1 = tagged by a wolf (becomes W), 2–5 = finds grass (one G becomes M), 6 = starves (becomes G). Each wolf that tagged nothing becomes G.','Record the counts each round for 10 rounds and graph them.'],
+    look:'Moose should rise first, wolves later, then both fall, the same lag as on screen.'}]
+}};
+})());
+
 })();
