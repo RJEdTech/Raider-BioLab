@@ -4318,4 +4318,68 @@ return {plates:{
 }};
 })());
 
+/* ---------- Niche partitioning ---------- */
+BioLab.addLearn((function(){
+const nM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const nCard=(ctx,k,LH,rows)=>dcCard(ctx,k,440,(LH||450)-6,340,rows,{up:true,hi:false});
+const ovr=(sim,col)=>['Overlap: '+Math.round(nM(sim,'ov'))+'%   ·   '+nM(sim,'out'),{w:800,c:col}];
+const pops=sim=>{const a=sim.def.metrics.find(m=>m.id==='popA'),b=sim.def.metrics.find(m=>m.id==='popB'),f=v=>v<0.5?'gone':Math.round(v);return [[a.label+': '+f(a.get(sim)),{w:700}],[b.label+': '+f(b.get(sim)),{w:700}]];};
+return {niche:{
+  goals:{
+    bio:['What happens when two species need exactly the same thing','How species share a habitat by splitting up a resource','Real examples: Paramecium, warblers, African grazers','How to use the idea at a bird feeder or in a garden'],
+    honors:['The competitive exclusion principle','Resource partitioning in place, food and time','Fundamental versus realized niche','How much overlap two species can handle'],
+    ap:['The competitive exclusion principle and resource partitioning','Fundamental versus realized niche','The Lotka–Volterra competition model and the coexistence rule α < K₂/K₁']},
+  matters:'Every habitat is crowded with species that need food and space. Knowing how they share explains why one invasive species can wipe out a native one, why a varied garden draws more pollinators, and how a wildlife park like Gorongosa can hold so many kinds of large animals.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'alone',title:'One species alone',set:{sc:'gause1',grow:'A',sep:0.15},fresh:true,speed:1,
+     see:'A tube of water with bacteria to eat. A few Paramecium aurelia, single-celled organisms, are added. Watch their number.',
+     why:'With food and space and no competitor, they multiply fast at first, then level off when the tube is full: its <b>carrying capacity</b>. Everything they could use with no competition is their <b>fundamental niche</b>.',
+     overlay(sim,ctx,LH,k){nCard(ctx,k,LH,[[pops(sim)[0][0],{w:800,c:CE_GREEN}]]);}},
+    {key:'exclusion',title:'Same food, same place: one wins',set:{sc:'gause1',grow:'both',sep:0.15},fresh:true,speed:1.5,
+     see:'Now a second species, P. caudatum, shares the tube and eats the same bacteria. Watch both populations.',
+     why:'Their niches overlap almost completely, so every bacterium one eats is one the other can’t. P. aurelia grows faster and packs in tighter, so it gets the food first, and <b>P. caudatum dies out</b>. Gause saw exactly this in 1934. Two species can’t share the very same niche for long: the <b>competitive exclusion principle</b>.',
+     overlay(sim,ctx,LH,k){nCard(ctx,k,LH,[ovr(sim,CE_RED)]);}},
+    {key:'partition',title:'Split the tube: both survive',set:{sc:'gause2',grow:'both',sep:2.6},fresh:true,speed:1.5,
+     see:'P. caudatum again, now with green P. bursaria. Watch where each one feeds, and both populations.',
+     why:'P. caudatum eats bacteria floating near the top; P. bursaria (green from the algae living inside it) eats yeast that settles near the bottom. They barely compete, so <b>both survive</b>. Sharing a resource by using different parts of it is <b>resource partitioning</b>.',
+     overlay(sim,ctx,LH,k){nCard(ctx,k,LH,[ovr(sim,CE_GREEN)]);}},
+    {key:'warblers',title:'Splitting a tree',set:{sc:'warblers',grow:'both',sep:2.2},fresh:true,speed:1,
+     see:'Two warblers that both eat insects in the same spruce trees. Watch where each one hunts.',
+     why:'In the 1950s Robert MacArthur watched five warbler species share spruce trees in Maine. Each hunted mostly in its own zone: the Cape May warbler near the treetop, the bay-breasted warbler in the middle near the trunk, others lower down. Splitting the tree by <b>place</b> keeps them from competing head to head.',
+     overlay(sim,ctx,LH,k){nCard(ctx,k,LH,[ovr(sim,CE_GREEN)]);}},
+    {key:'grazers',title:'Splitting the menu',set:{sc:'grazers',grow:'both',sep:2.8},fresh:true,speed:1,
+     see:'Gorongosa National Park in Mozambique: waterbuck graze on grass in the open; kudu browse leaves from trees and shrubs.',
+     why:'Large plant-eaters share a park by eating different plants: <b>grazers</b> eat mostly grass, <b>browsers</b> eat mostly leaves, and some eat both. Gorongosa lost more than 90% of its large animals during a civil war, and since a restoration project began in 2004, those populations have climbed back past 100,000 animals, with the species sharing the park this way.',
+     overlay(sim,ctx,LH,k){nCard(ctx,k,LH,[ovr(sim,CE_GREEN)]);}},
+    {key:'threshold',lvl:'honors',title:'How much overlap is too much?',set:{sc:'gause2',grow:'both',sep:0.4},fresh:true,speed:1.5,cause:{from:{sep:2.6},delay:2,dur:4,label:'How different their niches are',at:[250,440]},
+     see:'The two Paramecium that split the tube. Watch the niche difference shrink and the overlap rise, then watch P. bursaria.',
+     why:'As their niches slide together, the overlap climbs. Past a certain point (here about 87%, set by how much more P. caudatum the tube can hold) the weaker competitor can’t grow back from low numbers, and it declines. Small differences between species can be the difference between living together and one disappearing.',
+     overlay(sim,ctx,LH,k){nCard(ctx,k,LH,[ovr(sim,CE_RED)]);}},
+    {key:'realized',lvl:'honors',title:'Fundamental and realized niche',set:{sc:'warblers',grow:'both',sep:1.4},fresh:true,speed:1.5,
+     see:'Look at the curves on the right. Dashed: where each warbler would hunt alone. Solid: where it hunts with the other one around.',
+     why:'With no competitor, each species could use its whole <b>fundamental niche</b>. With a competitor, it gets pushed out of the zones the other one crowds, and it uses only its <b>realized niche</b>. Joseph Connell showed this on Scottish shores: one barnacle species could live low on the rocks when alone but was crowded out of there by a competitor.',
+     overlay(sim,ctx,LH,k){}},
+    {key:'hook',title:'Your question: more birds at the feeder',set:{sc:'gause1',grow:'both',sep:2.6},fresh:true,speed:1.5,cause:{from:{sep:0.15},delay:3,dur:2,label:'Different foods in different places',at:[250,440]},
+     see:'Two species that want the same food, like birds crowding one tube of sunflower seed. Watch what happens when they get different foods in different places.',
+     why:'With one food in one place, the niches overlap almost completely and the strongest competitor crowds the others out. Split the resource and the overlap drops to about 18%, so both survive. At a feeder, that means offering different foods in different places: nyjer seed for goldfinches, suet for woodpeckers and nuthatches, seed scattered on the ground for juncos.',
+     overlay(sim,ctx,LH,k){nCard(ctx,k,LH,[ovr(sim,nM(sim,'ov')>80?CE_RED:CE_GREEN)]);}},
+    {key:'rule',lvl:'ap',title:'The coexistence rule',set:{sc:'grazers',grow:'both',sep:1.2},fresh:true,speed:1.5,
+     see:'Waterbuck and kudu with more diet overlap. Compare α with K₂ ÷ K₁ in the readouts.',
+     why:'In the Lotka–Volterra model, the weaker species can increase from low numbers only if K₂ > αK₁, that is, <b>α &lt; K₂/K₁</b>. Here K₂/K₁ = 600/900 = 0.67. Overlap gives α = '+'0.70'+', just above the line, so the kudu slowly declines. Spread their diets a little more and both persist.',
+     overlay(sim,ctx,LH,k){nCard(ctx,k,LH,[['α = '+nM(sim,'alpha').toFixed(2)+'   K₂/K₁ = '+nM(sim,'ratio').toFixed(2),{w:800,c:CE_RED}],[String(nM(sim,'out')),{w:700}]]);}}
+  ],
+  useIt:[
+    {do:'If you or your family feed birds, offer different foods in different places: nyjer seed in a finch feeder, suet in a cage, a little seed on the ground.',
+     why:'Different birds eat different foods at different heights. One kind of food in one spot mostly feeds whichever species dominates it.'},
+    {do:'Plant a mix of flowers with different shapes and bloom times in a garden or planter.',
+     why:'Bees, butterflies and hummingbirds split up flowers by shape and season. A mix gives more pollinator species their own niche.'},
+    {do:'Never release a pet fish, turtle or plant into a pond or creek.',
+     why:'A newcomer that needs the same food and space as a native species can outcompete it. Colorado Parks and Wildlife lists released pets among the ways invasive species spread.'}],
+  tryIt:[{title:'feeder watch (a week of mornings)',
+    steps:['Watch a bird feeder (yours, a neighbor’s or a park’s) for 5 minutes on a few mornings.','Write down each kind of bird you can tell apart and where it feeds: on the feeder, under it, or on a tree trunk nearby.'],
+    look:'Different species tend to feed in different places, even at the same feeder. That is niche partitioning in your own backyard.'}]
+}};
+})());
+
 })();

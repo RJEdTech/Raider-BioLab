@@ -1125,6 +1125,24 @@ soil: {
     'Pour 100 mL into sand, your sample and clay. Water races through the big gaps between sand grains but crawls through clay’s tiny ones, and clay holds on to more of it: about 43 mL, versus 10 mL in sand.'
   ]
 },
+niche: {
+  hook: 'Your family hangs one tube feeder of sunflower seed in the backyard in Denver, and mostly house finches show up. You want more kinds of birds. What should you change, and why does it work?',
+  answer: 'Offer different foods in different places. Birds that all want the same seed in the same spot overlap almost completely, and the strongest competitor crowds the rest out. Splitting the resource (nyjer seed for goldfinches, suet for woodpeckers and nuthatches, seed on the ground for juncos) drops the overlap so far that more species can share the yard, the same way two Paramecium species both survive when one feeds at the top of the tube and the other at the bottom.',
+  uses: [
+    'Many hummingbird species share the same mountain meadows by feeding on flowers of different shapes and at different heights.',
+    'Darwin’s finches on the Galápagos split up seeds by size: species with bigger beaks crack bigger, harder seeds.',
+    'Gorongosa National Park lost most of its large animals in a civil war. Since 2004 they have rebounded past 100,000, with grazers, browsers and mixed feeders sharing the park’s plants.'
+  ],
+  takeaway: 'Two species can’t share exactly the same niche for long; the better competitor wins. Species live side by side by splitting up what they need: different foods, different places or different times.',
+  lede: 'Put two species in one habitat. If they need the same thing, one wins; if they split it up, both survive. See it with Gause’s Paramecium, warblers in a spruce tree and the grazers of Gorongosa.',
+  tour: [
+    'Gause put two kinds of Paramecium in one tube with the same bacteria to eat. Watch both populations.',
+    'P. aurelia grows faster and gets the food first. P. caudatum dies out. Two species can’t share exactly the same niche: competitive exclusion.',
+    'Now P. caudatum feeds near the top and green P. bursaria near the bottom. They barely compete, so both survive.',
+    'Warblers share spruce trees by hunting insects in different zones: the treetop, the middle, the lower branches.',
+    'In Gorongosa, grazers eat grass and browsers eat leaves from trees and shrubs, so many kinds of large plant-eaters share one park.'
+  ]
+},
 plates: {
   hook: 'RJ’s Quito immersion stays in a city of almost 3 million people ringed by volcanoes: Cotopaxi is about 50 km away, and in 1999 ash from Pichincha, right next to the city, fell on Quito’s streets. Denver has no active volcanoes. What kind of plate boundary sits off Ecuador’s coast, and why does it put volcanoes and big earthquakes near Quito?',
   answer: 'Ocean meets continent. The Nazca plate sinks under South America at about 6.5 cm a year at a trench about 8 km deep off the coast. About 100 km down, water from the sinking plate melts the rock above it, and the magma rises about 200–300 km inland to build the Andes volcanoes around Quito. The sinking plate also sets off earthquakes, shallow near the coast and deeper inland, and the big ones can start tsunamis. Denver is more than 1,000 km from the nearest plate boundary.',
