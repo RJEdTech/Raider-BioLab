@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="author" content="Sandy Robertson, PhD, science teacher, Regis Jesuit High School">
+<!-- Created by Dr. Sandy Robertson. Shared in Raider BioLab with her permission (Nov 17, 2026). -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Why the Amazon is wet and the Atacama is dry</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9EFF2; --panel:#F8FAFB; --panel-2:#EEF3F5; --ink:#12283A; --ink-soft:#44596A; --line:#B7C6CF;
+  --hadley:#D9902B; --ferrel:#1F8F7F; --polar:#4A8FCB;
+  --wet:#2457A6; --dry:#C9A25B;
+  --good:#1B7A4B; --bad:#B03A2E; --focus:#1559D6;
+  --ocean:#CFE1EC; --land:#D5DBC9; --forest:#B5CFAE; --sand:#E6D5AB; --andes:#8A6F55;
+  --btn:#12283A; --btn-ink:#F4F8FA;
+  --ui:'Bricolage Grotesque','Avenir Next','Segoe UI',system-ui,sans-serif;
+  --read:'Source Serif 4',Georgia,'Times New Roman',serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1A23; --panel:#152531; --panel-2:#1B2F3D; --ink:#E6EEF3; --ink-soft:#A3B8C5; --line:#2F4757;
+    --hadley:#F0AE4C; --ferrel:#3DB8A6; --polar:#6FB0E6; --wet:#6B9BEA; --dry:#B8934E;
+    --good:#4CC38A; --bad:#F08273; --focus:#7FB0FF;
+    --ocean:#16384D; --land:#2A3B33; --forest:#2E4A3A; --sand:#5A4B2C; --andes:#B5977A;
+    --btn:#E6EEF3; --btn-ink:#0D1A23; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D1A23; --panel:#152531; --panel-2:#1B2F3D; --ink:#E6EEF3; --ink-soft:#A3B8C5; --line:#2F4757;
+  --hadley:#F0AE4C; --ferrel:#3DB8A6; --polar:#6FB0E6; --wet:#6B9BEA; --dry:#B8934E;
+  --good:#4CC38A; --bad:#F08273; --focus:#7FB0FF;
+  --ocean:#16384D; --land:#2A3B33; --forest:#2E4A3A; --sand:#5A4B2C; --andes:#B5977A;
+  --btn:#E6EEF3; --btn-ink:#0D1A23; color-scheme:dark;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--read);font-size:1.1rem;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+h1,h2,h3,.ui{font-family:var(--ui)}
+h1{font-size:clamp(2.1rem,5.4vw,3.6rem);line-height:1.04;letter-spacing:-.02em;font-weight:700;margin:0 0 1.4rem;max-width:16ch}
+h2{font-size:clamp(1.5rem,3vw,2rem);line-height:1.15;letter-spacing:-.01em;font-weight:700;margin:0 0 .6rem;display:flex;align-items:center;gap:.6rem}
+h2 .n{display:inline-grid;place-items:center;width:1.7em;height:1.7em;background:var(--ink);color:var(--paper);border-radius:3px;font-size:.78em}
+h3{font-size:1.15rem;margin:0 0 .4rem;font-weight:650}
+p{margin:0 0 .9rem;max-width:68ch}
+.muted{color:var(--ink-soft);font-size:.95rem}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* top bar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--paper);border-bottom:1px solid var(--line)}
+.steps{display:flex;gap:6px;overflow-x:auto;padding-top:8px;padding-bottom:8px}
+.steps a{font:600 .95rem/1 var(--ui);text-decoration:none;padding:.6rem .8rem;border:1.5px solid transparent;border-radius:3px;white-space:nowrap;display:inline-flex;gap:.5rem;align-items:center;color:var(--ink)}
+.steps a:hover{border-color:var(--ink)}
+.steps a b{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border:1.5px solid var(--ink);border-radius:50%;font-size:.8em}
+.steps a.done b{background:var(--good);border-color:var(--good);color:#fff}
+.steps a.done b::after{content:"\2713"}
+.steps a.done b span{display:none}
+
+/* hero */
+.hero{position:relative;padding:48px 0 36px;overflow:hidden}
+.hero .isobars{position:absolute;right:-60px;top:-30px;width:560px;max-width:70vw;opacity:.7;pointer-events:none}
+.hero .isobars path{fill:none;stroke:var(--line);stroke-width:1.5;vector-effect:non-scaling-stroke}
+.hero .wrap{position:relative}
+.rain-compare{display:grid;gap:10px;max-width:760px;margin:0 0 1.4rem}
+.rain-compare .row{display:grid;grid-template-columns:8.5rem 1fr 9.5rem;gap:12px;align-items:center;font-family:var(--ui)}
+.rain-compare .place{font-weight:600}
+.rain-compare .track{height:22px;display:flex;align-items:center}
+.rain-compare .bar{height:22px;background:var(--wet);display:block}
+.rain-compare .bar.tiny{width:3px;background:var(--dry)}
+.rain-compare .val{font-variant-numeric:tabular-nums;color:var(--ink-soft)}
+@media (max-width:560px){.rain-compare .row{grid-template-columns:1fr;gap:2px}}
+
+/* parts */
+.part{padding:44px 0 20px;border-top:1px solid var(--line)}
+.lead{font-size:1.1rem}
+.bank{display:flex;flex-wrap:wrap;gap:18px 28px;margin:1rem 0 .4rem}
+.chip-group-title{font:600 .88rem/1 var(--ui);margin:0 0 8px;color:var(--ink-soft)}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:600 .92rem/1 var(--ui);padding:.6rem .8rem;background:var(--panel);color:var(--ink);border:1.5px solid var(--ink);border-left:7px solid var(--chip-accent,var(--ink));border-radius:3px;cursor:grab;box-shadow:3px 3px 0 var(--line)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);box-shadow:none;transform:translate(3px,3px)}
+.arm-note{min-height:1.5em;font:500 .95rem/1.4 var(--ui);color:var(--ink-soft);margin:.2rem 0 .4rem}
+.diagram{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.diagram svg{display:block;width:100%;min-width:780px;height:auto}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 6px}
+.btn{font:600 .95rem/1 var(--ui);padding:.8rem 1.1rem;background:var(--btn);color:var(--btn-ink);border:1.5px solid var(--btn);border-radius:4px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.feedback{min-height:1.6em;font-family:var(--ui);font-size:1rem}
+.feedback strong.good{color:var(--good)}
+.feedback ul{margin:.4rem 0 0;padding-left:1.2rem;font-family:var(--read);font-size:1rem;color:var(--ink-soft)}
+.legend{font:500 .92rem/1.4 var(--ui);color:var(--ink-soft)}
+.legend i{display:inline-block;width:1.6em;height:.7em;vertical-align:baseline;margin:0 .35em 0 .2em;border-radius:1px}
+
+/* svg shared */
+.slot rect{fill:var(--panel);stroke:var(--ink-soft);stroke-width:1.5;stroke-dasharray:5 3;cursor:pointer}
+.slot text{font:600 13px var(--ui);fill:var(--ink);pointer-events:none}
+.slot.empty text{font-weight:400;font-style:italic;fill:var(--ink-soft)}
+.slot.filled rect{stroke-dasharray:none;stroke:var(--ink);stroke-width:2}
+.slot.ok rect{stroke:var(--good);stroke-width:2.5;stroke-dasharray:none}
+.slot.bad rect{stroke:var(--bad);stroke-width:2.5;stroke-dasharray:none}
+.slot:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.armed .slot.empty rect,.armed .slot.filled rect{stroke:var(--focus)}
+.badge{display:none}
+.slot.ok .badge,.slot.bad .badge{display:inline}
+.badge circle{fill:var(--good)}
+.slot.bad .badge circle{fill:var(--bad)}
+.badge text{fill:#fff;font:700 12px var(--ui);font-style:normal}
+.surface{stroke:var(--ink);stroke-width:3}
+.tick{stroke:var(--ink-soft);stroke-width:1;stroke-dasharray:2 4}
+.divider{stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 5}
+.atmos{fill:var(--panel-2);stroke:var(--line);stroke-width:1.5}
+.axis-note{font:500 12.5px var(--ui);fill:var(--ink-soft)}
+.notes,.band{opacity:0;transition:opacity .6s ease}
+.solved .notes,.solved .band{opacity:1}
+.notes text{font:600 12.5px var(--ui);fill:var(--ink)}
+.notes text.sub{font-weight:400;fill:var(--ink-soft)}
+
+/* questions */
+.qs{margin-top:28px;display:grid;gap:26px}
+.qs h3{margin-bottom:0}
+.mcq{border-top:1px solid var(--line);padding-top:16px}
+.mcq .q{font:600 1.05rem/1.4 var(--ui);margin-bottom:10px;max-width:70ch}
+.opts{display:grid;gap:8px;max-width:70ch}
+.opt{font:500 1rem/1.4 var(--read);text-align:left;padding:.7rem .9rem;background:var(--panel);border:1.5px solid var(--line);border-radius:4px;color:var(--ink);cursor:pointer}
+.opt:hover{border-color:var(--ink)}
+.opt.good{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--panel))}
+.opt.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--panel))}
+.why{margin-top:10px;padding-left:12px;border-left:4px solid var(--ink-soft);font-size:1rem;max-width:68ch}
+.numrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.numrow input{font:600 1rem var(--ui);width:7rem;padding:.65rem .7rem;border:1.5px solid var(--ink);border-radius:4px;background:var(--panel);color:var(--ink)}
+
+/* part 2 */
+.sim{display:grid;gap:14px;margin-top:14px}
+.slider-row{display:grid;gap:8px}
+.slider-row label{font:600 1rem var(--ui)}
+input[type=range]{width:100%;accent-color:var(--wet);height:30px}
+.jumps{display:flex;gap:8px;flex-wrap:wrap}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.readouts div{background:var(--panel);padding:10px 12px}
+.readouts dt{font:500 .85rem var(--ui);color:var(--ink-soft)}
+.readouts dd{margin:2px 0 0;font:700 1.45rem/1.2 var(--ui);font-variant-numeric:tabular-nums}
+.readouts dd small{font-size:.7em;font-weight:500;color:var(--ink-soft)}
+.fine{font-size:.9rem;color:var(--ink-soft);max-width:78ch}
+.ocean{fill:var(--ocean)} .wave{fill:none;stroke:var(--wet);stroke-width:1.6;opacity:.6}
+.t-forest{fill:var(--forest)} .t-land{fill:var(--land)} .t-sand{fill:var(--sand)}
+.ridge{fill:none;stroke:var(--ink);stroke-width:2}
+.pathline{fill:none;stroke:var(--ink);stroke-width:2;stroke-dasharray:3 6;opacity:.55}
+.chev{fill:var(--ink);opacity:.7}
+.cloud{fill:var(--panel);stroke:var(--ink-soft);stroke-width:1.5}
+.rain{stroke:var(--wet);stroke-width:2;stroke-linecap:round}
+.sun{fill:#E7B83A;stroke:none} .sunray{stroke:#E7B83A;stroke-width:2.5;stroke-linecap:round}
+.parcel{stroke:var(--ink);stroke-width:2.5}
+.wind-arrow{stroke:var(--ink);stroke-width:2.5;fill:none}
+.wind-head{fill:var(--ink)}
+
+/* part 3 */
+.split{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:28px;margin-top:14px;align-items:start}
+@media (max-width:860px){.split{grid-template-columns:1fr}}
+.map-wrap{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px}
+.map-wrap svg{display:block;width:100%;height:auto}
+.maplbl{font:600 10.5px var(--ui);fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:3px;stroke-linejoin:round}
+.maplbl.soft{font-weight:500;fill:var(--ink-soft)}
+.land{fill:var(--land);stroke:var(--ink-soft);stroke-width:1.2}
+.sea{fill:var(--ocean)}
+.andes-line{fill:none;stroke:var(--andes);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.site{cursor:pointer}
+.site circle.dot{fill:var(--ink);stroke:var(--panel);stroke-width:2}
+.site circle.ring{fill:none;stroke:var(--focus);stroke-width:2.5;opacity:0}
+.site.sel circle.ring{opacity:1}
+.site.seen circle.dot{fill:var(--wet)}
+.site:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+#winds-layer{display:none}
+#winds-layer.on{display:inline}
+.w-line{fill:none;stroke:var(--ink);stroke-width:2.2}
+.w-cold{fill:none;stroke:var(--polar);stroke-width:3.5;stroke-linecap:round}
+.w-dash{fill:none;stroke:var(--ink-soft);stroke-width:1.5;stroke-dasharray:6 4}
+.site-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.site-list .chip{cursor:pointer}
+.site-card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;min-height:210px}
+.site-card dl{margin:.6rem 0 0;display:grid;grid-template-columns:9.5rem 1fr;gap:6px 12px;font-size:1rem}
+.site-card dt{font:500 .92rem var(--ui);color:var(--ink-soft)}
+.site-card dd{margin:0}
+@media (max-width:520px){.site-card dl{grid-template-columns:1fr}}
+.match-rows{display:grid;gap:12px;margin:12px 0;max-width:860px}
+.match-row{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) 2rem;gap:12px;align-items:center}
+.match-row label{font:600 1rem/1.3 var(--ui)}
+.match-row select{font:500 .98rem var(--read);padding:.6rem .6rem;border:1.5px solid var(--ink);border-radius:4px;background:var(--panel);color:var(--ink);width:100%}
+.match-row .res{font:700 1.2rem var(--ui)}
+.match-row .res.ok{color:var(--good)} .match-row .res.bad{color:var(--bad)}
+@media (max-width:640px){.match-row{grid-template-columns:1fr 2rem}.match-row label{grid-column:1/-1}}
+.frq{display:grid;gap:26px;margin-top:18px;max-width:820px}
+.frq-part{border-top:1px solid var(--line);padding-top:16px}
+.frq-part .prompt{font:600 1.05rem/1.4 var(--ui);margin-bottom:8px}
+textarea{width:100%;min-height:7.5rem;padding:.8rem .9rem;font:1rem/1.55 var(--read);background:var(--panel);color:var(--ink);border:1.5px solid var(--ink);border-radius:4px;resize:vertical}
+.frq-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.concepts{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px;font:500 .98rem/1.4 var(--ui)}
+.concepts li::before{display:inline-block;width:1.4em;font-weight:700}
+.concepts li.found::before{content:"\2713";color:var(--good)}
+.concepts li.miss::before{content:"\25CB";color:var(--ink-soft)}
+.concepts li.miss{color:var(--ink-soft)}
+details.model{margin-top:10px;max-width:72ch}
+details.model summary{font:600 .98rem var(--ui);cursor:pointer}
+details.model p{margin-top:.5rem;font-size:1rem}
+.score-row{display:grid;grid-template-columns:minmax(0,22rem) 1fr 5rem;gap:14px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-family:var(--ui)}
+.score-row .meter{height:10px;background:var(--panel-2);border:1px solid var(--line);display:block}
+.score-row .meter i{display:block;height:100%;background:var(--wet)}
+.score-val{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+@media (max-width:640px){.score-row{grid-template-columns:1fr 4rem}.score-row .meter{grid-column:1/-1;order:3}}
+.copy-tools{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin:18px 0 10px}
+.copy-tools label{font:600 .95rem var(--ui);display:grid;gap:4px}
+.copy-tools input{font:1rem var(--read);padding:.65rem .7rem;border:1.5px solid var(--ink);border-radius:4px;background:var(--panel);color:var(--ink);min-width:16rem}
+#summary{min-height:15rem;margin-top:8px}
+footer{padding:36px 0 56px;color:var(--ink-soft);font-size:.9rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <nav class="wrap steps" aria-label="Activity sections">
+    <a href="#p1" data-part="p1"><b><span>1</span></b>Wind belts</a>
+    <a href="#p2" data-part="p2"><b><span>2</span></b>Rain shadow</a>
+    <a href="#p3" data-part="p3"><b><span>3</span></b>South America</a>
+    <a href="#results" data-part="results">My results</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <svg class="isobars" viewBox="0 0 600 340" aria-hidden="true">
+    <g transform="translate(300 170)">
+      <path d="M-280,-10 C-240,-130 -60,-160 90,-120 C230,-84 290,10 220,90 C140,170 -80,160 -210,100 C-270,70 -290,30 -280,-10Z"/>
+      <path transform="scale(.82)" d="M-280,-10 C-240,-130 -60,-160 90,-120 C230,-84 290,10 220,90 C140,170 -80,160 -210,100 C-270,70 -290,30 -280,-10Z"/>
+      <path transform="scale(.64)" d="M-280,-10 C-240,-130 -60,-160 90,-120 C230,-84 290,10 220,90 C140,170 -80,160 -210,100 C-270,70 -290,30 -280,-10Z"/>
+      <path transform="scale(.46)" d="M-280,-10 C-240,-130 -60,-160 90,-120 C230,-84 290,10 220,90 C140,170 -80,160 -210,100 C-270,70 -290,30 -280,-10Z"/>
+      <path transform="scale(.28)" d="M-280,-10 C-240,-130 -60,-160 90,-120 C230,-84 290,10 220,90 C140,170 -80,160 -210,100 C-270,70 -290,30 -280,-10Z"/>
+    </g>
+  </svg>
+  <div class="wrap">
+    <h1>Why the Amazon is wet and the Atacama is dry</h1>
+    <div class="rain-compare" role="img" aria-label="Annual rainfall: Manaus, Brazil, about 2,300 millimeters. Arica, Chile, about 1 millimeter.">
+      <div class="row"><span class="place">Manaus, Brazil</span><span class="track"><span class="bar" style="width:100%"></span></span><span class="val">≈ 2,300 mm a year</span></div>
+      <div class="row"><span class="place">Arica, Chile</span><span class="track"><span class="bar tiny"></span></span><span class="val">≈ 1 mm a year</span></div>
+    </div>
+    <p class="lead">These two places are about 2,000 km apart, on the same continent, on either side of the same mountains. You’ll read the planet’s wind belts, follow a parcel of air over a mountain, and then use both ideas to explain the difference.</p>
+    <p class="muted">AP Environmental Science, Unit 4: global wind patterns (4.5) and Earth’s geography and climate (4.8).</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- PART 1 -->
+<section id="p1" class="part">
+  <h2><span class="n">1</span>Label the global circulation</h2>
+  <p>The diagram is a slice through the atmosphere from the North Pole (left) to the South Pole (right). Arrows show how air moves. Select a label, then select a box to place it. You can also drag labels onto boxes. Select a filled box to clear it.</p>
+  <div class="bank" id="p1-bank"></div>
+  <p class="arm-note" id="p1-arm" aria-live="polite"></p>
+  <div class="diagram"><svg id="p1-svg" viewBox="0 0 960 500" role="group" aria-label="Cross-section of Earth’s atmosphere from the North Pole to the South Pole with six circulation cells and empty label boxes"></svg></div>
+  <div class="controls">
+    <button class="btn" id="p1-check" type="button">Check my labels</button>
+    <button class="btn ghost" id="p1-reveal" type="button" disabled>Show answers</button>
+    <button class="btn ghost" id="p1-reset" type="button">Start over</button>
+  </div>
+  <div class="feedback" id="p1-fb" aria-live="polite"></div>
+  <p class="legend" id="p1-legend" hidden>Along the surface: <i style="background:var(--wet)"></i>rising air, low pressure, more rain. <i style="background:var(--dry)"></i>sinking air, high pressure, less rain.</p>
+  <div class="qs" id="p1-q"><h3>Use the diagram to answer</h3></div>
+</section>
+
+<!-- PART 2 -->
+<section id="p2" class="part">
+  <h2><span class="n">2</span>Follow a parcel of air over a mountain</h2>
+  <p>Move the slider to carry one parcel of air from the ocean, up and over the mountain, and out the far side. Watch the readouts change, and label the diagram as you go. The label boxes work the same way as in Part 1.</p>
+  <div class="bank" id="p2-bank"></div>
+  <p class="arm-note" id="p2-arm" aria-live="polite"></p>
+  <div class="sim">
+    <div class="diagram"><svg id="p2-svg" viewBox="0 0 960 350" role="group" aria-label="Cross-section of a mountain with a moving air parcel and empty label boxes"></svg></div>
+    <div class="slider-row">
+      <label for="p2-slider">Position of the air parcel</label>
+      <input id="p2-slider" type="range" min="0" max="1000" value="0" step="1">
+      <div class="jumps">
+        <button class="btn ghost" type="button" data-jump="0">Jump to start</button>
+        <button class="btn ghost" type="button" data-jump="454">Jump to the crest</button>
+        <button class="btn ghost" type="button" data-jump="1000">Jump to the far side</button>
+      </div>
+    </div>
+    <dl class="readouts" aria-live="off">
+      <div><dt>Altitude</dt><dd><span id="r-alt">0</span> <small>m</small></dd></div>
+      <div><dt>Air temperature</dt><dd><span id="r-temp">28.0</span> <small>°C</small></dd></div>
+      <div><dt>Relative humidity</dt><dd><span id="r-rh">62</span> <small>%</small></dd></div>
+      <div><dt>Water vapor in the air</dt><dd><span id="r-w">14.7</span> <small>g per kg</small></dd></div>
+      <div><dt>Cloud forming?</dt><dd id="r-cloud">No</dd></div>
+    </dl>
+    <p class="fine">Simplified model with illustrative numbers. The air starts at sea level at 28 °C with a dew point of 20 °C. Unsaturated air cools 10 °C per km as it rises. Once it reaches 100% humidity (here at 1,000 m) it condenses and cools about 5 °C per km. Air descending the far side warms 10 °C per km. The crest is 3,000 m.</p>
+  </div>
+  <div class="controls">
+    <button class="btn" id="p2-check" type="button">Check my labels</button>
+    <button class="btn ghost" id="p2-reveal" type="button" disabled>Show answers</button>
+    <button class="btn ghost" id="p2-reset" type="button">Start over</button>
+  </div>
+  <div class="feedback" id="p2-fb" aria-live="polite"></div>
+  <div class="qs" id="p2-q"><h3>Use the readouts to answer</h3></div>
+</section>
+
+<!-- PART 3 -->
+<section id="p3" class="part">
+  <h2><span class="n">3</span>Explain South America</h2>
+  <p>Now use both ideas. Select each of the four sites to read its data. The wind-belt layer on the map is there if you want a reminder. Then match each place to its cause and answer the free-response question.</p>
+  <div class="split">
+    <div>
+      <p style="margin-bottom:8px"><button class="btn ghost" id="toggle-winds" type="button" aria-pressed="false">Show wind belts and pressure zones</button></p>
+      <div class="map-wrap"><svg id="map-svg" viewBox="0 0 368 384" role="group" aria-label="Map of South America with four sites: Manaus, Arica, Valdivia and Neuquén"></svg></div>
+    </div>
+    <div>
+      <div class="site-list" id="site-list" role="group" aria-label="Choose a site"></div>
+      <article class="site-card" id="site-card" aria-live="polite"><p class="muted">Select a site on the map or from the list to read its data.</p></article>
+      <p class="muted" id="evid-count" style="margin-top:8px"></p>
+    </div>
+  </div>
+
+  <div class="qs">
+    <div>
+      <h3>Match each place to its main cause</h3>
+      <div class="match-rows" id="match-rows"></div>
+      <div class="controls"><button class="btn" id="match-check" type="button">Check matches</button></div>
+      <div class="feedback" id="match-fb" aria-live="polite"></div>
+    </div>
+    <div>
+      <h3>Free response</h3>
+      <p>The Amazon rainforest and the Atacama Desert lie about 2,000 km apart at tropical latitudes, on opposite sides of the Andes. Answer each part in two to four sentences. “Check concepts” scans your writing for key ideas. It is a self-check, not a grade.</p>
+      <div class="frq" id="frq"></div>
+    </div>
+  </div>
+  <p class="fine" style="margin-top:20px">Rainfall figures are approximate long-term annual averages.</p>
+</section>
+
+<!-- RESULTS -->
+<section id="results" class="part">
+  <h2>My results</h2>
+  <div id="score-rows"></div>
+  <p id="score-total" style="margin-top:12px"></p>
+  <div class="copy-tools">
+    <label>Name (optional)<input id="stu-name" type="text" autocomplete="off"></label>
+    <button class="btn" id="build-summary" type="button">Build summary to submit</button>
+  </div>
+  <textarea id="summary" readonly hidden aria-label="Summary of your work"></textarea>
+  <div class="controls"><button class="btn ghost" id="copy-summary" type="button" hidden>Copy summary</button><span id="copy-msg" class="muted" aria-live="polite"></span></div>
+</section>
+
+</main>
+<footer><div class="wrap">Nothing you do here is saved or sent anywhere. Use “Build summary to submit” to copy your work.</div></footer>
+
+<script>
+(function(){
+'use strict';
+var NS='http://www.w3.org/2000/svg';
+function $(s,r){return (r||document).querySelector(s);}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+function S(tag,attrs,parent){var e=document.createElementNS(NS,tag);if(attrs){for(var k in attrs){e.setAttribute(k,attrs[k]);}}if(parent){parent.appendChild(e);}return e;}
+function H(tag,cls,html,parent){var e=document.createElement(tag);if(cls){e.className=cls;}if(html!=null){e.innerHTML=html;}if(parent){parent.appendChild(e);}return e;}
+
+/* ---------------- progress registry ---------------- */
+var SC={
+  p1Labels:{label:'Part 1: cells and latitudes labeled',got:0,of:13},
+  p1Winds:{label:'Part 1: surface winds (bonus)',got:0,of:3},
+  p1Q:{label:'Part 1: questions',got:0,of:3},
+  p2Labels:{label:'Part 2: rain shadow labels',got:0,of:6},
+  p2Q:{label:'Part 2: questions',got:0,of:3},
+  p3Match:{label:'Part 3: sites matched to causes',got:0,of:4},
+  p3FRQ:{label:'Part 3: free-response concepts found (self-check)',got:0,of:9}
+};
+var DONE={p1:false,p2:false,p3:false};
+var EVID={};
+var NOTES={p1Labels:'',p2Labels:''};
+function renderResults(){
+  var box=$('#score-rows');box.innerHTML='';
+  Object.keys(SC).forEach(function(k){
+    var r=SC[k];var row=H('div','score-row',null,box);
+    H('span',null,r.label+(NOTES[k]?' <em>('+NOTES[k]+')</em>':''),row);
+    var m=H('span','meter',null,row);var f=H('i',null,null,m);f.style.width=(100*r.got/r.of)+'%';
+    H('span','score-val',r.got+' / '+r.of,row);
+  });
+  var auto=['p1Labels','p1Winds','p1Q','p2Labels','p2Q','p3Match'];
+  var got=0,of=0;auto.forEach(function(k){got+=SC[k].got;of+=SC[k].of;});
+  $('#score-total').innerHTML='<strong>Auto-scored items: '+got+' of '+of+'.</strong> Your free response still needs your teacher’s judgment.';
+  ['p1','p2','p3'].forEach(function(p){
+    var a=$('.steps a[data-part="'+p+'"]');
+    a.classList.toggle('done',!!DONE[p]);
+    a.setAttribute('aria-label',a.textContent.trim()+(DONE[p]?' (complete)':''));
+  });
+}
+
+/* ---------------- labeling engine ---------------- */
+function Labeler(cfg){
+  var st={armed:null,vals:{},chk:{},revealed:false,attempts:0,pre:null};
+  var els={};var chipEls=[];var colorOf={};
+  cfg.groups.forEach(function(g){
+    var grp=H('div','chip-group',null,cfg.bank);
+    H('p','chip-group-title',g.title,grp);
+    var row=H('div','chip-row',null,grp);
+    g.chips.forEach(function(c){
+      colorOf[c.text]=c.color||null;
+      var b=H('button','chip',c.text,row);b.type='button';b.draggable=true;
+      if(c.color){b.style.setProperty('--chip-accent','var('+c.color+')');}
+      b.setAttribute('aria-pressed','false');
+      b.addEventListener('click',function(){st.armed=(st.armed===c.text)?null:c.text;paintChips();});
+      b.addEventListener('dragstart',function(e){try{e.dataTransfer.setData('text/plain',c.text);}catch(x){}st.armed=c.text;paintChips();});
+      chipEls.push({b:b,t:c.text});
+    });
+  });
+  function paintChips(){
+    chipEls.forEach(function(c){c.b.setAttribute('aria-pressed',st.armed===c.t?'true':'false');});
+    cfg.svg.classList.toggle('armed',!!st.armed);
+    cfg.armNote.textContent=st.armed?'Selected “'+st.armed+'”. Now select a box on the diagram.':'';
+  }
+  cfg.slots.forEach(function(s){
+    var g=S('g',{'class':'slot empty',tabindex:'0',role:'button'},cfg.svg);
+    var r=S('rect',{x:s.x-s.w/2,y:s.y-s.h/2,width:s.w,height:s.h,rx:3},g);
+    var t=S('text',{x:s.x,y:s.y+1,'text-anchor':'middle','dominant-baseline':'central'},g);
+    var bd=S('g',{'class':'badge'},g);
+    S('circle',{cx:s.x+s.w/2,cy:s.y-s.h/2,r:9},bd);
+    var bt=S('text',{x:s.x+s.w/2,y:s.y-s.h/2+1,'text-anchor':'middle','dominant-baseline':'central'},bd);
+    els[s.id]={g:g,r:r,t:t,bt:bt,s:s};
+    g.addEventListener('click',function(){onSlot(s.id);});
+    g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();onSlot(s.id);}});
+    g.addEventListener('dragover',function(e){e.preventDefault();});
+    g.addEventListener('drop',function(e){e.preventDefault();var tx='';try{tx=e.dataTransfer.getData('text/plain');}catch(x){}if(tx){put(s.id,tx);}});
+  });
+  function onSlot(id){
+    if(st.armed){put(id,st.armed);st.armed=null;paintChips();}
+    else if(st.vals[id]){delete st.vals[id];delete st.chk[id];paint();emit();}
+  }
+  function put(id,text){st.vals[id]=text;delete st.chk[id];paint();emit();}
+  function paint(){
+    cfg.slots.forEach(function(s){
+      var e=els[s.id];var v=st.vals[s.id];var c=st.chk[s.id];
+      e.t.textContent=v||'Label here';
+      e.g.setAttribute('class','slot '+(c==='ok'?'ok':c==='bad'?'bad':v?'filled':'empty'));
+      e.g.setAttribute('aria-label',s.name+': '+(v||'empty'));
+      e.bt.textContent=c==='ok'?'\u2713':c==='bad'?'\u2715':'';
+      if(v&&!c&&colorOf[v]){e.r.style.stroke='var('+colorOf[v]+')';}else{e.r.style.stroke='';}
+    });
+  }
+  function counts(){
+    var req=cfg.slots.filter(function(s){return !s.bonus;});
+    var bon=cfg.slots.filter(function(s){return s.bonus;});
+    function ok(a){return a.filter(function(s){return st.chk[s.id]==='ok';}).length;}
+    return {okReq:ok(req),totalReq:req.length,okBonus:ok(bon),totalBonus:bon.length};
+  }
+  function emit(){
+    var c=counts();
+    c.complete=(c.okReq===c.totalReq);c.revealed=st.revealed;c.pre=st.pre;
+    if(cfg.onUpdate){cfg.onUpdate(c);}
+  }
+  function check(){
+    st.attempts++;
+    cfg.slots.forEach(function(s){var v=st.vals[s.id];st.chk[s.id]=v?(v===s.answer?'ok':'bad'):'empty';});
+    paint();
+    var c=counts();var wrong=cfg.slots.filter(function(s){return st.chk[s.id]!=='ok';});
+    var empty=cfg.slots.filter(function(s){return st.chk[s.id]==='empty';}).length;
+    var html='';
+    if(c.okReq===c.totalReq&&(c.totalBonus===0||c.okBonus===c.totalBonus)){
+      html='<strong class="good">Every label is correct.</strong>';
+    }else{
+      html='<strong>'+c.okReq+' of '+c.totalReq+' labels correct'+(c.totalBonus?' ('+c.okBonus+' of '+c.totalBonus+' bonus)':'')+'.</strong>';
+      if(empty){html+=' '+empty+' box'+(empty===1?' is':'es are')+' still empty.';}
+      var show=wrong.slice(0,5);
+      html+='<ul>'+show.map(function(s){return '<li><strong>'+s.name+':</strong> '+s.hint+'</li>';}).join('')+'</ul>';
+      if(wrong.length>5){html+='<p class="muted">…and '+(wrong.length-5)+' more to fix.</p>';}
+    }
+    cfg.fb.innerHTML=html;
+    cfg.revealBtn.disabled=false;
+    emit();
+  }
+  function reveal(){
+    st.pre=counts();
+    cfg.slots.forEach(function(s){st.vals[s.id]=s.answer;st.chk[s.id]='ok';});
+    st.revealed=true;paint();
+    cfg.fb.innerHTML='<strong>Answers shown.</strong> Your score keeps what you had right before this.';
+    emit();
+  }
+  function reset(){
+    st.vals={};st.chk={};st.armed=null;st.revealed=false;st.pre=null;paint();paintChips();cfg.fb.innerHTML='';emit();
+  }
+  cfg.checkBtn.addEventListener('click',check);
+  cfg.revealBtn.addEventListener('click',reveal);
+  cfg.resetBtn.addEventListener('click',reset);
+  paint();paintChips();
+  return {check:check,reset:reset,reveal:reveal};
+}
+
+/* ---------------- multiple choice and numeric ---------------- */
+function MCQ(parent,q,onFirst){
+  var wrap=H('div','mcq',null,parent);
+  H('p','q',q.q,wrap);
+  var opts=H('div','opts',null,wrap);
+  var why=H('div','why',null,wrap);why.hidden=true;
+  var first=true;
+  q.options.forEach(function(o,i){
+    var b=H('button','opt',o,opts);b.type='button';
+    b.addEventListener('click',function(){
+      var good=(i===q.answer);
+      if(first){first=false;onFirst(good);}
+      $$('.opt',opts).forEach(function(x){x.classList.remove('good','bad');});
+      b.classList.add(good?'good':'bad');
+      why.hidden=false;
+      why.innerHTML=(good?'<strong>Correct.</strong> ':'<strong>Not quite. Try another answer.</strong> ')+(good?q.why:'');
+      if(good){$$('.opt',opts).forEach(function(x){x.disabled=true;});}
+    });
+  });
+}
+function NumQ(parent,q,onFirst){
+  var wrap=H('div','mcq',null,parent);
+  H('p','q',q.q,wrap);
+  var row=H('div','numrow',null,wrap);
+  var inp=H('input',null,null,row);inp.type='number';inp.step='any';inp.setAttribute('aria-label','Your answer in '+q.unit);
+  H('span','muted',q.unit,row);
+  var b=H('button','btn',q.btn||'Check',row);b.type='button';
+  var why=H('div','why',null,wrap);why.hidden=true;
+  var first=true;
+  b.addEventListener('click',function(){
+    if(inp.value===''){return;}
+    var v=parseFloat(inp.value);var good=Math.abs(v-q.answer)<=q.tol;
+    if(first){first=false;onFirst(good);}
+    why.hidden=false;
+    why.innerHTML=good?('<strong>Correct.</strong> '+q.why):'<strong>Not quite.</strong> '+q.retry;
+  });
+}
+
+/* ---------------- PART 1 ---------------- */
+function bez(p,t,k){var u=1-t;return u*u*u*p[0][k]+3*u*u*t*p[1][k]+3*u*t*t*p[2][k]+t*t*t*p[3][k];}
+function archY(x){
+  var seg=x<=480?[[60,232],[200,150],[340,66],[480,60]]:[[480,60],[620,66],[760,150],[900,232]];
+  var lo=0,hi=1,i;
+  for(i=0;i<30;i++){var mid=(lo+hi)/2;if(bez(seg,mid,0)<x){lo=mid;}else{hi=mid;}}
+  return bez(seg,(lo+hi)/2,1);
+}
+function buildP1(){
+  var svg=$('#p1-svg');
+  var defs=S('defs',null,svg);
+  var lg=S('linearGradient',{id:'moistGrad',gradientUnits:'userSpaceOnUse',x1:60,y1:0,x2:900,y2:0},defs);
+  [[0,'--dry'],[0.1667,'--wet'],[0.3333,'--dry'],[0.5,'--wet'],[0.6667,'--dry'],[0.8333,'--wet'],[1,'--dry']].forEach(function(a){
+    S('stop',{offset:a[0],style:'stop-color:var('+a[1]+')'},lg);
+  });
+  S('path',{'class':'atmos',d:'M60,360 L60,232 C200,150 340,66 480,60 C620,66 760,150 900,232 L900,360 Z'},svg);
+  [200,340,480,620,760].forEach(function(x){S('line',{'class':'divider',x1:x,y1:archY(x)+4,x2:x,y2:360},svg);});
+  var cells=[
+    {x0:340,x1:480,y0:84,y1:356,dir:-1,c:'--hadley'},
+    {x0:200,x1:340,y0:158,y1:356,dir:1,c:'--ferrel'},
+    {x0:60,x1:200,y0:228,y1:356,dir:-1,c:'--polar'},
+    {x0:480,x1:620,y0:84,y1:356,dir:1,c:'--hadley'},
+    {x0:620,x1:760,y0:158,y1:356,dir:-1,c:'--ferrel'},
+    {x0:760,x1:900,y0:228,y1:356,dir:1,c:'--polar'}
+  ];
+  var cellCenters=[];
+  cells.forEach(function(c){
+    var cx=(c.x0+c.x1)/2,cy=(c.y0+c.y1)/2,rx=(c.x1-c.x0)/2-8,ry=(c.y1-c.y0)/2-4;
+    cellCenters.push([cx,cy]);
+    S('ellipse',{cx:cx,cy:cy,rx:rx,ry:ry,style:'fill:var('+c.c+');fill-opacity:.16;stroke:var('+c.c+');stroke-width:3'},svg);
+    [0,90,180,270].forEach(function(deg){
+      var th=deg*Math.PI/180;
+      var px=cx+rx*Math.cos(th),py=cy+ry*Math.sin(th);
+      var tx=c.dir*(-rx*Math.sin(th)),ty=c.dir*(ry*Math.cos(th));
+      var ang=Math.atan2(ty,tx)*180/Math.PI;
+      S('path',{d:'M-9,-7 L9,0 L-9,7 Z',transform:'translate('+px+' '+py+') rotate('+ang+')',style:'fill:var('+c.c+')'},svg);
+    });
+  });
+  S('line',{'class':'surface',x1:60,y1:360,x2:900,y2:360},svg);
+  S('rect',{'class':'band',x:60,y:361,width:840,height:14,fill:'url(#moistGrad)'},svg);
+  var LAT=[60,200,340,480,620,760,900];
+  LAT.forEach(function(x){S('line',{'class':'tick',x1:x,y1:376,x2:x,y2:446},svg);});
+  S('text',{'class':'axis-note',x:14,y:20},svg).textContent='North Pole side';
+  S('text',{'class':'axis-note',x:946,y:20,'text-anchor':'end'},svg).textContent='South Pole side';
+  S('text',{'class':'axis-note',x:690,y:407,'text-anchor':'middle'},svg).textContent='Southern Hemisphere: the same belts, mirrored';
+  var notes=S('g',{'class':'notes'},svg);
+  function note(x,y,l1,l2,anchor){
+    var a=S('text',{x:x,y:y,'text-anchor':anchor||'middle'},notes);a.textContent=l1;
+    var b=S('text',{x:x,y:y+15,'text-anchor':anchor||'middle','class':'sub'},notes);b.textContent=l2;
+  }
+  note(480,36,'Air rises','low pressure, heavy rain');
+  note(340,52,'Air sinks','high pressure, dry');
+  note(620,52,'Air sinks','high pressure, dry');
+  note(200,112,'Air rises','low pressure, wet');
+  note(760,112,'Air rises','low pressure, wet');
+  note(14,196,'Air sinks','cold, dry','start');
+  note(946,196,'Air sinks','cold, dry','end');
+
+  var cellNames=['Hadley cell','Ferrel cell','Polar cell','Hadley cell','Ferrel cell','Polar cell'];
+  var cellDesc=['Northern Hemisphere, nearest the equator','Northern Hemisphere, middle','Northern Hemisphere, nearest the pole','Southern Hemisphere, nearest the equator','Southern Hemisphere, middle','Southern Hemisphere, nearest the pole'];
+  var cellHints={
+    'Hadley cell':'Air rises at the equator in this cell and sinks near 30°.',
+    'Ferrel cell':'This is the middle cell. Its surface air moves poleward, and it sits between the other two.',
+    'Polar cell':'Cold air sinks at the pole in this cell and rises near 60°.'
+  };
+  var slots=[];
+  cellNames.forEach(function(n,i){
+    slots.push({id:'c'+i,x:cellCenters[i][0],y:cellCenters[i][1],w:114,h:32,answer:n,name:'Cell, '+cellDesc[i],hint:cellHints[n]});
+  });
+  var latAns=['90° N','60° N','30° N','0° (equator)','30° S','60° S','90° S'];
+  var latHints=['The pole is the farthest you can go from the equator, in the north.','Two-thirds of the way from the equator to the North Pole.','One-third of the way from the equator to the North Pole.','The line that splits the two hemispheres.','One-third of the way from the equator to the South Pole.','Two-thirds of the way from the equator to the South Pole.','The pole is the farthest you can go from the equator, in the south.'];
+  var latNames=['Latitude at the North Pole','Latitude, northern middle line','Latitude, northern subtropical line','Latitude at the equator','Latitude, southern subtropical line','Latitude, southern middle line','Latitude at the South Pole'];
+  LAT.forEach(function(x,i){
+    slots.push({id:'l'+i,x:x,y:462,w:104,h:30,answer:latAns[i],name:latNames[i],hint:latHints[i]});
+  });
+  var windAns=['Trade winds','Westerlies','Polar easterlies'];
+  var windX=[410,270,130];
+  var windHints=['Surface wind that blows toward the equator inside the Hadley cell.','Surface wind that blows poleward inside the middle cell.','Cold surface wind flowing away from the pole.'];
+  windAns.forEach(function(a,i){
+    slots.push({id:'w'+i,x:windX[i],y:407,w:124,h:28,answer:a,name:'Northern Hemisphere surface wind, '+['Hadley cell','Ferrel cell','Polar cell'][i]+' zone',hint:windHints[i],bonus:true});
+  });
+  var lab=Labeler({
+    svg:svg,bank:$('#p1-bank'),armNote:$('#p1-arm'),fb:$('#p1-fb'),slots:slots,
+    checkBtn:$('#p1-check'),revealBtn:$('#p1-reveal'),resetBtn:$('#p1-reset'),
+    groups:[
+      {title:'Convection cells',chips:[{text:'Hadley cell',color:'--hadley'},{text:'Ferrel cell',color:'--ferrel'},{text:'Polar cell',color:'--polar'}]},
+      {title:'Latitudes',chips:latAns.map(function(t){return {text:t};})},
+      {title:'Surface winds (bonus, Northern Hemisphere)',chips:windAns.map(function(t){return {text:t};})}
+    ],
+    onUpdate:function(c){
+      var rv=c.revealed&&c.pre;
+      SC.p1Labels.got=rv?c.pre.okReq:c.okReq;
+      SC.p1Winds.got=rv?c.pre.okBonus:c.okBonus;
+      NOTES.p1Labels=c.revealed?'answers revealed':'';
+      DONE.p1=c.complete;
+      svg.classList.toggle('solved',c.complete);
+      $('#p1-legend').hidden=!c.complete;
+      renderResults();
+    }
+  });
+  var qbox=$('#p1-q');
+  MCQ(qbox,{
+    q:'The Sahara and the Atacama are both centered near 30° latitude. Which explanation fits the diagram?',
+    options:['Air sinks there. As it descends it is compressed and warms, so its relative humidity falls and clouds dissipate.','Air rises there and cools, so water vapor condenses before it reaches the ground.','Trade winds carry all of the moisture out to sea at 30°.','These latitudes get too little sunlight to evaporate any water.'],
+    answer:0,
+    why:'The Hadley cell’s air dropped most of its moisture near the equator. At about 30° it descends, compresses, and warms, which lowers relative humidity and builds high pressure with clear skies.'
+  },function(g){if(g){SC.p1Q.got++;renderResults();}});
+  MCQ(qbox,{
+    q:'In the Northern Hemisphere, trade winds blow from which direction?',
+    options:['Southeast','Northeast','Northwest','Southwest'],
+    answer:1,
+    why:'Surface air in the Hadley cell flows toward the equator, which is southward in the north. The Coriolis effect deflects moving air to the right in the Northern Hemisphere, so it arrives from the northeast. In the Southern Hemisphere the deflection is to the left, giving southeast trade winds.'
+  },function(g){if(g){SC.p1Q.got++;renderResults();}});
+  MCQ(qbox,{
+    q:'Which choice correctly pairs latitude, vertical air motion, and typical precipitation?',
+    options:['30° and 90°: air rises, low pressure, high precipitation','0° and 60°: air sinks, high pressure, low precipitation','30° and 60°: air rises, low pressure, high precipitation','0° and 60°: air rises, low pressure, high precipitation'],
+    answer:3,
+    why:'Air rises at the equator and near 60°, where the cells meet. Rising air cools, condenses, and rains out under low pressure. Air sinks near 30° and at the poles, which makes those zones dry.'
+  },function(g){if(g){SC.p1Q.got++;renderResults();}});
+  return lab;
+}
+
+/* ---------------- PART 2 ---------------- */
+var Phys=(function(){
+  var T0=28,Td0=20,LCL=1000,TOP=3000;
+  function es(T){return 6.112*Math.exp(17.62*T/(243.12+T));}
+  function P(h){return 1013.25*Math.exp(-h/8434);}
+  function wFromE(e,p){return 622*e/(p-e);}
+  function eFromW(w,p){return w*p/(622+w);}
+  var w0=wFromE(es(Td0),P(0));
+  var Ttop=T0-10*LCL/1000-5*(TOP-LCL)/1000;
+  var wTop=wFromE(es(Ttop),P(TOP));
+  function at(h,asc){
+    var T,w,RH,cloud=false;
+    if(asc){
+      if(h<=LCL){T=T0-10*h/1000;w=w0;RH=Math.min(100,100*eFromW(w,P(h))/es(T));}
+      else{T=T0-10*LCL/1000-5*(h-LCL)/1000;RH=100;w=wFromE(es(T),P(h));cloud=true;}
+    }else{
+      T=Ttop+10*(TOP-h)/1000;w=wTop;RH=100*eFromW(w,P(h))/es(T);
+    }
+    return {T:T,RH:RH,w:w,cloud:cloud};
+  }
+  return {at:at,T0:T0,w0:w0,wTop:wTop};
+})();
+var BASE=270,SCALE=190/3000;
+function hAt(x){
+  if(x<=100||x>=780){return 0;}
+  var t=x<=440?(x-100)/340:(780-x)/340;
+  return 3000*t*t*(3-2*t);
+}
+function tY(x){return BASE-hAt(x)*SCALE;}
+function buildP2(){
+  var svg=$('#p2-svg');
+  var i,x;
+  S('rect',{'class':'ocean',x:0,y:BASE,width:100,height:80},svg);
+  for(i=0;i<3;i++){S('path',{'class':'wave',d:'M8 '+(BASE+16+i*18)+' q 11 -8 22 0 t 22 0 t 22 0 t 22 0'},svg);}
+  function poly(x0,x1,cls){
+    var d='M'+x0+',350 L'+x0+','+tY(x0);
+    for(var xx=x0;xx<=x1;xx+=10){d+=' L'+xx+','+tY(xx).toFixed(1);}
+    d+=' L'+x1+','+tY(x1)+' L'+x1+',350 Z';
+    S('path',{'class':cls,d:d},svg);
+  }
+  poly(100,440,'t-forest');poly(440,780,'t-land');
+  S('rect',{'class':'t-sand',x:780,y:BASE,width:180,height:80},svg);
+  var d='M0,'+BASE;for(x=100;x<=780;x+=6){d+=' L'+x+','+tY(x).toFixed(1);}d+=' L960,'+BASE;
+  S('path',{'class':'ridge',d:d},svg);
+  /* clouds and rain over the windward slope */
+  [255,305,355,405].forEach(function(cx){
+    var cy=tY(cx)-50;
+    S('ellipse',{'class':'cloud',cx:cx,cy:cy,rx:32,ry:16},svg);
+    S('ellipse',{'class':'cloud',cx:cx-20,cy:cy+7,rx:20,ry:12},svg);
+    S('ellipse',{'class':'cloud',cx:cx+20,cy:cy+7,rx:22,ry:13},svg);
+  });
+  for(x=242;x<=430;x+=14){S('line',{'class':'rain',x1:x,y1:tY(x)-32,x2:x-5,y2:tY(x)-6},svg);}
+  /* sun over the dry side */
+  S('circle',{'class':'sun',cx:880,cy:56,r:14},svg);
+  for(i=0;i<8;i++){var a=i*Math.PI/4;S('line',{'class':'sunray',x1:880+22*Math.cos(a),y1:56+22*Math.sin(a),x2:880+31*Math.cos(a),y2:56+31*Math.sin(a)},svg);}
+  /* parcel path */
+  var pd='';for(x=30;x<=930;x+=6){pd+=(pd?' L':'M')+x+','+(tY(x)-16).toFixed(1);}
+  S('path',{'class':'pathline',d:pd},svg);
+  [80,170,260,330,400,500,580,660,740,840].forEach(function(cx){
+    var y1=tY(cx-4)-16,y2=tY(cx+4)-16;var ang=Math.atan2(y2-y1,8)*180/Math.PI;
+    S('path',{'class':'chev',d:'M-6,-5 L6,0 L-6,5 Z',transform:'translate('+cx+' '+(tY(cx)-16)+') rotate('+ang+')'},svg);
+  });
+  /* prevailing wind */
+  S('text',{'class':'axis-note',x:20,y:26},svg).textContent='Prevailing wind';
+  S('line',{'class':'wind-arrow',x1:20,y1:40,x2:92,y2:40},svg);
+  S('path',{'class':'wind-head',d:'M100,40 L88,34 L88,46 Z'},svg);
+  var parcel=S('circle',{'class':'parcel',r:9,cx:40,cy:254},svg);
+
+  var slots=[
+    {id:'w',x:270,y:312,w:140,h:28,answer:'Windward side',name:'Slope where the wind meets the mountain',hint:'The side facing into the wind.'},
+    {id:'l',x:610,y:312,w:140,h:28,answer:'Leeward side',name:'Slope away from the wind',hint:'The side sheltered from the wind.'},
+    {id:'r',x:868,y:312,w:140,h:28,answer:'Rain shadow',name:'Dry lowland beyond the mountain',hint:'The dry zone created beyond the mountain.'},
+    {id:'up',x:160,y:112,w:150,h:28,answer:'Air rises and cools',name:'Air motion on the near slope',hint:'Look at the direction of the arrows on the near slope.'},
+    {id:'down',x:690,y:110,w:150,h:28,answer:'Air sinks and warms',name:'Air motion on the far slope',hint:'Look at the arrows on the far slope and the temperature readout.'},
+    {id:'cl',x:310,y:40,w:170,h:28,answer:'Clouds and heavy rain',name:'Weather over the near slope',hint:'Check where the readout says cloud is forming.'}
+  ];
+  Labeler({
+    svg:svg,bank:$('#p2-bank'),armNote:$('#p2-arm'),fb:$('#p2-fb'),slots:slots,
+    checkBtn:$('#p2-check'),revealBtn:$('#p2-reveal'),resetBtn:$('#p2-reset'),
+    groups:[{title:'Labels for the diagram',chips:slots.map(function(s){return {text:s.answer};})}],
+    onUpdate:function(c){
+      var rv=c.revealed&&c.pre;
+      SC.p2Labels.got=rv?c.pre.okReq:c.okReq;
+      NOTES.p2Labels=c.revealed?'answers revealed':'';
+      DONE.p2=c.complete;renderResults();
+    }
+  });
+
+  var slider=$('#p2-slider');
+  function update(){
+    var v=parseFloat(slider.value);var px=40+v*0.88;
+    var h=hAt(px);var asc=px<=440;var o=Phys.at(h,asc);
+    parcel.setAttribute('cx',px);parcel.setAttribute('cy',(tY(px)-16).toFixed(1));
+    var hue=215-(o.T-8)/30*195;
+    parcel.style.fill='hsl('+hue.toFixed(0)+',75%,52%)';
+    $('#r-alt').textContent=Math.round(h).toLocaleString('en-US');
+    $('#r-temp').textContent=o.T.toFixed(1);
+    $('#r-rh').textContent=Math.round(o.RH);
+    $('#r-w').textContent=o.w.toFixed(1);
+    $('#r-cloud').textContent=(asc&&o.cloud)?'Yes, raining':'No';
+  }
+  slider.addEventListener('input',update);
+  $$('[data-jump]').forEach(function(b){b.addEventListener('click',function(){slider.value=b.getAttribute('data-jump');update();});});
+  update();
+
+  var q=$('#p2-q');
+  MCQ(q,{
+    q:'On the far side, the air is much drier even though nothing is being added to or removed from it. What best explains the drop in relative humidity?',
+    options:['Descending air is compressed and warms, so it can hold more water vapor.','Descending air expands and cools, so it holds less water vapor.','Faster winds on the far side evaporate the water.','The far side is simply farther from the ocean.'],
+    answer:0,
+    why:'The water vapor content stays the same on the way down, but warmer air can hold much more of it. The same amount of vapor in warmer air means a lower relative humidity, so clouds clear and rain stops.'
+  },function(g){if(g){SC.p2Q.got++;renderResults();}});
+  NumQ(q,{
+    q:'The air started at 28 °C at sea level. By how many °C is it warmer when it returns to sea level on the far side?',
+    unit:'°C warmer',answer:Phys.at(0,false).T-Phys.T0,tol:0.6,
+    why:'It ends at '+Phys.at(0,false).T.toFixed(0)+' °C, so +10 °C. While condensing, the air cooled only about 5 °C per km because condensation releases latent heat. On the way down it warms 10 °C per km, so the trip leaves it warmer than it started.',
+    retry:'Use the jump buttons to read the temperature at the start and on the far side, then subtract.'
+  },function(g){if(g){SC.p2Q.got++;renderResults();}});
+  var lost=Phys.w0-Phys.wTop;
+  NumQ(q,{
+    q:'About how much water vapor, in grams per kilogram of air, was lost as precipitation between the start and the far side?',
+    unit:'g per kg lost',answer:lost,tol:0.7,
+    why:'The air began with about '+Phys.w0.toFixed(1)+' g per kg and kept only about '+Phys.wTop.toFixed(1)+' g per kg, so it lost roughly '+lost.toFixed(1)+' g per kg. That water fell on the windward side.',
+    retry:'Compare the “Water vapor in the air” readout at the start with the readout on the far side.'
+  },function(g){if(g){SC.p2Q.got++;renderResults();}});
+}
+
+/* ---------------- PART 3 ---------------- */
+var COAST=[[-71.5,12.4],[-68,10.7],[-64,10.6],[-62,10.7],[-60,8.5],[-57,6],[-54,5.8],[-51.5,4.2],[-50,1.5],[-48,-0.8],[-44.5,-2.5],[-41,-2.9],[-38,-4],[-35.2,-5.5],[-35,-8],[-37.5,-12],[-39,-15],[-39.2,-18],[-41,-21.5],[-43,-23],[-46,-24],[-48.5,-26],[-48.8,-28.5],[-51,-31],[-53.5,-34],[-56,-34.8],[-57.5,-36],[-57,-38],[-62,-39],[-62.3,-41],[-65,-41],[-64,-42.5],[-65.5,-45],[-67.5,-46.5],[-66,-48],[-68.5,-50.5],[-69,-52],[-68,-54.5],[-71,-54.8],[-74,-52],[-75.5,-48],[-74,-44],[-73.5,-40],[-73.3,-37],[-72,-34],[-71.5,-30],[-70.8,-26],[-70.3,-22],[-70.2,-18.5],[-71.5,-17.5],[-75,-14.5],[-76.5,-12],[-78.5,-8.5],[-81,-6],[-81.2,-4.5],[-80,-2.5],[-80.5,-1],[-80,0.5],[-79,1.8],[-78,2.8],[-77.3,4.5],[-77.5,7],[-77.3,8.6],[-76,9],[-75.3,10.8],[-74.2,11.2],[-72.5,11.8]];
+var ANDES=[[-75.5,7],[-76.5,3],[-78.3,0],[-78.5,-4],[-77,-9],[-75,-13],[-72,-15.5],[-69,-19],[-68.5,-23],[-69.8,-28],[-70,-33],[-71,-38],[-72,-43],[-73,-49],[-72.5,-53]];
+function mx(lon){return (lon+98)*5.4;}
+function my(lat){return (14-lat)*5.4;}
+function pts(a){return a.map(function(p){return mx(p[0]).toFixed(1)+','+my(p[1]).toFixed(1);}).join(' ');}
+function arrowOn(parent,points,cls,headCls){
+  var d='';points.forEach(function(p,i){d+=(i?' L':'M')+mx(p[0]).toFixed(1)+','+my(p[1]).toFixed(1);});
+  S('path',{'class':cls,d:d},parent);
+  var a=points[points.length-2],b=points[points.length-1];
+  var ang=Math.atan2(my(b[1])-my(a[1]),mx(b[0])-mx(a[0]))*180/Math.PI;
+  S('path',{d:'M0,0 L-9,-5 L-9,5 Z',transform:'translate('+mx(b[0])+' '+my(b[1])+') rotate('+ang+')',style:'fill:'+(headCls||'var(--ink)')},parent);
+}
+var SITES=[
+  {id:'man',name:'Manaus, Brazil',lon:-60.0,lat:-3.1,anchor:'start',dx:10,dy:4,
+   rows:[['Latitude','3° S'],['Annual precipitation','≈ 2,300 mm'],['Mean temperature','≈ 27 °C'],['Biome','Tropical rainforest'],['Prevailing winds','Light easterly trade winds, moist from the Atlantic'],['Of note','Afternoon thunderstorms are common nearly year-round']],
+   match:'A',hint:'Think about what the circulation does at the equator, and which winds feed it.'},
+  {id:'ari',name:'Arica, Chile',lon:-70.3,lat:-18.5,anchor:'end',dx:-10,dy:4,
+   rows:[['Latitude','18.5° S'],['Annual precipitation','≈ 1 mm'],['Mean temperature','≈ 19 °C'],['Biome','Desert (Atacama)'],['Prevailing winds','Air arriving from the east must cross the Andes first'],['Of note','Cold ocean water offshore; peaks above 6,000 m about 150 km inland']],
+   match:'B',hint:'This site is near 30° S and sits downwind of the Andes for easterly air.'},
+  {id:'val',name:'Valdivia, Chile',lon:-73.2,lat:-39.8,anchor:'end',dx:-10,dy:4,
+   rows:[['Latitude','39.8° S'],['Annual precipitation','≈ 1,900 mm'],['Mean temperature','≈ 12 °C'],['Biome','Temperate rainforest'],['Prevailing winds','Westerlies from the Pacific'],['Of note','Faces the Pacific, on the western side of the Andes']],
+   match:'C',hint:'At this latitude the wind belt has reversed. Which side of the Andes does it hit first?'},
+  {id:'neu',name:'Neuquén, Argentina',lon:-68.06,lat:-38.95,anchor:'start',dx:10,dy:4,
+   rows:[['Latitude','39° S'],['Annual precipitation','≈ 200 mm'],['Mean temperature','≈ 15 °C'],['Biome','Semi-arid shrub steppe'],['Prevailing winds','Westerlies, after crossing the Andes'],['Of note','Same latitude as Valdivia, on the eastern side of the Andes']],
+   match:'D',hint:'Same wind belt as Valdivia, but this site is on the other side of the mountains.'}
+];
+var MATCH_OPTS=[
+  {v:'A',t:'Rising air near the equator (ITCZ) plus moist trade winds from the Atlantic'},
+  {v:'B',t:'Sinking air near 30° S plus the Andes’ rain shadow for easterly air, with a cold ocean current'},
+  {v:'C',t:'Westerlies forced up the windward (western) side of the Andes'},
+  {v:'D',t:'Westerlies descending the leeward (eastern) side of the Andes, a rain shadow'}
+];
+function buildP3(){
+  var svg=$('#map-svg');
+  S('rect',{'class':'sea',x:0,y:0,width:368,height:384},svg);
+  S('polygon',{'class':'land',points:pts(COAST)},svg);
+  S('polyline',{'class':'andes-line',points:pts(ANDES)},svg);
+  var t=S('text',{'class':'maplbl soft',x:mx(-74.6),y:my(-11.5),'text-anchor':'end'},svg);t.textContent='Andes';
+  /* wind layer */
+  var wl=S('g',{id:'winds-layer'},svg);
+  S('line',{'class':'w-dash',x1:mx(-98),y1:my(5),x2:mx(-80),y2:my(5)},wl);
+  S('line',{'class':'w-dash',x1:mx(-48),y1:my(5),x2:mx(-30),y2:my(5)},wl);
+  S('text',{'class':'maplbl',x:mx(-97.5),y:my(5)-5},wl).textContent='ITCZ: rising air';
+  S('line',{'class':'w-dash',x1:mx(-98),y1:my(-30),x2:mx(-74),y2:my(-30)},wl);
+  S('text',{'class':'maplbl',x:mx(-97.5),y:my(-30)-5},wl).textContent='~30° S: sinking air';
+  arrowOn(wl,[[-41,10.5],[-47,8.5],[-51.5,7]],'w-line');
+  S('text',{'class':'maplbl',x:mx(-48),y:my(11.2)},wl).textContent='NE trades';
+  arrowOn(wl,[[-30,-19],[-35,-14.5],[-38.5,-11]],'w-line');
+  S('text',{'class':'maplbl',x:mx(-37),y:my(-20.5)},wl).textContent='SE trades';
+  arrowOn(wl,[[-96,-43],[-88,-43],[-79,-43]],'w-line');
+  arrowOn(wl,[[-96,-50],[-88,-50],[-78,-50]],'w-line');
+  S('text',{'class':'maplbl',x:mx(-96),y:my(-46)},wl).textContent='Westerlies';
+  arrowOn(wl,[[-77,-37],[-78.5,-27],[-80.5,-16],[-84,-8],[-90,-4]],'w-cold','var(--polar)');
+  S('text',{'class':'maplbl',x:mx(-97.5),y:my(-14)},wl).textContent='Cold Humboldt';
+  S('text',{'class':'maplbl',x:mx(-97.5),y:my(-14)+11},wl).textContent='Current';
+  $('#toggle-winds').addEventListener('click',function(){
+    var on=!wl.classList.contains('on');wl.classList.toggle('on',on);
+    this.setAttribute('aria-pressed',on?'true':'false');
+    this.textContent=on?'Hide wind belts and pressure zones':'Show wind belts and pressure zones';
+  });
+  /* sites */
+  var list=$('#site-list');var els={};
+  SITES.forEach(function(s){
+    var g=S('g',{'class':'site',tabindex:'0',role:'button','aria-label':s.name},svg);
+    S('circle',{'class':'ring',cx:mx(s.lon),cy:my(s.lat),r:11},g);
+    S('circle',{'class':'dot',cx:mx(s.lon),cy:my(s.lat),r:6},g);
+    var tx=S('text',{'class':'maplbl',x:mx(s.lon)+s.dx,y:my(s.lat)+s.dy,'text-anchor':s.anchor},g);tx.textContent=s.name.split(',')[0];
+    g.addEventListener('click',function(){show(s.id);});
+    g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();show(s.id);}});
+    var b=H('button','chip',s.name,list);b.type='button';b.addEventListener('click',function(){show(s.id);});
+    els[s.id]={g:g,b:b};
+  });
+  function show(id){
+    var s=SITES.filter(function(x){return x.id===id;})[0];
+    EVID[id]=true;
+    SITES.forEach(function(o){els[o.id].g.classList.toggle('sel',o.id===id);els[o.id].g.classList.toggle('seen',!!EVID[o.id]);els[o.id].b.setAttribute('aria-pressed',o.id===id?'true':'false');});
+    var card=$('#site-card');
+    card.innerHTML='<h3>'+s.name+'</h3><dl>'+s.rows.map(function(r){return '<dt>'+r[0]+'</dt><dd>'+r[1]+'</dd>';}).join('')+'</dl>';
+    var n=Object.keys(EVID).length;
+    $('#evid-count').textContent=n+' of '+SITES.length+' sites viewed.'+(n===SITES.length?' You have all the evidence you need.':'');
+  }
+  $('#evid-count').textContent='0 of '+SITES.length+' sites viewed.';
+
+  /* matching */
+  var box=$('#match-rows');var selects={},marks={};
+  SITES.forEach(function(s){
+    var row=H('div','match-row',null,box);
+    var lab=H('label',null,s.name+' (≈ '+s.rows[1][1].replace('≈ ','')+')',row);lab.setAttribute('for','m-'+s.id);
+    var sel=H('select',null,null,row);sel.id='m-'+s.id;
+    sel.appendChild(new Option('Choose a cause…',''));
+    MATCH_OPTS.forEach(function(o){sel.appendChild(new Option(o.t,o.v));});
+    var m=H('span','res',null,row);m.setAttribute('aria-hidden','true');
+    selects[s.id]=sel;marks[s.id]=m;
+    sel.addEventListener('change',function(){m.textContent='';m.className='res';});
+  });
+  $('#match-check').addEventListener('click',function(){
+    var ok=0,wrong=[],empty=0;
+    SITES.forEach(function(s){
+      var v=selects[s.id].value;var m=marks[s.id];
+      if(!v){empty++;m.textContent='';m.className='res';return;}
+      if(v===s.match){ok++;m.textContent='\u2713';m.className='res ok';}
+      else{m.textContent='\u2715';m.className='res bad';wrong.push(s);}
+    });
+    SC.p3Match.got=ok;DONE.p3=(ok===SITES.length);
+    var html='<strong>'+ok+' of '+SITES.length+' correct.</strong>'+(empty?' '+empty+' not answered yet.':'');
+    if(wrong.length){html+='<ul>'+wrong.map(function(s){return '<li><strong>'+s.name+':</strong> '+s.hint+'</li>';}).join('')+'</ul>';}
+    $('#match-fb').innerHTML=html;
+    renderResults();
+  });
+
+  /* free response */
+  var PARTS=[
+    {id:'a',prompt:'(a) Identify the part of the global circulation, and the winds, that explain the heavy rainfall in the Amazon basin.',
+     concepts:[
+       {re:/\b(rise|rises|rising|ascend\w*|convect\w*|itcz|intertropical|converg\w*|low[- ]pressure|hadley)\b/i,ok:'Rising air at the equator (Hadley cell, ITCZ, low pressure)',miss:'Say what the air does near the equator and why that brings rain.'},
+       {re:/trade|easterl|atlantic/i,ok:'Trade winds bringing moist Atlantic air',miss:'Name the winds that carry moisture toward the basin and where they start.'}],
+     model:'The Amazon basin sits near the equator, under the rising limb of the Hadley cells (the ITCZ). Intense sunlight warms the surface, and the air expands and rises, cools, and condenses, producing low pressure, towering clouds, and heavy convectional rain. The air flowing in to replace it is the trade winds (northeast in the Northern Hemisphere, southeast in the Southern), which carry warm, moist air west from the Atlantic. Evapotranspiration from the forest recycles still more moisture.'},
+    {id:'b',prompt:'(b) Describe what happens to moist, easterly air as it meets the Andes, and explain how this creates a rain shadow.',
+     concepts:[
+       {re:/orograph|windward|forced|uplift|lifted|rises? (up|over)|up the (slope|mountain)|cools?/i,ok:'Air forced up the windward (eastern) slope, cooling and condensing',miss:'Describe what happens on the side of the Andes that faces the wind.'},
+       {re:/rain[- ]?shadow|leeward|descend\w*|sink\w*|compress\w*|warms?\b/i,ok:'Dry air descending the leeward (western) side, warming',miss:'Describe the air after it crosses the crest, and what happens to its temperature and humidity.'}],
+     model:'The easterly trade winds carry moist air west from the Atlantic. On the Andes’ eastern (windward) side the air is forced up the slope by orographic lift, cools, and its water vapor condenses, so the eastern slopes and western Amazon get heavy rain and cloud forest. Having lost most of its moisture, the air crosses the crest and descends the western (leeward) side, where it is compressed and warms. Its relative humidity falls, clouds dissipate, and little rain falls. That dry leeward zone is the rain shadow.'},
+    {id:'c',prompt:'(c) Explain why the Atacama is dry using the global circulation near 30° S, and identify one other factor that limits rainfall there.',
+     concepts:[
+       {re:/\b30\b|subtropical|sink\w*|descend\w*|high[- ]pressure|hadley/i,ok:'Sinking air near 30° S (Hadley cell, subtropical high)',miss:'Say what the air in the Hadley cell does near 30° and what that does to humidity.'},
+       {re:/humboldt|cold (ocean )?current|upwell\w*|inversion|peru current|camanchaca|fog/i,ok:'An extra factor: cold Humboldt Current, upwelling, or an inversion',miss:'Name one factor at the coast, in the ocean or the lowest layer of air.'}],
+     model:'The Atacama lies between roughly 18° S and 28° S, close to 30° S, where air from the Hadley cell sinks. Sinking air is compressed and warms, so its relative humidity falls, and it builds the subtropical high-pressure zone that suppresses clouds. The Andes’ rain shadow dries the easterly air even more. One additional factor is the cold Humboldt (Peru) Current and coastal upwelling, strengthened by winds blowing along the coast. They chill the lowest layer of air, and cool, dense air under warmer air (a temperature inversion) resists rising, while cold water evaporates little. Fog may form, but rain rarely does.'},
+    {id:'d',prompt:'(d) Southern Chile and Argentina near 40° S: which side of the Andes is wetter? Justify your answer using the wind belt.',
+     concepts:[
+       {re:/westerl|from the west|west(ern)? winds?|from the pacific/i,ok:'Westerlies are the prevailing wind at this latitude',miss:'Name the prevailing wind belt near 40° and the direction it blows from.'},
+       {re:/windward|orograph|chile\w*|west(ern)? (side|slope)|pacific side|forced/i,ok:'Wet Chilean side: air lifted on the windward slope',miss:'Explain why the side facing the Pacific gets rain.'},
+       {re:/rain[- ]?shadow|leeward|argentin\w*|patagonia|east(ern)? (side|slope)/i,ok:'Dry Argentine side: rain shadow',miss:'Explain what happens to the air after it crosses to the other side.'}],
+     model:'Near 40° S the prevailing surface winds are the westerlies (the poleward surface flow of the Ferrel cell), so the wind direction is reversed from the tropics. Moist Pacific air hits the Andes’ western (Chilean) side first and is forced upward, so southern Chile is wet, with temperate rainforest and close to 2,000 mm a year around Valdivia. The air then descends the eastern (Argentine) side, warming and drying, so Patagonia and the area around Neuquén lie in the rain shadow and are semi-arid steppe or desert. The same mountains put the dry side on the opposite side because the prevailing wind direction changes with latitude.'}
+  ];
+  var counts={};
+  var frq=$('#frq');
+  PARTS.forEach(function(p){
+    var w=H('div','frq-part',null,frq);
+    H('p','prompt',p.prompt,w);
+    var ta=H('textarea',null,null,w);ta.id='frq-'+p.id;ta.setAttribute('aria-label','Your answer to part '+p.id);
+    var tools=H('div','frq-tools',null,w);
+    var cb=H('button','btn',null,tools);cb.type='button';cb.textContent='Check concepts';
+    var wc=H('span','muted','0 words',tools);
+    var out=H('div',null,null,w);out.setAttribute('aria-live','polite');
+    ta.addEventListener('input',function(){var n=(ta.value.trim().match(/\S+/g)||[]).length;wc.textContent=n+' word'+(n===1?'':'s');});
+    cb.addEventListener('click',function(){
+      var n=(ta.value.trim().match(/\S+/g)||[]).length;
+      if(n<12){out.innerHTML='<p class="muted" style="margin-top:10px">Write a little more first. A full answer is usually at least a couple of sentences.</p>';return;}
+      var found=0;
+      var lis=p.concepts.map(function(c){var f=c.re.test(ta.value);if(f){found++;}return '<li class="'+(f?'found':'miss')+'">'+(f?c.ok:c.miss)+'</li>';}).join('');
+      counts[p.id]=found;
+      var tot=0;Object.keys(counts).forEach(function(k){tot+=counts[k];});
+      SC.p3FRQ.got=tot;renderResults();
+      out.innerHTML='<ul class="concepts">'+lis+'</ul><details class="model"><summary>Compare with a model answer</summary><p>'+p.model+'</p></details>';
+    });
+  });
+}
+
+/* ---------------- results ---------------- */
+function buildResults(){
+  $('#build-summary').addEventListener('click',function(){
+    var name=$('#stu-name').value.trim();
+    var lines=['AP Environmental Science: wind patterns and the rain shadow effect'];
+    if(name){lines.push('Name: '+name);}
+    lines.push('');
+    Object.keys(SC).forEach(function(k){
+      lines.push(SC[k].label+': '+SC[k].got+' / '+SC[k].of+(NOTES[k]?' ('+NOTES[k]+')':''));
+    });
+    lines.push('Sites viewed: '+Object.keys(EVID).length+' of 4');
+    lines.push('');lines.push('Free response');
+    ['a','b','c','d'].forEach(function(id){
+      var v=$('#frq-'+id).value.trim();
+      lines.push('('+id+') '+(v||'(no answer)'));lines.push('');
+    });
+    var ta=$('#summary');ta.value=lines.join('\n');ta.hidden=false;
+    $('#copy-summary').hidden=false;
+  });
+  $('#copy-summary').addEventListener('click',function(){
+    var ta=$('#summary');var msg=$('#copy-msg');
+    function fallback(){ta.focus();ta.select();msg.textContent='Text selected. Press Ctrl+C (or Cmd+C) to copy.';}
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(ta.value).then(function(){msg.textContent='Copied.';},fallback);
+      }else{fallback();}
+    }catch(e){fallback();}
+  });
+  $$('.steps a').forEach(function(a){
+    a.addEventListener('click',function(e){
+      e.preventDefault();var t=document.getElementById(a.getAttribute('href').slice(1));
+      if(t){t.scrollIntoView({behavior:'smooth',block:'start'});}
+    });
+  });
+}
+
+buildP1();buildP2();buildP3();buildResults();renderResults();
+})();
+</script>
+</body>
+</html>

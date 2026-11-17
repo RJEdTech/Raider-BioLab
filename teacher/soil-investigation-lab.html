@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="author" content="Sandy Robertson, PhD, science teacher, Regis Jesuit High School">
+<!-- Created by Dr. Sandy Robertson. Shared in Raider BioLab with her permission (Nov 17, 2026). -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Soil Investigation Lab</title>
+<style>
+:root{
+  --bg:#edf0ea; --surface:#fbfcf9; --ink:#2a231c; --muted:#5b5449; --line:#cdd3c6;
+  --accent:#2f6b45; --accent-ink:#ffffff; --accent-soft:#dcebdf;
+  --good:#245f36; --good-bg:#e0f0e2; --bad:#9a3626; --bad-bg:#f7e3dd;
+  --focus:#0b57d0; --water:#3b8bc9;
+  --hO:#2a1d14; --hA:#5b3a22; --hE:#cfc9bb; --hB:#a8742f; --hC:#c4a96f; --hR:#7d8794;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15191a; --surface:#1e2325; --ink:#ece8df; --muted:#b0aa9d; --line:#363e40;
+    --accent:#7cc795; --accent-ink:#0e1f14; --accent-soft:#25382c;
+    --good:#92d6a3; --good-bg:#1f3626; --bad:#f2a595; --bad-bg:#3d2621;
+    --focus:#8ab4ff; --water:#6db3ea;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15191a; --surface:#1e2325; --ink:#ece8df; --muted:#b0aa9d; --line:#363e40;
+  --accent:#7cc795; --accent-ink:#0e1f14; --accent-soft:#25382c;
+  --good:#92d6a3; --good-bg:#1f3626; --bad:#f2a595; --bad-bg:#3d2621;
+  --focus:#8ab4ff; --water:#6db3ea;
+  color-scheme: dark;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:1.0625rem; line-height:1.55;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+h1,h2,h3,h4{font-family:Bitter,Georgia,"Times New Roman",serif;line-height:1.2;margin:0 0 .5em}
+h1{font-size:clamp(1.8rem,4.4vw,2.7rem);font-weight:700}
+h2{font-size:clamp(1.4rem,3vw,1.9rem);font-weight:700;margin-top:0}
+h3{font-size:1.2rem;font-weight:700;margin-top:1.8em}
+h4{font-size:1.02rem;font-weight:700;margin-bottom:.3em}
+p{margin:0 0 .9em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.prose{max-width:68ch}
+.small{font-size:.9rem;color:var(--muted)}
+.lead{font-size:1.12rem;max-width:68ch}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* header */
+.top{padding:26px 0 16px}
+.top .row{display:flex;flex-wrap:wrap;gap:18px 32px;align-items:flex-end;justify-content:space-between}
+.goals{margin:10px 0 0;padding-left:1.2em;max-width:70ch}
+.goals li{margin:.15em 0}
+.scores{display:flex;gap:10px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;min-width:9.5rem}
+.chip b{display:block;font-family:Bitter,Georgia,serif;font-size:1.35rem;line-height:1.1}
+.chip span{font-size:.85rem;color:var(--muted)}
+
+/* step nav */
+.steps{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.steps .wrap{display:flex;gap:4px;overflow-x:auto;padding-top:6px}
+.steps button{flex:0 0 auto;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:.95rem;padding:10px 14px 8px;border-bottom:6px solid var(--c);border-radius:6px 6px 0 0;cursor:pointer;white-space:nowrap}
+.steps button:hover{color:var(--ink)}
+.steps button[aria-current="step"]{background:var(--surface);color:var(--ink)}
+.steps button .tick{display:inline-block;width:1.1em;color:var(--good);font-weight:700}
+
+main{padding:28px 0 60px}
+.step[hidden]{display:none}
+.step>h2:focus{outline:none}
+
+/* tools */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.panel+.panel{margin-top:16px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.profile-grid{display:grid;grid-template-columns:minmax(260px,380px) minmax(0,1fr);gap:28px;align-items:start}
+.tri-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:26px;align-items:start}
+@media (max-width:860px){.grid2,.profile-grid,.tri-grid{grid-template-columns:minmax(0,1fr)}}
+
+.btn{font:inherit;font-weight:700;border-radius:8px;padding:10px 16px;border:2px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn:hover{filter:brightness(1.07)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:.92rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.pill{font:inherit;font-size:.92rem;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.pill:hover{border-color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stepnav{display:flex;justify-content:space-between;gap:12px;margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}
+
+/* horizon profile */
+#profile{width:100%;height:auto;display:block;max-height:78vh}
+.hzg{cursor:pointer}
+.hzg .ring{opacity:0;fill:none;stroke:var(--focus);stroke-width:5;stroke-linejoin:round;pointer-events:none}
+.hzg.sel .ring,.hzg:focus-visible .ring{opacity:1}
+.hzg:focus{outline:none}
+.hzg:hover .shape{filter:brightness(1.12)}
+.hzlabel circle{stroke:var(--ink);stroke-width:1.5}
+.hzg.sel .hzlabel circle{stroke:var(--focus);stroke-width:4}
+.hzlabel text{font-family:Bitter,Georgia,serif;font-weight:700;font-size:17px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.hzinfo h3{margin-top:0;font-size:1.5rem}
+.hzinfo .alias{color:var(--muted);margin:-.2em 0 .8em;font-size:1.05rem}
+.hzinfo dl{margin:0;display:grid;grid-template-columns:7.2rem minmax(0,1fr);gap:8px 14px}
+.hzinfo dt{font-weight:700}
+.hzinfo dd{margin:0}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--ink);vertical-align:-2px;margin-right:6px}
+
+/* questions */
+.q{border-left:4px solid var(--line);padding:4px 0 4px 16px;margin:0 0 26px;max-width:760px}
+.q.done.ok{border-left-color:var(--good)}
+.q.done.no{border-left-color:var(--bad)}
+.q .prompt{font-weight:700;margin:0 0 .55em}
+.q .num{font-family:Bitter,Georgia,serif;margin-right:.4em}
+.choices{display:grid;gap:7px}
+.choices.row{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.choice{font:inherit;text-align:left;background:var(--surface);color:var(--ink);border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer}
+.choice:hover:not(:disabled){border-color:var(--ink)}
+.choice:disabled{cursor:default}
+.choice.right{background:var(--good-bg);border-color:var(--good);color:var(--ink)}
+.choice.wrong{background:var(--bad-bg);border-color:var(--bad);color:var(--ink)}
+.choice .mark{font-weight:700;margin-right:.35em}
+.fb{margin-top:10px;padding:10px 12px;border-radius:8px;font-size:.98rem}
+.fb:empty{display:none}
+.fb.ok{background:var(--good-bg);color:var(--ink)}
+.fb.no{background:var(--bad-bg);color:var(--ink)}
+.fb strong{display:block;margin-bottom:2px}
+
+/* texture triangle */
+.tri-wrap canvas{display:block;width:100%;touch-action:none;cursor:crosshair;border-radius:8px}
+.sliders label{display:grid;grid-template-columns:4rem minmax(0,1fr) 3.4rem;gap:10px;align-items:center;margin:8px 0}
+.sliders output{font-weight:700;text-align:right}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.readout{font-family:Bitter,Georgia,serif;font-size:1.7rem;font-weight:700;margin:0 0 2px}
+.mixbar{display:flex;height:16px;border-radius:4px;overflow:hidden;border:1px solid var(--ink);margin:8px 0 14px}
+.mixbar i{display:block;height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.88rem;color:var(--muted);margin:0 0 6px}
+.legend span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px;background:var(--p);border:1px solid var(--ink)}
+.meter{display:grid;grid-template-columns:minmax(6.5rem,8.5rem) minmax(0,1fr) minmax(5rem,9rem);gap:10px;align-items:center;margin:7px 0}
+.meter .lab{font-weight:700;font-size:.95rem}
+.meter .val{font-size:.9rem;text-align:right}
+.segs{display:flex;gap:3px}
+.segs i{flex:1;height:13px;border-radius:2px;background:var(--line)}
+.segs i.on{background:var(--accent)}
+.note{font-size:.92rem;color:var(--muted)}
+
+/* lab */
+.rigwrap{display:flex;justify-content:center}
+#rig{width:100%;max-width:330px;height:auto}
+.mixbtns{display:grid;gap:8px}
+.mixbtns .pill{border-radius:8px;text-align:left;padding:8px 12px}
+.mixbtns .pill small{display:block;color:inherit;opacity:.8}
+.readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.readouts div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.readouts b{display:block;font-family:Bitter,Georgia,serif;font-size:1.3rem;line-height:1.1}
+.readouts span{font-size:.82rem;color:var(--muted)}
+.tablewrap{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.95rem}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--bg);font-weight:700}
+tr:last-child td{border-bottom:0}
+td.diff{background:var(--accent-soft)}
+
+/* compare */
+.cmpsel{display:flex;gap:14px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+.cmpsel label{display:grid;gap:4px;font-weight:700;font-size:.92rem}
+select,input[type=text],textarea{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:8px 10px}
+select{min-width:12rem}
+textarea{width:100%;resize:vertical;line-height:1.5}
+.diffs{margin:14px 0 0;padding-left:1.2em;max-width:76ch}
+.diffs li{margin:.35em 0}
+
+/* nutrients */
+.phbig{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+.phbig b{font-family:Bitter,Georgia,serif;font-size:2.6rem;line-height:1}
+.phtrack{-webkit-appearance:none;appearance:none;height:14px;border-radius:7px;border:1px solid var(--ink);background:linear-gradient(90deg,#d73027,#f46d43,#fdae61,#fee08b,#a6d96a,#66bd63,#3b9bd1,#4575b4)}
+.phtrack::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--surface);border:3px solid var(--ink);cursor:grab}
+.phtrack::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--surface);border:3px solid var(--ink);cursor:grab}
+.phscale{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-top:3px}
+.avail{display:grid;grid-template-columns:7.5rem minmax(0,1fr) 6.5rem;gap:10px;align-items:center;margin:9px 0}
+.avail .bar{height:16px;border-radius:4px;background:var(--line);overflow:hidden}
+.avail .bar span{display:block;height:100%;background:var(--accent);transition:width .15s}
+.avail .st{font-size:.9rem;font-weight:700}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.seg button{font:inherit;font-weight:700;border:0;background:var(--surface);color:var(--ink);padding:8px 16px;cursor:pointer}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.nutdl{margin:0;display:grid;grid-template-columns:9rem minmax(0,1fr);gap:8px 14px}
+.nutdl dt{font-weight:700}
+.nutdl dd{margin:0}
+@media (max-width:520px){.nutdl,.hzinfo dl{grid-template-columns:minmax(0,1fr)}.nutdl dd,.hzinfo dd{margin-bottom:6px}}
+.testrow{display:grid;grid-template-columns:7.5rem minmax(0,1fr);gap:10px;align-items:center;margin:9px 0}
+.testrow .lv{display:flex;gap:6px;flex-wrap:wrap}
+.lvbtn{font:inherit;font-size:.85rem;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:4px 8px 4px 6px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.lvbtn i{width:16px;height:16px;border-radius:4px;border:1px solid var(--ink);display:inline-block}
+.lvbtn[aria-pressed="true"]{border-color:var(--ink);font-weight:700;background:var(--accent-soft)}
+.advice{margin:12px 0 0;padding:0;list-style:none}
+.advice li{padding:9px 12px;border-left:4px solid var(--accent);background:var(--accent-soft);margin:8px 0;border-radius:0 8px 8px 0}
+.advice li.warn{border-left-color:var(--bad);background:var(--bad-bg)}
+.advice b{display:block}
+
+/* FRQ */
+.frq{margin:0 0 34px;max-width:820px}
+.frq .wc{font-size:.88rem;color:var(--muted);margin:4px 0 8px}
+.rubric{list-style:none;padding:0;margin:10px 0 0}
+.rubric li{padding:8px 10px;margin:6px 0;border-radius:8px;border:1px solid var(--line)}
+.rubric li.met{background:var(--good-bg);border-color:var(--good)}
+.rubric li.miss{background:var(--bad-bg);border-color:var(--bad)}
+.rubric li b{margin-right:.4em}
+details.model{margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--surface)}
+details.model summary{cursor:pointer;font-weight:700}
+.frqscore{font-family:Bitter,Georgia,serif;font-size:1.25rem;font-weight:700;margin:10px 0 0}
+
+/* summary */
+.sumform{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px;max-width:760px}
+.sumform label{display:grid;gap:4px;font-weight:700;font-size:.92rem}
+#sumOut{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86rem;min-height:22rem;white-space:pre;overflow:auto}
+.status{font-weight:700;margin-left:10px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="row">
+      <div>
+        <h1>Soil Investigation Lab</h1>
+        <p class="lead" style="margin-bottom:6px">Dig into the layers, mix soils on the texture triangle, run a drainage test, and read a soil test. About 45–60 minutes.</p>
+        <ul class="goals">
+          <li>Name the soil horizons and what each one does.</li>
+          <li>Tell which mixtures drain fast, which hold water, and which grow plants best.</li>
+          <li>Explain how pH, nitrate, phosphate, and potassium affect growth.</li>
+          <li>Describe how silt loam and sandy loam differ.</li>
+        </ul>
+      </div>
+      <div class="scores" aria-live="polite">
+        <div class="chip"><b id="scMC">0 / 27</b><span>Graded questions correct</span></div>
+        <div class="chip"><b id="scFR">0 / 20</b><span>Free response (auto-check)</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="steps" aria-label="Activity steps"><div class="wrap" id="stepbtns"></div></nav>
+
+<main class="wrap">
+
+<!-- STEP 1 -->
+<section class="step" id="step1" aria-labelledby="t1">
+  <h2 id="t1" tabindex="-1">1. Read the soil profile</h2>
+  <p class="lead">Dig a pit and you will see bands of different color and texture. These bands are called horizons. Select a layer to see what it is made of and what it does for plants.</p>
+  <div class="profile-grid">
+    <svg id="profile" viewBox="0 0 340 574" role="group" aria-label="Soil profile with six horizons: O, A, E, B, C and R"></svg>
+    <div class="panel hzinfo" id="hzInfo" aria-live="polite"></div>
+  </div>
+
+  <h3>Identify the horizon</h3>
+  <p class="prose">Each clue describes one horizon. You get one graded attempt per question, then you will see why.</p>
+  <div class="qs" data-step="1"></div>
+
+  <div class="stepnav"><span></span><button class="btn" data-go="2">Next: texture triangle</button></div>
+</section>
+
+<!-- STEP 2 -->
+<section class="step" id="step2" aria-labelledby="t2" hidden>
+  <h2 id="t2" tabindex="-1">2. Mix a soil on the texture triangle</h2>
+  <p class="lead">Soil texture is the share of three particle sizes: <b>sand</b> (0.05–2 mm, gritty), <b>silt</b> (0.002–0.05 mm, smooth and floury), and <b>clay</b> (under 0.002 mm, sticky). Every mixture lands on one spot in the triangle, and that spot gives it a name.</p>
+  <div class="tri-grid">
+    <div class="tri-wrap">
+      <canvas id="tri" role="img" aria-label="USDA soil texture triangle. Drag to choose a mixture, or use the sliders."></canvas>
+      <p class="small">Drag the dot, or use the sliders. Read clay on the left edge, silt on the right edge, and sand along the bottom.</p>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="sliders">
+          <label>Sand <input type="range" id="rSand" min="0" max="100" step="1"><output id="oSand"></output></label>
+          <label>Silt <input type="range" id="rSilt" min="0" max="100" step="1"><output id="oSilt"></output></label>
+          <label>Clay <input type="range" id="rClay" min="0" max="100" step="1"><output id="oClay"></output></label>
+        </div>
+        <p class="note" style="margin:4px 0 8px">The three always add up to 100%. Moving one slider rebalances the other two.</p>
+        <div class="chips" id="presets" aria-label="Example mixtures"></div>
+      </div>
+      <div class="panel" id="props" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <h3>Check your understanding</h3>
+  <p class="prose">Build challenges let you try again until the triangle shows the right class.</p>
+  <div class="qs" data-step="2"></div>
+
+  <div class="stepnav"><button class="btn ghost" data-go="1">Back</button><button class="btn" data-go="3">Next: drainage lab</button></div>
+</section>
+
+<!-- STEP 3 -->
+<section class="step" id="step3" aria-labelledby="t3" hidden>
+  <h2 id="t3" tabindex="-1">3. Drainage lab: filtration and permeability</h2>
+  <p class="lead"><b>Infiltration</b> is how fast water enters the soil surface. <b>Permeability</b> is how easily water moves through connected pores below it. Pour 200 mL of water onto each mixture and see how much drains out in 60 seconds.</p>
+  <div class="grid2">
+    <div class="panel">
+      <div class="rigwrap">
+        <svg id="rig" viewBox="0 0 260 390" role="img" aria-label="Soil column with water poured on top and a flask collecting what drains through">
+          <rect id="pond" x="83" y="120" width="94" height="0" fill="var(--water)" opacity=".8"/>
+          <rect id="soilfill" x="83" y="120" width="94" height="100" fill="#8a7458"/>
+          <g id="grains"></g>
+          <path d="M80 30 V220 H180 V30" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M80 220 L117 252 H143 L180 220" fill="var(--surface)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+          <line x1="84" y1="219" x2="176" y2="219" stroke="var(--ink)" stroke-width="2" stroke-dasharray="3 3"/>
+          <line id="stream" x1="130" y1="252" x2="130" y2="252" stroke="var(--water)" stroke-width="3" stroke-linecap="round"/>
+          <rect id="flaskwater" x="91" y="370" width="78" height="0" fill="var(--water)" opacity=".85"/>
+          <path d="M90 290 V370 H170 V290" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+          <g font-size="11" fill="var(--muted)" font-family="Atkinson Hyperlegible,sans-serif">
+            <text x="176" y="294">200</text><text x="176" y="314">150</text><text x="176" y="334">100</text><text x="176" y="354">50</text><text x="176" y="374">mL</text>
+            <line x1="164" y1="290" x2="170" y2="290" stroke="var(--ink)"/><line x1="164" y1="310" x2="170" y2="310" stroke="var(--ink)"/><line x1="164" y1="330" x2="170" y2="330" stroke="var(--ink)"/><line x1="164" y1="350" x2="170" y2="350" stroke="var(--ink)"/>
+            <text x="20" y="95">water</text><text x="20" y="175">soil</text><text x="14" y="335">drained</text>
+          </g>
+        </svg>
+      </div>
+      <div class="readouts" aria-live="polite">
+        <div><b id="rdTime">0 s</b><span>Simulated time</span></div>
+        <div><b id="rdDrain">0 mL</b><span>Drained</span></div>
+        <div><b id="rdPond">200 mL</b><span>Still on top</span></div>
+      </div>
+      <button class="btn" id="pourBtn">Pour 200 mL of water</button>
+    </div>
+    <div>
+      <h4>1. Choose a mixture</h4>
+      <div class="mixbtns" id="mixbtns" role="group" aria-label="Soil mixtures to test"></div>
+      <p class="note" style="margin-top:12px">Results come from a model built on typical measured values for each texture class. The time is sped up so you can watch it. In a real column test you would see the same ranking.</p>
+    </div>
+  </div>
+
+  <h3>Your lab data</h3>
+  <p class="prose">Each test adds a row. Run all five preset mixtures, then answer the questions. You can also test the mixture you built in step 2.</p>
+  <div class="tablewrap"><table id="labTable"><thead><tr><th>Mixture</th><th>Class (sand/silt/clay %)</th><th>Permeability</th><th>Drained in 60 s</th><th>Time for 50 mL</th><th>Water held</th></tr></thead><tbody></tbody></table></div>
+
+  <h3>Check your understanding</h3>
+  <div class="qs" data-step="3"></div>
+
+  <div class="stepnav"><button class="btn ghost" data-go="2">Back</button><button class="btn" data-go="4">Next: compare mixtures</button></div>
+</section>
+
+<!-- STEP 4 -->
+<section class="step" id="step4" aria-labelledby="t4" hidden>
+  <h2 id="t4" tabindex="-1">4. Compare two soil mixtures</h2>
+  <p class="lead">Silt loam and sandy loam are both good garden soils, but they behave differently. Pick any two classes to see them side by side. The page starts with sandy loam and silt loam.</p>
+  <div class="panel">
+    <div class="cmpsel">
+      <label>Soil A <select id="cmpA"></select></label>
+      <label>Soil B <select id="cmpB"></select></label>
+    </div>
+    <div class="tablewrap"><table id="cmpTable" style="min-width:520px"></table></div>
+    <h4 style="margin-top:16px">What is different?</h4>
+    <ul class="diffs" id="cmpDiffs"></ul>
+    <p class="note">Values are typical ranges and vary with organic matter and soil structure.</p>
+  </div>
+
+  <h3>Check your understanding</h3>
+  <div class="qs" data-step="4"></div>
+
+  <div class="stepnav"><button class="btn ghost" data-go="3">Back</button><button class="btn" data-go="5">Next: pH and nutrients</button></div>
+</section>
+
+<!-- STEP 5 -->
+<section class="step" id="step5" aria-labelledby="t5" hidden>
+  <h2 id="t5" tabindex="-1">5. Soil pH and the big three nutrients</h2>
+  <p class="lead">A soil can hold plenty of a nutrient and still starve a plant if the pH locks it up. Slide the pH and watch how available nitrogen, phosphorus, and potassium change.</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <h4>pH explorer</h4>
+      <div class="phbig"><b id="phVal">6.5</b><span id="phCat"></span></div>
+      <input class="phtrack" type="range" id="phSlider" min="3.5" max="9.5" step="0.1" value="6.5" aria-label="Soil pH">
+      <div class="phscale"><span>3.5 acidic</span><span>7 neutral</span><span>9.5 alkaline</span></div>
+      <div style="margin-top:16px">
+        <div class="avail"><span><b>Nitrogen</b><br><span class="small">as nitrate</span></span><div class="bar"><span id="avN"></span></div><span class="st" id="stN"></span></div>
+        <div class="avail"><span><b>Phosphorus</b><br><span class="small">as phosphate</span></span><div class="bar"><span id="avP"></span></div><span class="st" id="stP"></span></div>
+        <div class="avail"><span><b>Potassium</b><br><span class="small">K⁺</span></span><div class="bar"><span id="avK"></span></div><span class="st" id="stK"></span></div>
+      </div>
+      <p class="note" id="phNote"></p>
+      <label style="display:grid;gap:4px;font-weight:700;font-size:.92rem;margin-top:14px">Which plant are you growing?
+        <select id="plantSel"></select>
+      </label>
+      <p id="plantOut" style="margin-top:10px"></p>
+      <p class="note">Availability bars are a simplified model of the classic pH and nutrient chart.</p>
+    </div>
+    <div class="panel">
+      <h4>Nutrient field guide</h4>
+      <div class="seg" role="group" aria-label="Choose a nutrient"><button type="button" data-n="N" aria-pressed="true">Nitrate</button><button type="button" data-n="P" aria-pressed="false">Phosphate</button><button type="button" data-n="K" aria-pressed="false">Potassium</button></div>
+      <dl class="nutdl" id="nutDl"></dl>
+    </div>
+  </div>
+
+  <h3>Soil test simulator</h3>
+  <p class="prose">Set up a test result the way a kit would show it, then read the advice. Try a sandy soil and a clayey soil with the same results and watch the advice change.</p>
+  <div class="panel" style="max-width:860px">
+    <div class="testrow"><b>Texture</b><div class="chips" id="txSel" role="group" aria-label="Soil texture"></div></div>
+    <div class="testrow"><b>pH</b><div style="display:flex;gap:12px;align-items:center"><input type="range" id="tPH" min="3.5" max="9.5" step="0.1" value="5.2" style="max-width:260px" aria-label="Test pH"><b id="tPHv">5.2</b></div></div>
+    <div class="testrow"><b>Nitrate (N)</b><div class="lv" id="lvN"></div></div>
+    <div class="testrow"><b>Phosphate (P)</b><div class="lv" id="lvP"></div></div>
+    <div class="testrow"><b>Potassium (K)</b><div class="lv" id="lvK"></div></div>
+    <ul class="advice" id="advice" aria-live="polite"></ul>
+  </div>
+
+  <h3>Check your understanding</h3>
+  <div class="qs" data-step="5"></div>
+
+  <div class="stepnav"><button class="btn ghost" data-go="4">Back</button><button class="btn" data-go="6">Next: free response</button></div>
+</section>
+
+<!-- STEP 6 -->
+<section class="step" id="step6" aria-labelledby="t6" hidden>
+  <h2 id="t6" tabindex="-1">6. Free-response questions</h2>
+  <p class="lead">Answer in complete sentences with science vocabulary. Press <b>Check my answer</b> to see which key ideas you covered and what is missing. You can revise and check again.</p>
+  <p class="note prose">The checker looks for key ideas and words, not for perfect wording. Your teacher will review your final answers.</p>
+  <div id="frqs"></div>
+  <div class="stepnav"><button class="btn ghost" data-go="5">Back</button><button class="btn" data-go="7">Next: summary</button></div>
+</section>
+
+<!-- STEP 7 -->
+<section class="step" id="step7" aria-labelledby="t7" hidden>
+  <h2 id="t7" tabindex="-1">7. Summarize and submit</h2>
+  <p class="lead prose">Build a plain-text summary of your scores, lab data, and written answers. Copy it, then paste it into your Canvas assignment.</p>
+  <div class="sumform">
+    <label>Your name <input type="text" id="sName" autocomplete="name"></label>
+    <label>Class or period <input type="text" id="sPeriod"></label>
+  </div>
+  <label style="display:grid;gap:4px;font-weight:700;font-size:.92rem;max-width:760px;margin-bottom:14px">Reflection: what is one thing you learned, and one question you still have?
+    <textarea id="sReflect" rows="3"></textarea>
+  </label>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+    <button class="btn" id="buildBtn">Build summary</button>
+    <button class="btn ghost" id="copyBtn">Copy for Canvas</button>
+    <span class="status" id="copyStatus" role="status"></span>
+  </div>
+  <textarea id="sumOut" rows="22" readonly aria-label="Summary text to copy" placeholder="Press “Build summary” to see your results here."></textarea>
+  <p class="note prose" style="margin-top:8px">Your answers live only in this browser tab. Copy your summary before you close or refresh the page.</p>
+  <div class="stepnav"><button class="btn ghost" data-go="6">Back</button><button class="btn ghost" id="resetBtn">Reset everything</button></div>
+</section>
+
+</main>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- helpers ---------- */
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>[...(r||document).querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(arr,rnd){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function hexRgb(h){h=h.replace('#','');return [0,2,4].map(i=>parseInt(h.substr(i,2),16))}
+
+/* ---------- soil data ---------- */
+const NAMES=['Sand','Loamy sand','Sandy loam','Loam','Silt loam','Silt','Sandy clay loam','Clay loam','Silty clay loam','Sandy clay','Silty clay','Clay'];
+function classify(sand,silt,clay){
+  if(silt+1.5*clay<15) return 'Sand';
+  if(silt+1.5*clay>=15 && silt+2*clay<30) return 'Loamy sand';
+  if((clay>=7&&clay<20&&sand>52&&silt+2*clay>=30)||(clay<7&&silt<50&&silt+2*clay>=30)) return 'Sandy loam';
+  if(clay>=7&&clay<27&&silt>=28&&silt<50&&sand<=52) return 'Loam';
+  if((silt>=50&&clay>=12&&clay<27)||(silt>=50&&silt<80&&clay<12)) return 'Silt loam';
+  if(silt>=80&&clay<12) return 'Silt';
+  if(clay>=20&&clay<35&&silt<28&&sand>45) return 'Sandy clay loam';
+  if(clay>=27&&clay<40&&sand>20&&sand<=45) return 'Clay loam';
+  if(clay>=27&&clay<40&&sand<=20) return 'Silty clay loam';
+  if(clay>=35&&sand>45) return 'Sandy clay';
+  if(clay>=40&&silt>=40) return 'Silty clay';
+  if(clay>=40&&sand<=45&&silt<40) return 'Clay';
+  return 'Loam';
+}
+// ex: sample mix; ksat: saturated hydraulic conductivity (cm/hr, typical); awc: plant-available water (in per ft)
+// ret: share of poured water held by the soil; r: [water holding, nutrient holding, aeration, plant growth] on 1–5
+const CLS={
+ 'Sand':{ex:[90,5,5],ksat:21,awc:0.7,cec:'2–5',cm:3.5,ret:.20,r:[1,1,5,1],feel:'Gritty and loose. Falls apart when squeezed and will not hold a ball.',use:'Drains and warms very fast but needs frequent watering and feeding. Nutrients wash out quickly. Suited to carrots, asparagus, and drought-adapted plants.'},
+ 'Loamy sand':{ex:[82,12,6],ksat:6.11,awc:1.1,cec:'4–8',cm:6,ret:.28,r:[2,2,5,2],feel:'Gritty. Barely holds together as a ball and breaks with a light touch.',use:'Fast draining with low reserves of water and nutrients. Needs compost and regular irrigation.'},
+ 'Sandy loam':{ex:[65,25,10],ksat:2.59,awc:1.4,cec:'5–10',cm:7.5,ret:.36,r:[3,3,4,4],feel:'Gritty but holds a ball that crumbles easily. No ribbon forms.',use:'Easy to dig, warms early in spring, and drains well. Holds moderate water and nutrients, so it may need extra irrigation. Good for root crops and corn.'},
+ 'Loam':{ex:[40,40,20],ksat:1.32,awc:2.0,cec:'10–20',cm:15,ret:.45,r:[4,4,4,5],feel:'Even mix of gritty and smooth. Forms a ball and a short, weak ribbon.',use:'The balanced soil. Drains well yet holds water and nutrients. Good for nearly every garden and farm crop.'},
+ 'Silt loam':{ex:[20,65,15],ksat:0.68,awc:2.4,cec:'10–20',cm:15,ret:.52,r:[5,4,3,5],feel:'Smooth, floury, and soapy when wet. Forms a ball and a weak ribbon.',use:'Holds a lot of water and is very fertile. Can form a crust, erode, and compact if worked while wet. Excellent for wheat, corn, and soybeans.'},
+ 'Silt':{ex:[8,88,4],ksat:0.68,awc:2.4,cec:'8–15',cm:11,ret:.52,r:[5,3,2,3],feel:'Very smooth and powdery, like flour. Hardly any ribbon.',use:'Holds water but is easily eroded by wind and rain and crusts over. Needs ground cover and organic matter.'},
+ 'Sandy clay loam':{ex:[60,15,25],ksat:0.43,awc:1.5,cec:'10–18',cm:14,ret:.45,r:[3,4,3,3],feel:'Gritty and sticky. Ribbon 2.5–5 cm long.',use:'Moderate drainage with fair fertility. Compacts if worked wet.'},
+ 'Clay loam':{ex:[33,34,33],ksat:0.23,awc:1.8,cec:'15–30',cm:22,ret:.50,r:[4,5,2,4],feel:'Smooth and slightly sticky. Ribbon 2.5–5 cm long.',use:'Fertile and holds nutrients well, but drains slowly and warms late in spring.'},
+ 'Silty clay loam':{ex:[10,58,32],ksat:0.15,awc:2.1,cec:'15–30',cm:22,ret:.55,r:[5,5,2,4],feel:'Very smooth and sticky when wet. Ribbon 2.5–5 cm long.',use:'Very productive when drained, but slow to drain and easily compacted.'},
+ 'Sandy clay':{ex:[50,5,45],ksat:0.12,awc:1.6,cec:'20–35',cm:27,ret:.50,r:[3,4,1,2],feel:'Gritty and sticky. Ribbon longer than 5 cm.',use:'Hard when dry and sticky when wet. Slow drainage limits roots.'},
+ 'Silty clay':{ex:[8,47,45],ksat:0.09,awc:1.9,cec:'25–40',cm:32,ret:.58,r:[4,5,1,2],feel:'Very smooth, sticky, and plastic. Ribbon longer than 5 cm.',use:'Holds nutrients but waterlogs easily and is hard to work.'},
+ 'Clay':{ex:[20,20,60],ksat:0.06,awc:1.7,cec:'30–50',cm:40,ret:.60,r:[4,5,1,2],feel:'Sticky and plastic. Rolls into a long, strong ribbon.',use:'Holds nutrients but drains and aerates poorly. Sticky when wet, rock hard when dry, and slow to warm.'}
+};
+const TRI_HSL={'Sand':[50,70,78],'Loamy sand':[40,65,72],'Sandy loam':[30,55,68],'Loam':[90,38,70],'Silt loam':[150,30,68],'Silt':[180,28,72],'Sandy clay loam':[15,50,70],'Clay loam':[60,35,66],'Silty clay loam':[200,30,72],'Sandy clay':[5,45,68],'Silty clay':[225,25,74],'Clay':[265,22,74]};
+const PART={sand:'#d9bb7a',silt:'#a8a094',clay:'#9b5a3a'};
+function hsl(h,s,l){s/=100;l/=100;const k=n=>(n+h/30)%12;const a=s*Math.min(l,1-l);const f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return [Math.round(255*f(0)),Math.round(255*f(8)),Math.round(255*f(4))]}
+function permClass(k){if(k>=51)return 'Very rapid';if(k>=15)return 'Rapid';if(k>=5)return 'Moderately rapid';if(k>=1.5)return 'Moderate';if(k>=.5)return 'Moderately slow';if(k>=.15)return 'Slow';return 'Very slow'}
+function drainRating(k){return k>=15?5:k>=5?4:k>=1?3:k>=.4?2:1}
+const GROW=['','Poor','Limited','Fair','Good','Excellent'];
+function fmtK(k){return k>=10?k.toFixed(0):k>=1?k.toFixed(1):k.toFixed(2)}
+function fmtTime(s){return s<10?s.toFixed(1)+' s':s<90?Math.round(s)+' s':(s/60).toFixed(1)+' min'}
+function segs(n){let h='<span class="segs" aria-hidden="true">';for(let i=1;i<=5;i++)h+='<i'+(i<=n?' class="on"':'')+'></i>';return h+'</span>'}
+
+/* ---------- horizons ---------- */
+const HZ=[
+ {id:'O',name:'O horizon',alias:'Organic layer',fill:'#2a1d14',ink:'#f3ead9',h:44,depth:'0–5 cm (varies)',color:'Black to dark brown',comp:'Mostly organic matter: fallen leaves, twigs, and partly decomposed plants. Very little mineral soil.',role:'Feeds decomposers and returns nitrogen and phosphorus to the soil as it breaks down. Cushions raindrops, which reduces erosion, and slows evaporation.'},
+ {id:'A',name:'A horizon',alias:'Topsoil',fill:'#5b3a22',ink:'#f3ead9',h:96,depth:'5–25 cm',color:'Dark brown, the darkest mineral layer',comp:'Mineral particles (sand, silt, clay) mixed with humus, which is well-decomposed organic matter. Crumbly, with many pores.',role:'Most roots, earthworms, fungi, and bacteria live here. It holds the most plant-available nutrients and water. Farmers till this layer.'},
+ {id:'E',name:'E horizon',alias:'Eluviation (leached) layer',fill:'#cfc9bb',ink:'#2a231c',h:70,depth:'25–40 cm (not present in every soil)',color:'Pale gray or ash-colored',comp:'Mostly sand and silt grains. It looks bleached because clay, iron, and organic matter have been washed out of it.',role:'Water moving down carries clay, iron, aluminum, and dissolved nutrients out of this layer. That loss is called leaching or eluviation. Few nutrients remain for roots.'},
+ {id:'B',name:'B horizon',alias:'Subsoil',fill:'#a8742f',ink:'#fff7e8',h:120,depth:'40–90 cm',color:'Yellow-brown to red-brown',comp:'Enriched with clay, iron, and aluminum oxides carried down from above. Denser than the layers over it.',role:'Where leached materials accumulate (illuviation). It stores water and some nutrients, and deep roots reach it. Heavy clay here can slow drainage.'},
+ {id:'C',name:'C horizon',alias:'Parent material',fill:'#c4a96f',ink:'#2a231c',h:96,depth:'90–150 cm',color:'Light tan or yellowish, mixed with stones',comp:'Broken, partly weathered rock with very little organic matter.',role:'Slowly weathers into the minerals that become the soil above. Little biological activity.'},
+ {id:'R',name:'R horizon',alias:'Bedrock',fill:'#7d8794',ink:'#ffffff',h:100,depth:'150 cm and deeper',color:'Gray, solid rock',comp:'Unweathered bedrock such as granite, limestone, or sandstone.',role:'Not soil. It is the original source of parent material and can limit how deep roots and water can go.'}
+];
+const Y0=40;
+function buildProfile(){
+  const svg=$('#profile'),rnd=mulberry(42),x0=62,x1=336,xs=[];
+  for(let x=x0;x<=x1;x+=11)xs.push(x);
+  if(xs[xs.length-1]!==x1)xs.push(x1);
+  const bnd=[xs.map(x=>[x,Y0])];let cum=Y0;
+  HZ.forEach((h,i)=>{cum+=h.h;if(i<HZ.length-1){const amp=3+rnd()*5,ph=rnd()*6;bnd.push(xs.map(x=>[x,+(cum+amp*Math.sin(x*.05+ph)+(rnd()-.5)*2).toFixed(1)]))}else bnd.push(xs.map(x=>[x,cum]))});
+  const pts=a=>a.map(p=>p.join(',')).join(' L');
+  let defs='',body='',labels='';
+  HZ.forEach((h,i)=>{
+    const top=bnd[i],bot=bnd[i+1];
+    const d='M'+pts(top)+' L'+pts(bot.slice().reverse())+'Z';
+    const ymin=Math.min(...top.map(p=>p[1])),ymax=Math.max(...bot.map(p=>p[1]));
+    let det='';
+    const R=(a,b)=>a+rnd()*(b-a);
+    const dots=(n,cols,r0,r1)=>{let s='';for(let k=0;k<n;k++)s+=`<circle cx="${R(x0,x1).toFixed(1)}" cy="${R(ymin,ymax).toFixed(1)}" r="${R(r0,r1).toFixed(1)}" fill="${cols[Math.floor(rnd()*cols.length)]}"/>`;return s};
+    if(h.id==='O'){for(let k=0;k<26;k++){const c=['#5a3d22','#7a5a30','#3e4a2a','#8b6b3d'][Math.floor(rnd()*4)];det+=`<ellipse cx="${R(x0+6,x1-6).toFixed(1)}" cy="${R(ymin+4,ymax-4).toFixed(1)}" rx="${R(6,10).toFixed(1)}" ry="${R(2.5,4).toFixed(1)}" fill="${c}" transform="rotate(${R(-60,60).toFixed(0)} ${R(x0,x1).toFixed(0)} ${(ymin+ymax)/2})"/>`}det+=dots(30,['#120b06','#4b3320'],1,2)}
+    if(h.id==='A')det=dots(80,['#1c120b','#6d452a','#8a5d38','#2a1a10'],1,2.6);
+    if(h.id==='E')det=dots(95,['#f4f1e8','#b9b4a6','#ffffff','#9a968a'],.8,2.2);
+    if(h.id==='B'){for(let k=0;k<9;k++)det+=`<ellipse cx="${R(x0,x1).toFixed(1)}" cy="${R(ymin,ymax).toFixed(1)}" rx="${R(12,26).toFixed(1)}" ry="${R(5,10).toFixed(1)}" fill="#a4501f" opacity=".35"/>`;det+=dots(80,['#7a4a1a','#c58b46','#d7a25c','#5d3813'],1,2.8)}
+    if(h.id==='C'){for(let k=0;k<15;k++){const cx=R(x0+6,x1-6),cy=R(ymin+6,ymax-6),r=R(7,16),c=['#a89a72','#8e8260','#d8c9a0','#7d7152'][Math.floor(rnd()*4)];let p=[];for(let a=0;a<5;a++){const ang=a/5*6.283+rnd()*.7,rr=r*R(.65,1.1);p.push((cx+Math.cos(ang)*rr).toFixed(1)+','+(cy+Math.sin(ang)*rr).toFixed(1))}det+=`<polygon points="${p.join(' ')}" fill="${c}" stroke="#4d4430" stroke-width="1"/>`}}
+    if(h.id==='R'){det+=`<polygon points="${x0},${ymin+30} ${x0+90},${ymin+8} ${x0+120},${ymin+60} ${x0+30},${ymax}" fill="#99a2ae" stroke="#4b535c" stroke-width="2"/><polygon points="${x0+120},${ymin+60} ${x0+90},${ymin+8} ${x1-40},${ymin+20} ${x1-70},${ymax-10}" fill="#6f7783" stroke="#4b535c" stroke-width="2"/><polygon points="${x1-40},${ymin+20} ${x1},${ymin+40} ${x1},${ymax} ${x1-70},${ymax-10}" fill="#939ca8" stroke="#4b535c" stroke-width="2"/><path d="M${x0+60} ${ymin+40} l14 22 l-8 20 l16 20" fill="none" stroke="#4b535c" stroke-width="2"/>`}
+    defs+=`<clipPath id="clip${h.id}"><path d="${d}"/></clipPath>`;
+    body+=`<g class="hzg" data-id="${h.id}" tabindex="0" role="button" aria-pressed="false" aria-label="${h.name}, ${h.alias}"><path class="shape" d="${d}" fill="${h.fill}"/><g clip-path="url(#clip${h.id})" pointer-events="none">${det}</g><path class="ring" d="${d}"/>`;
+    const my=((top[0][1]+bot[0][1])/2).toFixed(1);
+    body+=`<g class="hzlabel"><circle cx="26" cy="${my}" r="19" fill="${h.fill}"/><text x="26" y="${my}" fill="${h.ink}">${h.id}</text></g></g>`;
+  });
+  // roots and seedling drawn on top
+  let roots='';
+  for(let k=0;k<8;k++){
+    const x=R2(150,260),len=R2(90,250);let d=`M${x.toFixed(0)},${Y0+6}`;
+    const dx=R2(-30,30);
+    d+=` C${(x+dx).toFixed(0)},${(Y0+len*.35).toFixed(0)} ${(x-dx).toFixed(0)},${(Y0+len*.65).toFixed(0)} ${(x+dx*.5).toFixed(0)},${(Y0+len).toFixed(0)}`;
+    roots+=`<path d="${d}" fill="none" stroke="#2a1d14" stroke-width="3.2" opacity=".35"/><path d="${d}" fill="none" stroke="#eadcb4" stroke-width="1.5"/>`;
+  }
+  function R2(a,b){return a+rnd()*(b-a)}
+  const sprout=`<path d="M205 ${Y0+4} C205 ${Y0-10} 207 ${Y0-22} 210 ${Y0-32}" fill="none" stroke="#3c8a4f" stroke-width="3" stroke-linecap="round"/><path d="M209 ${Y0-24} C222 ${Y0-34} 236 ${Y0-30} 240 ${Y0-24} C230 ${Y0-16} 216 ${Y0-18} 209 ${Y0-24}Z" fill="#4da35f"/><path d="M207 ${Y0-14} C196 ${Y0-26} 182 ${Y0-24} 178 ${Y0-17} C188 ${Y0-8} 199 ${Y0-8} 207 ${Y0-14}Z" fill="#3c8a4f"/>`;
+  svg.innerHTML=`<defs>${defs}</defs>${body}<g pointer-events="none">${roots}${sprout}</g>`;
+  svg.addEventListener('click',e=>{const g=e.target.closest('.hzg');if(g)selectHz(g.dataset.id)});
+  svg.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const g=e.target.closest('.hzg');if(g){e.preventDefault();selectHz(g.dataset.id)}}});
+}
+function selectHz(id){
+  const h=HZ.find(x=>x.id===id);
+  $$('.hzg').forEach(g=>{const on=g.dataset.id===id;g.classList.toggle('sel',on);g.setAttribute('aria-pressed',on)});
+  $('#hzInfo').innerHTML=`<h3>${h.name}</h3><p class="alias">${h.alias}</p><dl>
+    <dt>Typical depth</dt><dd>${h.depth}</dd>
+    <dt>Color</dt><dd><span class="swatch" style="background:${h.fill}"></span>${h.color}</dd>
+    <dt>Made of</dt><dd>${h.comp}</dd>
+    <dt>Why it matters</dt><dd>${h.role}</dd></dl>
+    <p class="note" style="margin:14px 0 0">Depths vary a lot from place to place. Not every soil has every horizon.</p>`;
+}
+
+/* ---------- questions ---------- */
+const HZC=['O – Organic layer','A – Topsoil','E – Leached layer','B – Subsoil','C – Parent material','R – Bedrock'];
+const Q=[
+ {id:'h1',step:1,sec:'Soil horizons',type:'mc',fixed:true,row:true,prompt:'A thin surface layer of fallen leaves, twigs, and partly decomposed plant material. Which horizon is this?',choices:HZC,answer:0,explain:'The O horizon is organic material sitting on top of the mineral soil. It is mostly decomposing plant and animal matter.'},
+ {id:'h2',step:1,sec:'Soil horizons',type:'mc',fixed:true,row:true,prompt:'A dark, crumbly layer of mineral particles mixed with humus, where most roots, earthworms, and microbes live.',choices:HZC,answer:1,explain:'This is the A horizon, or topsoil. Humus makes it dark and rich in nutrients, so it is the most important layer for plant growth.'},
+ {id:'h3',step:1,sec:'Soil horizons',type:'mc',fixed:true,row:true,prompt:'A pale gray layer that looks bleached because percolating water carried clay, iron, and organic matter away.',choices:HZC,answer:2,explain:'The E horizon is the zone of eluviation (leaching). What is removed here is deposited lower down.'},
+ {id:'h4',step:1,sec:'Soil horizons',type:'mc',fixed:true,row:true,prompt:'A dense, red-brown layer where clay, iron, and aluminum washed down from above collect.',choices:HZC,answer:3,explain:'The B horizon is the subsoil. Materials leached from the E horizon accumulate here, which is called illuviation.'},
+ {id:'h5',step:1,sec:'Soil horizons',type:'mc',fixed:true,row:true,prompt:'Broken, partly weathered rock fragments with very little organic matter. It is the material the soil above formed from.',choices:HZC,answer:4,explain:'The C horizon is the parent material. Weathering slowly turns it into the soil above.'},
+ {id:'h6',step:1,sec:'Soil horizons',type:'mc',fixed:true,row:true,prompt:'Solid, unweathered rock below every other layer.',choices:HZC,answer:5,explain:'The R horizon is bedrock. It is not soil because it has not been broken down yet.'},
+ {id:'h7',step:1,sec:'Soil horizons',type:'mc',prompt:'Which process moves clay, iron, and dissolved minerals out of the E horizon and deposits them in the B horizon?',choices:['Leaching (eluviation, then illuviation)','Photosynthesis','Compaction','Decomposition'],answer:0,explain:'Water moving downward carries fine particles and dissolved minerals out of the E horizon. They collect in the B horizon. Decomposition breaks down organic matter but does not move minerals between layers.'},
+
+ {id:'t1',step:2,sec:'Texture triangle',type:'mc',prompt:'A soil is 85% sand, 10% silt, and 5% clay. Find it on the triangle. What is its texture class?',choices:['Sand','Loamy sand','Sandy loam','Loam'],answer:1,explain:'It sits just inside the sand corner. It is mostly sand, but the silt and clay are enough to move it out of the “sand” class and into loamy sand.'},
+ {id:'t2',step:2,sec:'Texture triangle',type:'mc',prompt:'A soil is 20% sand, 60% silt, and 20% clay. What is its texture class?',choices:['Loam','Silt loam','Silt','Clay loam'],answer:1,explain:'Silt loam needs at least 50% silt (with some clay). Plain silt needs 80% or more silt and under 12% clay.'},
+ {id:'t3',step:2,sec:'Texture triangle',type:'mc',prompt:'A soil is 35% sand, 30% silt, and 35% clay. What is its texture class?',choices:['Clay loam','Clay','Sandy clay loam','Loam'],answer:0,explain:'With 27–40% clay and 20–45% sand, the mixture falls in the clay loam region. Clay needs 40% or more clay.'},
+ {id:'b1',step:2,sec:'Texture triangle',type:'build',prompt:'Build it: move the triangle point so the mixture is a SANDY LOAM, then press Check.',target:'Sandy loam',explain:'Sandy loam is mostly sand (about 50–85%) with a little clay (under 20%). Try 65% sand, 25% silt, 10% clay.'},
+ {id:'b2',step:2,sec:'Texture triangle',type:'build',prompt:'Build it: move the triangle point so the mixture is a SILT LOAM, then press Check.',target:'Silt loam',explain:'Silt loam has at least 50% silt and some clay. Try 20% sand, 65% silt, 15% clay.'},
+ {id:'t4',step:2,sec:'Texture triangle',type:'mc',prompt:'Which list puts soil particles in order from largest to smallest?',choices:['Sand, silt, clay','Clay, silt, sand','Silt, sand, clay','Sand, clay, silt'],answer:0,explain:'Sand is 0.05–2 mm, silt is 0.002–0.05 mm, and clay is smaller than 0.002 mm.'},
+ {id:'t5',step:2,sec:'Texture triangle',type:'mc',prompt:'Compared with a sandy soil, a soil with 60% clay will most likely have…',choices:['Lower infiltration but more water and nutrient holding','Higher infiltration and less water holding','Higher infiltration and more nutrient holding','The same properties, because texture does not affect water movement'],answer:0,explain:'Clay particles are tiny, so the pores are tiny. Water moves slowly, but clay surfaces hold water and nutrient ions tightly.'},
+
+ {id:'l1',step:3,sec:'Drainage lab',type:'mc',prompt:'In the drainage test, which mixture released the most water in 60 seconds?',choices:['Sand','Loam','Silt loam','Clay'],answer:0,explain:'Sand has large pores that connect, so water passes through quickly. About 160 mL drained from the sand in the test.'},
+ {id:'l2',step:3,sec:'Drainage lab',type:'mc',prompt:'Which order shows drainage from FASTEST to SLOWEST?',choices:['Sand, sandy loam, loam, silt loam, clay','Clay, silt loam, loam, sandy loam, sand','Loam, sand, clay, sandy loam, silt loam','Sandy loam, sand, silt loam, loam, clay'],answer:0,explain:'Permeability falls as the soil gets finer: sand, then sandy loam, loam, silt loam, and clay.'},
+ {id:'l3',step:3,sec:'Drainage lab',type:'mc',prompt:'Which description fits a soil with HIGH filtration (infiltration) and high permeability?',choices:['Mostly sand, with large pores that connect','Mostly clay, with tiny pores packed tightly','Mostly fine silt that crusts over at the surface','Soil saturated with water already'],answer:0,explain:'Water moves fastest through large, connected pores. Fine particles make small pores and slow flow, and a saturated soil cannot take in more water.'},
+ {id:'l4',step:3,sec:'Drainage lab',type:'mc',prompt:'Sand drains fastest, yet it is a poor choice for most crops. Why?',choices:['It holds little water and few nutrients, so both wash away','It has no air spaces','It holds too much water','It has too much clay'],answer:0,explain:'Sand has low water-holding capacity and a very low ability to hold nutrient ions. Water and dissolved nutrients such as nitrate drain below the roots.'},
+ {id:'l5',step:3,sec:'Drainage lab',type:'mc',prompt:'Which texture is generally the best all-round choice for plant growth?',choices:['Loam','Pure sand','Pure clay','Pure silt'],answer:0,explain:'Loam is a balance. It drains well enough to keep air around roots and still holds water and nutrients. Sandy loam and silt loam also grow plants well.'},
+
+ {id:'c1',step:4,sec:'Comparing mixtures',type:'mc',prompt:'Which statement correctly compares silt loam with sandy loam?',choices:['Silt loam feels smooth and holds more water, while sandy loam feels gritty and drains faster.','Sandy loam feels smooth and floury and holds more water than silt loam.','They have the same particle sizes and differ only in color.','Silt loam drains faster because silt particles are bigger than sand.'],answer:0,explain:'Sandy loam is dominated by larger sand grains, so it drains quickly but holds less. Silt loam is dominated by small silt particles, so it holds more water and nutrients and drains more slowly.'},
+ {id:'c2',step:4,sec:'Comparing mixtures',type:'mc',prompt:'A grower wants a soil that warms quickly in spring and is easy to dig, and does not mind irrigating often. Which is the better choice?',choices:['Sandy loam','Silt loam','Clay','Silty clay'],answer:0,explain:'Sandy loam drains and warms quickly and is light to work. The trade-off is lower water and nutrient holding, so it needs more irrigation.'},
+
+ {id:'n1',step:5,sec:'pH and nutrients',type:'mc',prompt:'In which pH range are nitrogen, phosphorus, and potassium all most available to plants?',choices:['6.0–7.0','3.0–4.5','8.5–10','pH does not change availability'],answer:0,explain:'Near neutral to slightly acidic, microbes work well and phosphate stays dissolved. Most crops grow best at 6.0–7.0.'},
+ {id:'n2',step:5,sec:'pH and nutrients',type:'mc',prompt:'A soil at pH 4.5 holds plenty of phosphate, but plants have purple leaves and weak roots. What is the most likely cause?',choices:['Acidic conditions let phosphate bind with aluminum and iron, so plants cannot use it','Too much nitrate in the soil','High pH releases too much phosphate','Phosphate dissolves completely in acidic soil and drains away'],answer:0,explain:'In acidic soil, phosphate forms insoluble compounds with aluminum and iron. The phosphate is present but locked up.'},
+ {id:'n3',step:5,sec:'pH and nutrients',type:'mc',prompt:'Nitrate (NO₃⁻) is very soluble and carries a negative charge, so soil particles hold it poorly. Where is nitrate most likely to be lost by leaching?',choices:['Sandy soil after heavy rain','Dry clay soil','Compacted clay loam with no rain','Solid bedrock'],answer:0,explain:'Sandy soils have fast drainage and few binding sites. Heavy rain flushes nitrate below the root zone.'},
+ {id:'n4',step:5,sec:'pH and nutrients',type:'mc',prompt:'Which nutrient helps plants control water loss through their stomata and improves disease resistance?',choices:['Potassium','Nitrate','Phosphate','Sand'],answer:0,explain:'Potassium regulates stomata and water balance, and it supports enzyme activity, disease resistance, and fruit quality.'},
+ {id:'n5',step:5,sec:'pH and nutrients',type:'mc',prompt:'Extra nitrate and phosphate washing from fertilized fields can cause algal blooms in lakes. What is this process called?',choices:['Eutrophication','Eluviation','Nitrogen fixation','Weathering'],answer:0,explain:'Extra nutrients feed algae. When the algae die and decompose, oxygen in the water drops, which harms fish.'},
+ {id:'n6',step:5,sec:'pH and nutrients',type:'mc',prompt:'A soil test shows pH 5.0, adequate nitrate, LOW phosphate, and adequate potassium. What is the best first step?',choices:['Apply limestone to raise the pH, then retest','Add more nitrogen fertilizer','Add sulfur to lower the pH further','Do nothing, since low phosphate is normal at pH 5'],answer:0,explain:'At pH 5, phosphate is tied up by aluminum and iron. Raising the pH toward 6–7 frees phosphate, and adding phosphate fertilizer alone would be partly wasted.'}
+];
+const STEPQ={};Q.forEach(q=>{(STEPQ[q.step]=STEPQ[q.step]||[]).push(q)});
+const ANS={};      // id -> {ok, pick, tries}
+const MCTOTAL=Q.length;
+
+function mountQuestions(){
+  const rnd=mulberry((Date.now()%100000)+7);
+  $$('.qs').forEach(box=>{
+    const step=+box.dataset.step;
+    (STEPQ[step]||[]).forEach((q,i)=>{
+      const wrap=document.createElement('div');wrap.className='q';wrap.id='q-'+q.id;
+      const n=Q.indexOf(q)+1;
+      let h=`<p class="prompt" id="p-${q.id}"><span class="num">${n}.</span>${q.prompt}</p>`;
+      if(q.type==='mc'){
+        const order=q.fixed?q.choices.map((_,k)=>k):shuffle(q.choices.map((_,k)=>k),rnd);
+        q._order=order;
+        h+=`<div class="choices${q.row?' row':''}" role="group" aria-labelledby="p-${q.id}">`+order.map(k=>`<button type="button" class="choice" data-k="${k}"><span class="mark"></span>${esc(q.choices[k])}</button>`).join('')+'</div>';
+      }else{
+        h+=`<button type="button" class="btn sm" data-check="1">Check my triangle</button>`;
+      }
+      h+='<div class="fb" aria-live="polite"></div>';
+      wrap.innerHTML=h;box.appendChild(wrap);
+      wrap.addEventListener('click',e=>{
+        const c=e.target.closest('.choice');
+        if(c&&q.type==='mc'&&!ANS[q.id])answerMC(q,wrap,+c.dataset.k);
+        if(e.target.closest('[data-check]'))checkBuild(q,wrap);
+      });
+    });
+  });
+}
+function answerMC(q,wrap,k){
+  const ok=k===q.answer;
+  ANS[q.id]={ok,pick:q.choices[k],tries:1};
+  $$('.choice',wrap).forEach(b=>{
+    const kk=+b.dataset.k;b.disabled=true;
+    if(kk===q.answer){b.classList.add('right');$('.mark',b).textContent='✓'}
+    else if(kk===k){b.classList.add('wrong');$('.mark',b).textContent='✗'}
+  });
+  const fb=$('.fb',wrap);
+  fb.className='fb '+(ok?'ok':'no');
+  fb.innerHTML=ok?`<strong>Correct.</strong>${q.explain}`:`<strong>Not quite.</strong>The answer is “${esc(q.choices[q.answer])}”. ${q.explain}`;
+  wrap.classList.add('done',ok?'ok':'no');
+  refresh();
+}
+function checkBuild(q,wrap){
+  const cur=classify(S.sand,S.silt,S.clay);
+  const rec=ANS[q.id]||{ok:false,pick:'',tries:0};
+  rec.tries++;rec.pick=`Triangle at ${S.sand}% sand, ${S.silt}% silt, ${S.clay}% clay (${cur})`;
+  const fb=$('.fb',wrap);
+  if(cur===q.target){
+    rec.ok=true;fb.className='fb ok';
+    fb.innerHTML=`<strong>Correct.</strong>${S.sand}% sand, ${S.silt}% silt, and ${S.clay}% clay is a ${cur.toLowerCase()}. ${q.explain}`;
+    wrap.classList.add('done','ok');
+    const b=$('[data-check]',wrap);b.disabled=true;
+  }else{
+    fb.className='fb no';
+    fb.innerHTML=`<strong>Not yet.</strong>Your triangle shows ${cur.toLowerCase()} (${S.sand}/${S.silt}/${S.clay}). ${rec.tries>=2?q.explain:'Adjust the point and try again.'}`;
+  }
+  ANS[q.id]=rec;refresh();
+}
+
+/* ---------- texture triangle ---------- */
+const S={sand:40,silt:40,clay:20};
+let geo=null,base=null;
+function setComp(which,v){
+  v=clamp(Math.round(v),0,100);
+  const keys=['sand','silt','clay'],o=keys.filter(k=>k!==which),rest=100-v,sum=S[o[0]]+S[o[1]];
+  const a=sum===0?Math.round(rest/2):Math.round(rest*S[o[0]]/sum);
+  S[which]=v;S[o[0]]=a;S[o[1]]=rest-a;updateTri();
+}
+function setFromPoint(x,y){
+  const g=geo;if(!g)return;
+  const c=clamp((g.by-y)/g.h,0,1),d=(x-g.tx)*2/g.side,rem=1-c;
+  let t=(rem+d)/2,s=(rem-d)/2;
+  if(t<0){t=0;s=rem}if(s<0){s=0;t=rem}
+  const clay=Math.round(c*100),r=100-clay,share=(s+t)>0?s/(s+t):.5,sand=Math.round(r*share);
+  S.clay=clay;S.sand=sand;S.silt=r-sand;updateTri();
+}
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function buildBase(W,H,dpr,g){
+  const w=Math.round(W*dpr),h=Math.round(H*dpr),idx={};NAMES.forEach((n,i)=>idx[n]=i);
+  const cls=new Int8Array(w*h).fill(-1),sums=NAMES.map(()=>[0,0,0]);
+  for(let py=0;py<h;py++){
+    const y=py/dpr,c=(g.by-y)/g.h;if(c<0||c>1)continue;
+    for(let px=0;px<w;px++){
+      const x=px/dpr,d=(x-g.tx)*2/g.side,rem=1-c,t=(rem+d)/2,s=(rem-d)/2;
+      if(t<0||s<0)continue;
+      const k=idx[classify(s*100,t*100,c*100)];cls[py*w+px]=k;sums[k][0]+=x;sums[k][1]+=y;sums[k][2]++;
+    }
+  }
+  const img=new ImageData(w,h),cols=NAMES.map(n=>hsl(...TRI_HSL[n]));
+  for(let py=0;py<h;py++)for(let px=0;px<w;px++){
+    const i=py*w+px,k=cls[i];if(k<0)continue;
+    const l=px>0?cls[i-1]:-1,r=px<w-1?cls[i+1]:-1,u=py>0?cls[i-w]:-1,dn=py<h-1?cls[i+w]:-1;
+    const o=i*4;
+    if(l!==k||r!==k||u!==k||dn!==k){img.data[o]=42;img.data[o+1]=35;img.data[o+2]=28;img.data[o+3]=215}
+    else{const c=cols[k];img.data[o]=c[0];img.data[o+1]=c[1];img.data[o+2]=c[2];img.data[o+3]=255}
+  }
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').putImageData(img,0,0);
+  return {key:W+'x'+dpr,canvas:cv,labels:NAMES.map((n,i)=>({n,x:sums[i][0]/Math.max(1,sums[i][2]),y:sums[i][1]/Math.max(1,sums[i][2])}))};
+}
+function drawTri(){
+  const cv=$('#tri');if(!cv)return;
+  const W=cv.parentElement.clientWidth;if(!W)return;
+  const dpr=window.devicePixelRatio||1,ml=56,side=W-ml*2,h=side*0.8660254,mt=36,mb=58,H=Math.round(mt+h+mb);
+  cv.style.height=H+'px';cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+  geo={tx:W/2,ty:mt,bx0:ml,bx1:ml+side,by:mt+h,h,side};
+  if(!base||base.key!==W+'x'+dpr)base=buildBase(W,H,dpr,geo);
+  const ink=cssVar('--ink')||'#2a231c',muted=cssVar('--muted')||'#5b5449';
+  ctx.clearRect(0,0,W,H);ctx.drawImage(base.canvas,0,0,W,H);
+  const pt=(s,t,c)=>[geo.tx+(t-s)*side/2,geo.by-c*h];
+  // grid
+  ctx.strokeStyle='rgba(42,35,28,.18)';ctx.lineWidth=1;
+  for(let v=.2;v<.99;v+=.2){
+    let a=pt(1-v,0,v),b=pt(0,1-v,v);ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();      // clay
+    a=pt(1-v,v,0);b=pt(0,v,1-v);ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();          // silt
+    a=pt(v,1-v,0);b=pt(v,0,1-v);ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();          // sand
+  }
+  // labels in regions
+  const fs=clamp(W/38,9.5,12.5);ctx.font=`700 ${fs}px "Atkinson Hyperlegible",system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#2a231c';
+  base.labels.forEach(l=>{
+    const w=l.n.split(' ');let lines=[l.n];
+    if(l.n.length>9)lines=w.length===2?w:[w.slice(0,2).join(' '),w[2]];
+    lines.forEach((t,i)=>ctx.fillText(t,l.x,l.y+(i-(lines.length-1)/2)*(fs+1)));
+  });
+  // axes text
+  ctx.fillStyle=muted;ctx.font=`${clamp(W/42,10,12.5)}px "Atkinson Hyperlegible",system-ui,sans-serif`;
+  for(let v=20;v<=80;v+=20){
+    let p=pt(1-v/100,0,v/100);ctx.textAlign='right';ctx.fillText(v,p[0]-8,p[1]);
+    p=pt(0,v/100,1-v/100);ctx.textAlign='left';ctx.fillText(v,p[0]+8,p[1]);
+    p=pt(v/100,1-v/100,0);ctx.textAlign='center';ctx.fillText(v,p[0],p[1]+14);
+  }
+  ctx.fillStyle=ink;ctx.font=`700 ${clamp(W/36,11,13.5)}px "Atkinson Hyperlegible",system-ui,sans-serif`;
+  let m=pt(.5,0,.5);ctx.save();ctx.translate(m[0]-34,m[1]-4);ctx.rotate(-Math.PI/3);ctx.textAlign='center';ctx.fillText('% clay  →',0,0);ctx.restore();
+  m=pt(0,.5,.5);ctx.save();ctx.translate(m[0]+36,m[1]-4);ctx.rotate(Math.PI/3);ctx.textAlign='center';ctx.fillText('% silt  →',0,0);ctx.restore();
+  ctx.textAlign='center';ctx.fillText('←  % sand',geo.tx,geo.by+36);
+  // marker
+  const p=pt(S.sand/100,S.silt/100,S.clay/100);
+  ctx.beginPath();ctx.arc(p[0],p[1],10,0,6.283);ctx.fillStyle='#fff';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='#2a231c';ctx.stroke();
+  ctx.beginPath();ctx.arc(p[0],p[1],3.6,0,6.283);ctx.fillStyle='#2a231c';ctx.fill();
+}
+function updateTri(){
+  $('#rSand').value=S.sand;$('#rSilt').value=S.silt;$('#rClay').value=S.clay;
+  $('#oSand').textContent=S.sand+'%';$('#oSilt').textContent=S.silt+'%';$('#oClay').textContent=S.clay+'%';
+  drawTri();renderProps();
+  if(typeof refreshLabCustom==='function')refreshLabCustom();
+}
+function renderProps(){
+  const cls=classify(S.sand,S.silt,S.clay),d=CLS[cls],dr=drainRating(d.ksat);
+  $('#props').innerHTML=`<p class="readout">${cls}</p>
+   <div class="mixbar" role="img" aria-label="${S.sand} percent sand, ${S.silt} percent silt, ${S.clay} percent clay"><i style="width:${S.sand}%;background:${PART.sand}"></i><i style="width:${S.silt}%;background:${PART.silt}"></i><i style="width:${S.clay}%;background:${PART.clay}"></i></div>
+   <div class="legend"><span style="--p:${PART.sand}">Sand ${S.sand}%</span><span style="--p:${PART.silt}">Silt ${S.silt}%</span><span style="--p:${PART.clay}">Clay ${S.clay}%</span></div>
+   <p style="margin:0 0 10px"><b>Feel test:</b> ${d.feel}</p>
+   <div class="meter"><span class="lab">Filtration and permeability</span>${segs(dr)}<span class="val">${permClass(d.ksat)}<br><span class="note">${fmtK(d.ksat)} cm/hr</span></span></div>
+   <div class="meter"><span class="lab">Water holding</span>${segs(d.r[0])}<span class="val">${d.awc} in water per ft</span></div>
+   <div class="meter"><span class="lab">Nutrient holding</span>${segs(d.r[1])}<span class="val">CEC ${d.cec}</span></div>
+   <div class="meter"><span class="lab">Air in pores</span>${segs(d.r[2])}<span class="val">${d.r[2]>=4?'Well aerated':d.r[2]>=3?'Adequate':'Often too wet'}</span></div>
+   <div class="meter"><span class="lab">Plant growth</span>${segs(d.r[3])}<span class="val"><b>${GROW[d.r[3]]}</b></span></div>
+   <p style="margin:12px 0 0">${d.use}</p>
+   <p class="note" style="margin:8px 0 0">CEC (cation exchange capacity) shows how many nutrient ions like K⁺ the soil can hold, in meq per 100 g. Values are typical.</p>`;
+}
+function initTri(){
+  ['Sand','Silt','Clay'].forEach(n=>$('#r'+n).addEventListener('input',e=>setComp(n.toLowerCase(),+e.target.value)));
+  const pre=['Sand','Sandy loam','Loam','Silt loam','Clay loam','Clay'];
+  $('#presets').innerHTML='<span class="note" style="align-self:center">Try:</span>'+pre.map(n=>`<button type="button" class="pill" data-pre="${n}" aria-pressed="false">${n}</button>`).join('');
+  $('#presets').addEventListener('click',e=>{const b=e.target.closest('[data-pre]');if(!b)return;const ex=CLS[b.dataset.pre].ex;S.sand=ex[0];S.silt=ex[1];S.clay=ex[2];updateTri()});
+  const cv=$('#tri');let drag=false;
+  const pos=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+  cv.addEventListener('pointerdown',e=>{drag=true;cv.setPointerCapture(e.pointerId);setFromPoint(...pos(e))});
+  cv.addEventListener('pointermove',e=>{if(drag)setFromPoint(...pos(e))});
+  cv.addEventListener('pointerup',()=>{drag=false});cv.addEventListener('pointercancel',()=>{drag=false});
+  updateTri();
+}
+
+/* ---------- drainage lab ---------- */
+const MIXES=[
+ {id:'sand',label:'Sand',cls:'Sand'},
+ {id:'sandyloam',label:'Sandy loam',cls:'Sandy loam'},
+ {id:'loam',label:'Loam',cls:'Loam'},
+ {id:'siltloam',label:'Silt loam',cls:'Silt loam'},
+ {id:'clay',label:'Clay',cls:'Clay'},
+ {id:'custom',label:'My mix from step 2',cls:null}
+];
+const LAB={};let labSel='sand',running=false;
+function mixInfo(id){
+  const m=MIXES.find(x=>x.id===id);
+  if(id==='custom'){const c=classify(S.sand,S.silt,S.clay);return {id,label:`My mix`,cls:c,comp:[S.sand,S.silt,S.clay]}}
+  return {id,label:m.label,cls:m.cls,comp:CLS[m.cls].ex};
+}
+function model(cls){const d=CLS[cls],rate=0.6*Math.pow(d.ksat,0.75),held=Math.round(200*d.ret),vd=200-held;return {rate,held,vd,d60:Math.min(vd,rate*60),t50:50/rate,ksat:d.ksat}}
+function mixColor(c){const a=hexRgb(PART.sand),b=hexRgb(PART.silt),d=hexRgb(PART.clay);const w=[c[0],c[1],c[2]].map(v=>v/100);return '#'+[0,1,2].map(i=>Math.round((a[i]*w[0]+b[i]*w[1]+d[i]*w[2])*.9).toString(16).padStart(2,'0')).join('')}
+function drawGrains(comp){
+  const rnd=mulberry(7);let h='';
+  for(let i=0;i<170;i++){
+    const x=86+rnd()*88,y=123+rnd()*92,p=rnd()*100;let r,c;
+    if(p<comp[0]){r=2.6+rnd()*1.2;c=PART.sand}else if(p<comp[0]+comp[1]){r=1.4+rnd()*.8;c=PART.silt}else{r=.8+rnd()*.5;c=PART.clay}
+    h+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${c}" stroke="rgba(0,0,0,.3)" stroke-width=".4"/>`;
+  }
+  $('#grains').innerHTML=h;$('#soilfill').setAttribute('fill',mixColor(comp));
+}
+function applyRig(t,mi,mod){
+  const drained=Math.min(mod.vd,mod.rate*t);
+  const tFill=Math.max(2,mod.held/(1.5*mod.rate));
+  const held=mod.held*Math.min(1,t/tFill);
+  const pond=Math.max(0,200-drained-held);
+  const ph=90*pond/200;
+  $('#pond').setAttribute('y',(120-ph).toFixed(1));$('#pond').setAttribute('height',ph.toFixed(1));
+  const fh=80*drained/200;
+  $('#flaskwater').setAttribute('y',(370-fh).toFixed(1));$('#flaskwater').setAttribute('height',fh.toFixed(1));
+  const flowing=t>0&&drained<mod.vd-.01&&drained>0;
+  const st=$('#stream');st.setAttribute('y2',flowing?(370-fh).toFixed(1):'252');st.setAttribute('stroke-width',(1.5+Math.min(4,mod.rate*.8)).toFixed(1));
+  $('#rdTime').textContent=Math.round(t)+' s';$('#rdDrain').textContent=Math.round(drained)+' mL';$('#rdPond').textContent=Math.round(pond)+' mL';
+}
+function resetRig(){
+  const mi=mixInfo(labSel);drawGrains(mi.comp);
+  const mod=model(mi.cls);applyRig(0,mi,mod);
+  $('#pond').setAttribute('height','0');
+  $('#flaskwater').setAttribute('height','0');$('#stream').setAttribute('y2','252');
+  $('#rdTime').textContent='0 s';$('#rdDrain').textContent='0 mL';$('#rdPond').textContent='200 mL';
+}
+function renderMixBtns(){
+  $('#mixbtns').innerHTML=MIXES.map(m=>{
+    const mi=mixInfo(m.id);
+    return `<button type="button" class="pill" data-mix="${m.id}" aria-pressed="${m.id===labSel}"><b>${esc(m.label)}</b><small>${mi.comp[0]}% sand · ${mi.comp[1]}% silt · ${mi.comp[2]}% clay${m.id==='custom'?' ('+mi.cls+')':''}</small></button>`;
+  }).join('');
+}
+function refreshLabCustom(){if($('#mixbtns')&&$('#mixbtns').children.length){renderMixBtns();if(labSel==='custom'&&!running)resetRig()}}
+function renderLabTable(){
+  const rows=Object.values(LAB);
+  $('#labTable tbody').innerHTML=rows.length?rows.map(r=>`<tr><td><b>${esc(r.label)}</b></td><td>${r.cls} (${r.comp.join('/')})</td><td>${permClass(r.ksat)}</td><td>${Math.round(r.d60)} mL</td><td>${fmtTime(r.t50)}</td><td>${r.held} mL</td></tr>`).join(''):'<tr><td colspan="6" class="note">No tests yet. Choose a mixture and press Pour.</td></tr>';
+}
+function runTest(){
+  if(running)return;running=true;
+  const mi=mixInfo(labSel),mod=model(mi.cls);
+  $('#pourBtn').disabled=true;$$('[data-mix]').forEach(b=>b.disabled=true);
+  const dur=reduceMotion?10:6000,t0=performance.now();
+  function frame(now){
+    const p=Math.min(1,(now-t0)/dur);applyRig(p*60,mi,mod);
+    if(p<1)requestAnimationFrame(frame);
+    else{
+      LAB[labSel]={id:labSel,label:mi.label,cls:mi.cls,comp:mi.comp.slice(),ksat:mod.ksat,d60:mod.d60,t50:mod.t50,held:mod.held};
+      running=false;$('#pourBtn').disabled=false;$$('[data-mix]').forEach(b=>b.disabled=false);renderLabTable();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+function initLab(){
+  renderMixBtns();resetRig();renderLabTable();
+  $('#mixbtns').addEventListener('click',e=>{const b=e.target.closest('[data-mix]');if(!b||running)return;labSel=b.dataset.mix;renderMixBtns();resetRig()});
+  $('#pourBtn').addEventListener('click',runTest);
+}
+
+/* ---------- compare ---------- */
+function renderCompare(){
+  const a=$('#cmpA').value,b=$('#cmpB').value,A=CLS[a],B=CLS[b];
+  const domin=d=>{const n=['sand','silt','clay'],i=d.ex.indexOf(Math.max(...d.ex));return n[i]};
+  const bar=d=>`<div class="mixbar" style="margin:4px 0 2px"><i style="width:${d.ex[0]}%;background:${PART.sand}"></i><i style="width:${d.ex[1]}%;background:${PART.silt}"></i><i style="width:${d.ex[2]}%;background:${PART.clay}"></i></div><span class="note">${d.ex[0]} sand · ${d.ex[1]} silt · ${d.ex[2]} clay</span>`;
+  const rows=[
+   ['Typical mix',bar(A),bar(B),false],
+   ['Dominant particle',domin(A),domin(B),domin(A)!==domin(B)],
+   ['Feel',A.feel,B.feel,false],
+   ['Permeability',`${permClass(A.ksat)} (${fmtK(A.ksat)} cm/hr)`,`${permClass(B.ksat)} (${fmtK(B.ksat)} cm/hr)`,drainRating(A.ksat)!==drainRating(B.ksat)],
+   ['Water holding',`${A.awc} in/ft`,`${B.awc} in/ft`,Math.abs(A.awc-B.awc)>=.3],
+   ['Nutrient holding (CEC)',A.cec+' meq/100 g',B.cec+' meq/100 g',A.cm!==B.cm],
+   ['Plant growth',GROW[A.r[3]],GROW[B.r[3]],A.r[3]!==B.r[3]],
+   ['Best uses and cautions',A.use,B.use,false]
+  ];
+  $('#cmpTable').innerHTML=`<thead><tr><th style="width:11rem"></th><th>${a}</th><th>${b}</th></tr></thead><tbody>`+rows.map(r=>`<tr><th scope="row">${r[0]}</th><td${r[3]?' class="diff"':''}>${r[1]}</td><td${r[3]?' class="diff"':''}>${r[2]}</td></tr>`).join('')+'</tbody>';
+  const L=[];
+  if(a===b){L.push('Pick two different classes to compare.')}
+  else{
+    const fast=A.ksat>B.ksat?[a,b,A,B]:[b,a,B,A],ratio=fast[2].ksat/fast[3].ksat;
+    L.push(`<b>Drainage:</b> ${fast[0]} has higher filtration and permeability than ${fast[1]} (${fmtK(fast[2].ksat)} vs ${fmtK(fast[3].ksat)} cm/hr, about ${ratio>=10?Math.round(ratio):ratio.toFixed(1)} times as fast). Water moves faster through ${fast[0]} because it has larger, better-connected pores.`);
+    if(Math.abs(A.awc-B.awc)>=.1){const w=A.awc>B.awc?[a,b,A,B]:[b,a,B,A];L.push(`<b>Water holding:</b> ${w[0]} holds more plant-available water (${w[2].awc} vs ${w[3].awc} inches per foot), so plants go longer between waterings.`)}
+    if(A.cm!==B.cm){const n=A.cm>B.cm?[a,b,A,B]:[b,a,B,A];L.push(`<b>Nutrients:</b> ${n[0]} holds more nutrient ions such as K⁺ (CEC ${n[2].cec} vs ${n[3].cec}). ${n[1]} loses nitrate and potassium to leaching more easily.`)}
+    const g=A.r[3]>B.r[3]?[a,b]:A.r[3]<B.r[3]?[b,a]:null;
+    L.push(g?`<b>Plant growth:</b> ${g[0]} is generally rated higher than ${g[1]} for plant growth.`:`<b>Plant growth:</b> Both are rated ${GROW[A.r[3]].toLowerCase()} for plant growth, but for different reasons. Check the cautions in the last row.`);
+    L.push(`<b>Texture in the hand:</b> ${a}: ${A.feel.toLowerCase()} ${b}: ${B.feel.toLowerCase()}`);
+  }
+  $('#cmpDiffs').innerHTML=L.map(x=>`<li>${x}</li>`).join('');
+}
+function initCompare(){
+  const opts=NAMES.map(n=>`<option>${n}</option>`).join('');
+  $('#cmpA').innerHTML=opts;$('#cmpB').innerHTML=opts;$('#cmpA').value='Sandy loam';$('#cmpB').value='Silt loam';
+  $('#cmpA').addEventListener('change',renderCompare);$('#cmpB').addEventListener('change',renderCompare);renderCompare();
+}
+
+/* ---------- pH and nutrients ---------- */
+function interp(pts,x){if(x<=pts[0][0])return pts[0][1];for(let i=1;i<pts.length;i++){if(x<=pts[i][0]){const a=pts[i-1],b=pts[i];return a[1]+(b[1]-a[1])*(x-a[0])/(b[0]-a[0])}}return pts[pts.length-1][1]}
+const AV={
+ N:[[3.5,.25],[4.5,.4],[5.5,.8],[6,1],[8,1],[9.5,.75]],
+ P:[[3.5,.05],[4.5,.15],[5.5,.55],[6,.9],[6.5,1],[7.2,1],[8,.55],[9.5,.25]],
+ K:[[3.5,.25],[4.5,.4],[5.5,.75],[6,.95],[7,1],[9.5,1]]
+};
+function availWord(v){return v>=.85?'Excellent':v>=.6?'Good':v>=.35?'Limited':'Poor'}
+function phCat(p){return p<4.5?'Extremely acidic':p<5.5?'Strongly acidic':p<6.5?'Slightly acidic':p<=7.5?'Neutral':p<=8.5?'Alkaline':'Strongly alkaline'}
+const PLANTS=[['Blueberries',4.5,5.5],['Potatoes',5.0,6.0],['Corn',5.8,7.0],['Tomatoes',6.0,6.8],['Lettuce',6.0,7.0],['Alfalfa',6.5,7.5]];
+function renderPH(){
+  const p=+$('#phSlider').value;
+  $('#phVal').textContent=p.toFixed(1);$('#phCat').textContent=phCat(p);
+  ['N','P','K'].forEach(k=>{const v=interp(AV[k],p);$('#av'+k).style.width=Math.round(v*100)+'%';$('#st'+k).textContent=availWord(v)+' · '+Math.round(v*100)+'%'});
+  $('#phNote').textContent=p<5.5?'Below about 5.5, aluminum and manganese can reach levels that harm roots, and phosphate binds with aluminum and iron.':p>7.5?'Above about 7.5, phosphate binds with calcium, and iron and zinc become harder for plants to take up.':'In this range microbes are active, phosphate stays dissolved, and most nutrients are available.';
+  const pl=PLANTS[+$('#plantSel').value];
+  const msg=p<pl[1]?`${pl[0]} prefer pH ${pl[1]}–${pl[2]}. At ${p.toFixed(1)} the soil is too acidic. Ground limestone (calcium carbonate) raises pH.`:p>pl[2]?`${pl[0]} prefer pH ${pl[1]}–${pl[2]}. At ${p.toFixed(1)} the soil is too alkaline. Elemental sulfur or acidifying fertilizers lower pH.`:`${pl[0]} prefer pH ${pl[1]}–${pl[2]}, so ${p.toFixed(1)} is in their range.`;
+  $('#plantOut').innerHTML=`<b>${msg}</b>`;
+}
+const NUT={
+ N:[['Form plants take up','Nitrate (NO₃⁻) and ammonium (NH₄⁺)'],['What it does','Builds proteins and chlorophyll, so it drives leafy green growth'],['Too little','Pale yellow older leaves and stunted growth'],['Too much','Lots of leaves but few fruits; weak stems. Extra washes into water and feeds algae'],['In the soil','Nitrate is a negative ion that clay does not hold, so it moves with water and leaches fast, especially from sandy soil'],['Common sources','Decomposing organic matter, legume roots (nitrogen fixation), manure, fertilizer']],
+ P:[['Form plants take up','Phosphate (H₂PO₄⁻ and HPO₄²⁻)'],['What it does','Stores and moves energy (ATP), and supports root growth, flowers, and seeds'],['Too little','Stunted plants, poor roots, purplish leaves'],['Too much','Rarely hurts plants directly, but runoff drives eutrophication in lakes'],['In the soil','Moves very little. It binds with aluminum and iron in acidic soil and with calcium in alkaline soil, so pH controls how much is available'],['Common sources','Weathering of rock, organic matter, bone meal, phosphate fertilizer']],
+ K:[['Form plants take up','Potassium ion (K⁺)'],['What it does','Controls stomata and water balance, and supports disease resistance and fruit quality'],['Too little','Yellow or brown scorched edges on older leaves, weak stems'],['Too much','Can block uptake of magnesium and calcium'],['In the soil','A positive ion held on negative clay and humus surfaces (CEC). Sandy soils hold little and lose it to leaching'],['Common sources','Weathering of minerals like feldspar and mica, potash, compost, wood ash']]
+};
+function renderNut(n){
+  $$('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.n===n));
+  $('#nutDl').innerHTML=NUT[n].map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('');
+}
+const LEVELS=['Depleted','Deficient','Adequate','Sufficient','Surplus'];
+const TEST={tx:'Sandy',ph:5.2,N:2,P:1,K:2};
+const NHUE={N:195,P:285,K:30};
+function renderTest(){
+  $('#txSel').innerHTML=['Sandy','Loamy','Clayey'].map(t=>`<button type="button" class="pill" data-tx="${t}" aria-pressed="${TEST.tx===t}">${t}</button>`).join('');
+  ['N','P','K'].forEach(k=>{
+    $('#lv'+k).innerHTML=LEVELS.map((l,i)=>`<button type="button" class="lvbtn" data-k="${k}" data-i="${i}" aria-pressed="${TEST[k]===i}"><i style="background:hsl(${NHUE[k]},60%,${88-i*11}%)"></i>${l}</button>`).join('');
+  });
+  $('#tPHv').textContent=TEST.ph.toFixed(1);
+  const out=[],ph=TEST.ph,sandy=TEST.tx==='Sandy',clayey=TEST.tx==='Clayey';
+  if(ph<5.8)out.push({h:`Raise the pH (now ${ph.toFixed(1)}, ${phCat(ph).toLowerCase()})`,t:'Most crops do best at 6.0–7.0. Spread ground limestone (calcium carbonate) and retest in a few months.'});
+  else if(ph>7.5)out.push({h:`Lower the pH (now ${ph.toFixed(1)}, ${phCat(ph).toLowerCase()})`,t:'Add elemental sulfur or compost. Alkaline soil ties up phosphate, iron, and zinc.'});
+  else out.push({h:`pH is in a good range (${ph.toFixed(1)})`,t:'Nutrients are generally available at this pH.'});
+  const pHok=ph>=6&&ph<=7.5;
+  if(TEST.N<=1)out.push({h:'Add nitrogen',t:'Use compost, manure, or a legume cover crop.'+(sandy?' Nitrate leaches fast from sand, so apply small amounts several times rather than one big dose.':'')});
+  if(TEST.P<=1)out.push(pHok?{h:'Add phosphate',t:'Mix bone meal or superphosphate near the roots. Phosphate barely moves, so place it where roots grow.'}:{h:'Fix the pH before adding phosphate',t:`At pH ${ph.toFixed(1)}, phosphate binds with ${ph<6?'aluminum and iron':'calcium'} and stays unavailable. Adjust pH first, then retest.`,warn:true});
+  if(TEST.K<=1)out.push({h:'Add potassium',t:'Use potash or compost.'+(sandy?' Sandy soil has a low CEC, so potassium is lost easily. Add organic matter to help it hold K⁺.':'')});
+  const sur=['N','P','K'].filter(k=>TEST[k]>=4);
+  if(sur.length)out.push({h:'Skip fertilizer for '+sur.map(k=>({N:'nitrogen',P:'phosphorus',K:'potassium'}[k])).join(', '),t:'Extra nutrients are wasted. Excess nitrate and phosphate can run off and cause algal blooms.',warn:true});
+  out.push({h:'Texture note: '+TEST.tx.toLowerCase()+' soil',t:sandy?'Low CEC and fast drainage mean nutrients leach. Add compost and fertilize in small, frequent doses.':clayey?'High CEC holds nutrients well, but slow drainage can waterlog roots and compact the soil. Add organic matter and avoid working it when wet.':'Loamy soil balances drainage and holding, so standard fertilizer schedules work well.'});
+  $('#advice').innerHTML=out.map(o=>`<li class="${o.warn?'warn':''}"><b>${o.h}</b>${o.t}</li>`).join('');
+}
+function initNut(){
+  $('#plantSel').innerHTML=PLANTS.map((p,i)=>`<option value="${i}">${p[0]} (pH ${p[1]}–${p[2]})</option>`).join('');
+  $('#phSlider').addEventListener('input',renderPH);$('#plantSel').addEventListener('change',renderPH);renderPH();
+  $('.seg').addEventListener('click',e=>{const b=e.target.closest('[data-n]');if(b)renderNut(b.dataset.n)});renderNut('N');
+  $('#txSel').addEventListener('click',e=>{const b=e.target.closest('[data-tx]');if(b){TEST.tx=b.dataset.tx;renderTest()}});
+  ['N','P','K'].forEach(k=>$('#lv'+k).addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(b){TEST[k]=+b.dataset.i;renderTest()}}));
+  $('#tPH').addEventListener('input',e=>{TEST.ph=+e.target.value;renderTest()});
+  renderTest();
+}
+
+/* ---------- free response ---------- */
+const has=(t,...rs)=>rs.every(r=>r.test(t));
+const FRQ=[
+ {id:'f1',title:'Compare silt loam and sandy loam',prompt:'Compare silt loam and sandy loam. Describe (a) the particles that dominate each soil and how each feels, (b) how quickly water infiltrates and moves through each, (c) how much water and nutrients each can hold, and (d) which one you would choose for a vegetable garden and why.',
+  rubric:[
+   {label:'Describes the dominant particles and feel of each (sandy loam mostly sand and gritty; silt loam mostly silt and smooth or floury).',hint:'Name the main particle in each soil and how it feels in your hand.',test:t=>has(t,/(gritty|coarse|mostly sand|more sand|sand content|sand particles|large(r)? (particles|grains))/,/(smooth|floury|silky|powdery|mostly silt|more silt|silt content|silt particles|smaller (particles|grains)|fine)/)},
+   {label:'Compares infiltration and permeability (sandy loam drains faster; silt loam slower).',hint:'Use the words infiltration or permeability and say which soil is faster and why (pore size).',test:t=>has(t,/(infiltrat|permeab|drain|percolat)/,/(faster|quick|rapid|higher|slower|slowly|lower|less)/)},
+   {label:'Compares water holding (silt loam holds more).',hint:'Say which soil holds more plant-available water.',test:t=>has(t,/((hold|retain|retention|capacity|storage|store)[^.]{0,70}(water|moisture)|(water|moisture)[^.]{0,70}(hold|retain|retention|capacity|storage|store))/)},
+   {label:'Compares nutrient holding or leaching.',hint:'Mention nutrients, leaching, or CEC and say which soil loses or keeps more.',test:t=>has(t,/(nutrient|cec|cation|nitrate|leach|fertility|fertiliz)/)},
+   {label:'Chooses one soil and justifies the choice with soil properties.',hint:'State which soil you would choose and tie it to water, drainage, or nutrients.',test:t=>has(t,/(choose|better|best|prefer|recommend|suitable|ideal|would pick|would select|would use)/,/(irrigat|dry|drought|water|crop|garden|vegetable|climate|nutrient)/)}
+  ],
+  model:'Sandy loam is dominated by sand, so it feels gritty and holds a ball that crumbles. Silt loam is dominated by silt, so it feels smooth and floury. Sandy loam has larger pores, so its infiltration and permeability are higher and it drains quickly, while silt loam drains more slowly. Silt loam holds more plant-available water and has a higher CEC, so it keeps more nutrients. Sandy loam loses water and nitrate and potassium to leaching sooner. For a vegetable garden I would choose silt loam if water is limited, because it holds moisture and nutrients longer. I would choose sandy loam only if I could irrigate and wanted quick spring warming and good drainage.'},
+ {id:'f2',title:'A sandy garden',prompt:'A gardener’s soil test reports 70% sand, 20% silt, and 10% clay. (a) Classify the soil texture. (b) Predict its infiltration rate and permeability. (c) Explain how this texture affects nitrate and potassium. (d) Recommend one amendment and explain how it helps.',
+  rubric:[
+   {label:'Classifies the soil as sandy loam.',hint:'Find 70% sand and 10% clay on the triangle. Name the class.',test:t=>/sandy loam/.test(t)},
+   {label:'Predicts high or fast infiltration and permeability, with a reason.',hint:'Say whether water drains quickly or slowly and connect it to pore size.',test:t=>has(t,/(infiltrat|permeab|drain|percolat)/,/(fast|quick|rapid|high|well|excess|moderate)/)},
+   {label:'Explains that nitrate and potassium leach.',hint:'Name nitrate and/or potassium and say what happens to them in a sandy soil.',test:t=>has(t,/(leach|wash|flush|lost|loss)/,/(nitrate|nitrogen|potassium|nutrient)/)},
+   {label:'Notes low water and nutrient holding (low CEC) or the need to irrigate.',hint:'Say how well this soil holds water and nutrient ions.',test:t=>has(t,/(((low|poor|little|less|limited|small)[^.]{0,60}(water|moisture|nutrient|cec|holding|retention))|dry out|droughty|irrigat)/)},
+   {label:'Recommends an amendment such as compost or organic matter, and says why.',hint:'Name one amendment and explain how it changes water or nutrient holding.',test:t=>has(t,/(compost|organic matter|manure|humus|mulch|cover crop|peat|clay)/)}
+  ],
+  model:'70% sand, 20% silt, and 10% clay is a sandy loam. It should have a moderate to high infiltration rate and permeability because the large sand grains leave big, connected pores. Because water drains fast, nitrate, which is negative and not held by soil particles, and potassium, which sandy soil has few exchange sites to hold, are easily leached below the roots. The soil also holds little water and has a low CEC. Adding compost or other organic matter raises water-holding capacity and CEC, so the soil keeps more water and K⁺, and it feeds soil microbes that release nitrogen slowly.'},
+ {id:'f3',title:'Phosphorus and pH',prompt:'A soil sample has pH 4.8 and a test strip shows “deficient” phosphate, even though the farmer has added phosphate fertilizer before. (a) Explain why phosphorus may be unavailable to plants at this pH. (b) Recommend a treatment and the pH range you would aim for. (c) Describe a plant symptom or follow-up step that would show the problem is solved.',
+  rubric:[
+   {label:'Identifies the soil as acidic (low pH).',hint:'Name the pH condition. Is 4.8 acidic or alkaline?',test:t=>has(t,/(acid|low ph|ph (of )?4\.8|ph is low|below 6)/)},
+   {label:'Explains that phosphate binds with aluminum or iron and becomes insoluble or unavailable.',hint:'Say what phosphate reacts with in acidic soil and what that does to availability.',test:t=>has(t,/(alumin|iron|\bal\b|\bfe\b|calcium)/,/(bind|bound|fix|insolubl|precipitat|locked|tied up|unavailable|not available|react)/)},
+   {label:'Recommends liming (limestone) or another way to raise pH.',hint:'Name a material that raises soil pH.',test:t=>has(t,/(lime|limestone|calcium carbonate|dolomit|raise (the )?(soil )?ph|increase (the )?(soil )?ph|neutraliz)/)},
+   {label:'Gives a target pH near 6.0–7.0 (or slightly acidic to neutral).',hint:'State the pH range where phosphate is most available.',test:t=>has(t,/(6\.0|6\.5|6\.2|6\.8|6\s*(-|–|to)\s*7|neutral|slightly acidic)/)},
+   {label:'Describes a follow-up: retesting, purple leaves clearing up, or better root growth.',hint:'Describe a symptom of phosphorus deficiency or a way to check the fix worked.',test:t=>has(t,/(retest|re-test|test again|purple|root|growth|yield|follow[- ]up|monitor|new leaves)/)}
+  ],
+  model:'At pH 4.8 the soil is strongly acidic. In acidic soil, dissolved phosphate reacts with aluminum and iron and forms insoluble compounds, so the phosphorus is present but locked up and plants cannot absorb it. The best treatment is to apply ground limestone (calcium carbonate) to raise the pH to about 6.0–7.0, where phosphate stays dissolved and most nutrients are available. After liming and some time to react, retest the soil and look for new growth without purple leaves and with stronger roots. Adding more phosphate without fixing pH would waste fertilizer.'},
+ {id:'f4',title:'Layers of the soil',prompt:'Describe how a soil profile changes from the O horizon down to the C horizon. Explain why the A horizon is the most important layer for plant growth, and explain how leaching creates the differences between the E and B horizons.',
+  rubric:[
+   {label:'Explains that the A horizon (topsoil) has humus or organic matter, nutrients, roots, and organisms.',hint:'Name the A horizon and say what makes it fertile.',test:t=>has(t,/(a horizon|topsoil)/,/(humus|organic|nutrient|roots?|microb|earthworm|bacteria|fung)/)},
+   {label:'Explains that the E horizon is leached, losing clay, iron, minerals, or organic matter.',hint:'Say what leaching removes from the E horizon.',test:t=>has(t,/(e horizon|eluviat|leach)/,/(clay|iron|mineral|nutrient|organic|aluminum|washed|removed)/)},
+   {label:'Explains that the B horizon (subsoil) accumulates what was leached from above.',hint:'Say where the leached materials end up.',test:t=>has(t,/(b horizon|subsoil|illuviat|accumulat|deposit|collect)/)},
+   {label:'Describes the C horizon as parent material or partly weathered rock (and may mention bedrock).',hint:'Describe the deepest layer in the question and where it came from.',test:t=>has(t,/(c horizon|parent material|weathered|bedrock|broken rock|rock fragments)/)},
+   {label:'Describes a trend with depth (organic matter decreases, more rock, less weathering, color changes).',hint:'Say what changes as you go down.',test:t=>has(t,/(with depth|deeper|decreas|less organic|more rock|less weathered|darker|lighter|top to bottom|going down|farther down)/)}
+  ],
+  model:'Going down from the O horizon, the soil changes from loose organic litter to dark topsoil, then to a pale leached layer, a denser subsoil, and finally broken parent material. Organic matter and biological activity decrease with depth, while rock fragments and unweathered material increase. The A horizon is most important for plants because humus makes it dark, crumbly, and rich in nutrients and water, and most roots and soil organisms live there. In the E horizon, percolating water leaches (eluviates) clay, iron, and organic matter, leaving a pale layer of sand and silt. Those materials collect in the B horizon below (illuviation), which makes the subsoil denser and more clay-rich. The C horizon is partly weathered parent material above the bedrock.'}
+];
+const FR={};   // id -> {text, score, met:[bool]}
+function mountFRQ(){
+  $('#frqs').innerHTML=FRQ.map((f,i)=>`<div class="frq" id="${f.id}"><h3 style="margin-top:0">Question ${i+1}. ${f.title}</h3><p class="prose">${f.prompt}</p><textarea rows="8" aria-label="Your answer to question ${i+1}"></textarea><div class="wc"></div><button type="button" class="btn sm">Check my answer</button><div class="res" aria-live="polite"></div></div>`).join('');
+  FRQ.forEach(f=>{
+    const box=$('#'+f.id),ta=$('textarea',box),wc=$('.wc',box);
+    const upd=()=>{const n=(ta.value.trim().match(/\S+/g)||[]).length;wc.textContent=n+' words · aim for 60 or more'};upd();
+    ta.addEventListener('input',upd);
+    $('button',box).addEventListener('click',()=>gradeFRQ(f,box,ta.value));
+  });
+}
+function gradeFRQ(f,box,raw){
+  const t=raw.toLowerCase().replace(/[’‘]/g,"'"),words=(raw.trim().match(/\S+/g)||[]).length,res=$('.res',box);
+  if(words<15){res.innerHTML='<div class="fb no"><strong>Write a bit more first.</strong>Write at least a few full sentences so the checker can find your key ideas.</div>';return}
+  const met=f.rubric.map(r=>!!r.test(t)),score=met.filter(Boolean).length;
+  FR[f.id]={text:raw.trim(),score,met};
+  res.innerHTML=`<p class="frqscore">${score} / ${f.rubric.length}</p><ul class="rubric">`+f.rubric.map((r,i)=>met[i]?`<li class="met"><b>✓ Covered.</b>${r.label}</li>`:`<li class="miss"><b>✗ Not found.</b>${r.label}<br><span class="note">Hint: ${r.hint}</span></li>`).join('')+`</ul><details class="model"><summary>See a model answer</summary><p style="margin:8px 0 0">${f.model}</p></details>`+(words<40?'<p class="note">Your answer is short. Add detail and check again.</p>':'');
+  refresh();
+}
+
+/* ---------- scoring and nav ---------- */
+const STEPNAMES=['Horizons','Texture triangle','Drainage lab','Compare','pH and nutrients','Free response','Summary'];
+const STEPCOL=['#2a1d14','#5b3a22','#8c8678','#a8742f','#c4a96f','#7d8794','#3f6b4a'];
+function mcScore(){return Q.filter(q=>ANS[q.id]&&ANS[q.id].ok).length}
+function frScore(){return FRQ.reduce((a,f)=>a+(FR[f.id]?FR[f.id].score:0),0)}
+function frMax(){return FRQ.reduce((a,f)=>a+f.rubric.length,0)}
+function stepDone(n){
+  if(n<=5){const qs=STEPQ[n]||[];return qs.length&&qs.every(q=>ANS[q.id]&&(q.type==='mc'||ANS[q.id].ok))}
+  if(n===6)return FRQ.every(f=>FR[f.id]);
+  return false;
+}
+function refresh(){
+  $('#scMC').textContent=mcScore()+' / '+MCTOTAL;$('#scFR').textContent=frScore()+' / '+frMax();
+  $$('#stepbtns button').forEach(b=>{$('.tick',b).textContent=stepDone(+b.dataset.go)?'✓':''});
+}
+let cur=1;
+function go(n,focus){
+  cur=n;
+  $$('.step').forEach((s,i)=>s.hidden=(i+1)!==n);
+  $$('#stepbtns button').forEach(b=>{if(+b.dataset.go===n)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
+  window.scrollTo({top:0,behavior:reduceMotion?'auto':'smooth'});
+  if(n===2){base=null;requestAnimationFrame(drawTri)}
+  if(n===3){refreshLabCustom()}
+  if(focus!==false)$('#t'+n).focus({preventScroll:true});
+}
+
+/* ---------- summary ---------- */
+function shortP(s,n){s=s.replace(/<[^>]+>/g,'');return s.length>n?s.slice(0,n-1)+'…':s}
+function buildSummary(){
+  const L=[],line='-'.repeat(60);
+  const name=$('#sName').value.trim()||'(name not entered)',per=$('#sPeriod').value.trim()||'(not entered)';
+  L.push('SOIL INVESTIGATION LAB – STUDENT SUMMARY',line,`Name: ${name}`,`Class/Period: ${per}`,`Date: ${new Date().toLocaleDateString()}`,'');
+  const answered=Q.filter(q=>ANS[q.id]).length;
+  L.push('SCORES',line,`Graded questions: ${mcScore()} / ${MCTOTAL} correct (${answered} of ${MCTOTAL} answered)`);
+  const secs=[];Q.forEach(q=>{if(!secs.includes(q.sec))secs.push(q.sec)});
+  secs.forEach(s=>{const qs=Q.filter(q=>q.sec===s);L.push(`  - ${s}: ${qs.filter(q=>ANS[q.id]&&ANS[q.id].ok).length} / ${qs.length}`)});
+  L.push(`Free response (auto-check, teacher review pending): ${frScore()} / ${frMax()}`);
+  const tot=mcScore()+frScore(),mx=MCTOTAL+frMax();L.push(`Combined: ${tot} / ${mx} (${Math.round(100*tot/mx)}%)`,'');
+  const cls=classify(S.sand,S.silt,S.clay),d=CLS[cls];
+  L.push('WHAT I FOUND',line);
+  L.push(`Texture triangle: my last mixture was ${S.sand}% sand, ${S.silt}% silt, ${S.clay}% clay = ${cls}. Permeability: ${permClass(d.ksat)} (${fmtK(d.ksat)} cm/hr). Water holding: ${d.awc} in/ft. Nutrient holding (CEC): ${d.cec}. Plant growth: ${GROW[d.r[3]]}.`);
+  const labs=Object.values(LAB);
+  if(labs.length){
+    const fast=labs.slice().sort((a,b)=>b.d60-a.d60),best=labs.slice().sort((a,b)=>CLS[b.cls].r[3]-CLS[a.cls].r[3]||b.held-a.held)[0];
+    L.push(`Drainage lab: fastest drainage was ${fast[0].label} (${Math.round(fast[0].d60)} mL in 60 s); slowest was ${fast[fast.length-1].label} (${Math.round(fast[fast.length-1].d60)} mL). Highest permeability: ${fast[0].cls}. Highest plant-growth rating among those tested: ${best.label} (${GROW[CLS[best.cls].r[3]].toLowerCase()}).`+(CLS[best.cls].r[3]>=4?' It balances drainage with water and nutrient holding.':' Test loam, sandy loam, or silt loam to see mixtures that balance drainage with water and nutrient holding.'));
+  }else L.push('Drainage lab: no tests run yet.');
+  const sl=CLS['Sandy loam'],sil=CLS['Silt loam'];
+  L.push(`Silt loam vs. sandy loam: sandy loam is mostly sand, feels gritty, and drains faster (${fmtK(sl.ksat)} vs ${fmtK(sil.ksat)} cm/hr). Silt loam is mostly silt, feels smooth, and holds more water (${sil.awc} vs ${sl.awc} in/ft) and nutrients.`);
+  L.push(`pH and nutrients: most nutrients are best available at pH 6.0–7.0. Nitrate and potassium leach from sandy soils; phosphate is locked up by aluminum and iron in acidic soil.`,'');
+  L.push('DRAINAGE LAB DATA (200 mL poured on each mixture)',line);
+  if(labs.length)labs.forEach(r=>L.push(`${r.label} | ${r.cls} (${r.comp.join('/')} sand/silt/clay) | ${permClass(r.ksat)} permeability | ${Math.round(r.d60)} mL drained in 60 s | 50 mL took ${fmtTime(r.t50)} | ${r.held} mL held`));
+  else L.push('No data recorded.');
+  L.push('','GRADED QUESTION DETAIL',line);
+  Q.forEach((q,i)=>{
+    const a=ANS[q.id];
+    if(!a){L.push(`${i+1}. [ ] ${shortP(q.prompt,95)}`,'     Not answered');return}
+    L.push(`${i+1}. [${a.ok?'correct':'incorrect'}] ${shortP(q.prompt,95)}`,`     My answer: ${a.pick}`+(q.type==='build'&&a.tries?` (${a.tries} ${a.tries===1?'try':'tries'})`:''));
+    if(!a.ok&&q.type==='mc')L.push(`     Correct answer: ${q.choices[q.answer]}`);
+  });
+  L.push('','FREE RESPONSE',line);
+  FRQ.forEach((f,i)=>{
+    const r=FR[f.id];
+    L.push(`Q${i+1}. ${f.title}`);
+    if(!r){L.push('   Not submitted','');return}
+    L.push(`   Auto-check score: ${r.score} / ${f.rubric.length}`,'   My answer:',...r.text.split('\n').map(x=>'   '+x));
+    const miss=f.rubric.filter((_,k)=>!r.met[k]).map(x=>x.label);
+    if(miss.length)L.push('   Ideas the checker did not find:',...miss.map(m=>'    - '+m));
+    L.push('');
+  });
+  const rf=$('#sReflect').value.trim();
+  L.push('REFLECTION',line,rf||'(none)');
+  $('#sumOut').value=L.join('\n');
+}
+async function copySummary(){
+  const ta=$('#sumOut'),st=$('#copyStatus');
+  if(!ta.value.trim())buildSummary();
+  const txt=ta.value;let ok=false;
+  try{await navigator.clipboard.writeText(txt);ok=true}catch(e){}
+  if(!ok){try{ta.removeAttribute('readonly');ta.focus();ta.select();ok=document.execCommand('copy');ta.setAttribute('readonly','')}catch(e){ta.setAttribute('readonly','')}}
+  st.textContent=ok?'Copied. Paste it into Canvas.':'Select the text and press Ctrl+C (or Cmd+C) to copy.';
+  if(!ok){ta.select()}
+  setTimeout(()=>{st.textContent=''},6000);
+}
+
+/* ---------- init ---------- */
+function init(){
+  $('#stepbtns').innerHTML=STEPNAMES.map((n,i)=>`<button type="button" data-go="${i+1}" style="--c:${STEPCOL[i]}"><span class="tick" aria-hidden="true"></span>${i+1}. ${n}</button>`).join('');
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(+b.dataset.go)});
+  buildProfile();selectHz('A');
+  mountQuestions();initTri();initLab();initCompare();initNut();mountFRQ();
+  $('#buildBtn').addEventListener('click',buildSummary);
+  $('#copyBtn').addEventListener('click',copySummary);
+  let armed=false;
+  $('#resetBtn').addEventListener('click',e=>{
+    const b=e.target;
+    if(!armed){armed=true;b.textContent='Click again to erase all answers';setTimeout(()=>{armed=false;b.textContent='Reset everything'},4000);return}
+    location.reload();
+  });
+  window.addEventListener('resize',()=>{if(cur===2){base=null;drawTri()}});
+  if(window.matchMedia){const mq=window.matchMedia('(prefers-color-scheme: dark)');(mq.addEventListener?mq.addEventListener.bind(mq,'change'):mq.addListener.bind(mq))(()=>{if(cur===2)drawTri()})}
+  refresh();go(1,false);
+}
+init();
+})();
+</script>
+</body>
+</html>

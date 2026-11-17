@@ -129,6 +129,11 @@ function graphOptions(sim){const d=sim.def;let g=d.graphs||(d.timeless?[]:allMet
 
 /* ---------- build DOM for one simulation ---------- */
 function el(tag,attrs,html){const e=document.createElement(tag);if(attrs)for(const k in attrs){if(k==='class')e.className=attrs[k];else e.setAttribute(k,attrs[k]);}if(html!==undefined)e.innerHTML=html;return e;}
+/* Teacher-made tools (Nov 17, 2026): a def with external:{src,height,time,intro} shows that page in a frame, with credit:{name,role,note,short}
+   under the title, in place of the bench. First used for Dr. Sandy Robertson's APES tools in teacher/. */
+function extBuild(sec,d){const x=d.external,c=d.credit||{};sec.classList.add('ext');const w=el('div',{class:'ext-wrap'});
+  w.innerHTML=`${c.name?`<p class="ext-by">Created by <b>${c.name}</b>${c.role?`, ${c.role}`:''}.${c.note?` ${c.note}`:''}</p>`:''}${x.intro?`<div class="ext-intro">${x.intro}</div>`:''}<iframe class="ext-frame" src="${esc(x.src)}" title="${esc(d.title)}" loading="lazy" style="height:${x.height||1000}px"></iframe><p class="ext-open"><a href="${esc(x.src)}" target="_blank" rel="noopener">Open it full screen ↗</a>${x.time?` · ${x.time}`:''}</p>`;
+  sec.querySelector('.sim-head').after(w);}
 function buildSim(sim){
   const d=sim.def,id=d.id,asp=d.aspect||16/9,sec=el('section',{class:'sim',id:'sim-'+id,'aria-labelledby':'h-'+id});
   const hasGraph=d.graph!==false,hasPredict=!!d.challenges;
@@ -168,10 +173,11 @@ function buildSim(sim){
     <div class="tbl"></div>
   </div>`}
   ${d.terms?`<details class="about terms"><summary>Key terms</summary><dl class="about-b">${d.terms.map(t=>`<div data-lvl="${t.lvl||'bio'}"><dt>${t.t}</dt><dd>${t.d}</dd></div>`).join('')}</dl></details>`:''}
-  ${d.about?`<details class="about"><summary>About this model</summary><div class="about-b">${d.about}</div></details>`:''}
+  <details class="about myths-box" hidden><summary>Myth or fact?</summary><div class="about-b my-b"></div></details>${d.about?`<details class="about"><summary>About this model</summary><div class="about-b">${d.about}</div></details>`:''}
   <div class="related" hidden></div>
   <p class="fb-line"><a class="fb-link" href="${fbUrl(d.tab)}" target="_blank" rel="noopener" data-tool="${d.tab}">Report a bug or request a feature</a><span class="fb-hint">Opens a short Microsoft Form with this tool already filled in. Sign in with your RJ account.</span></p>
   <details class="about embed-box"><summary>Embed this tool in Canvas</summary><div class="about-b embed-b"></div></details>`;
+  if(d.external)extBuild(sec,d);
   const ui=sim.ui;ui.sec=sec;ui.review=sec.querySelector('.review');ui.rvNote=sec.querySelector('.rv-note');ui.frq=sec.querySelector('.panel.frq');ui.fqNote=sec.querySelector('.fq-note');ui.lede=sec.querySelector('.lede');ui.uses=sec.querySelector('.real-uses');ui.stage=sec.querySelector('#'+id+'-stage');ui.graph=sec.querySelector('#'+id+'-graph');
   ui.clock=sec.querySelector('.clock');ui.play=sec.querySelector('[data-act=play]');ui.ctrls=sec.querySelector('.controls');ui.read=sec.querySelector('.readouts');
   ui.pred=sec.querySelector('.predict');ui.info=sec.querySelector('.info');ui.tbl=sec.querySelector('.tbl');ui.gm=sec.querySelector('#'+id+'-gm');ui.gx=sec.querySelector('#'+id+'-gx');ui.gy=sec.querySelector('#'+id+'-gy');
@@ -253,10 +259,81 @@ BL.h.lvText=lvText;
    While a game round is live, sim.gameRound holds the round so draw() can show the target. */
 const modeKey=sim=>LAB_KEY+'-mode-'+sim.def.id;
 function hasGuide(sim){return tourSteps(sim).length>0;}
+/* ---------- From Dr. Sandy Robertson's APES tools (Nov 17, 2026) ----------
+   1. Minutes on the mode buttons (Learn it · 6 min) and "You will be able to" under them, so a student knows the job before starting.
+   2. Turn it in: after Test yourself or Review, a summary (name, score, every question right or missed, one thing learned,
+      one question still open) with Copy for Canvas, so a teacher can assign any tool as a text-entry assignment.
+   3. Myth or fact: BL.addMyths({toolId:[{s,fact,why,lvl}]}) (myths.js). Students commit Myth or Fact, one graded try, then see why.
+      Shows in a "Myth or fact?" box on every mode, at the end of Learn it, and in the Turn it in summary. */
+const RL_LVN={bio:'Big picture',honors:'Closer look',ap:'Deep dive'};
+const MYTHS={};BL.addMyths=o=>{Object.keys(o||{}).forEach(k=>{MYTHS[k]=(MYTHS[k]||[]).concat(o[k]||[]);});};
+const rlTx=h=>{const t=document.createElement('div');t.innerHTML=h||'';return (t.textContent||'').replace(/\s+/g,' ').trim();};
+const rlCut=(s,n)=>s.length>n?s.slice(0,n-1).replace(/\s+\S*$/,'')+'…':s;
+function rlMins(sim,m){const d=sim.def;let n=0;try{
+  if(m==='guided')n=tourSteps(sim).length*0.6+(d.learn?0:(d.challenges?visibleCh(sim).length:0));
+  else if(m==='test')n=(d.challenges?visibleCh(sim).length:0)+(d.review?rvList(sim).length:0);
+  else if(m==='review')n=rvList(sim).length;
+  else if(m==='frq'&&typeof fqList==='function')n=fqList(d).reduce((a,f)=>a+(+f.minutes||0),0);
+}catch(e){return 0;}return n>0?Math.max(2,Math.round(n)):0;}
+function rlGoals(sim){const L=sim.def.learn;if(!L||!L.goals)return [];try{const g=typeof lnPick==='function'?lnPick(L.goals,level):lvText(L.goals);return (Array.isArray(g)?g:[g]).filter(Boolean);}catch(e){return [];}}
+function rlPaint(sim){const sec=sim.ui&&sim.ui.sec;if(!sec)return;sec.querySelectorAll('.modebar [data-mm]').forEach(s=>{const n=rlMins(sim,s.dataset.mm);s.textContent=n?` · ${n} min`:'';});
+  const bar=sec.querySelector('.modebar');if(!bar)return;let p=sec.querySelector('.rl-plan');const g=rlGoals(sim);
+  if(!g.length){if(p)p.remove();return;}if(!p){p=el('details',{class:'rl-plan'});bar.after(p);}
+  p.innerHTML=`<summary>You will be able to…</summary><ul>${g.map(x=>`<li>${x}</li>`).join('')}</ul>`;}
+/* Myth or fact */
+const myKey=id=>LAB_KEY+'-myth-'+id;
+function myLoad(id){try{return JSON.parse(store.get(myKey(id))||'{}')||{};}catch(e){return {};}}
+function myList(d){return (MYTHS[d.id]||[]).filter(m=>atLeast(m.lvl||'bio'));}
+function myScore(d){const L=myList(d),S=myLoad(d.id);let got=0,did=0;L.forEach((m,i)=>{const a=S[m.k||i];if(a!==undefined){did++;if(!!a===!!m.fact)got++;}});return {got,did,n:L.length};}
+function myHTML(sim){const d=sim.def,L=myList(d),S=myLoad(d.id);if(!L.length)return '';const sc=myScore(d);
+  return `<p class="help">Decide whether each statement is a myth or a fact. You get one try on each, then the reason. Some of them are true, so think before you pick.</p>`+L.map((m,i)=>{const k=m.k||i,a=S[k],done=a!==undefined,ok=done&&!!a===!!m.fact;
+    return `<div class="my-it${done?(ok?' ok':' no'):''}"><p class="my-s">${m.s}</p>${done?`<p class="my-v"><b>${ok?'Right.':'Not quite.'} It’s a ${m.fact?'fact':'myth'}.</b> ${m.why}</p>`:`<div class="row"><button type="button" class="btn" data-my="${k}" data-v="0">Myth</button><button type="button" class="btn" data-my="${k}" data-v="1">Fact</button></div>`}</div>`;}).join('')+
+    `<p class="my-sc" role="status">${sc.did?`${sc.got} of ${sc.did} right so far${sc.did<sc.n?` (${sc.n-sc.did} to go)`:''}.`:`${sc.n} statements.`}${sc.did?' <button type="button" class="btn my-reset" data-my-reset>Start over</button>':''}</p>`;}
+function myPaint(sim){const d=sim.def;if(!sim.ui||!sim.ui.sec)return;sim.ui.sec.querySelectorAll('.my-b').forEach(b=>{b.innerHTML=myHTML(sim);
+  b.querySelectorAll('[data-my]').forEach(x=>x.addEventListener('click',()=>{const S=myLoad(d.id);S[x.dataset.my]=+x.dataset.v;store.set(myKey(d.id),JSON.stringify(S));myPaint(sim);}));
+  const r=b.querySelector('[data-my-reset]');if(r)r.addEventListener('click',()=>{store.del(myKey(d.id));myPaint(sim);});});
+  const box=sim.ui.sec.querySelector('.myths-box');if(box)box.hidden=!myList(d).length;}
+function myInline(sim){return myList(sim.def).length?`<div class="my-inline"><h3 class="ln-uh">Myth or fact?</h3><div class="my-b"></div></div>`:'';}
+/* Turn it in */
+const tiKey=id=>LAB_KEY+'-turnin-'+id;
+function tiHTML(sim){const d=sim.def;let S={};try{S=JSON.parse(store.get(tiKey(d.id))||'{}')||{};}catch(e){}const nm=store.get('raider-labs-name')||'';
+  return `<div class="ti" data-ti-box><h3 class="ti-h">Turn it in</h3><p class="help">If your teacher assigned this tool, copy your summary and paste it into the Canvas assignment's text box.</p>
+  <div class="ti-f"><label>Your name<input class="vl-in ti-name" autocomplete="name" value="${esc(nm)}"></label>
+  <label>One thing you learned<textarea class="vl-in ti-learn" rows="2">${esc(S.l||'')}</textarea></label>
+  <label>One question you still have<textarea class="vl-in ti-q" rows="2">${esc(S.q||'')}</textarea></label></div>
+  <div class="row"><button type="button" class="btn primary" data-ti="copy">Copy for Canvas</button><button type="button" class="btn" data-ti="show">Show my summary</button><span class="ti-msg" role="status"></span></div>
+  <textarea class="vl-in ti-out" rows="14" readonly hidden aria-label="Summary to paste into Canvas"></textarea>
+  <p class="help">Your answers live only in this browser. Copy your summary before you start over or clear them.</p></div>`;}
+function tiText(sim,box){const d=sim.def,o=[],nm=(box.querySelector('.ti-name')||{}).value||'',ln=(box.querySelector('.ti-learn')||{}).value||'',qs=(box.querySelector('.ti-q')||{}).value||'';
+  const site=(typeof LAB_NAME!=='undefined'&&LAB_NAME)||'Raider Labs';
+  o.push(`${site}: ${rlTx(d.title)}`,`Name: ${nm.trim()||'(add your name)'}`,`Detail: ${RL_LVN[level]||level}`,`Date: ${new Date().toLocaleString()}`,'');
+  const ts=Object.values(sim.tScore||{});if(ts.length)o.push(`Predictions: ${ts.filter(Boolean).length} of ${ts.length} right the first time`);
+  if(d.review){const L=rvList(sim),A=rvLoad(d.id);if(L.length){const got=L.filter(x=>A[x.id]&&A[x.id].done&&A[x.id].ok).length,did=L.filter(x=>A[x.id]&&A[x.id].done).length;
+    o.push(`${d.learn?'Why questions':'Review questions'}: ${got} of ${L.length} right the first time${did<L.length?` (${did} answered)`:''}`);
+    L.forEach((x,i)=>{const a=A[x.id]||{};const mk=a.done?(a.ok?'✓':'✗'):'–';o.push(`  ${mk} ${i+1}. ${rlCut(rlTx(x.q),150)}`);
+      if(a.done){const my=x.num?(a.val||''):(a.pick!==undefined&&x.choices?rlTx(x.choices[a.pick]):'');if(my)o.push(`      My answer: ${rlCut(my,120)}${x.num&&x.num.unit?' '+x.num.unit:''}`);}});}}
+  const ms=myScore(d);if(ms.did)o.push(`Myth or fact: ${ms.got} of ${ms.did} right`);
+  o.push('',`One thing I learned: ${ln.trim()||'(write one)'}`,`One question I still have: ${qs.trim()||'(write one)'}`);return o.join('\n');}
+function tiBind(sim,root){const box=root&&root.querySelector('[data-ti-box]');if(!box)return;const d=sim.def,out=box.querySelector('.ti-out'),msg=box.querySelector('.ti-msg');
+  const keep=()=>{store.set('raider-labs-name',box.querySelector('.ti-name').value);store.set(tiKey(d.id),JSON.stringify({l:box.querySelector('.ti-learn').value,q:box.querySelector('.ti-q').value}));};
+  box.querySelectorAll('input,textarea:not(.ti-out)').forEach(x=>x.addEventListener('input',keep));
+  const show=()=>{out.value=tiText(sim,box);out.hidden=false;return out.value;};
+  box.querySelector('[data-ti=show]').addEventListener('click',()=>{show();out.focus();});
+  box.querySelector('[data-ti=copy]').addEventListener('click',()=>{const t=show();const fb=()=>{out.focus();out.select();msg.textContent='Selected. Press Ctrl+C (⌘C on a Mac) to copy.';};
+    try{navigator.clipboard.writeText(t).then(()=>{msg.textContent='Copied. Paste it into your Canvas submission.';},fb);}catch(e){fb();}});}
+(function(){const css=`.modebar .mm{font-weight:400;opacity:.8;font-size:.9em}
+.rl-plan{margin:8px 0 0;font-size:15px}.rl-plan summary{cursor:pointer;font-weight:700;color:var(--rj-ink,inherit)}.rl-plan ul{margin:6px 0 0 1.2em;padding:0}
+.ti{margin:18px 0 6px;padding:14px 16px;border:2px solid var(--rj,#C11430);border-radius:10px;background:var(--card,transparent)}.ti-h{margin:0 0 4px}
+.ti-f{display:grid;gap:10px;margin:10px 0}.ti-f label{display:grid;gap:4px;font-weight:600;font-size:15px}.ti-f .vl-in,.ti-out{width:100%;max-width:none}
+.ti-out{font-family:ui-monospace,Consolas,monospace;font-size:13px;margin-top:10px}.ti-msg{font-size:14px;color:var(--muted)}
+.my-it{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0;background:var(--card2,transparent)}.my-it.ok{border-color:var(--good,#2e7d32)}.my-it.no{border-color:var(--bad,#c62828)}
+.my-s{margin:0 0 6px;font-weight:600}.my-v{margin:0}.my-sc{margin:10px 0 0;font-size:14px;color:var(--muted)}.my-reset{margin-left:8px;font-size:13px;padding:3px 10px}.my-inline{margin-top:14px}`;
+  const s=document.createElement('style');s.textContent=css;document.head.appendChild(s);})();
+BL.turnIn={text:tiText,mins:rlMins};
 function buildModebar(sim){const bar=sim.ui.sec.querySelector('.modebar');if(!bar)return;const d=sim.def,opts=[];
   if(d.tour)opts.push(['guided',d.learn?'Learn it':'Guided']);if(d.learn&&(d.challenges||d.review))opts.push(['test','Test yourself']);if(d.game)opts.push(['game',d.game.label||'Challenge']);opts.push(['lab','Full lab']);if(d.labs&&d.labs.length)opts.push(['vlab','Virtual lab']);if(d.review&&!d.learn)opts.push(['review','Review']);if(d.frq)opts.push(['frq','Free response']);
   if(opts.length<2){bar.hidden=true;return;}
-  bar.innerHTML=opts.map(([m,l])=>`<button type="button" data-mode="${m}">${l}</button>`).join('');
+  bar.innerHTML=opts.map(([m,l])=>`<button type="button" data-mode="${m}">${l}<span class="mm" data-mm="${m}"></span></button>`).join('');rlPaint(sim);
   bar.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setMode(sim,b.dataset.mode,true)));}
 function restoreVisibility(sim){const d=sim.def;sim.ui.sec.querySelectorAll('[data-lvl]').forEach(e=>{e.hidden=!atLeast(e.dataset.lvl)||(!!e.dataset.vlab&&sim.mode!=='vlab');});if(d.onLevel)d.onLevel(sim);}
 function setMode(sim,mode,user){const d=sim.def;if(mode==='guided'&&!hasGuide(sim))mode='lab';if(mode==='test'&&!(d.learn&&(d.challenges||d.review)))mode='lab';if(mode!=='review')sim.testFlow=false;if(mode==='game'&&!d.game)mode='lab';if(mode==='vlab'&&!(d.labs&&d.labs.length))mode='lab';if(mode==='review'&&!d.review)mode='lab';if(mode==='frq'&&!d.frq)mode='lab';if(!MODES.includes(mode))mode='lab';
@@ -286,16 +363,16 @@ function guideTry(sim){const list=visibleCh(sim);if(!list.length){guideDone(sim)
 function learnDone(sim){const d=sim.def,P=d.practical||{},sec=sim.ui.sec,c=sim.ui.donecard;
   if(sim.mode==='test'){if(d.review&&rvList(sim).length){sim.rvI=0;setMode(sim,'review',false);sim.testFlow=true;renderReview(sim);return true;}
     lnPred(sim,false);const v=Object.values(sim.tScore||{}),got=v.filter(Boolean).length;sim.guide.phase='done';sec.classList.remove('g-try');sec.classList.add('g-done');
-    c.innerHTML=`<p class="dc-h">You finished Test yourself.</p><p class="dc-x">You got ${got} of ${v.length} right the first time.${got<v.length?' Go back to Learn it for the ones you missed: each step there explains why.':''}</p><div class="row"><button type="button" class="btn primary" data-dc="learn">${got<v.length?'Go back to Learn it':'Learn it again'}</button><button type="button" class="btn" data-dc="test">Test yourself again</button><button type="button" class="btn" data-dc="lab">Explore the full lab</button></div>`;c.hidden=false;}
+    c.innerHTML=`<p class="dc-h">You finished Test yourself.</p><p class="dc-x">You got ${got} of ${v.length} right the first time.${got<v.length?' Go back to Learn it for the ones you missed: each step there explains why.':''}</p><div class="row"><button type="button" class="btn primary" data-dc="learn">${got<v.length?'Go back to Learn it':'Learn it again'}</button><button type="button" class="btn" data-dc="test">Test yourself again</button><button type="button" class="btn" data-dc="lab">Explore the full lab</button></div>`+myInline(sim)+tiHTML(sim);c.hidden=false;tiBind(sim,c);myPaint(sim);}
   else if(sim.mode==='guided'){sim.guide.phase='done';sec.classList.remove('g-try');sec.classList.add('g-done');
     const tk=P.takeaway?lvText(P.takeaway):'',an=P.answer?lvText(P.answer):'',us=(P.uses||[]).slice(0,2),canTest=!!(d.challenges||d.review);
     const lq=d.lab?((lvText(d.lab)||'').match(/<p>[\s\S]*?<\/p>/)||[''])[0]:'';const L=d.learn,ui=sim.ui;if((L.useIt||L.tryIt)&&ui.stage){let ub=ui.useBox;if(!ub){ub=el('div',{class:'ln-use'});ui.stage.parentNode.after(ub);ui.useBox=ub;}const uz=(L.useIt||[]).filter(x=>atLeast(x.lvl)),trs=[].concat(L.tryIt||[]);
       ub.innerHTML=`${uz.length?`<h3 class="ln-uh">Use it in your life</h3><div class="ln-cards">${uz.map(x=>`<div class="ln-card"><p class="ln-do">${lvText(x.do)}</p><p class="ln-why">${lvText(x.why)}</p></div>`).join('')}</div>`:''}${trs.map(tr=>`<h3 class="ln-uh">Try it at home: ${lvText(tr.title)}</h3><ol class="ln-try">${tr.steps.map(x=>`<li>${lvText(x)}</li>`).join('')}</ol>${tr.look?`<p class="ln-why"><b>What it shows:</b> ${lvText(tr.look)}</p>`:''}`).join('')}`;}
-    c.innerHTML=`<p class="dc-h">You finished Learn it.</p>${tk?`<p class="ln-k">The big idea</p><p class="dc-take">${tk}</p>`:''}${an?`<p class="ln-k">Back to the question</p><p class="dc-ans">${an}</p>`:''}${lq?`<p class="ln-k">Go deeper in class: the full lab</p><div class="dc-x ln-lab">${lq}</div>`:''}${d.learn.useIt?`<p class="dc-x">Below: how to use this in your own life.</p>`:''}${us.length&&!d.learn.useIt?`<p class="ln-k">Where you will see this</p><ul class="ln-goals">${us.map(u=>`<li>${lvText(u)}</li>`).join('')}</ul>`:''}<div class="row">${canTest?'<button type="button" class="btn primary" data-dc="test">Test yourself</button>':''}<button type="button" class="btn${canTest?'':' primary'}" data-dc="lab">Explore the full lab</button>${d.labs&&d.labs.length?`<button type="button" class="btn" data-dc="vlab">Class lab: ${esc(d.labs[0].title)}</button>`:''}<button type="button" class="btn" data-dc="learn">Learn it again</button></div>`;c.hidden=false;}
+    c.innerHTML=`<p class="dc-h">You finished Learn it.</p>${tk?`<p class="ln-k">The big idea</p><p class="dc-take">${tk}</p>`:''}${an?`<p class="ln-k">Back to the question</p><p class="dc-ans">${an}</p>`:''}${lq?`<p class="ln-k">Go deeper in class: the full lab</p><div class="dc-x ln-lab">${lq}</div>`:''}${d.learn.useIt?`<p class="dc-x">Below: how to use this in your own life.</p>`:''}${us.length&&!d.learn.useIt?`<p class="ln-k">Where you will see this</p><ul class="ln-goals">${us.map(u=>`<li>${lvText(u)}</li>`).join('')}</ul>`:''}<div class="row">${canTest?'<button type="button" class="btn primary" data-dc="test">Test yourself</button>':''}<button type="button" class="btn${canTest?'':' primary'}" data-dc="lab">Explore the full lab</button>${d.labs&&d.labs.length?`<button type="button" class="btn" data-dc="vlab">Class lab: ${esc(d.labs[0].title)}</button>`:''}<button type="button" class="btn" data-dc="learn">Learn it again</button></div>`+myInline(sim);c.hidden=false;myPaint(sim);}
   else return false;
   [['learn','guided'],['test','test'],['lab','lab'],['vlab','vlab']].forEach(([k,m])=>{const b=c.querySelector(`[data-dc=${k}]`);if(b)b.onclick=()=>setMode(sim,m,true);});return true;}
 function guideDone(sim){if(!sim.guide)sim.guide={};if(sim.def.learn&&learnDone(sim))return;sim.guide.phase='done';const sec=sim.ui.sec,d=sim.def;sec.classList.remove('g-try');sec.classList.add('g-done');
-  const c=sim.ui.donecard;const tk=d.practical&&d.practical.takeaway?lvText(d.practical.takeaway):'';const an=d.practical&&d.practical.answer?lvText(d.practical.answer):'';c.innerHTML=`<p class="dc-h">You finished the guide.</p>${an?`<p class="dc-ans"><b>Back to the question:</b> ${an}</p>`:''}${tk?`<p class="dc-take"><b>Take this with you:</b> ${tk}</p>`:''}<p class="dc-x">${d.game?'Test yourself in the challenge, or explore':'Now explore'} on your own: the full lab has every variable, the graph, the data table and an investigation to try.</p><div class="row">${d.game?`<button type="button" class="btn primary" data-dc="game">Play the ${d.game.label||'challenge'}</button>`:''}<button type="button" class="btn${d.game?'':' primary'}" data-dc="lab">Open the full lab</button><button type="button" class="btn" data-dc="again">Start the guide again</button></div>`;c.hidden=false;
+  const c=sim.ui.donecard;const tk=d.practical&&d.practical.takeaway?lvText(d.practical.takeaway):'';const an=d.practical&&d.practical.answer?lvText(d.practical.answer):'';c.innerHTML=`<p class="dc-h">You finished the guide.</p>${an?`<p class="dc-ans"><b>Back to the question:</b> ${an}</p>`:''}${tk?`<p class="dc-take"><b>Take this with you:</b> ${tk}</p>`:''}<p class="dc-x">${d.game?'Test yourself in the challenge, or explore':'Now explore'} on your own: the full lab has every variable, the graph, the data table and an investigation to try.</p><div class="row">${d.game?`<button type="button" class="btn primary" data-dc="game">Play the ${d.game.label||'challenge'}</button>`:''}<button type="button" class="btn${d.game?'':' primary'}" data-dc="lab">Open the full lab</button><button type="button" class="btn" data-dc="again">Start the guide again</button></div>`+myInline(sim);c.hidden=false;myPaint(sim);
   c.querySelector('[data-dc=lab]').onclick=()=>setMode(sim,'lab',true);const g=c.querySelector('[data-dc=game]');if(g)g.onclick=()=>setMode(sim,'game',true);c.querySelector('[data-dc=again]').onclick=()=>setMode(sim,'guided',true);}
 function gameVis(sim,ctls,mets){restoreVisibility(sim);
   if(ctls)(sim.def.controls||[]).forEach(c=>{const e=document.getElementById(sim.def.id+'-'+c.id)||document.getElementById(sim.def.id+'-'+c.id+'-l');const w=e&&e.closest('.ctl');if(w&&!ctls.includes(c.id))w.hidden=true;});
@@ -731,7 +808,7 @@ function setLede(el,t){el.textContent='';if(!t||typeof t==='string'){el.textCont
   if(!t.bio||top==='bio'){el.textContent=t[top]||t.bio||'';return;}
   el.appendChild(document.createTextNode(t.bio));const s=document.createElement('span');s.className='lede-lv';
   const b=document.createElement('b');b.textContent=LEDE_LV[top]+': ';s.appendChild(b);s.appendChild(document.createTextNode(t[top]));el.appendChild(s);}
-function applyLevel(sim){const ui=sim.ui,d=sim.def;
+function applyLevel(sim){const ui=sim.ui,d=sim.def;setTimeout(()=>{rlPaint(sim);myPaint(sim);},0);
   setLede(ui.lede,d.lede);if(ui.uses){const P=d.practical,u=P&&P.uses?(Array.isArray(P.uses)?P.uses:lvText(P.uses)):null;const hk=P&&P.hook?lvText(P.hook):'';ui.uses.hidden=!(hk||(u&&u.length));ui.uses.innerHTML=(hk?'<p class="ru-q">'+hk+'</p>':'')+(u&&u.length?'<details class="ru-d"><summary>Where this shows up</summary><ul>'+u.map(x=>'<li>'+x+'</li>').join('')+'</ul></details>':'');}if(ui.scale)ui.scale.textContent=lvText(d.scale);
   if(ui.lab)ui.lab.innerHTML='<p class="lab-h">Investigation</p>'+lvText(d.lab);
   if(sim.tour&&sim.tour.on)tourExit(sim,'level');
@@ -879,7 +956,7 @@ function renderReview(sim,focus){const box=sim.ui.review,R=sim.def.review;if(!bo
     body=`<p class="rv-kind ${q.kind}">${RV_KIND[q.kind]||''}</p><div class="rv-q">${q.q}</div>${input}${fb}
     <div class="row rv-nav"><button type="button" class="btn" data-rv="prev"${i===0?' disabled':''}>Back</button><button type="button" class="btn${done?' primary':''}" data-rv="next">${i===list.length-1?'See my results':'Next question'}</button></div>`;}
   else if(list.length){const got=list.filter(x=>ans[x.id]&&ans[x.id].done&&ans[x.id].ok).length,did=list.filter(x=>ans[x.id]&&ans[x.id].done).length;const missed=list.length-got;
-    body=`<h3 class="rv-res">${did<list.length?`${did} of ${list.length} answered. `:''}You got ${got} of ${list.length} right the first time.</h3><p class="help">${missed?'Reset the ones you missed and try them again.':'Nice work.'} Your answers stay on this device. Your teacher can’t see them.</p><div class="row">${missed?'<button type="button" class="btn primary" data-rv="redo">Try the missed ones again</button>':''}<button type="button" class="btn" data-rv="clear">Start over</button>${sim.def.learn?'<button type="button" class="btn" data-rv="learn">Go back to Learn it</button>':''}<button type="button" class="btn" data-rv="prev">Back</button></div>`;}
+    body=`<h3 class="rv-res">${did<list.length?`${did} of ${list.length} answered. `:''}You got ${got} of ${list.length} right the first time.</h3><p class="help">${missed?'Reset the ones you missed and try them again.':'Nice work.'} Your answers stay on this device. Your teacher sees them only if you turn them in below.</p><div class="row">${missed?'<button type="button" class="btn primary" data-rv="redo">Try the missed ones again</button>':''}<button type="button" class="btn" data-rv="clear">Start over</button>${sim.def.learn?'<button type="button" class="btn" data-rv="learn">Go back to Learn it</button>':''}<button type="button" class="btn" data-rv="prev">Back</button></div>`+myInline(sim)+tiHTML(sim);}
   else body='<p class="help">No review questions at this detail level yet. Try Closer look or Deep dive.</p>';
   const tsv=Object.values(sim.tScore||{}),tsl=sim.testFlow&&tsv.length?`<p class="help">Part 1: you got ${tsv.filter(Boolean).length} of ${tsv.length} predictions right the first time.</p>`:'';
   box.innerHTML=`<div class="rv-head"><h3>${sim.def.learn?'Test yourself: why questions':'Review'}</h3><div class="rv-dots">${dots}</div></div>${tsl}${body}${apLinksHtml(R.ap,R.apNote,atLeast('ap'))}`;
@@ -894,7 +971,7 @@ function renderReview(sim,focus){const box=sim.ui.review,R=sim.def.review;if(!bo
   const ni=box.querySelector('.rv-num input');if(ni&&!ni.disabled)ni.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const c=box.querySelector('[data-rv=check]');if(c)c.click();}});
   act('redo',()=>{list.forEach(x=>{if(ans[x.id]&&!ans[x.id].ok)delete ans[x.id];});save();const n=list.findIndex(x=>!ans[x.id]);go(n<0?0:n);});
   act('clear',()=>{store.del(rvKey(sim));go(0);});
-  act('lab',()=>{rvOpenLab(sim,q);});act('learn',()=>setMode(sim,'guided',true));
+  act('lab',()=>{rvOpenLab(sim,q);});tiBind(sim,box);myPaint(sim);act('learn',()=>setMode(sim,'guided',true));
   if(focus){const v=box.querySelector('.verdict');if(v&&v.focus)v.focus({preventScroll:true});box.scrollIntoView&&window.scrollTo(0,Math.max(0,box.getBoundingClientRect().top+window.scrollY-12));}}
 function rvOpenLab(sim,q){const L=q.lab,base={};(sim.def.controls||[]).forEach(c=>base[c.id]=c.def);BL.setValues(sim,Object.assign(base,L.set||{}));BL.reset(sim);restoreVisibility(sim);
   sim.ui.sec.classList.add('rv-see');setRunning(sim,true);
@@ -1118,7 +1195,7 @@ function drawThumbs(force){const cvs=[...document.querySelectorAll('canvas.thumb
 const thumbCanvas=document.createElement('canvas');
 let browse=store.get(LAB_KEY+'-browse')||'topic';
 function sortSec(list,u){const ord=(BL.TOPIC_ORDER||{})[u]||[];const ix=d=>{const i=ord.indexOf(d.id);return i<0?1000+(d.order||0):i;};return list.slice().sort((a,b)=>ix(a)-ix(b));}
-function card(d){return `<a class="card${d.apUnit===FURTHER?' adv':''}" href="#${d.hash}"><canvas class="thumb" data-sim="${d.id}" aria-hidden="true"></canvas><span class="card-b"><span class="card-t">${d.tab}</span><span class="card-d">${d.card||''}</span>${d.frq?`<span class="tags">${d.kind?`<span class="kind">${d.kind}</span>`:''}<span class="kind fq-tag">Free response</span></span>`:d.kind?`<span class="kind">${d.kind}</span>`:''}</span></a>`;}
+function card(d){return `<a class="card${d.apUnit===FURTHER?' adv':''}" href="#${d.hash}"><canvas class="thumb" data-sim="${d.id}" aria-hidden="true"></canvas><span class="card-b"><span class="card-t">${d.tab}</span><span class="card-d">${d.card||''}</span>${d.credit?`<span class="card-by">By ${d.credit.short||d.credit.name}</span>`:''}${d.frq?`<span class="tags">${d.kind?`<span class="kind">${d.kind}</span>`:''}<span class="kind fq-tag">Free response</span></span>`:d.kind?`<span class="kind">${d.kind}</span>`:''}</span></a>`;}
 /* A card that links to another site (e.g. a sister lab): {href,title,text,kind,label} */
 function extCard(x){return `<a class="card adv ext${x.lesson?' lesson':''}" href="${x.href}"${x.lesson?' target="_blank" rel="noopener"':''}><span class="thumb ext-thumb" aria-hidden="true"><span>${x.label||x.title}</span></span><span class="card-b"><span class="card-t">${x.title} ↗</span><span class="card-d">${x.text||''}</span>${x.kind?`<span class="kind">${x.kind}</span>`:''}</span></a>`;}
 function fqUnitLinks(list,cid,i){const L=list.filter(d=>d.frq&&fqList(d).length);if(!L.length)return '';

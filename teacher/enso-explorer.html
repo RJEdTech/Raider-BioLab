@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="author" content="Sandy Robertson, PhD, science teacher, Regis Jesuit High School">
+<!-- Created by Dr. Sandy Robertson. Shared in Raider BioLab with her permission (Nov 17, 2026). -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ENSO Explorer</title>
+
+<style>
+/* Layout concept: a single reading column built around one large, live ocean cross-section.
+   Teal = normal/neutral, vermilion = El Niño, blue = La Niña. Outcome colors (harm/good/mixed) stay separate. */
+:root{
+  --bg:#edf3f5; --surface:#ffffff; --surface-2:#e3ecf0; --ink:#0c2230; --muted:#46606e; --line:#c8d7de; --tint:rgba(11,127,122,.10);
+  --teal:#0b7f7a; --warm:#cf4125; --cool:#1d68b0;
+  --teal-t:#0a6b67; --warm-t:#b3361c; --cool-t:#1a5e9d;
+  --sky-top:#bfdcf0; --sky-bot:#eaf4fa; --cloud:#ffffff; --cloud-edge:#9ab6c7; --air:#2e5873; --wind:#17476b; --sun:#f5a623;
+  --deep:#124a6e; --deep-2:#0a3049; --ocean-warm:#ee6a3c; --ocean-cool:#3d8fd2; --wave:#ffffff; --on-ocean:#f2fbff;
+  --land:#8a7a5f; --seafloor:#3e3a30; --upwell:#6ff0cf; --fish:#e9f2f6; --plank:#9cf0a8;
+  --harm:#c8372d; --good:#1f8f5a; --mixed:#b06800; --on-mk:#ffffff;
+  --map-ocean:#cfe3ee; --map-land:#f5f8f4; --map-border:#b6c7c1; --map-sh:rgba(11,127,122,.11); --map-ink:#2c4655;
+  --focus:#0b7f7a; --shadow:0 1px 2px rgba(12,34,48,.06),0 8px 24px rgba(12,34,48,.06);
+  --font-display:'Avenir Next','Segoe UI',system-ui,-apple-system,Helvetica,Arial,sans-serif; --font-body:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; --font-mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0a1820; --surface:#112630; --surface-2:#173341; --ink:#e7f1f4; --muted:#9db5c0; --line:#26434f; --tint:rgba(98,216,205,.12);
+  --teal:#0f948e; --warm:#d9482a; --cool:#2a78c2;
+  --teal-t:#62d8cd; --warm-t:#ff9c7d; --cool-t:#82c1f7;
+  --sky-top:#12354a; --sky-bot:#1d4a63; --cloud:#d4e0e8; --cloud-edge:#7c9bb0; --air:#a9c7d8; --wind:#9ed0f5; --sun:#ffd166;
+  --deep:#0b2f47; --deep-2:#071d2d; --ocean-warm:#f26b3a; --ocean-cool:#2f78b8; --wave:#cfe9f7; --land:#6a604b; --seafloor:#262219;
+  --harm:#ff7a66; --good:#4cc38a; --mixed:#f0b04a; --on-mk:#0a1820;
+  --map-ocean:#0f2c3b; --map-land:#27475a; --map-border:#3a5c70; --map-sh:rgba(98,216,205,.08); --map-ink:#b8cfda;
+  --focus:#62d8cd; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0a1820; --surface:#112630; --surface-2:#173341; --ink:#e7f1f4; --muted:#9db5c0; --line:#26434f; --tint:rgba(98,216,205,.12);
+  --teal:#0f948e; --warm:#d9482a; --cool:#2a78c2;
+  --teal-t:#62d8cd; --warm-t:#ff9c7d; --cool-t:#82c1f7;
+  --sky-top:#12354a; --sky-bot:#1d4a63; --cloud:#d4e0e8; --cloud-edge:#7c9bb0; --air:#a9c7d8; --wind:#9ed0f5; --sun:#ffd166;
+  --deep:#0b2f47; --deep-2:#071d2d; --ocean-warm:#f26b3a; --ocean-cool:#2f78b8; --wave:#cfe9f7; --land:#6a604b; --seafloor:#262219;
+  --harm:#ff7a66; --good:#4cc38a; --mixed:#f0b04a; --on-mk:#0a1820;
+  --map-ocean:#0f2c3b; --map-land:#27475a; --map-border:#3a5c70; --map-sh:rgba(98,216,205,.08); --map-ink:#b8cfda;
+  --focus:#62d8cd; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.6;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--bg)}
+.in{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.12;letter-spacing:-.015em;text-wrap:balance;margin:0}
+h1{font-size:clamp(40px,7vw,76px);font-weight:700;letter-spacing:-.03em}
+h2{font-size:clamp(28px,4.2vw,42px);font-weight:700}
+h3{font-size:20px;font-weight:700}
+h4{font-size:16px;font-weight:700}
+p{margin:0}
+a{color:var(--cool-t)}
+.mono,.eyebrow,.lbl{font-family:var(--font-mono)}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-t);font-weight:500}
+.lede{font-size:clamp(17px,2.2vw,20px);max-width:62ch;color:var(--muted)}
+.prose{max-width:66ch}
+.prose p+p{margin-top:.8em}
+
+/* top nav */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .in{display:flex;align-items:center;gap:20px;overflow-x:auto;scrollbar-width:none}
+.top .in::-webkit-scrollbar{display:none}
+.brand{font-family:var(--font-display);font-weight:700;font-size:18px;white-space:nowrap;color:var(--ink);text-decoration:none;padding-block:12px}
+.top nav{display:flex;gap:4px}
+.top nav a{white-space:nowrap;text-decoration:none;color:var(--muted);font-size:14px;font-weight:500;padding:12px 10px;border-bottom:2px solid transparent}
+.top nav a:hover{color:var(--ink);border-bottom-color:var(--teal)}
+
+section{padding-block:64px;border-top:1px solid var(--line);scroll-margin-top:56px}
+.head{display:grid;gap:12px;margin-bottom:32px}
+.hero{border-top:0;padding-block:48px 56px}
+.hero .in{display:grid;gap:22px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:8px 0 0}
+.facts div{padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.facts dt{font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:4px 0 0;font-weight:600}
+.names{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:6px;padding-top:20px;border-top:1px dashed var(--line)}
+.names p{font-size:14px;color:var(--muted)}
+.names b{color:var(--ink)}
+
+/* buttons */
+.btn{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 14px;border-radius:8px;cursor:pointer;min-height:40px}
+.btn:hover{border-color:var(--teal)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);max-width:100%}
+.seg button{font:inherit;font-size:14px;font-weight:600;border:0;background:transparent;color:var(--ink);padding:10px 16px;cursor:pointer;min-height:42px;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--surface-2)}
+.seg button[aria-pressed="true"]{color:#fff}
+.seg button[data-phase="lanina"][aria-pressed="true"]{background:var(--cool)}
+.seg button[data-phase="normal"][aria-pressed="true"]{background:var(--teal)}
+.seg button[data-phase="elnino"][aria-pressed="true"]{background:var(--warm)}
+
+/* explorer */
+.xp{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(0,1fr);gap:24px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.diagram{overflow:hidden}
+#enso{display:block;width:100%;height:auto}
+.ctl{display:grid;gap:14px;padding:16px 18px 18px;border-top:1px solid var(--line)}
+.ctl-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.slider{display:grid;gap:6px}
+.slider label{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:12px;border-radius:99px;background:linear-gradient(90deg,var(--cool),var(--teal) 50%,var(--warm));outline-offset:6px;margin:6px 0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--surface);border:4px solid var(--ink);cursor:grab}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--surface);border:4px solid var(--ink);cursor:grab}
+.ticks{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:600}
+.cap{font-size:13px;color:var(--muted);padding:0 18px 16px}
+.panel{padding:22px;display:grid;gap:14px}
+.panel h3{display:flex;align-items:center;gap:10px}
+.badge{width:12px;height:12px;border-radius:50%;flex:none}
+.pane[hidden]{display:none}
+.pane>p{color:var(--muted);font-size:15px}
+.tour,.chg,.loop{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.tour li button,.chg li button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:30px 1fr;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:14.5px;line-height:1.45}
+.tour li button:hover,.chg li button:hover{border-color:var(--teal);background:var(--surface-2)}
+.tour li button:focus-visible,.chg li button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.tour li button[aria-pressed="true"],.chg li button[aria-pressed="true"]{border-color:var(--teal);background:var(--tint)}
+.tour .n,.chg .n{font-family:var(--font-mono);font-weight:500;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;background:var(--teal);color:#fff}
+.chg .n{background:var(--surface-2);color:var(--ink);font-size:16px}
+.chg[data-for="elnino"] .n{background:var(--warm);color:#fff}
+.chg[data-for="lanina"] .n{background:var(--cool);color:#fff}
+.sub{font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.loop{counter-reset:l;gap:6px}
+.loop li{counter-increment:l;display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:14px;color:var(--muted)}
+.loop li::before{content:counter(l);font-family:var(--font-mono);font-size:12px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--ink)}
+#enso .part{transition:opacity .35s}
+#enso[data-focus] .part{opacity:.16}
+#enso[data-focus="wind"] .part[data-part="wind"],#enso[data-focus="water"] .part[data-part="water"],#enso[data-focus="upwell"] .part[data-part="upwell"],#enso[data-focus="air"] .part[data-part="air"]{opacity:1}
+.dl{font-family:var(--font-mono);font-size:12px;fill:var(--on-ocean);paint-order:stroke;stroke:rgba(5,25,40,.55);stroke-width:3px;stroke-linejoin:round}
+.al{font-family:var(--font-mono);font-size:12px;fill:var(--air);paint-order:stroke;stroke:var(--sky-bot);stroke-width:3px;stroke-linejoin:round}
+.tick{font-family:var(--font-mono);font-size:11px;fill:var(--on-ocean);opacity:.75}
+@keyframes rain{to{stroke-dashoffset:-14}}
+@keyframes rise{to{stroke-dashoffset:-18}}
+.rain line{stroke-dasharray:6 8;animation:rain .8s linear infinite}
+.rain line:nth-child(2n){animation-duration:1.05s}
+.rain line:nth-child(3n){animation-duration:.7s}
+.upsh{stroke-dasharray:10 8;animation:rise 1.2s linear infinite}
+
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin-top:20px}
+.ro{padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.ro .lbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ro b{display:block;font-size:15px;margin-top:2px;line-height:1.3}
+.ro .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table.cmp{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px}
+.cmp th,.cmp td{padding:11px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.cmp tr:last-child td,.cmp tr:last-child th{border-bottom:0}
+.cmp thead th{font-family:var(--font-display);font-size:16px}
+.cmp tbody th{font-weight:600;color:var(--muted);font-size:13px;width:150px}
+.cmp .on{background:var(--tint)}
+.cmp thead th[data-col="lanina"]{color:var(--cool-t)} .cmp thead th[data-col="elnino"]{color:var(--warm-t)} .cmp thead th[data-col="normal"]{color:var(--teal-t)}
+.sec-sub{margin:32px 0 12px}
+
+/* map */
+.sh-why{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-bottom:28px}
+.sh-why .card{padding:18px;box-shadow:none}
+.sh-why h4{margin-bottom:6px}
+.sh-why p{font-size:14.5px;color:var(--muted)}
+.maptools{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.lg{width:18px;height:18px;border-radius:50%;display:inline-grid;place-items:center;color:var(--on-mk);font-weight:700;font-size:13px;line-height:1}
+.lg.dash{background:transparent;border:2px dashed var(--muted);color:var(--muted)}
+.mapbox{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--map-ocean)}
+#worldmap{display:block;width:100%;min-width:840px;height:auto}
+#worldmap .mk{cursor:pointer}
+#worldmap .halo{fill:none;stroke:var(--ink);stroke-width:2.5;opacity:0}
+#worldmap .mk.sel .halo{opacity:1}
+#worldmap .mk .dot{transition:transform .15s;transform-box:fill-box;transform-origin:center}
+#worldmap .mk:hover .dot{transform:scale(1.15)}
+#worldmap .glyph{fill:var(--on-mk);font-weight:700;font-family:var(--font-body);text-anchor:middle;pointer-events:none}
+#worldmap .mlabel{font-family:var(--font-body);font-weight:600;font-size:14px;fill:var(--map-ink);paint-order:stroke;stroke:var(--map-ocean);stroke-width:4px;stroke-linejoin:round;pointer-events:none}
+#worldmap .geo{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;fill:var(--map-ink);opacity:.55;text-anchor:middle;text-transform:uppercase}
+#worldmap .hemi{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;fill:var(--map-ink);text-anchor:middle;opacity:.8}
+@keyframes pop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+#worldmap .mki{animation:pop .35s ease-out both;transform-box:fill-box;transform-origin:center}
+.summary{margin:14px 0 0;font-size:14.5px;color:var(--muted)}
+.summary b{color:var(--ink)}
+.regions{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.chip{font:inherit;font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:8px;padding:7px 12px 7px 8px;border:1px solid var(--line);border-radius:99px;background:var(--surface);color:var(--ink);cursor:pointer;min-height:38px}
+.chip:hover{border-color:var(--teal)}
+.chip[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.detail{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);overflow:hidden}
+.scene{background:var(--surface-2);display:flex;flex-direction:column}
+.scene svg{display:block;width:100%;height:auto}
+.scene small{padding:8px 12px;font-size:12px;color:var(--muted)}
+.dbody{padding:22px 24px;display:grid;gap:12px;align-content:start}
+.dtop{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pill{font-family:var(--font-mono);font-size:12px;font-weight:500;padding:4px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.pill.o{color:var(--on-mk);border-color:transparent;font-weight:600}
+.pill.nh{border-style:dashed}
+.dbody h3{font-size:clamp(22px,3vw,28px)}
+.why{font-size:15px;color:var(--muted)}
+.why b{color:var(--ink)}
+.gb{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.gb h4{font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.gb ul{margin:0;padding-left:18px;font-size:14.5px;display:grid;gap:5px}
+.gb .bad h4{color:var(--warm-t)} .gb .gd h4{color:var(--teal-t)}
+.weak{font-size:13.5px;padding:8px 12px;border:1px dashed var(--line);border-radius:8px;color:var(--muted)}
+.fine{font-size:13px;color:var(--muted);margin-top:14px}
+
+/* myths */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.myth{padding:18px;display:grid;gap:12px;align-content:start;box-shadow:none}
+.myth .q{font-family:var(--font-display);font-size:19px;font-weight:700;line-height:1.25}
+.myth .tf{display:flex;gap:8px}
+.myth .tf .btn{flex:1}
+.myth .res{display:grid;gap:8px;font-size:14.5px}
+.myth .res[hidden]{display:none}
+.tag{font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:99px;justify-self:start;color:var(--on-mk)}
+.tag.myth-t{background:var(--harm)} .tag.fact-t{background:var(--good)}
+.myth .you{font-size:13px;color:var(--muted)}
+.myth.done{border-color:var(--ink)}
+.score{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:18px;font-size:15px}
+.meter{flex:1;min-width:140px;max-width:260px;height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--teal);width:0;transition:width .3s}
+
+/* forecast */
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.tool{padding:18px;display:grid;gap:8px;align-content:start;box-shadow:none}
+.tool svg{width:56px;height:56px}
+.tool p{font-size:14.5px;color:var(--muted)}
+.tool .mono{font-size:12px;color:var(--teal-t)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.gauge{padding:22px;display:grid;gap:14px}
+.track{position:relative;display:flex;height:34px;border-radius:8px;overflow:hidden;margin-top:6px}
+.track i{display:block;height:100%}
+.track .a{flex:2;background:var(--cool)} .track .b{flex:1;background:var(--surface-2)} .track .c{flex:2.5;background:var(--warm)}
+.ptr{position:absolute;top:-4px;bottom:-4px;width:4px;margin-left:-2px;background:var(--ink);border-radius:2px;box-shadow:0 0 0 2px var(--surface)}
+.tl-lab{position:relative;height:18px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted)}
+.tl-lab span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.gres{padding:12px 14px;border-radius:10px;background:var(--surface-2);display:grid;gap:2px}
+.gres b{font-family:var(--font-display);font-size:22px}
+.gres span{font-size:14px;color:var(--muted)}
+.watch{display:grid;gap:10px}
+.watch div{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14.5px}
+.watch b{display:block;font-size:14px}
+.ladder{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;counter-reset:s}
+.ladder li{counter-increment:s;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:grid;gap:6px;align-content:start;position:relative}
+.ladder li .mono{font-size:12px;color:var(--teal-t);letter-spacing:.06em;text-transform:uppercase}
+.ladder li p{font-size:14.5px;color:var(--muted)}
+.sectors{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.sector{padding:18px;box-shadow:none;display:grid;gap:8px;align-content:start}
+.sector ul{margin:0;padding-left:18px;font-size:14.5px;color:var(--muted);display:grid;gap:4px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:14.5px;margin-top:8px}
+.callout{padding:16px 18px;border-left:4px solid var(--teal);background:var(--tint);border-radius:0 10px 10px 0;font-size:15px;max-width:72ch}
+
+/* quiz */
+.quiz{padding:clamp(18px,3vw,32px);max-width:820px;display:grid;gap:18px}
+.qbar{display:flex;justify-content:space-between;align-items:center;gap:12px;font-family:var(--font-mono);font-size:13px;color:var(--muted)}
+.qprog{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.qprog i{display:block;height:100%;width:0;background:var(--teal);transition:width .3s}
+.qtext{font-family:var(--font-display);font-size:clamp(20px,3vw,26px);font-weight:700;line-height:1.25}
+.opts{display:grid;gap:10px}
+.opt{all:unset;box-sizing:border-box;display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;padding:13px 14px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;font-size:15.5px;background:var(--surface)}
+.opt:hover:not([disabled]){border-color:var(--teal);background:var(--surface-2)}
+.opt:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.opt .k{font-family:var(--font-mono);font-size:13px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--line);color:var(--muted)}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+.opt.right .k{background:var(--good);border-color:var(--good);color:var(--on-mk)}
+.opt.wrong{border-color:var(--harm);background:color-mix(in srgb,var(--harm) 12%,var(--surface))}
+.opt.wrong .k{background:var(--harm);border-color:var(--harm);color:var(--on-mk)}
+.opt[disabled]{cursor:default}
+.fb{padding:14px 16px;border-radius:10px;background:var(--surface-2);font-size:15px;display:grid;gap:4px}
+.fb[hidden]{display:none}
+.fb b{font-family:var(--font-display);font-size:17px}
+.qact{display:flex;gap:10px;flex-wrap:wrap}
+.final{display:grid;gap:14px}
+.final .big{font-family:var(--font-display);font-weight:700;font-size:clamp(40px,8vw,64px);line-height:1}
+.brk{display:grid;gap:8px}
+.brk div{display:grid;grid-template-columns:130px 1fr 44px;gap:10px;align-items:center;font-size:14px}
+.brk .m{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.brk .m i{display:block;height:100%;background:var(--teal)}
+.brk .t{font-family:var(--font-mono);text-align:right;font-variant-numeric:tabular-nums}
+
+footer{border-top:1px solid var(--line);padding-block:36px 56px;font-size:14px;color:var(--muted)}
+footer .in{display:grid;gap:10px}
+
+@media (max-width:900px){
+  .xp,.two{grid-template-columns:minmax(0,1fr)}
+  .detail{grid-template-columns:minmax(0,1fr)}
+  section{padding-block:48px}
+  .brk div{grid-template-columns:100px 1fr 40px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+
+
+</head>
+<body>
+<header class="top">
+  <div class="in">
+    <a class="brand" href="#top">ENSO Explorer</a>
+    <nav aria-label="Sections">
+      <a href="#explorer">Ocean &amp; wind</a>
+      <a href="#map">Impact map</a>
+      <a href="#myths">Myth or fact</a>
+      <a href="#forecast">Forecasting</a>
+      <a href="#quiz">Quiz</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="in">
+    <p class="eyebrow">Earth science · Climate systems</p>
+    <h1>ENSO Explorer</h1>
+    <p class="lede">Every few years the tropical Pacific tips out of balance. Warm water, wind and rain shift across the ocean, and the effects land hardest on the tropics and the Southern Hemisphere: Peru's fisheries, Indonesia's forests, Australia's farms, southern Africa's harvests. You will learn the normal pattern first, then see exactly what changes.</p>
+    <dl class="facts">
+      <div><dt>Stands for</dt><dd>El Niño–Southern Oscillation</dd></div>
+      <div><dt>Rhythm</dt><dd>Irregular, every 2 to 7 years</dd></div>
+      <div><dt>Strongest effects</dt><dd>Tropics and Southern Hemisphere</dd></div>
+    </dl>
+    <div class="names">
+      <p><b>El Niño</b> is Spanish for "the boy." Peruvian fishers named it for the Christ child because warm water often arrived near Christmas. <b>La Niña</b> means "the girl."</p>
+      <p><b>Southern Oscillation</b> is the atmosphere's half of the story: a see-saw in air pressure between Tahiti and Darwin, Australia, first described by Gilbert Walker in the 1920s.</p>
+      <p><b>Neutral</b> is the third state. The ocean and air sit near their usual pattern, and many years are neutral.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EXPLORER ===================== -->
+<section id="explorer">
+  <div class="in">
+    <div class="head">
+      <p class="eyebrow">Ocean and wind</p>
+      <h2>Learn the normal year, then tip the see-saw</h2>
+      <p class="lede">This is a slice through the Pacific along the equator, viewed from the south. West is on the left (Indonesia and Australia), east on the right (Peru and Ecuador). Start with the guided tour, then drag the slider toward La Niña or El Niño.</p>
+    </div>
+
+    <div class="xp">
+      <div>
+        <div class="card diagram">
+          <svg id="enso" viewBox="0 0 960 520" role="img" aria-labelledby="ensoT ensoD">
+            <title id="ensoT">Cross-section of the equatorial Pacific Ocean</title>
+            <desc id="ensoD">A normal year: trade winds blow east to west, warm water piles up in the west, cold water rises off South America, and storm clouds form over the western Pacific.</desc>
+            <defs>
+              <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky-top)"/><stop offset="1" style="stop-color:var(--sky-bot)"/></linearGradient>
+              <linearGradient id="gWarm" x1="0" y1="0" x2="1" y2="0"><stop id="wS0" offset="0"/><stop id="wS1" offset=".5"/><stop id="wS2" offset="1"/></linearGradient>
+              <linearGradient id="gFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--deep);stop-opacity:0"/><stop offset="1" style="stop-color:var(--deep);stop-opacity:.55"/></linearGradient>
+              <linearGradient id="gDeep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--deep)"/><stop offset="1" style="stop-color:var(--deep-2)"/></linearGradient>
+            </defs>
+            <rect width="960" height="520" fill="url(#gSky)"/>
+            <rect y="490" width="960" height="30" style="fill:var(--seafloor)"/>
+
+            <g class="part" data-part="water">
+              <path id="deepP" fill="url(#gDeep)"/>
+              <path id="warmP" fill="url(#gWarm)"/>
+              <path id="fadeP" fill="url(#gFade)"/>
+              <path id="thermo" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="9 7" opacity=".9"/>
+              <path id="surf" fill="none" style="stroke:var(--wave)" stroke-width="2.5" stroke-linecap="round"/>
+              <g class="tick"><text x="80" y="266">0 m</text><text x="80" y="366">100 m</text><text x="80" y="466">200 m</text></g>
+              <text class="dl" x="130" y="296">Warm pool</text>
+              <text class="dl" id="thermoL" x="480" y="345" text-anchor="middle">Thermocline</text>
+              <text class="dl" x="480" y="478" text-anchor="middle">Cold deep water</text>
+            </g>
+
+            <!-- land -->
+            <path d="M0,236 L18,214 L38,222 L56,236 L70,248 L70,490 L0,490 Z" style="fill:var(--land)"/>
+            <path d="M890,258 L902,206 L925,150 L938,188 L952,168 L960,160 L960,490 L890,490 Z" style="fill:var(--land)"/>
+            <path d="M902,206 L925,150 L934,168 L918,172Z M938,188 L952,168 L960,160 L960,176Z" fill="#fff" opacity=".8"/>
+            <g class="dl" style="stroke:none"><text x="4" y="318">Indonesia</text><text x="4" y="333">Australia</text><text x="893" y="318">Peru</text><text x="893" y="333">Ecuador</text></g>
+            <g class="tick" style="opacity:.9;font-size:12px"><text x="84" y="510">WEST PACIFIC</text><text x="876" y="510" text-anchor="end">EAST PACIFIC</text></g>
+
+            <g class="part" data-part="air">
+              <g id="retG"></g>
+              <text class="al" x="112" y="16">Air flows east, high up</text>
+              <g id="cloudG">
+                <g class="rain" id="rainG" fill="none" stroke="var(--air)" stroke-width="2.4" stroke-linecap="round" opacity=".9">
+                  <line x1="-42" y1="152" x2="-42" y2="232"/><line x1="-30" y1="150" x2="-30" y2="236"/><line x1="-18" y1="152" x2="-18" y2="230"/><line x1="-6" y1="150" x2="-6" y2="236"/><line x1="6" y1="152" x2="6" y2="232"/><line x1="18" y1="150" x2="18" y2="236"/><line x1="30" y1="152" x2="30" y2="230"/><line x1="42" y1="150" x2="42" y2="234"/>
+                </g>
+                <g id="cloudShapes" stroke="var(--cloud-edge)" stroke-width="1.5" style="fill:var(--cloud)">
+                  <ellipse cx="-34" cy="130" rx="40" ry="16"/><ellipse cx="34" cy="130" rx="42" ry="16"/>
+                  <ellipse cx="-30" cy="112" rx="30" ry="22"/><ellipse cx="24" cy="106" rx="36" ry="26"/><ellipse cx="-2" cy="92" rx="30" ry="22"/>
+                </g>
+                <g fill="none" stroke="var(--air)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M-92,205 V160 M-99,171 L-92,159 L-85,171"/><path d="M92,205 V160 M85,171 L92,159 L99,171"/>
+                </g>
+                <text class="al" y="58" text-anchor="middle">Rising air, storms, heavy rain</text>
+              </g>
+              <g id="dryE" transform="translate(820 0)">
+                <g style="fill:var(--sun);stroke:var(--sun)" stroke-width="3" stroke-linecap="round"><circle cy="84" r="13" stroke="none"/><path d="M0,60 V66 M0,102 V108 M-24,84 H-18 M18,84 H24 M-17,67 l4,4 M13,97 l4,4 M17,67 l-4,4 M-13,97 l-4,4" fill="none"/></g>
+                <g fill="none" stroke="var(--air)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M-48,108 V152 M-55,141 L-48,153 L-41,141"/><path d="M48,108 V152 M41,141 L48,153 L55,141"/></g>
+                <text class="al" y="176" text-anchor="middle">Sinking air, dry</text>
+              </g>
+              <g id="dryW" transform="translate(135 0)" opacity="0">
+                <g style="fill:var(--sun);stroke:var(--sun)" stroke-width="3" stroke-linecap="round"><circle cy="84" r="13" stroke="none"/><path d="M0,60 V66 M0,102 V108 M-24,84 H-18 M18,84 H24 M-17,67 l4,4 M13,97 l4,4 M17,67 l-4,4 M-13,97 l-4,4" fill="none"/></g>
+                <g fill="none" stroke="var(--air)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M-48,108 V152 M-55,141 L-48,153 L-41,141"/><path d="M48,108 V152 M41,141 L48,153 L55,141"/></g>
+                <text class="al" y="176" text-anchor="middle">Sinking air, dry</text>
+              </g>
+            </g>
+
+            <g class="part" data-part="upwell" id="upG">
+              <g id="fishG" style="fill:var(--fish)">
+                <g transform="translate(775 308)"><ellipse rx="9" ry="4"/><path d="M7,0 l8,-5 v10z"/></g>
+                <g transform="translate(820 336)"><ellipse rx="9" ry="4"/><path d="M7,0 l8,-5 v10z"/></g>
+                <g transform="translate(856 300)"><ellipse rx="9" ry="4"/><path d="M7,0 l8,-5 v10z"/></g>
+                <g transform="translate(790 362)"><ellipse rx="9" ry="4"/><path d="M7,0 l8,-5 v10z"/></g>
+                <g transform="translate(868 350)"><ellipse rx="9" ry="4"/><path d="M7,0 l8,-5 v10z"/></g>
+              </g>
+              <g id="plankG" style="fill:var(--plank)"><circle cx="760" cy="278" r="3"/><circle cx="790" cy="285" r="2.5"/><circle cx="820" cy="276" r="3"/><circle cx="846" cy="288" r="2.5"/><circle cx="870" cy="278" r="3"/></g>
+              <g id="upArrows" fill="none" style="stroke:var(--upwell)" stroke-linecap="round" stroke-linejoin="round"></g>
+              <text class="dl" x="878" y="456" text-anchor="end">Upwelling</text>
+              <text class="dl" x="878" y="472" text-anchor="end" style="font-size:10.5px">cold, nutrient-rich water rises</text>
+            </g>
+
+            <g class="part" data-part="wind">
+              <g id="windG"></g>
+              <text class="al" x="878" y="203" text-anchor="end">Trade winds</text>
+            </g>
+          </svg>
+
+          <div class="ctl">
+            <div class="ctl-row">
+              <div class="seg" role="group" aria-label="Choose a phase">
+                <button type="button" data-phase="lanina" aria-pressed="false">La Niña</button>
+                <button type="button" data-phase="normal" aria-pressed="true">Normal year</button>
+                <button type="button" data-phase="elnino" aria-pressed="false">El Niño</button>
+              </div>
+              <span class="mono" style="font-size:13px;color:var(--muted)" id="anomTxt">Niño 3.4 anomaly ≈ 0.0 °C</span>
+            </div>
+            <div class="slider">
+              <label for="tslider">Slide between the phases</label>
+              <input type="range" id="tslider" min="-100" max="100" step="1" value="0">
+              <div class="ticks" aria-hidden="true"><span style="color:var(--cool-t)">La Niña</span><span style="color:var(--teal-t)">Normal</span><span style="color:var(--warm-t)">El Niño</span></div>
+            </div>
+          </div>
+          <p class="cap">Sea level tilt is exaggerated so you can see it. Depth is to scale: 1 pixel is about 1 meter in the diagram, and temperatures are typical, not exact.</p>
+        </div>
+      </div>
+
+      <aside class="card panel" aria-live="polite">
+        <div class="pane" id="pane-normal">
+          <h3><span class="badge" style="background:var(--teal)"></span>A normal year</h3>
+          <p>Follow the chain of cause and effect. Select a step to spotlight that part of the diagram.</p>
+          <ol class="tour" id="tour">
+            <li><button type="button" data-focus="wind" aria-pressed="false"><span class="n">1</span><span><b>Trade winds blow east to west.</b> Air pressure is high over the cool eastern Pacific and low over the warm west, and that difference drives the wind.</span></button></li>
+            <li><button type="button" data-focus="water" aria-pressed="false"><span class="n">2</span><span><b>Warm water piles up in the west.</b> The winds drag surface water toward Indonesia and Australia. Sea level there is about half a meter higher, and the warm layer is about 150 m deep.</span></button></li>
+            <li><button type="button" data-focus="upwell" aria-pressed="false"><span class="n">3</span><span><b>Cold water rises in the east.</b> Water pushed west is replaced by upwelling from below. It carries nutrients that feed plankton, anchovies and seabirds off Peru.</span></button></li>
+            <li><button type="button" data-focus="air" aria-pressed="false"><span class="n">4</span><span><b>Air rises in the west and sinks in the east.</b> Warm water heats the air, which rises into towering storms and rain. It flows back east aloft and sinks over the dry east. This loop is the Walker circulation.</span></button></li>
+          </ol>
+          <button type="button" class="btn" id="clearFocus">Show everything</button>
+        </div>
+
+        <div class="pane" id="pane-elnino" hidden>
+          <h3><span class="badge" style="background:var(--warm)"></span>El Niño: the see-saw tips east</h3>
+          <p>The same system, with the wind relaxed. Select a change to spotlight it.</p>
+          <ul class="chg" data-for="elnino">
+            <li><button type="button" data-focus="wind" aria-pressed="false"><span class="n">↓</span><span><b>Trade winds weaken</b> and sometimes reverse in short bursts.</span></button></li>
+            <li><button type="button" data-focus="water" aria-pressed="false"><span class="n">→</span><span><b>Warm water slides east</b> along the equator. The tilt flattens and the thermocline sinks off South America.</span></button></li>
+            <li><button type="button" data-focus="upwell" aria-pressed="false"><span class="n">✕</span><span><b>Upwelling weakens or stops.</b> Warm, nutrient-poor water caps the coast and fish stocks crash.</span></button></li>
+            <li><button type="button" data-focus="air" aria-pressed="false"><span class="n">⇄</span><span><b>Rain follows the warm water.</b> Storms move to the central Pacific. The west dries out and the Peru coast floods.</span></button></li>
+          </ul>
+          <p class="sub">Why it keeps going</p>
+          <ol class="loop"><li>Weaker winds push less water west.</li><li>The east stays warmer.</li><li>The east–west pressure difference shrinks.</li><li>Winds weaken further, and the cycle repeats.</li></ol>
+        </div>
+
+        <div class="pane" id="pane-lanina" hidden>
+          <h3><span class="badge" style="background:var(--cool)"></span>La Niña: normal, turned up</h3>
+          <p>The usual pattern gets stronger, and the extremes get more extreme. Select a change to spotlight it.</p>
+          <ul class="chg" data-for="lanina">
+            <li><button type="button" data-focus="wind" aria-pressed="false"><span class="n">↑</span><span><b>Trade winds strengthen.</b></span></button></li>
+            <li><button type="button" data-focus="water" aria-pressed="false"><span class="n">←</span><span><b>More warm water is pushed west.</b> The tilt steepens: a deeper warm layer in the west, a shallower one in the east.</span></button></li>
+            <li><button type="button" data-focus="upwell" aria-pressed="false"><span class="n">↑</span><span><b>Upwelling strengthens.</b> Colder, richer water reaches the surface and the eastern Pacific cools.</span></button></li>
+            <li><button type="button" data-focus="air" aria-pressed="false"><span class="n">⇄</span><span><b>Rain concentrates far to the west.</b> Indonesia and Australia get wetter while the Peru coast stays dry.</span></button></li>
+          </ul>
+          <p class="sub">Why it keeps going</p>
+          <ol class="loop"><li>Stronger winds push more water west.</li><li>The east cools.</li><li>The pressure difference grows.</li><li>Winds strengthen further, and the cycle repeats.</li></ol>
+        </div>
+      </aside>
+    </div>
+
+    <div class="readouts" id="readouts">
+      <div class="ro"><span class="lbl">Trade winds</span><b id="r-wind"></b></div>
+      <div class="ro"><span class="lbl">Warm water</span><b id="r-warm"></b></div>
+      <div class="ro"><span class="lbl">Thermocline</span><b id="r-thermo"></b></div>
+      <div class="ro"><span class="lbl">Upwelling off S. America</span><b id="r-up"></b></div>
+      <div class="ro"><span class="lbl">Heavy rain</span><b id="r-rain"></b></div>
+      <div class="ro"><span class="lbl">East Pacific surface</span><b class="num" id="r-sst"></b></div>
+    </div>
+
+    <h3 class="sec-sub">Side by side</h3>
+    <div class="scroll">
+      <table class="cmp" id="cmp">
+        <thead><tr><th scope="col"></th><th scope="col" data-col="lanina">La Niña</th><th scope="col" data-col="normal">Normal year</th><th scope="col" data-col="elnino">El Niño</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Trade winds</th><td data-col="lanina">Stronger than normal</td><td data-col="normal">Steady, east to west</td><td data-col="elnino">Weaker, sometimes reversed</td></tr>
+          <tr><th scope="row">Warm water</th><td data-col="lanina">Piled up far west, extra warm</td><td data-col="normal">Piled up in the west</td><td data-col="elnino">Spreads east along the equator</td></tr>
+          <tr><th scope="row">Thermocline, west / east</th><td data-col="lanina">About 180 m / 35 m, steep</td><td data-col="normal">About 155 m / 55 m, sloped</td><td data-col="elnino">About 105 m / 120 m, flat</td></tr>
+          <tr><th scope="row">Upwelling off S. America</th><td data-col="lanina">Strong</td><td data-col="normal">Active</td><td data-col="elnino">Weak or shut off</td></tr>
+          <tr><th scope="row">Heavy rain</th><td data-col="lanina">Far western Pacific</td><td data-col="normal">Western Pacific</td><td data-col="elnino">Central and eastern Pacific</td></tr>
+          <tr><th scope="row">Eastern Pacific surface</th><td data-col="lanina">Cooler than normal</td><td data-col="normal">Cool, about 23 °C</td><td data-col="elnino">Warmer than normal</td></tr>
+          <tr><th scope="row">How often</th><td data-col="lanina">Every few years, irregular</td><td data-col="normal">Common between events</td><td data-col="elnino">Every 2 to 7 years, irregular</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MAP ===================== -->
+<section id="map">
+  <div class="in">
+    <div class="head">
+      <p class="eyebrow">Impact map</p>
+      <h2>Who gains and who loses, region by region</h2>
+      <p class="lede">The shifted rain and heat reach far beyond the Pacific. Pick a phase, then select a marker or a region name to see what happens and why.</p>
+    </div>
+
+    <div class="sh-why">
+      <div class="card"><h4>The ocean's epicenter is tropical</h4><p>The warm pool sits on the equator, so the first and biggest shifts in rain and heat hit the countries that ring the tropical Pacific and Indian Oceans. Most of them lie in or straddle the Southern Hemisphere.</p></div>
+      <div class="card"><h4>The timing matches the southern wet season</h4><p>El Niño and La Niña usually peak between December and February. That is the main rainy and growing season for southern Africa, Australia, Brazil and Argentina, so a shift in rain lands on crops and water supplies.</p></div>
+      <div class="card"><h4>The north gets a weaker, patchier signal</h4><p>North America and Asia are affected mainly in winter, through shifts in the jet stream. Those effects exist, but they are smaller and more easily masked by other weather patterns.</p></div>
+    </div>
+
+    <div class="maptools">
+      <div class="seg" role="group" aria-label="Choose a phase for the map">
+        <button type="button" data-mphase="elnino" aria-pressed="true" data-phase="elnino">El Niño</button>
+        <button type="button" data-mphase="lanina" aria-pressed="false" data-phase="lanina">La Niña</button>
+      </div>
+      <div class="legend" aria-label="Legend">
+        <span><i class="lg" style="background:var(--good)">+</i>Mostly beneficial</span>
+        <span><i class="lg" style="background:var(--harm)">−</i>Mostly harmful</span>
+        <span><i class="lg" style="background:var(--mixed)">±</i>Mixed</span>
+        <span><i class="lg dash">·</i>Northern Hemisphere, weaker signal</span>
+      </div>
+    </div>
+
+    <div class="mapbox"><svg id="worldmap" role="img" aria-label="World map centered on the Pacific Ocean with markers for regions affected by El Niño and La Niña. The Southern Hemisphere is shaded."></svg></div>
+    <p class="summary" id="mapSummary"></p>
+    <div class="regions" id="regionChips" role="group" aria-label="Regions"></div>
+
+    <div class="card detail" id="detail"></div>
+    <p class="fine">These are typical tendencies, not guarantees. Every event is different, and local weather also depends on other climate patterns such as the Indian Ocean Dipole. Illustrations are simplified sketches, not photographs.</p>
+  </div>
+</section>
+
+<!-- ===================== MYTHS ===================== -->
+<section id="myths">
+  <div class="in">
+    <div class="head">
+      <p class="eyebrow">Myth or fact</p>
+      <h2>What people get wrong about El Niño</h2>
+      <p class="lede">Read each statement and decide whether it is true. Then check the record. A few of these are facts, so think before you answer.</p>
+    </div>
+    <div class="score"><span id="mScore">You have not answered any yet.</span><span class="meter" aria-hidden="true"><i id="mMeter"></i></span></div>
+    <div class="mgrid" id="mgrid"></div>
+  </div>
+</section>
+
+<!-- ===================== FORECAST ===================== -->
+<section id="forecast">
+  <div class="in">
+    <div class="head">
+      <p class="eyebrow">Forecasting and preparing</p>
+      <h2>How scientists see it coming, and what people do about it</h2>
+      <p class="lede">Because the ocean changes slowly, ENSO can often be spotted months before its effects arrive. That lead time is what lets farmers, cities and governments reduce the damage.</p>
+    </div>
+
+    <h3 class="sec-sub" style="margin-top:0">Four ways to watch the Pacific</h3>
+    <div class="tools">
+      <div class="card tool">
+        <svg viewBox="0 0 56 56" aria-hidden="true"><path d="M4 38 Q14 34 24 38 T44 38 T56 36 V56 H4Z" style="fill:var(--cool)" opacity=".35"/><rect x="21" y="16" width="12" height="20" rx="3" style="fill:var(--warm)"/><path d="M27 16 V6 M23 9 H31" style="stroke:var(--ink)" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M27 36 V54" style="stroke:var(--ink)" stroke-width="2" stroke-dasharray="3 3"/></svg>
+        <h4>Moored buoys</h4><p class="mono">TAO/TRITON array</p>
+        <p>About 70 anchored buoys span the equatorial Pacific. They record winds and ocean temperature from the surface down to roughly 500 m. The array was built after the huge 1982–83 El Niño caught scientists by surprise.</p>
+      </div>
+      <div class="card tool">
+        <svg viewBox="0 0 56 56" aria-hidden="true"><path d="M6 12 H50" style="stroke:var(--cool)" stroke-width="3" stroke-linecap="round"/><rect x="22" y="22" width="12" height="22" rx="6" style="fill:var(--teal)"/><path d="M28 44 V52" style="stroke:var(--ink)" stroke-width="2.5" stroke-linecap="round"/><path d="M28 20 V14 M24 17 L28 13 L32 17" style="stroke:var(--ink)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h4>Argo floats</h4><p class="mono">~4,000 worldwide</p>
+        <p>Robotic floats drift at depth, then rise every 10 days or so, measuring temperature and salinity down to 2,000 m. They reveal the heat stored below the surface, which often builds before an El Niño.</p>
+      </div>
+      <div class="card tool">
+        <svg viewBox="0 0 56 56" aria-hidden="true"><rect x="22" y="8" width="12" height="16" rx="2" style="fill:var(--ink)"/><rect x="6" y="12" width="14" height="8" style="fill:var(--cool)"/><rect x="36" y="12" width="14" height="8" style="fill:var(--cool)"/><path d="M28 24 L18 50 H38Z" style="fill:var(--warm)" opacity=".28"/></svg>
+        <h4>Satellites</h4><p class="mono">Surface from orbit</p>
+        <p>Satellites map sea surface temperature, wind, and sea level. Warm water expands and stands taller, so a rise in sea level in the east is an early sign that warm water has shifted.</p>
+      </div>
+      <div class="card tool">
+        <svg viewBox="0 0 56 56" aria-hidden="true"><g style="stroke:var(--ink)" stroke-width="1.5" fill="none"><path d="M8 8 H48 V48 H8Z"/><path d="M8 21 H48 M8 34 H48 M21 8 V48 M34 8 V48"/></g><path d="M14 40 Q24 14 42 22" style="stroke:var(--warm)" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+        <h4>Computer models</h4><p class="mono">Physics + AI</p>
+        <p>Coupled ocean–atmosphere models simulate the physics, then run many times from slightly different starting points to show a range of outcomes. Statistical and machine-learning models are tested alongside them.</p>
+      </div>
+    </div>
+
+    <div class="two" style="margin-top:36px">
+      <div>
+        <h3 class="sec-sub" style="margin-top:0">Try the forecaster's gauge</h3>
+        <div class="card gauge">
+          <p style="font-size:14.5px;color:var(--muted)">The main yardstick is how far the sea surface in the central Pacific (the Niño 3.4 region) is from its long-term average, smoothed over three months. Move the slider to see how forecasters classify it.</p>
+          <div class="slider">
+            <label for="anom">3-month Niño 3.4 anomaly: <b class="mono" id="anomVal" style="color:var(--ink)">+0.0 °C</b></label>
+            <input type="range" id="anom" min="-25" max="30" step="1" value="12">
+          </div>
+          <div>
+            <div class="track" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><span class="ptr" id="ptr"></span></div>
+            <div class="tl-lab" aria-hidden="true"><span style="left:36.4%">−0.5 °C</span><span style="left:54.5%">+0.5 °C</span></div>
+          </div>
+          <div class="gres" id="gres"></div>
+          <p style="font-size:13.5px;color:var(--muted)">An official event needs the pattern to last: NOAA calls it an El Niño or La Niña episode only after the anomaly passes the threshold for five overlapping three-month seasons and the atmosphere responds.</p>
+        </div>
+      </div>
+      <div>
+        <h3 class="sec-sub" style="margin-top:0">What forecasters track</h3>
+        <div class="watch">
+          <div><b>Sea surface temperature (ONI)</b>The Oceanic Niño Index is the Niño 3.4 anomaly. +0.5 °C or more means El Niño conditions; −0.5 °C or less means La Niña.</div>
+          <div><b>Pressure see-saw (SOI)</b>The Southern Oscillation Index compares air pressure at Tahiti and Darwin. Shifts show the atmosphere joining in.</div>
+          <div><b>Heat below the surface</b>A growing pool of warm water under the surface often comes before El Niño, like a loaded spring.</div>
+          <div><b>Westerly wind bursts</b>Short spells of wind blowing toward the east can launch warm waves that travel across the Pacific.</div>
+        </div>
+        <p class="callout" style="margin-top:14px"><b>Alerts:</b> an <b>El Niño Watch</b> means conditions are favorable for El Niño within about six months. An <b>Advisory</b> means El Niño conditions are present and expected to continue. La Niña uses the same system.</p>
+      </div>
+    </div>
+
+    <h3 class="sec-sub">How good are the forecasts?</h3>
+    <div class="prose">
+      <p>Models can often anticipate the ocean's ENSO state 6 to 9 months ahead, and sometimes longer. Forecasts made in northern spring are the least reliable, a problem known as the spring predictability barrier. Even a good forecast has limits: it says more about the ocean than about rain on one farm, it can be unsure about strength, and no two events are alike. Some warm the far eastern Pacific most; others warm the central Pacific most, with different rainfall patterns.</p>
+    </div>
+
+    <h3 class="sec-sub">From early warning to early action</h3>
+    <ol class="ladder">
+      <li><span class="mono">6–9 months out</span><h4>Sensors and models flag warming</h4><p>Forecast centers issue a Watch. Seasonal outlooks reach farmers, water managers and aid agencies.</p></li>
+      <li><span class="mono">3–6 months out</span><h4>Plan the season</h4><p>Farmers pick seeds and planting dates. Reservoir operators change release rules. Governments adjust fishing quotas and stockpile grain.</p></li>
+      <li><span class="mono">0–3 months out</span><h4>Prepare for the hazard</h4><p>Clear drains and reinforce river banks where floods are likely. Set fire bans and rewet peatlands where drought is likely. Health agencies stock supplies and watch for disease.</p></li>
+      <li><span class="mono">During and after</span><h4>Respond and recover</h4><p>Release funds and food aid early, monitor reefs and fisheries, and record what worked for the next event.</p></li>
+    </ol>
+
+    <h3 class="sec-sub">What preparing looks like in practice</h3>
+    <div class="sectors">
+      <div class="card sector"><h4>Farms and food</h4><ul><li>Switch to drought-tolerant or short-season crops before a predicted dry spell.</li><li>Use seasonal outlooks and crop insurance to cut risk.</li><li>Build grain reserves and watch food prices (as famine early-warning networks do).</li></ul></div>
+      <div class="card sector"><h4>Water and power</h4><ul><li>Hold back reservoir water before a drought, or release it early before floods.</li><li>Plan for less hydropower where rivers will run low.</li><li>Set water-use rules early rather than during a crisis.</li></ul></div>
+      <div class="card sector"><h4>Fisheries</h4><ul><li>Lower or pause catch limits when upwelling collapses, so stocks can recover.</li><li>Move fleets toward where warm-water species such as tuna are shifting.</li></ul></div>
+      <div class="card sector"><h4>Health</h4><ul><li>Prepare for dengue, malaria, cholera and Rift Valley fever after floods or heat.</li><li>Pre-position medicine, clean water and mosquito control.</li></ul></div>
+      <div class="card sector"><h4>Fire and reefs</h4><ul><li>Ban burning and rewet peatlands in Indonesia before the dry season.</li><li>Use bleaching alerts, such as NOAA Coral Reef Watch, to protect coral where possible.</li></ul></div>
+      <div class="card sector"><h4>Disaster response</h4><ul><li>Reinforce riverbanks and clear channels along flood-prone coasts, as Peru has done.</li><li>Release aid money when a forecast passes a trigger, before the disaster hits.</li></ul></div>
+    </div>
+
+    <p class="callout" style="margin-top:28px"><b>What is happening now?</b> Check the latest official status instead of guessing. <a href="https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/" target="_blank" rel="noopener">NOAA's ENSO Diagnostic Discussion</a> is updated monthly, and <a href="https://www.climate.gov/enso" target="_blank" rel="noopener">Climate.gov's ENSO pages</a> explain the latest forecast in plain language.</p>
+  </div>
+</section>
+
+<!-- ===================== QUIZ ===================== -->
+<section id="quiz">
+  <div class="in">
+    <div class="head">
+      <p class="eyebrow">Check your understanding</p>
+      <h2>Twelve questions on ENSO</h2>
+      <p class="lede">Pick an answer to see the explanation straight away. At the end you will see which topics to revisit.</p>
+    </div>
+    <div class="card quiz" id="quizBox"></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="in">
+    <p><b style="color:var(--ink)">Sources and further reading.</b> This page summarizes widely taught ENSO science. For the current state and the full science, use the sites below.</p>
+    <div class="links">
+      <a href="https://www.climate.gov/enso" target="_blank" rel="noopener">NOAA Climate.gov: ENSO</a>
+      <a href="https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/" target="_blank" rel="noopener">NOAA CPC: ENSO Diagnostic Discussion</a>
+      <a href="https://www.pmel.noaa.gov/tao/" target="_blank" rel="noopener">NOAA PMEL: TAO buoy array</a>
+      <a href="https://argo.ucsd.edu/" target="_blank" rel="noopener">Argo program</a>
+      <a href="https://coralreefwatch.noaa.gov/" target="_blank" rel="noopener">NOAA Coral Reef Watch</a>
+      <a href="https://fews.net/" target="_blank" rel="noopener">FEWS NET</a>
+    </div>
+    <p>Map data: Natural Earth via world-atlas. Impact examples are typical tendencies from published ENSO research and historical events.</p>
+  </div>
+</footer>
+
+<script>
+const MAP={"W":1100,"H":293,"land":"M620.7,169.5L621.4,169L622.5,169.9L622,171.5L620.1,171.9L618.4,171.5L618.1,170.2L619.3,169.1ZM626.4,165.1L627,165L626.6,166.4L626.4,166.6L624.4,167.3L622.5,168L622.1,166.8L623.6,166.2L624.6,166L626.4,165.1ZM149.8,0L149.8,0.9L147,0.1L147.9,1.7L146,2L147.1,4.7L145.1,4.7L142.6,3.4L141.5,1L141.2,0L149.8,0ZM125.2,0L124.3,0.2L124.3,0L125.2,0ZM74.6,0L74.3,1L72,1.6L69.8,3.9L66,4L63,3.9L61.1,5L60,6.2L58.5,5.9L57.3,4.9L56.5,3.1L53.6,2.6L52.4,3.4L50.8,3L49.2,3.3L49.7,1L49.5,0L74.6,0ZM470,0L471.2,1.6L472,3.6L472,7.1L470.8,8.8L468.1,9.4L465.6,10.7L462.9,10.9L462.5,9.3L463.1,7L461.8,3.8L464,3.3L461.9,0.7L460.4,0.1L460.1,0.6L459.2,0.9L459.1,0.3L458.3,0L458.2,0L470,0ZM438.6,0L439.6,0.2L439.7,1.6L442.1,2.5L445.6,0.3L448.3,1.5L450.3,1.6L450.8,3.2L446.4,4L445,5.7L442,7.2L440.5,9.3L443.8,11L445,14L446.8,16.8L448.9,19.2L448.8,21.4L446.9,22.3L447.6,23.9L449.5,24.8L449,27.3L448.2,29.8L446.5,30L444.3,33.3L441.8,37.3L438.9,41L434.7,43.8L430.5,46.4L427.1,46.7L425.2,48.1L424.1,47.1L422.4,48.6L418.1,50.2L414.9,50.6L413.9,53.8L412.2,54L411.4,51.8L412.1,50.6L408,49.7L406.5,50.1L402.5,52.8L399.9,55.6L399.2,57.8L401.6,61L404.4,65L407.2,66.9L409.1,69.3L410.5,75L410.1,80.3L407.5,82.4L404,84.3L401.5,86.9L397.7,89.7L396.6,87.8L397.5,85.7L395.2,84L392.6,83.5L391.4,81.9L389.8,78.8L387.1,77.4L384.5,77.4L384.9,75L382.2,75L382,78.4L380.3,82.9L379.4,85.6L379.6,87.8L381.6,87.9L382.8,90.7L383.4,93.3L385.1,95L386.9,95.4L388.5,97L389.2,97.3L391,99.1L392.3,101.2L392.4,103.2L392.1,104.6L392.4,105.7L392.6,107.5L393.7,108.3L394.9,111L394.9,112L392.7,112.3L389.8,110L386.2,107.6L385.8,106L384.1,104L383.6,101.4L382.5,99.8L382.9,97.5L382.2,96.2L381,95.1L380.5,93.6L378.9,91.8L377.4,90.4L376.9,92.2L376.3,90.5L376.6,88.6L377.5,85.7L377.2,83.4L378.2,81L377.1,79.2L377.4,75.9L376.1,74.3L375.2,70.7L374.6,66.8L373.3,64.3L371.3,65.8L367.8,68L366.1,67.7L364.2,67L365.2,63.2L364.6,60.3L362.2,56.8L362.6,55.7L360.8,55.3L358.6,52.8L357.8,51.2L357.6,49.7L357,48.2L355.7,46.4L352.9,46.3L353.2,47.6L352.2,49.3L350.9,48.7L350.5,49.2L349.6,48.9L348.4,48.6L348,49.7L345.9,49.7L342.1,50.3L342.3,52.6L340.7,54.4L336.3,56.5L332.9,60.1L330.6,62L327.5,64L327.5,65.4L326,66.2L323.2,67.3L321.8,67.4L320.9,69.7L321.5,73.7L321.7,76.3L320.4,79.2L320.4,84.4L318.8,84.5L317.4,86.8L318.4,87.8L315.6,88.7L314.5,90.8L313.3,91.7L310.4,88.8L309,84.5L307.8,81.4L306.8,80L305.1,77.1L304.4,73.2L303.9,71.3L301.1,67.1L299.8,61.2L298.9,57.3L298.9,53.6L298.3,50.7L293.9,52.6L291.7,52.2L287.7,48.5L289.2,47.4L288.3,46.2L284.7,43.6L282.5,42.8L281.6,40.6L279.2,38.3L273.6,38.9L268.6,38.9L264.3,39.4L258.5,38.4L255.2,37.7L251.8,37.4L250.5,33.6L249,33.1L246.7,33.6L243.6,35.1L239.8,34.1L236.8,31.7L233.8,30.9L231.8,28L229.5,23.9L227.9,24.4L225.9,23.4L224.8,24.6L223,24.4L223.6,25.8L223.3,26.5L224.3,28.8L225.5,31.4L227,32.1L227.5,33.2L229.6,34.5L229.8,35.7L229.5,36.7L229.9,37.8L230.8,38.6L231.2,39.6L231.6,40.4L231.4,38.1L232.3,36.5L233.1,36.2L234,37.2L234.1,39L233.4,40.7L234,41.9L234.5,41.8L234.7,42.6L237,42.1L239.6,42.2L241.4,42.3L243.5,40.2L245.8,38.3L247.7,36.4L248.6,35.3L249,35.6L248.7,36.9L248.3,37.4L248.7,39.8L250.1,41.9L251.8,43L254,43.4L255.8,44L257.2,45.7L258,46.8L259.1,47.1L259.1,47.8L258,49.7L257.5,50.5L256.2,51.5L255.1,53.6L253.7,53.4L253.1,54.1L252.6,55.7L253,57.7L252.7,58.1L251.3,58.1L249.4,59.2L249.1,60.7L248.4,61.4L246.5,61.4L245.3,62.1L245.3,63.4L243.8,64.2L242.1,63.9L240.1,64.9L238.7,65.1L236.5,65.9L235.9,67.3L235.8,68.3L232.7,69.6L227.9,71.1L225.1,73.2L223.8,73.4L222.9,73.2L221.1,74.5L219.1,75.1L216.6,75.2L215.8,75.4L215.1,76.2L214.3,76.4L213.9,77.2L212.3,77.1L211.4,77.5L209.3,77.4L208.5,75.6L208.5,73.9L208,73L207.4,70.8L206.6,69.5L207.2,69.4L206.9,68L207.2,67.4L207.1,66L206.7,64.7L205.8,63.8L205.5,62.6L204,61.5L202.3,58.9L201.5,56.5L199.4,54.4L198,53.9L196,50.9L195.6,48.8L195.8,47L194,43.6L192.6,42.4L190.9,41.8L189.9,40L190.1,39.4L189.2,37.8L188.3,37.1L187.2,34.8L185.3,32.4L183.7,30.3L182.2,30.3L182.7,28.6L182.8,27.5L183.2,26.3L183.1,25.9L182.2,27.1L181.6,29.4L180.8,31L180,31.5L179,30.5L177.6,29.2L175.5,24.8L175.1,25.1L176.4,28.3L178.3,31.4L180.6,36.1L181.7,37.8L182.7,39.5L185.4,42.9L184.8,43.4L184.9,45.4L188.5,48.2L189,48.8L190,51.8L189.4,52.3L189.8,55.5L190.9,59.1L192.1,59.9L193.8,61L195.5,64.5L196.4,67.3L198,68.8L202.2,71.7L203.9,73.5L205.6,75.2L206.5,76.3L208,77.2L208.7,78.1L208.6,79.4L206.9,80.1L208.2,81L209.2,81.5L209.8,82.8L211.2,84.1L212.7,84.1L215.6,83.3L218.9,83L221.6,82L223.1,81.8L224.2,81.2L226,81.1L226.9,81.1L228.3,80.6L230,80.3L231.4,79.3L232.6,79.3L232.6,80.1L232.4,81.9L232.4,83.5L231.7,84.6L230.9,87.9L229.4,91.3L227.5,95.2L224.9,99.7L222.3,103.1L218.7,107.3L215.6,109.8L211,112.8L208.2,115.1L204.9,118.8L204.1,120.4L203.5,121.1L201.3,122.4L200.6,123.6L199.4,123.9L199,126L198,127.2L197.4,129.3L196.2,130.3L196.2,130.3L194.8,134.1L194.9,135.8L196.9,136.9L197,137.7L196.2,139.5L196.3,140.5L196.1,141.9L197.2,143.8L198.5,146.9L199.6,147.5L200.1,148.9L199.9,151.9L200.3,154.6L200.4,159.4L201,160.9L200.1,163.1L198.9,165.2L196.9,167.1L194.1,168.3L190.7,169.7L187.3,173L186.1,173.6L183.9,175.7L182.7,176.5L182.4,178.6L183.9,180.9L184.5,182.7L184.5,183.6L185.1,183.5L185,186.5L184.5,187.9L185.2,188.4L184.7,189.7L183.5,190.8L180.9,191.8L177.3,193.5L175.9,194.6L176.2,195.9L177,196.1L176.7,197.7L175.9,199.9L175.6,202.5L174.8,203.9L172.7,205.4L172.1,205.8L170.8,207.4L170,209L168.2,211.2L164.8,214.3L162.6,216.1L160.3,217.5L157.1,218.7L155.6,218.9L155.2,219.7L153.3,219.3L151.8,219.9L148.5,219.3L146.6,219.6L145.4,219.5L142.2,220.7L139.6,221.2L137.7,222.3L136.3,222.4L135,221.3L134,221.2L132.7,219.9L132.5,220.3L132.1,219.5L132.2,217.7L131.2,215.6L132.1,215.1L132.1,212.7L130.1,209.9L128.5,207.3L128.5,207.3L126.3,203.3L124.1,201L122.9,198.8L122.2,195.8L121.4,193.6L120.4,188.9L120.3,185.2L120,183.6L118.8,182.3L117.2,179.8L115.6,176.1L114.9,174.2L112.4,171.2L112.2,168.9L112,166.9L112.4,164.3L113.4,161.5L113.6,160.1L114.6,157.4L115.3,156.1L117.1,154.1L118.1,152.8L118.4,150.5L118.2,148.8L117.3,147.7L116.5,145.8L115.7,144L115.9,143.4L116.8,142.2L115.9,139.2L115.3,137.2L113.8,135.2L114,134.6L113.6,133.7L112.8,131.4L110.3,128.2L107.2,125.1L105.1,122.6L103.3,119.4L103.4,118.4L104,117.4L104.8,115.2L105.4,112.9L104.8,112.5L105.9,109L106.3,106.6L105.1,104.6L103.7,104.1L103.1,102.7L102.3,102.3L102.4,101.4L99.2,102.5L98,102.4L96.9,103L94.4,103L92.8,101.1L91.8,98.9L89.6,96.8L87.3,96.9L84.6,96.9L82.1,97.2L79.6,97.9L74.8,99.7L73.1,100.7L70.4,101.6L67.7,100.7L66.3,100.8L64.1,100.2L62.2,100.2L58.6,100.7L56.4,101.6L53.4,102.7L52.8,102.7L52,102.7L48.9,101.2L46.1,98.9L43.5,97.2L41.4,95.3L40.6,95L38.4,93.8L36.8,92.2L36.3,91.1L35.9,88.8L34.6,87L33.4,85.8L32.6,85.4L31.8,84.8L31.5,83.4L31,82.8L30.2,82.3L28.5,81L27.2,80.8L26.5,79.9L26.6,79.5L25.6,78.8L25.4,78.2L24.9,75.8L25.3,74.5L24.1,72.1L22.5,71L23.9,70.4L25.4,68.3L26.1,66.7L25.8,65.1L26.7,63.5L27,60.7L26.7,57.7L26.3,56.1L26.7,54.6L25.9,53.2L24.3,51.8L24.4,50.5L24.5,49.1L25.7,48.3L26.7,46.7L26.5,45.7L27.6,43.5L29.3,41.6L30.3,41.1L31.1,39.3L31.2,37.7L32.3,35.8L34.3,34.7L36.2,31.5L36.3,31.5L37.8,30.3L40.7,30L43.1,27.9L44.6,27.1L47.2,24.5L46.4,20.7L47.6,18.1L48,16.5L49.9,14.4L53,13L55.3,11.8L57.3,8.6L58.3,6.7L60.5,6.7L62.4,8L65.3,7.8L68.4,8.5L69.8,8.5L72.7,6.9L76,6.3L77.9,5.1L80.9,4.1L86.1,3.6L91.1,3.4L92.6,3.8L95.5,2.6L98.8,2.6L100,3.3L102.1,3.1L105.4,1.9L107.6,2.2L107.5,3.8L110.1,2.7L110.3,3.2L108.8,4.7L108.8,6.2L109.8,6.9L109.4,9.6L107.4,11.1L108,12.8L109.6,12.8L110.3,14.3L111.5,14.7L115.1,15.8L116.4,15.5L118.9,16L123,17.4L124.4,20.1L127.1,20.7L131.4,22L134.7,23.5L136.2,22.7L137.7,21.3L136.9,19L137.9,17.5L140.1,16.1L142.2,15.6L146.3,16.3L147.4,17.6L148.5,17.6L149.5,18.2L152.5,18.5L153.3,19.5L157.3,19.5L160.3,20.3L163.3,21.2L164.7,21.7L167.1,20.7L168.3,19.8L171,19.6L173.2,20L174,21.5L174.8,20.5L177.2,21.2L179.6,21.4L181.1,20.6L182,19.6L181.8,19.4L182.6,18L183.2,15.7L183.6,14.9L183.7,14.9L184.8,12.4L186.3,10.2L186.4,10.1L186.1,7.8L186.8,6.5L185.7,5.2L186.9,4L185,4.3L182.5,3.6L180.4,5.3L175.7,5.7L173.3,4L170,3.9L169.2,5.2L167.1,5.6L164.2,3.9L160.9,4L159,0.9L157.8,0L226.2,0L226.2,0L226.7,1.2L229.6,1.8L231.7,3.3L236.1,3.9L240.9,3.1L241.2,2.3L240.6,0.2L240.6,0L438.6,0ZM946,0L944.3,2.3L944.1,2.2L945,0.1L944.9,0L946,0ZM942.9,0L943.2,0.1L943.4,3L944.2,3.3L944.6,4.3L945,7.4L943.1,9.6L939.9,10.5L937.9,12.3L936.4,12.5L934.8,13.7L934.4,14.7L931,16.7L929.3,18.1L927.9,19.9L927.4,22.1L927.9,24.2L928.9,26.8L930.3,29L930.3,30.3L931.8,33.9L931.7,35.9L931.5,37.1L930.8,39L929.9,39.4L928.4,39L927.9,37.7L926.7,37L925.1,34.3L923.7,32L923.2,30.8L923.8,28.8L923,27.1L920.6,24.5L919.4,24.1L916.3,25.4L915.8,25.3L914.3,23.9L912.4,23.1L908.9,23.5L906.2,23.2L903.9,23.4L902.6,23.8L903.2,24.7L903.1,25.9L903.8,26.5L903.2,26.9L902.1,26.5L900.9,27L898.7,26.9L896.4,25.3L893.8,25.7L891.5,25L889.6,25.2L887.1,25.9L884.3,28.2L881.2,29.5L879.6,31L878.9,32.3L878.8,34.4L879,35.9L879.6,37L878.4,39.6L877.9,41.8L877.6,45.9L877.3,47.4L877.9,49.1L878.8,50.6L879.4,52.9L881.4,55.2L882.2,57L883.4,58.5L886.6,59.3L887.9,60.6L890.5,59.7L892.9,59.4L895.2,58.8L897.1,58.3L899,57.1L899.8,55.3L900,52.7L900.5,51.8L902.6,51L905.8,50.3L908.5,50.4L910.4,50.2L911.1,50.8L911,52.3L909.4,54.1L908.7,56L909.2,56.5L908.8,57.8L908,60.2L907.2,59.4L906.6,59.5L906.6,59.9L907.2,59.9L907.1,60.8L906.6,62.1L906.9,62.6L906.6,63.7L906.8,63.9L906.4,65.5L905.8,66.3L905.3,66.4L904.7,67.5L905.6,68L905.9,67.6L906.8,67.9L907.1,68.1L907.8,67.5L908.7,67.5L909,67.7L909.4,67.6L910.9,67.9L912.3,67.8L913.2,67.4L913.6,67.1L914.6,67.3L915.3,67.5L916.1,67.4L916.7,67.1L918.1,67.5L918.6,67.6L919.5,68.2L920.4,68.9L921.5,69.3L922.3,70.2L922.1,70.5L921.9,71.2L922.2,72.3L921.5,73.3L921.2,74.5L921.1,75.9L921.3,76.7L921.3,78.1L920.9,78.4L920.6,79.7L920.8,80.5L920.2,81.2L920.3,82.1L920.8,82.6L921.5,84.2L922.7,85.5L924.2,86.8L925.3,87.9L925.2,88.5L926.4,88.7L926.7,88.4L927.5,89.2L929,88.9L930.4,88.2L932.2,87.5L933.2,86.6L934.9,86.8L934.8,87.1L936.5,87.2L937.9,87.7L938.9,88.7L940,89.5L941.6,89.6L943.9,87.5L945.2,87.1L945.2,86.1L945.8,83.6L947.5,82.1L949.4,82.1L949.7,81.4L952.1,81.7L954.5,80.2L955.7,79.5L957.1,78L958.2,78.2L959,79L958.4,80L958.3,80.7L956.5,81.1L957.5,82.5L957.5,84.1L956.2,85.9L957.3,88.3L958.6,88.1L959.3,85.9L958.4,84.8L958.2,82.5L962,81.2L961.6,79.8L962.7,78.8L963.8,81L965.9,81L967.9,82.7L968,83.7L970.8,83.8L974,83.5L975.8,84.8L978.1,85.2L979.8,84.3L979.9,83.5L983.7,83.3L987.3,83.3L984.7,84.2L985.8,85.6L988.2,85.8L990.5,87.3L991,89.8L992.6,89.7L993.8,90.4L995.8,91.6L997.7,93.5L997.8,95.1L998.9,95.2L1000.6,96.7L1001.8,97.7L1005.4,98.4L1005.8,97.8L1008.2,97.6L1011.5,98.4L1012.6,98.7L1014.8,99.5L1018,102.1L1018.5,103.3L1019.6,103.2L1020.3,104.8L1022.1,110.2L1023.7,110.7L1023.8,112.8L1021.5,115.3L1022.4,116.2L1027.8,116.7L1027.9,119.8L1030.3,117.8L1034.1,118.9L1039.2,120.7L1040.7,122.5L1040.2,124.2L1043.7,123.3L1049.7,124.9L1054.2,124.8L1058.7,127.3L1062.7,130.7L1065,131.6L1067.6,131.7L1068.7,132.7L1069.8,136.6L1070.3,138.4L1069.1,143.5L1067.5,145.5L1063.2,149.7L1061.2,153.2L1059,155.8L1058.2,155.9L1057.4,158.1L1057.6,163.9L1056.7,168.6L1056.4,170.6L1055.4,171.8L1054.9,175.9L1051.8,179.9L1051.3,183L1048.8,184.4L1048.1,186.2L1044.8,186.2L1040,187.4L1037.8,188.7L1034.4,189.6L1030.8,192L1028.2,195.1L1027.8,197.3L1028.3,199L1027.7,202.1L1027,203.6L1024.9,205.3L1021.5,210.7L1018.8,213.1L1016.7,214.5L1015.3,217.4L1013.3,219.2L1012,221.1L1008.5,222.8L1006.3,222.2L1004.6,222.5L1001.8,221.2L999.7,221.3L997.9,219.6L997.7,221.2L1001.5,223.8L1001.1,225.9L1003,227.3L1002.9,228.8L999.9,232.7L995.4,234.3L989.3,234.9L985.9,234.6L986.6,236.5L985.9,238.7L986.5,240.3L984.7,241.4L981.5,241.8L978.6,240.7L977.4,241.5L977.8,244.5L979.9,245.4L981.6,244.5L982.5,246.1L979.7,247L977.2,248.9L976.8,252L976,253.6L973.2,253.6L970.8,255.2L969.9,257.5L972.9,259.7L975.8,260.3L974.8,263.1L971.2,264.8L969.2,268.4L966.4,269.6L965.1,271L966.1,274.2L968.2,276L966.9,275.8L964.1,275.8L962.7,276.5L959.9,277.6L959.4,280.5L958.1,280.6L954.7,279.6L951.2,277.4L947.4,275.7L946.4,273.8L947.3,272L945.8,269.9L945.4,264.7L946.7,261.8L949.9,259.4L945.2,258.5L948.2,255.8L949.2,250.8L952.6,251.8L954.2,245.5L952.1,244.7L951.2,248.5L949.3,248.1L950.2,243.7L951.3,238L952.7,236L951.8,233L951.5,229.5L952.8,229.4L954.7,224.5L956.8,219.6L958.1,215.1L957.4,210.5L958.3,208L957.9,204.2L959.7,200.5L960.3,194.5L961.3,188.2L962.2,181.4L962,176.4L961.4,172.1L958.3,170.3L958,169.1L952,166L946.5,162.6L944.1,160.8L942.9,158.2L943.4,157.4L940.8,153.3L937.8,147.7L934.9,141.6L933.6,140.2L932.7,138L930.3,136L928.1,134.8L929.1,133.4L927.6,130.5L928.6,128.3L931,126.4L932.6,124.1L932,122.8L930.8,124.2L929,122.9L929.6,122L929.1,119.2L930.2,118.8L930.7,116.9L931.9,114.9L931.7,113.7L933.3,113L935.4,111.8L935,110.8L936.2,110.6L936,109.1L936.7,108L938.3,107.8L939.6,105.8L940.7,104.2L939.6,103.5L940.2,101.7L939.5,98.9L940.1,98.1L939.7,95.6L938.4,93.9L937.4,93L936.7,91.4L937.5,90.6L936.7,90.4L936.2,89.4L934.6,88.5L933.3,88.7L932.7,89.8L931.4,90.5L930.8,90.6L930.5,91.3L931.9,92.9L931.1,93.3L930.7,93.8L929.2,93.9L928.7,92.1L928.3,92.6L927.3,92.5L926.7,91.2L925.4,91L924.6,90.7L923.3,90.7L923.2,91.3L922.9,90.9L921.2,90.2L920.6,89.6L921,89L920.8,88.3L920,87.6L918.8,87L917.7,86.6L917.5,85.7L916.7,85.2L916.9,86.1L916.3,86.8L915.6,86L914.6,85.7L914.2,85L914.3,84.1L914.6,83.1L913.8,82.7L914.5,82.1L913.4,81.2L912,79.9L911.3,78.9L910,77.9L908.5,76.6L908.8,76.1L909.4,76.5L909.6,76.3L909.1,75.4L908.1,75.1L907.8,75.8L906,75.8L904.9,75.5L903.7,74.9L902,74.7L901.1,74L899.5,73.5L897.6,73.4L896.2,72.8L894.6,71.6L891.1,68.3L889.5,67.3L887.1,66.5L885.3,66.7L882.9,67.9L881.3,68.2L879.2,67.4L876.9,66.8L874,65.4L871.8,65L868.3,63.5L865.7,62.1L865,61.3L863.3,61.1L860.1,60.1L858.9,58.7L855.6,57L854,55L853.3,53.6L854.3,53.3L854,52.4L854.7,51.6L854.7,50.5L853.7,49.2L853.4,48L852.4,46.4L849.7,43.4L846.6,41L845.2,39.1L842.5,37.8L842,37.1L842.4,35.2L840.9,34.5L839.1,33L838.3,30.9L836.7,30.6L834.9,29L833.5,27.5L833.3,26.6L831.7,24.3L830.6,21.9L830.7,20.8L828.4,19.5L827.4,19.7L825.7,18.8L825.2,20.1L825.7,21.5L826,23.8L827,25.1L829.3,27.2L829.8,27.9L830.3,28.1L830.7,29.2L831.2,29.1L831.8,31.1L832.8,31.9L833.4,33L835.3,34.5L836.3,37.4L837.3,38.7L838.1,40.1L838.3,41.8L839.7,41.9L841,43.2L842.1,44.6L842,45.2L840.7,46.3L840.2,46.3L839.4,44.4L837.4,42.7L835.2,41.2L833.6,40.4L833.7,38.2L833.2,36.5L831.8,35.6L829.7,34.2L829.3,34.6L828.5,33.8L826.6,33.1L824.8,31.3L825.1,31.1L826.3,31.2L827.4,30.1L827.6,28.7L825.2,26.5L823.4,25.7L822.3,23.8L821.2,21.8L819.7,19.3L818.5,16.6L818,15L816,13.3L814.6,12.9L814.2,12L812.5,11.9L811.4,11L808.6,10.7L807.8,10.3L807.5,8.6L804.5,5.5L801.9,1.3L802,0.6L801.3,0L942.9,0ZM701.6,54.6L702.1,54.9L702.6,55.3L703.4,56.4L703.3,56.6L702.1,57.2L701.1,57.7L700.7,58.2L699.9,57.8L700,56.9L699.5,55.8L699.6,55.5L700.2,55L700,54.4L700.1,54.1L700.4,54.1ZM699.7,52.6L699.5,52.9L698.5,53.1L697.9,52.5L697.6,52.2L697.5,52.1L697.8,51.8L698.9,52.1ZM697.4,51.3L697.3,51.6L695.7,51.5L695.9,51.2ZM693.5,49.6L693.8,49.8L694.7,50.9L694.5,51L694.3,51L693.2,50.9L692.8,50.2L692.7,50.1ZM689.4,48.1L689.5,48.8L689.1,49.1L688.1,48.6L688.3,48.4L688.7,48.1ZM507.2,123.9L512.5,126.1L518.2,127.8L520.3,129.4L522,130.9L522.4,132.7L527.5,134.6L528.3,136.2L525.5,136.5L526.1,138.6L528.9,140.6L530.9,143.8L532.6,143.7L532.5,145.1L534.8,145.6L533.9,146.2L537.2,147.5L536.8,148.3L534.8,148.5L534.1,147.8L531.4,147.4L528.3,147L526,145L524.2,143.3L522.6,140.7L518.7,139.3L516.1,140.2L514.2,141.2L514.6,143.4L512.2,144.5L510.5,144L507.3,143.9L504.6,141.3L501.5,140.7L500.7,141.6L496.9,141.7L498.2,139.2L500.1,138.4L499.3,135L497.8,132.5L491.9,129.9L489.4,129.6L484.8,126.8L483.9,128.3L482.7,128.6L482,127.4L482,126.1L479.7,124.6L483,123.5L485.2,123.6L484.9,122.8L480.4,122.8L479.2,120.9L476.5,120.4L475.2,118.9L479.3,118.1L480.9,117.1L485.8,118.4L486.3,119.5L487.1,124.5L490.3,126.3L492.8,123L496.3,121.2L499.1,121.2L501.7,122.3L503.9,123.4ZM542.8,127.2L544,128.2L544.3,129.7L543.4,130.6L542.8,128.8L542.1,127.6L540.7,126.6L538.9,125.3L536.7,124.4L537.6,123.6L539.2,124.5L540.3,125.2L541.6,125.9ZM538.7,133.8L537,134.6L535.5,135.3L533.8,135.3L531.3,134.4L529.6,133.6L529.8,132.6L532.6,133.1L534.3,132.8L534.7,131.4L535.2,131.3L535.5,132.9L537.2,132.7L538,131.6L539.8,130.5L539.4,128.7L541.2,128.7L541.9,129.2L541.8,130.9L540.8,132.7L539.2,133ZM549.3,132.3L550.2,133L551.7,134.9L553.1,136L552.7,136.8L551.8,137.1L550.5,136L549.2,134L548.5,131.7L548.9,131.4ZM458.6,144.7L456.6,147L454,147.7L453.6,147.3L453.9,146.2L455.2,144.4L458.2,143.2L458.6,142.5L461.2,141.8L463.4,141.7L464.3,141.3L465.5,141.7L464.3,142.5L461.2,143.8ZM486.5,137.1L486.2,134.8L486.7,133.7L487.4,132.6L488.1,133.5L488.1,135ZM429.2,99.4L431.5,97.2L433.1,94.8L434.3,94.8L435.9,96.4L436,97.7L438,98.6L440.6,99.5L440.3,100.7L438.3,100.8L438.8,102.3L436.6,103.4L434.8,106.1L437.1,109L436.6,110.4L440,113.2L436.4,113.6L435.3,115.7L435.5,118.5L432.5,120.5L432.5,123.6L431.3,128.3L430.8,127.2L427.4,128.5L426.2,126.7L424,126.5L422.4,125.5L418.8,126.6L417.7,125.2L415.7,125.3L413.2,125L412.7,120.9L411.2,120L409.7,117.4L409.3,114.7L409.7,111.9L411.5,109.9L413.7,110.9L416.1,110.3L416.7,107.8L418,107.2L421.7,106.5L423.8,104.1L425.4,102.2L426.6,101ZM471.7,124.6L475,125.5L476.2,127.8L473.6,126.5L471,126.3L469.3,126.5L467.2,126.4L467.9,124.7ZM464.1,127.6L461.9,127L461.4,125.7L464.4,125.6L465.2,126.6ZM467.3,109.4L467.5,111L469.3,111.3L469.6,112.5L469.4,115.2L467.9,114.9L467.4,116.8L468.7,118.4L467.8,118.7L466.6,116.8L465.7,112.9L466.3,110.5ZM452,113.3L455.5,113.2L458.5,111L459.1,111.7L456.6,114.7L454.3,115.3L451.4,114.7L446.3,114.8L443.6,115.3L443.2,117.6L445.9,120.3L447.6,118.9L453.3,117.9L453,119.3L451.7,118.8L450.4,120.6L447.7,121.8L450.6,125.7L450,126.8L452.7,130.3L452.7,132.3L451.1,133.2L449.9,132.1L451.4,129.6L448.4,130.8L447.6,130L448,128.8L445.8,127L446,124L444,125L444.2,128.5L444.4,132.9L442.4,133.3L441.1,132.4L442,129.6L441.5,126.7L440.2,126.7L439.3,124.6L440.6,122.6L441,120.1L442.5,115.5L443.2,114.3L445.8,112L448.2,112.9ZM444,147.3L439.9,145.2L442.8,144.6L444.4,145.5L445.4,146.5L445.2,147.3ZM447.2,142.1L449.2,141.9L451.9,140.7L451.5,142.4L446.9,143.3L442.8,142.9L442.8,141.8L445.2,141.2ZM437.7,141.6L439.6,141.3L440.4,142.6L436.9,143.2L434.7,143.6L433.1,143.6L434.1,141.8L435.8,141.8L436.6,140.7ZM407.9,135.6L408.3,136.7L414.2,137L414.8,135.8L420.5,137.2L421.6,139.2L426.2,139.8L429.9,141.6L426.5,142.7L423.1,141.5L420.3,141.6L417.2,141.4L414.3,140.8L410.8,139.7L408.5,139.3L407.2,139.7L401.7,138.5L401.1,137.2L398.3,136.9L400.4,134L404.1,134.2L406.6,135.4ZM395.3,119.3L395.8,121.4L396.9,123.2L399.1,123.4L400.6,125.4L399.8,129.2L399.7,133.9L396.3,133.9L393.8,131.4L389.8,128.9L388.5,127L386.2,124.6L384.7,122.3L382.4,118L379.7,115.4L378.8,112.8L377.7,110.4L374.9,108.5L373.3,105.9L371,104.2L367.8,100.8L367.6,99.3L369.5,99.4L374.3,100L377,103L379.3,105L381,106.3L383.9,109.6L387,109.6L389.6,111.7L391.3,114.3L393.7,115.7L392.4,118.2L394.2,119.2ZM966.7,276.8L967.8,278.3L969.4,280.5L973.3,282.4L977.6,283.1L976.2,284.7L973.3,284.8L971.8,283.7L970.8,285L968.2,285.9L966.7,285.8L964.9,285.6L962.6,284.7L959.4,284.2L955.6,282.5L952.5,280.9L948.3,277.4L950.8,278.1L955.1,280.1L959.1,281.2L960.7,279.8L961.7,277.7L964.5,276.5ZM957.3,60.9L955.2,60.3L953.8,60.6L951.9,60.3L950.5,60.9L948.9,60L949.1,59L952,59.4L954.3,59.6L955.4,59L954,57.6L954,56.5L952.1,56L952.8,55.1L954.6,55.3L957.3,55.8L957.6,55.2L960,55.3L961.8,56L962.7,56L963.2,57L964.9,57L964.8,57.9L966.1,58L967.6,59.1L966.5,60.4L965,59.7L963.7,59.8L962.6,59.7L962.1,60.2L960.9,60.4L960.5,59.7L959.4,60.1L958.2,62.2L957.4,61.7ZM935.1,34.1L936.5,33.9L938.5,34L938.6,34.8L935.3,35.3ZM938.7,33.4L941.1,34.8L940.6,36.9L940,36.5L940.1,34.9L938.7,33.7ZM937.5,39L938.4,39.1L939.5,41.6L939.5,43.4L938.7,43.6L938,41.8L936.8,40.9ZM989.4,274.4L993.1,272.6L995.7,273.4L997.5,272.1L999.9,273.5L999,274.6L994.9,275.5L993.5,274.4L990.9,275.8ZM287,264.6L289,265.5L291.9,265.9L292,266.5L291.1,267.9L286.4,268.1L286.4,266.5L286.8,265.2ZM973.9,59.4L975.4,59.7L976,60.3L975.2,61.1L972.9,61.1L971.1,61.2L970.9,59.9L971.4,59.4ZM939.4,59.5L941.4,59.8L943,60.5L943.6,61.3L941.4,61.4L940.5,61.9L938.8,61.4L937,60.3L937.4,59.6L938.7,59.4ZM925,45.1L927.6,45.4L930.1,45.4L932.9,46.4L934.1,47.6L937,47.2L938.1,47.9L940.7,49.8L942.6,51.2L943.6,51.2L945.4,51.8L945.2,52.6L947.4,52.8L949.7,54L949.4,54.7L947.3,55.1L945.3,55.3L943.2,55L938.8,55.3L940.8,53.6L939.6,52.8L937.6,52.6L936.6,51.7L935.9,50L934.1,50.1L931.3,49.3L930.4,48.7L926.4,48.2L925.3,47.6L926.5,46.8L923.5,46.7L921.3,48.3L920,48.3L919.6,49.1L918,49.4L916.7,49.1L918.4,48.2L919,47L920.4,46.4L922,45.8L924.3,45.5ZM227.8,154.1L228.6,155.4L229.3,157.4L229.8,161.1L230.6,162.5L230.3,164L229.8,164.9L228.7,163.1L228.2,164L228.7,166.3L228.5,167.6L227.6,168.3L227.4,170.9L226.2,174.4L224.7,178.6L222.8,184.4L221.7,188.7L220.3,192.2L217.8,192.9L215.1,194.2L213.4,193.4L211,192.4L210.1,190.7L209.9,188L208.8,185.6L208.5,183.4L209.1,181.2L210.5,180.7L210.5,179.6L212,177.3L212.3,175.4L211.5,173.9L211,172L210.7,169.2L211.8,167.5L212.2,165.5L213.7,165.4L215.4,164.8L216.6,164.3L217.9,164.2L219.6,162.5L222.2,160.6L223.1,159.1L222.7,157.7L223.9,158.1L225.6,156L225.7,154.2L226.7,152.8ZM587.3,164.6L589.3,166.3L588.2,166.7L587.2,165.4ZM586,163.9L585.6,163L585.5,160.7L587,161.6L587.5,164.1L586.7,163.7ZM156.7,8.1L156.3,9L151.9,9.3L152,8.8L148.2,8.2L148.8,6.9L150.5,7.9L152.9,7.8L155.1,8L155.1,8.5ZM582.9,180.4L585.4,182.3L587,183.7L585.9,184.4L584.2,183.6L582,182.2L580,180.6L578,178.5L577.6,177.4L578.9,177.5L580.6,178.5L582,179.6ZM571.8,148L572.6,149.1L570.5,149.1L569.3,147.2L571.1,147.9ZM570.4,145.3L569.9,145.9L567.7,143.2L567.1,141.4L568.1,141.4L569.2,143.9ZM567.9,146.2L566.7,146.2L564.8,145.9L564.2,145.5L564.4,144.2L566.4,144.7L567.4,145.4ZM564.2,140.5L564.9,141.5L565,142.1L562.6,140.8L561,139.7L559.8,138.7L560.3,138.4L561.7,139.1ZM556.5,137.5L557.8,138.5L557.1,138.6L555.8,137.9L554.6,136.7L554.7,136.2ZM616.9,238.4L615.7,240.1L614.2,242.2L611.8,243.4L611.3,242.6L610,242.1L611.8,239.6L610.8,237.9L607.5,236.7L607.6,235.6L609.8,234.5L610.3,232.2L610.2,230.2L608.9,228.2L609,227.6L607.6,226.4L605.2,223.7L603.9,221.5L605,221.3L606.7,223L609.1,223.8L609.9,226.5L612.1,229.7L612.2,227.6L613.6,228.4L614,230.8L616.5,231.7L618.6,232L620.3,230.8L621.9,231.2L621.1,233.9L620.2,235.7L617.9,235.6L617,236.5L617.3,237.9ZM594.8,249.1L597.4,247.5L599.3,245.9L600.6,243.6L601.8,242.8L602.2,241.1L604.4,239.7L605.1,241L605.8,242.3L607.9,241.1L608.8,242.3L608.8,243.6L607.7,245L605.7,247.3L604.1,248.5L605.2,250L602.9,250L600.3,251.2L599.4,253.2L597.7,256.3L595.3,257.6L593.8,258.5L591,258.4L589,257.4L585.7,257.2L585.2,256.1L586.8,253.8L590.6,250.8L592.6,250.3ZM527.7,240.7L529.5,240.9L529.7,244.5L528.7,245.6L528.3,248L527.3,247.2L525.2,249.3L524.5,249.2L522.6,249.1L520.8,246.5L520.3,244.4L518.6,241.8L518.7,240.4L520.7,240.6L523.6,241.7L525.3,241.3ZM461.8,214.4L458.6,216L456,216.7L455.4,218.3L454.2,219.6L451.6,219.6L449.7,219.9L447,219.3L444.8,219.7L442.7,219.8L440.9,221.4L440,221.3L438.5,222.2L437,223.1L434.8,223L432.7,223L429.5,221.1L427.9,220.5L427.9,218.7L429.4,218.3L430,217.6L429.8,216.5L430.2,214.4L429.9,212.6L428.3,209.5L427.8,207.8L427.9,206L426.7,204L426.6,203.1L425.3,201.9L424.9,199.5L423.1,197.1L422.7,195.8L424,197.1L423,194.3L424.5,195.2L425.4,196.4L425.4,194.8L423.9,192.4L423.6,191.4L422.9,190.5L423.2,188.7L423.8,188L424.2,186.5L423.9,184.7L425.2,182.5L425.4,184.8L426.7,182.7L429.2,181.7L430.7,180.4L433,179.3L434.4,179L435.2,179.4L437.6,178.3L439.5,177.9L440,177.2L440.8,177L442.5,177L445.7,176.1L447.3,174.8L448.1,173.2L449.9,171.6L450,170.4L450.1,168.7L452.3,166.1L453.5,168.8L454.9,168.2L453.8,166.7L454.7,165.2L456.1,165.9L456.4,163.6L458.1,162.1L458.8,160.9L460.4,160.3L460.4,159.5L461.8,159.8L461.8,159.1L463.2,158.6L464.6,158.2L466.9,159.6L468.6,161.4L470.5,161.5L472.5,161.7L471.8,160.1L473.3,157.6L474.7,156.8L474.2,156.1L475.5,154.3L477.3,153.2L478.9,153.6L481.5,153L481.4,151.5L479.2,150.4L480.8,150L482.8,150.8L484.5,152L487,152.8L487.9,152.5L489.8,153.4L491.6,152.6L492.7,152.8L493.5,152.2L494.8,153.7L494,155.4L492.9,156.6L491.8,156.7L492.2,157.9L491.3,159.5L490.2,161L490.4,161.8L492.8,163.5L495.2,164.5L496.8,165.5L499,167.4L499.8,167.4L501.4,168.1L501.9,169.1L504.8,170.1L506.8,169.1L507.4,167.4L508.1,166.1L508.4,164.4L509.4,162L508.9,160.5L509.2,159.6L508.8,157.9L509.2,155.6L509.8,154.9L509.3,153.9L510.1,152.3L510.6,150.6L510.7,149.7L511.9,148.6L512.7,150.1L512.9,152L513.7,152.4L513.8,153.7L514.9,155.2L515.2,156.9L515,158.1L516.1,160.5L518.1,159.3L519.1,160.6L520.6,161.8L520.3,163.1L520.9,165.8L521.4,167.3L522.2,167.7L523,170.3L522.7,171.9L523.7,173.9L527,175.5L529.2,177L531.2,178.3L530.8,179L532.5,181L533.7,184.3L535,183.6L536.2,184.9L536.9,184.5L537.5,187.7L539.6,189.6L541.1,190.7L543.4,193.2L544.3,195.7L544.4,197.4L544.2,199.3L545.6,201.9L545.5,204.6L544.9,206L544.1,208.7L544.2,210.5L543.6,212.7L542.2,215.5L540,217L538.8,219.3L537.8,220.8L536.9,223.5L535.7,225L535,227.3L534.6,229.4L534.7,230.4L533,231.4L529.5,231.5L526.7,232.8L525.3,234L523.5,235.3L520.9,233.9L519.1,233.4L519.5,231.8L517.9,232.4L515.2,234.6L512.6,233.8L510.8,233.3L509.1,233.1L506.1,232.2L504.1,230.3L503.6,228L502.9,226.4L501.4,225.2L498.4,224.8L499.4,223.3L498.7,221.1L497.2,223.2L494.5,223.7L496.1,222L496.5,220.3L497.7,218.8L497.5,216.5L495,219.1L493.1,220.2L491.9,222.6L489.5,221.4L489.6,219.7L487.7,217.5L486.1,216.4L486.7,215.7L482.7,213.8L480.6,213.7L477.7,212.2L472.2,212.5L468.2,213.6L464.8,214.6ZM326.3,93L325.8,96.2L324.6,97.1L321.9,97.8L320.4,95.3L319.9,90.9L321.3,86L323.4,87.7L324.8,89.8ZM410.9,60.4L408.4,59.5L408.3,56.8L409.8,55.4L413.2,54.6L414.9,54.7L415.6,55.8L414.2,57.2L413.5,58.9ZM448.5,41.5L446.6,46.4L445.3,48.9L443.7,46.3L443.4,44L445.2,41L447.6,38.7L449,39.6ZM123.4,0L122.7,1.6L123.2,2.5L122.5,4.1L120.2,3L118.6,2.6L114.4,1.1L114.7,0L123.4,0ZM445.6,77.2L444,74.9L446.7,75L447.7,76.1L446.9,78.7ZM451,85.5L451.7,84.6L452.1,82.7L453.7,82.6L453.3,84.6L455.5,81.7L455.2,84.6L454.1,85.6L453.2,87.5L452.2,88.4L450.3,86.3ZM462.5,90.3L462.9,92.3L463,94L462,96.8L460.9,93.7L459.4,95.3L460.4,97.5L459.6,98.9L456,97.2L455.1,95L456,93.5L454.1,92.1L453.1,93.3L451.7,93.2L449.4,94.9L448.9,94L450.1,91.4L452,90.6L453.7,89.4L454.8,90.8L457.1,90L457.6,88.6L459.8,88.5L459.6,86.2L462.1,87.6L462.3,89.2ZM438.5,87.5L434.4,90.4L435.9,88.3L438.1,86.4L440,84.3L441.6,81.3L442.1,83.8L440.1,85.4ZM450.2,60.3L449.7,61.6L450.7,63.8L449.9,66.3L448.1,67.3L447.7,69.8L448.3,72.2L450,72.6L451.3,72.2L455.1,73.9L454.8,75.6L455.8,76.3L455.5,77.7L453.1,76.2L452,74.6L451.2,75.7L449.3,73.9L446.5,74.3L445,73.7L445.1,72.4L446.1,71.6L445.2,70.9L444.8,72L443.3,70.3L442.8,68.9L442.7,66L443.9,67L444.2,62.2L445.2,59.5L447.1,59.5L449,60.3L449.9,59.5ZM449.3,81.1L448.8,79.7L450.6,80.6L452.6,80.6L452.5,81.9L451.1,83.2L449.2,84.1L449.1,82.7ZM459.9,78.8L460.7,82.2L458.4,81.4L458.4,82.5L459.2,84.3L457.7,85L457.6,82.9L456.7,82.7L456.2,80.9L458,81.1L458,80L456.1,77.6L459,77.7ZM507.1,0L507.1,2.5L506,5L506.5,6.5L504.9,8.6L501,10.1L495.7,10.3L491.3,13.7L489.3,12.6L489.1,10.3L483.8,11L480.2,12.4L476.6,12.5L479.7,14.7L477.7,19.9L475.7,21.2L474.2,20L475,17.2L473,16.4L471.8,14.3L474.7,13.3L476.3,11.4L479.4,9.8L481.6,7.7L487.7,6.8L491,7.4L494.2,2L496.2,3.5L500.7,0.4L501.3,0L507.1,0ZM480.9,13.7L482.6,11.9L484.3,12.3L485.5,11L487.8,11.7L488.2,12.7L486.5,14.6L485.2,13.6L483.6,14.3L482.8,16.1L480.8,15.2ZM176.4,8.6L176.6,8.6L177.1,7.9L179.3,7.9L182,7L180,8.3L180.2,8.9L180.3,9.1L177.2,10.4L175.7,10L175,8.7ZM987.9,83.1L989.7,82.7L990.3,82.8L990.2,85.1L987.6,85.4L987.1,85.2L988,84.3Z","borders":"M199.6,147.5L197.1,149.3L193.8,150.5L192,150.4L190.9,151.3L188.8,151.4L188,151.8L184.3,151L182,151.2L181.1,147L180.1,145.6L179.5,144.8L176.5,144.2L174.8,143.3L172.8,142.8L171.6,142.3L170.3,141.5L168.7,137.6L166.9,135.9L166.3,134.2L166.6,132.6L166,129.7L167.3,129.6L168.4,128.5L169.6,126.9L170.4,126.3L170.3,125.3L169.7,124.6L169.5,123.4L170.4,123L170.5,121.2L169.3,119.5L170.4,119.1L173.8,119.1L180,118.9L180.5,119.2L191.6,125.5L191.8,127.2L196.2,130.3M24.4,50.5L24.4,50.6L31.3,50.3L31.7,49.2L32.9,47.8L33.9,43.6L38.2,40.3L39.6,36.5L40.6,36.2L41.6,33.9L44.2,33.5L45.3,33.9L46.6,33.9L47.6,33.2L49.5,33.1L49.4,31.5L49.9,31.5L49.9,31.7L49.9,32.3L49.8,36.9L39.8,36.8L39.9,44.6L37,44.9L36.3,46.4L36.9,50.8L24.9,50.8L24.3,51.8M879.6,37L878.4,37L876.2,36.4L873.8,35.4L873,34L872.3,31.8L870.5,30.1L869.4,28.3L867.9,26.2L865.8,25L863.3,25.1L861.3,27.5L858.8,26.6L857.2,25.6L856.5,24L855.4,22.4L853.6,21L852.1,20.1L850.9,19L845.7,19L845.7,20.2L843.2,20.2L837.2,20.3L830.2,18.1L825.6,16.6L825.9,16L822,16.3L818.5,16.6M285,0L283.6,2.5L281.3,1.9L279.6,1.8L279.7,0M507.3,143.9L507.3,133.9L507.2,123.9M458.2,143.2L458.5,143.8L458.6,144.7M411.5,109.9L412,111.9L414.1,113.6L416,113L418,113.2L419.8,111.7L421.2,111.4L424.1,112.3L426.6,111.6L428.2,107.4L429.4,106.3L430.4,102.8L433.9,102.8L436.6,103.4M971.8,283.7L969.9,283.7L966.7,283.7L966.7,276.8M966.9,275.8L964,275.3L956.6,274.9L955.4,273.1L955.4,270.8L953.4,271L952.3,269.9L952.1,266.7L954.4,265.4L955.4,263.4L955,261.9L956.6,259.3L957.8,255.2L957.4,253.4L958.8,252.8L958.4,251.7L957,251.1L958,249.8L956.6,248.6L955.9,245.1L957.2,244.5L956.6,240.8L957.4,237.6L958.2,234.9L960,233.8L959.1,230.8L959.1,228L961.4,226L961.3,223.5L963.1,220.5L963.1,217.7L962.3,217.1L960.9,211.8L962.8,208.7L962.5,205.7L963.6,203L965.6,200.1L967.7,198.2L966.8,197L967.4,196L967.3,190.9L970.7,189.4L971.7,186.2L971.3,185.5L973.9,182.7L977.9,183.5L979.7,185.7L980.9,183.2L984.4,183.3L984.8,184L990.5,189L993,189.4L996.7,191.7L999.8,192.9L1000.3,194.2L997.3,198.9L1000.4,199.7L1003.8,200.2L1006.2,199.7L1009,197.3L1009.5,194.6L1011,194.1L1012.5,195.8L1012.5,198.3L1009.9,200L1007.8,201.2L1004.4,204.2L1000.3,208.3L999.5,210.8L998.7,213.9L998.8,217L998.1,217.6L997.9,219.6M961.4,172.1L962.9,171.3L963.8,169.7L965.2,171.8L965.7,174L967.3,175.3L966.3,178.3L967.9,181.7L969.1,185.9L971.3,185.5M170.3,141.5L169.1,141.2L165,141.7L164.2,142.1L163.3,144L164,145.4L163.5,149L163.1,152L163.9,152.6L166,153.8L166.9,153.2L167.1,156.5L164.8,156.5L163.5,154.8L162.4,153.5L160.1,153.1L159.4,151.5L157.5,152.4L155.1,152L154.1,150.6L152.1,150.3L150.7,150.4L150.5,149.5L149.5,149.4L148.1,149.2L146.2,149.7L144.8,149.6L144.1,149.9L144.3,146.2L143.2,145.1L143,143.2L143.5,141.4L142.8,140.2L142.8,138.3L139.1,138.3L139.3,137.2L137.8,137.2L137.6,137.7L135.7,137.9L135,139.6L134.5,140.4L132.8,140L131.8,140.4L129.8,140.7L128.6,139.1L127.9,138.1L127,136.2L126.3,134L117.3,133.9L116.2,134.3L115.3,134.2L114,134.6M113.6,133.7L114.4,133.4L114.5,132L115,131.2L116.1,130.6L116.9,130.9L117.9,129.7L119.6,129.8L119.8,130.6L120.9,131.2L122.7,129.3L124.5,127.8L125.3,126.8L125.2,124.3L126.5,121.3L127.9,119.7L129.9,118.3L130.3,117.3L130.4,116.2L130.9,115.1L130.7,113.4L131.1,110.7L131.7,108.8L132.6,107.1L132.8,105.3L133,103.2L134.2,101.6L135.9,100.6L138.4,101.7L140.3,102.8L142.6,103.1L144.8,103.7L145.8,101.8L146.2,101.6L147.6,101.9L151,100.4L152.2,101L153.2,100.9L153.6,100.2L154.8,99.9L157.1,100.3L159,100.3L160,100L161.9,102.5L163.3,102.9L164.1,102.4L165.5,102.6L167.2,101.9L167.9,103.2L170.6,105.3L170.4,108.9L171.6,109.3L170.7,110.4L169.5,111.2L168.3,112.8L167.7,114.2L167.5,116.6L166.8,117.8L166.8,120.1L165.9,121L165.8,122.8L165.4,123L165.1,124.7L165.8,126.1L166,129.7M203.5,121.1L201.6,118.6L201.6,107.5L204.3,104L205.1,103.1L207.1,103L209.8,100.9L213.8,100.7L222.4,91.5L224.5,89L225.9,87.1L225.9,85.5L225.9,82.4L225.9,81.2L226,81.1M180,118.9L179.9,115.7L180.8,114.4L182.3,112.4L183.4,110.2L182.1,106.7L181.7,105.1L180.3,103L182.2,101.2L184.2,99.2L185.8,99.7L185.8,101.4L186.9,102.4L189,102.4L192.9,105L193.8,105L194.5,105L195.2,105.3L197.3,105.5L198.2,104.3L201,103L202.2,104L204.3,104M193.8,61L192.2,62.8L190,63.3L189,64.2L188.7,66.2L187.4,70.7L187.7,71.9L187.2,74.6L186,77.6L184.1,79.1L182.8,81.4L182.5,82.7L181.1,83.5L180.2,86.7L180.2,89.5L180.2,87.1L179.7,87L179.8,85.5L179.4,84.5L177.9,83.2L177.5,81L177.9,78.8L176.4,78.6L176.2,79.3L174.4,79.4L175.1,80.3L175.4,82.1L173.7,83.8L172.2,86L170.6,86.3L168,84.6L166.9,85.2L166.6,86.1L165,86.7L164.9,87.3L161.9,87.3L161.4,86.7L159.2,86.6L158.1,87.1L157.3,86.8L155.7,85L155.2,84.2L153,84.6L152.2,86L151.4,88.8L150.3,89.3L149.4,89.7L151.5,90.9L149.1,89.5L148.1,88.6L147.9,87.7L148.4,86.4L148.4,85.2L146.6,83.3L146.3,82L146.3,81.2L145.2,80.3L145.1,78.5L144.5,77.4L143.4,77.5L143.7,76.4L144.5,75.1L144.2,73.9L145.2,72.9L144.5,72.2L145.3,70.3L146.7,68.1L149.4,68.3L149.2,56.2L149.3,54.9L152.8,54.9L152.8,48.8L165.1,48.8L176.9,48.8L189,48.8M146.3,82L144.3,82.5L142.8,83.7L140.6,87L137.7,88.5L134.7,88.3L133.9,88.6L134.2,89.6L132.6,90.7L131.3,91.9L127.4,93.1L126.7,92.4L126.2,92.3L125.6,93.1L123.1,93.3L123.6,92.5L122.6,90.4L122.2,89.1L120.8,88.6L119,86.8L119.7,85.4L121.1,85.7L121.9,85.5L123.7,85.5L122,82.7L122.1,80.7L121.9,78.7L120.7,76.7L121,75.3L119,75.2L119,73.2L117.8,72.1L119.1,68.1L123,65.2L123.1,61.2L124.3,55L125,53.7L123.7,52.7L123.7,51.7L122.5,50.9L121.8,46.1L124.8,44.5L137,50.3L149.2,56.2M957.3,55.8L957.5,57.4L957.3,58.6L956.6,59.1L957.3,60L957.3,60.9M126.3,203.3L127.8,201.8L129,202.6L129.5,203.9L130.9,204.2L132.8,204.7L134.5,204.5L137.2,203L137.2,191.7L138,192.1L139.8,195L139.5,196.9L140.2,198L142.4,197.7L143.9,196.3L145.4,195.4L146.1,193.9L147.6,193.2L148.9,193.6L150.4,194.4L152.9,194.6L154.8,193.9L155.1,192.9L155.7,191.5L157.3,191.2L158.2,190.1L159.3,188L162,185.7L166.3,183.5L167.6,183.5L169,184.1L170.1,183.7L171.7,184L173.2,188.3L174,190.5L173.4,193.9L173.7,195L172.1,194.4L171.2,194.6L171,195.5L170.1,196.7L170.1,197.7L172,199.4L173.8,199L174.4,197.7L176.7,197.7M164.9,204.5L163.6,203.5L162.2,204.2L160.5,205.4L158.9,207.3L161.2,209.6L162.3,209.3L162.8,208.4L164.5,207.9L165.1,206.9L166,205.4L164.9,204.5M906.6,59.5L906,59.5L904.9,61.4L904.4,61L904,61.1L904,61.6L901.2,61.6L898.3,61.6L898.3,63.3L896.9,63.3L898.1,64.3L899.2,65L899.6,65.7L900,65.9L900,66.9L896,66.9L894.6,69.4L895,70L894.7,70.7L894.6,71.6M1000.3,208.3L1002.3,208L1005.4,210.4L1006.5,210.3L1009.6,212.2L1012,213.9L1013.8,216L1012.5,217.5L1013.3,219.2M1009.5,194.6L1010.1,192.9L1010.5,191.1L1010.5,189.4L1009.4,188.8L1008.2,189.3L1007.1,189.2L1006.8,188L1006.5,185.2L1005.9,184.3L1003.8,183.5L1002.6,184.1L999.4,183.5L999.6,179.4L998.7,177.7L999.6,177L999.3,175.3L1000.2,173.9L1000.7,171.5L1000,169.6L998.3,168.8L998,167.6L998.4,165.8L992.6,165.7L991.4,162.1L992.3,162.1L992.3,160.7L991.6,159.9L991.5,158.1L989.7,157.2L987.8,157.2L986.6,156.3L984.5,155.7L983.3,154.6L979.9,154.1L976.5,151.3L976.8,149.3L976.4,148.1L976.7,145.8L972.7,146.3L971.1,147.5L968.5,148.7L967.8,149.7L966.2,149.7L963.9,149.5L962.2,150L960.8,149.6L961,145L958.5,146.8L955.8,146.7L954.7,145.1L952.6,144.9L953.3,143.6L951.6,141.7L950.3,139L951.1,138.4L951.1,137.1L953,136.3L952.7,134.6L953.4,133.5L953.7,132.1L957.2,130L959.7,129.4L960.1,129L962.8,129.1L964.2,120.8L964.3,119.4L963.8,117.7L962.4,116.6L962.5,114.3L964.2,113.8L964.8,114.2L964.9,113L963.1,112.7L963.1,110.8L969,110.8L970,109.8L970.9,110.7L971.5,112.5L972,112.2L973.7,113.8L976.1,113.6L976.7,112.7L979,111.9L980.2,111.4L980.6,110.1L982.8,109.3L982.6,108.6L980,108.4L979.6,106.4L979.7,104.4L978.3,103.6L978.9,103.3L981.2,103.7L983.6,104.5L984.5,103.8L986.7,103.3L990.1,102.1L991.2,101L990.8,100.1L992.4,100L993.1,100.7L992.7,102L993.8,102.5L994.5,103.9L993.6,105L993.1,107.6L993.9,109.1L994.1,110.5L996,112L997.5,112.1L997.9,111.5L998.8,111.4L1000.2,110.9L1001.2,110L1002.9,110.3L1003.6,110.2L1005.3,110.4L1005.6,109.8L1005.1,109.2L1005.4,108.3L1006.6,108.6L1008,108.3L1009.8,108.9L1011.1,109.6L1012.1,108.7L1012.7,108.9L1013.2,109.7L1014.6,109.5L1015.8,108.3L1016.7,106.1L1018.5,103.3M998.7,177.7L998.6,176.7L995.8,175.1L992.9,175.1L987.6,176L986.1,178.7L986.1,180.3L984.8,184M963.8,169.7L965.7,166.4L964.4,163.9L965.1,162.8L964.5,161.7L965.7,160.2L965.8,157.6L965.9,155.4L966.6,154.4L963.9,149.5M931,126.4L931.4,127.7L930.5,128.4L930.6,129.5L931.9,129.3L933.1,129.6L934.4,131.2L936.1,129.9L936.7,127.8L938.6,125.2L942.2,124L945.6,120.8L946.5,118.8L946.1,116.5L946.9,116.2L948.9,117.6L949.9,119.1L951.3,119.9L953.1,123.1L955.4,123.4L957.1,122.6L958.2,123.2L960,122.9L962.4,124.3L960.4,127.4L961.3,127.5L962.8,129.1M946.1,116.5L944.8,115.7L943.3,114.7L942.4,115.2L939.8,114.8L939.1,113.5L938.5,113.5L935.4,111.8M938.4,93.9L938.8,92.4L939.8,92.7L940.4,91.8L939.7,90L940,89.5M958.4,80L956.5,80.5L955.7,82.1L954.5,82.9L953.6,84.1L953.2,86.3L952.4,88L954,88.2L954.4,89.6L955.1,90.3L955.3,91.5L954.9,92.7L955,93.3L955.8,93.6L956.5,94.6L960.4,94.3L962.2,94.7L964.4,97.4L965.6,97L967.8,97.2L969.5,96.8L970.6,97.4L970.1,99L969.4,100L969.2,102.2L969.8,104.3L970.6,105.2L970.7,105.9L969.2,107.4L970.3,108.1L971.1,109.1L972,112.2M922.9,90.9L923,90.3L923.3,89.6L923.2,89.1L923.6,88.7L923,88.3L923,87L924.2,86.8M914.5,82.1L915,81.7L917,82.5L917.7,82.1L918.6,82.4L919.1,83L920,83.2L920.8,82.6M909.6,76.3L910.5,76.2L910.9,75.5L911.4,75.5L911.3,74L912,73.9L912.7,73.9L913.3,73.1L914.2,73.7L914.5,73.3L915.1,73L916.2,72.1L916.2,71.5L916.5,71.5L916.9,70.8L917.2,70.7L917.7,71.2L918.4,71.3L919,70.9L919.8,70.9L920.9,70.5L921.3,70.1L922.3,70.2M908.1,75.1L908.3,73.9L907.9,73.5L907.3,73.3L906,73.7L905.8,73.3L904.9,72.8L904.3,72.2L903.4,71.9L904,71.1L903.8,70.5L904,70L905.4,69.1L906.8,67.9M901.1,74L901.2,73.6L902.2,72.8L902.8,72.5L902.6,72.1L903.4,71.9M904,61.6L904,64L903.7,67.5L904.7,67.5M993.8,90.4L991.4,92.2L991.1,93.3L992.2,94.5L991.4,95L989.5,95.5L989.6,97L988.7,97.8L990.8,100.1M1001.8,97.7L1001.3,100.5L999.4,101.3L999.6,102L999,103.6L1000.4,105.8L1001.4,105.8L1001.8,107.5L1003.6,110.2M1011.5,98.4L1009.9,101L1010.2,103.1L1011.4,104.9L1010.8,106.3L1010.6,107.7L1009.8,108.9M166.3,183.5L164.4,182.1L162,181.7L161.1,179.7L161.1,178.6L159.8,178.3L156.3,175L155.4,173.2L154.8,172.6L153.6,170.2L157,170.5L158,170.9L159,170.8L160.7,168.8L163.4,166.3L164.5,166.1L164.8,165L166.6,163.8L168.9,163.4L169.1,164.5L171.6,164.5L173.1,165.1L173.7,165.9L175.2,166.1L176.8,167.1L176.8,170.9L176.2,173.1L176,175.3L176.5,176.2L176.2,178L175.7,178.3L174.9,180.5L171.7,184M137.2,191.7L137.2,182.8L140.2,182.7L140.3,171.8L142.6,171.7L147.3,170.6L148.4,171.9L150.4,170.7L151.3,170.7L153,170L153.6,170.2M112.2,168.9L113.7,168.3L115.5,167.8L117.5,167.9L119.3,169.2L119.8,169L132.2,168.9L134.3,170.4L141.7,170.8L147.3,169.5L149.8,168.8L151.8,169L153,169.7L153,170M26.1,66.7L27.1,65.7L28.7,66L30.1,65.3L31.8,65.3L33.3,66.2L35.3,67L37.2,69.2L39.2,71.3L39.3,73.2L39.9,75L41.1,75.8L41.3,77L41.2,78L40.8,78.2L39.1,77.9L38.9,78.2L38.2,78.3L36,77.6L34.5,77.5L28.9,77.4L28.1,77.8L27,77.7L25.4,78.2M24.9,75.8L27.7,75.9L28.4,75.5L29,75.4L30.1,74.7L31.4,75.4L32.8,75.4L34.1,74.7L33.5,73.9L32.5,74.4L31.5,74.4L30.3,73.6L29.3,73.6L28.6,74.4L25.3,74.5M39.2,71.3L40.2,70.8L40.7,69L41.7,68.9L43.8,69.8L45.6,69.2L46.7,69.4L47.2,68.7L59.5,68.6L60.1,66.5L59.6,66.1L58.1,52.9L56.7,39.7L61.3,39.7L71.7,46.4L82,53L82.7,54.5L84.6,55.3L86,55.8L86,57.8L89.4,57.5L89.4,64.5L87.8,66.5L87.5,68.4L84.8,68.9L80.6,69.2L79.5,70.3L77.5,70.4L75.6,70.4L74.8,69.8L73.1,70.2L70.3,71.5L69.7,72.5L67.3,73.8L66.9,74.6L65.6,75.2L64.2,74.8L63.3,75.6L62.9,77.7L60.4,80.2L60.5,81.2L59.7,82.5L59.9,84.3L58.6,84.8L57.9,85.1L57.4,83.8L56.6,84.2L56,84.1L55.5,85L53.1,85L52.2,84.5L51.9,84.8L50.9,83.9L51.1,83L50.7,82.7L50,83L50.2,82L50.8,81.2L49.5,79.9L49.2,79.1L48.5,78.4L47.9,78.3L47.2,78.7L46.2,79.1L45.3,79.8L44,79.6L43.2,78.8L42.7,78.7L41.9,79.1L41.4,79.1L41.2,78M49.9,32.3L61.3,39.7M82.1,97.2L81.3,95.1L81.5,88.1L80.9,87.5L80.7,86L79.7,84.9L78.7,84L79.1,82.4L80.2,82.1L80.8,80.7L82.3,80.4L83,79.5L84,78.6L85.1,78.6L87.4,80.4L87.3,81.4L88,83.2L87.4,84.4L87.7,85.3L86.2,87.1L85.3,88.1L84.7,90L84.8,91.9L84.6,96.9M120.7,76.7L119.8,76.9L119.7,77.9L119.2,77.9L117.1,74.6L116.4,74.5L114,76.2L111.6,75.3L110,75.1L109.1,75.5L107.3,75.4L105.5,76.7L103.9,76.8L100.2,75.2L98.8,76L97.2,75.9L96.1,74.8L93,73.6L89.7,74L88.9,74.7L88.5,76.4L87.6,77.6L87.4,80.4M83,79.5L83,77.4L79.5,76.7L79.4,75.3L77.7,73.3L77.3,71.9L77.5,70.4M89.4,57.5L93.7,56.1L102.6,50.1L113.1,44.3L117.9,45.6L119.6,47.3L121.8,46.1M119.7,77.9L120.9,79.1L120.6,79.6L120.4,80.6L117.9,83L117.1,85L116.6,86.5L116,87.2L115.4,89.4L113.7,90.6L113.3,92.2L112.6,93.4L112.3,94.7L110.2,95.7L108.5,94.4L107.3,94.5L105.5,96.3L104.6,96.3L103.1,99.3L102.4,101.4M123.1,93.3L121.5,96.4L120.8,97L120.6,99.3L120.9,100.6L120.6,101.5L122.1,103.1L122.3,104.2L123.5,105.8L124.9,106.8L125,108.2L125.3,109.1L125.1,110.7L122.7,110L120.2,109.2L116.3,109.1L116,108.9L114.2,109.3L112.3,108.9L110.8,109.1L105.9,109M79.6,97.9L78.9,96.8L78.1,94.9L77.9,93.4L78.6,90.6L77.8,89.5L77.5,87.1L77.5,84.9L76.2,83.3L76.5,82.3L79.1,82.4M67.7,100.7L67.8,99.5L66.5,96.9L67.3,93.4L68.6,90.9L67.7,86.5L67.3,84.2L67.4,82.5L72.7,82.4L74.1,82.6L75.1,82.1L76.5,82.3M59.9,84.3L61.2,85L61.8,86L63.2,86.6L64.2,85.9L65.7,85.7L67.7,86.5M52.8,102.7L53.1,100.1L53.3,99.8L53.3,98.6L52,97.3L51,97.1L50.1,96.2L50.8,94.9L50.5,93.4L50.6,92.5L51.1,92.5L51.3,91.2L51,90.6L51.3,90.2L52.5,89.8L51.7,87.4L51,86.1L51.2,85.1L51.9,84.8M50.6,92.5L49.7,92.4L49.1,93.7L48.3,93.7L47.7,93L47.9,91.8L46.6,89.9L45.8,90.2L45.1,90.3L44.3,90.5L44.3,89.4L43.8,88.6L43.9,87.7L43.3,86.4L42.4,85.3L40,85.3L39.3,85.9L38.4,85.9L37.9,86.6L37.5,87.5L35.9,88.8M30.2,82.3L31.5,80.8L32.4,80.8L33.2,80.3L33.9,80.3L34.4,79.9L34.1,78.9L34.5,78.6L34.5,77.5M41.4,95.3L42.2,94.3L42.3,93.4L43.7,91.7L45.1,90.3M132.8,105.3L130.8,105.1L128.7,104.6L126.9,106.2L125.3,109.1M151.5,90.9L153.1,92.1L153.2,93.1L155.2,94.7L156.5,96L157.3,97.8L159.5,99L160,100M116.1,130.6L114.9,129.6L114,130.1L112.8,131.4M110.3,128.2L112.6,126.5L111.5,124.4L112.5,123.7L114.6,123.3L114.8,122L116.4,123.4L119.1,123.5L120.1,122.1L120.5,120.1L120.1,117.7L118.7,115.9L120,112.3L119.3,111.7L117,112L116.1,110.4L116.3,109.1M105.4,112.9L106.4,112.7L110.9,112.8L110.8,109.1M176.5,144.2L177.9,145.6L178.7,148.2L178.2,149L177.6,151.5L178.2,154L177.2,155.1L176.3,157.9L177.9,158.7L168.6,161.2L168.9,163.4M147.3,169.5L145.3,167.6L143.3,165.1L143.4,155.4L149.8,155.4L149.5,154.4L150,153.3L149.4,151.8L149.8,150.3L149.5,149.4M182,151.2L181.1,153.5L182,157.5L183.1,157.4L184.2,158.4L185.4,160.6L185.7,164.6L184.4,165.2L183.4,167.3L181.4,165.5L181.2,163.3L181.9,161.9L181.7,160.7L180.5,159.9L179.6,160.2L177.9,158.7M174.4,197.7L174.1,196.3L173.7,195M165.1,124.7L166.9,124.9L167.9,123.2L169.5,123.4M183.7,14.9L184.7,14.9L185,14.4L185.8,14.3L185.9,15.6L185.5,16L185.5,16.1L185,17L183.9,16.6L183.3,18.6L184,19L183.2,19.4L183.1,20.2L184.5,19.8L184.6,21L183.1,25.9L182.8,25.1L181.1,20.6M186.4,10.1L187.8,10.3L188.3,11.5L186.6,12.6L185.8,14.3M185,17L185,18.9L184.5,19.8M111.5,14.7L111.3,17.1L109.8,18L108.9,19L106.8,20.1L107.1,21.4L106.9,22.7L105.4,23.4L104.1,17.9L102.2,16.7L102.1,15.9L99.6,14.1L99.4,11.8L101.3,10.1L102,7.6L101.5,4.7L102.1,3.1M49.9,31.5L49.9,27.9L54.8,25.6L57.9,25.2L60.4,24.3L61.5,22.8L65.1,21.6L65.2,19.3L67,19.1L68.4,17.9L72.4,17.4L73,16.2L72.1,15.6L71.1,12.4L70.9,10.5L69.8,8.5M105.4,23.4L106.3,26.1L106.5,27.5L106,30L106.2,31.4L105.8,33.1L106.1,35L104.9,36.3L106.7,38.5L106.8,39.8L107.9,41.5L109.3,40.9L111.7,42.4L113.1,44.3M185.5,16.1L188.9,17.3L194.9,14L196.2,17.7L195.6,18.2L189.5,19.7L192.5,22.8L191.5,23.3L191,24.3L188.7,24.7L187.9,25.8L186.6,26.8L183.2,26.3M247.7,36.4L248.3,37.4M248.7,39.8L247.1,39.9L246.9,41.8L247.4,42.3L246.1,42.9L246,44.1L245.2,45.4L245.1,46.6L244.5,47.3L235.3,45.7L234.1,42.6L234,41.9M233.4,40.7L232.6,41L231.6,40.4M224.3,28.8L222.2,28.8L221.4,27.4L218.7,27.1L220.9,24.2L223,24.4M194.9,14L201.7,10.8L202.8,7.1L202.6,4.9L204.2,4.1L205.8,2.2L207.1,1.8L210.7,2.2L211.7,2.9L213.2,2.4L215.2,6.1L217.2,7L217.4,8.8L215.9,9.8L215.2,12.2L217.3,15.1L221,16.8L222.6,19.1L222.1,21.3L223.1,21.3L223.1,22.9L224.8,24.6M218.7,27.1L213,26.8L204.4,20.7L199.8,18.6L196.2,17.7M238.7,65.1L237.7,63L235.3,57.9L244.4,54.9L246.5,48.8L245.1,46.6M389.8,78.8L389.1,75.1L391.1,72.5L395,72L397.9,72.4L400.4,73.6L401.8,71.5L404.5,72.6L405.2,74.6L404.8,78.3L399.7,80.7L401,82.5L397.8,82.7L395.2,84M388.5,97L387.5,98.2L385.5,98.6L385.2,97L382.7,95.7L382.2,96.2M377.5,85.7L379,82.5L380.7,79.7L379.5,76.9L379.5,75.5L379.2,73.8L377.1,71.3L376.4,69.8L377.5,69.2L378.6,66.6L377.3,64.6L375.4,62.3L373.9,59.6L375.2,59.1L376.6,55.8L378.8,55.6L380.5,54.3L382.3,53.6L383.6,54.6L383.8,56.4L385.9,56.5L385.1,59.8L385.2,62.5L388.4,60.7L389.3,61.2L391.1,61.1L391.7,60.1L394,60.3L396.4,62.7L396.6,65.8L399,68.4L398.9,71L397.9,72.4M382.3,53.6L382.9,52.5L385.6,50.5L385.8,51.2L387.5,51.3L387,47.8L388.6,47.4L390.4,49.8L391.7,52.5L395.5,52.6L396.7,55.2L394.7,56L393.8,57.1L397.5,59L400.1,62.6L402,65.3L404.3,67.4L405.1,69.6L404.5,72.6M358.6,52.8L358.4,50.4L359.5,50.8L359.6,48.7L361.1,47.9L360.7,46.6L361.4,45.6L361.6,42.4L363.9,43.1L365.3,40.6L365.5,39.1L367.1,36.6L367.1,34.8L371,32.7L373.2,33.2L372.9,31.4L374,30.8L373.8,29.6L375.6,29.4L376.6,31.2L377.9,31.9L378,34.3L377.9,36.8L375,39.4L374.6,43L377.9,42.5L378.6,45.3L380.5,45.9L379.6,48.4L381.9,49.6L383.2,50.1L385.5,49.2L385.6,50.5M388.6,47.4L390.2,46.6L392.6,46.6L395.6,46.3L398.2,44.6L399.7,45.8L402.5,46.4L402,48.1L403.5,49.4L406.5,50.1M463.9,0L463.5,0.5L462.1,0.4L461.9,0.7M359.6,48.7L357.9,43.8L357.1,43.8L356.6,45.8L354.9,44.2L355.9,42.4L357.2,42.3L358.6,39.7L356.9,39.2L354.1,39.2L351.1,38.8L350.9,36.7L349.4,36.5L347,35.2L345.9,37.3L348.1,38.9L346.2,40L345.5,41.1L347.4,42L346.9,43.8L348,46.1L348.4,48.6M284.7,43.6L286.7,41.6L293.5,41.6L292.9,39L291.1,37.4L290.8,35.1L288.8,33.7L292.2,30.5L295.7,30.7L298.9,27.5L300.8,24.4L303.8,21.3L303.7,19.2L306.3,17.4L303.9,15.9L302.8,13.8L301.7,11.1L303.2,9.8L307.9,10.6L311.3,10.1L314.2,7.5L317.5,11.1L317.2,13.6L318.4,15.2L318.3,16.7L316.1,16.3L317,19.7L320,21.6L324.2,23.8L322.3,25.2L321.1,28L324.1,29.2L326.9,30.7L330.9,32.4L335.1,32.8L336.9,34.3L339.2,34.6L342.9,35.3L345.5,35.3L345.8,34.1L345.4,32.1L345.6,30.8L347.5,30.2L347.8,32.6L347.8,33.2L350.6,34.4L352.5,33.9L355.1,34.1L357.6,34L357.8,32.1L356.6,31.1L359,30.8L361.8,28.5L365.3,26.5L367.9,27.3L370.1,26L371.5,27.9L370.5,29.2L373.8,29.6M347.8,32.6L349.8,30.3L351.4,29.5L353.6,30.2L355.2,30.3L356.6,31.1M324.2,23.8L325.5,23L327.9,24L331,26L332.8,26.4L333.8,27.9L336.2,28.5L338.6,29.8L342.1,30.5L345.6,30.8M264.3,39.4L265.5,35.8L269.9,34.2L269.6,32.8L268.1,32.3L268.1,29.7L265.1,28.3L263.9,26.5L262.4,24.9L267.5,26.4L270.6,26L272.4,26.3L273,25.7L275.1,25.9L279.1,24.7L279.2,22.1L280.9,20.3L283.2,20.4L283.5,19.5L285.9,19.1L287,19.4L288.2,18.5L288,16.7L289.3,14.8L291.3,14.1L290.1,12.1L293,12.1L293.8,11L293.7,9.9L295.2,8.6L294.9,7.1L294.1,5.8L295.9,4.4L299.2,3.8L302.7,3.4L304.3,2.9L306,2.5L308.3,4L309.2,6.3L314.2,7.5M283.6,2.5L284.6,2.9L286.8,1.9L287.8,2.5L288.8,1.1L290.6,1.1L291.1,0.7L291.3,0M294.1,0L294.1,0L295,0.2L294.7,2.7L295.9,3.7L297,3.1L298.3,2.8L300.2,1.4L302.3,1.7L305.5,1.7L306,2.5M262.4,24.9L265.2,22.1L264.9,20.1L262.6,19.6L262.4,17.7L261.4,15.2L262.7,13.6L261.3,13.1L262.2,10.9L263.4,7.1L266.5,8.2L268.8,7.8L269.5,6.4L271.9,6L273.6,5L274.2,2.6L276.8,2L277.3,0.9L278.7,1.7L279.6,1.8M305.1,0L305.5,1.7M263.4,7.1L263.2,4.5L260.9,4.4L257.4,1.7L254.9,1.3L252,0M248.3,0L248.1,0.1L246.1,0M246,0L243.8,1.7L241.2,2.3M213.2,2.4L211.5,0M186.8,6.5L187.7,5.9L188.5,5.2L188.7,3.5L189.7,4.1L193,3.2L194.6,3.8L197.2,3.8L200.7,2.7L202.3,2.7L205.8,2.2M54.7,0L54.5,0.5L53.4,1.6L53.6,2.6M425.4,102.2L426.7,103.8L427.4,102.7L428.8,102.8L429,100.9L429.2,99.4M208,77.2L207.1,77.9L205.8,77.7L204.8,76.7L203.5,74.9L202.1,73.9L201.4,72.9L198.7,71.6L196.6,71.6L195.9,71L194.1,71.7L192.2,70.3L191.3,72.6L187.7,71.9M207.1,66L208.4,65.1L208.1,63.8L208.9,62.3L210.2,63.1L211,62.8L214.6,62.7L215.1,63L218.1,63.3L219.2,63.2L220,64.2L221.4,63.7L223.6,60.5L226.5,59.1L235.3,57.9M180.2,8.9L179.9,8.8L179.3,9L178.8,8.9L178.7,9.1L178.6,8.7L178.4,8.6L177.8,8.5L177,8.8L176.4,8.6M152.8,48.8L152.8,37.5L152.8,26.7L151.9,24.2L152.6,22.3L152.2,21L153.3,19.5M184.2,99.2L182.4,95.8L181,95.1L180.5,93.9L179,92.4L177.1,92.2L178.1,90.5L179.7,90.4L180.2,89.5M205.8,77.7L204.7,79L203.7,80.5L203.9,81.3L204,82.2L205.7,82.3L206.4,82.1L207.1,82.6L206.4,83.7L207.6,85.4L208.7,86.9L209.8,87.9L219.8,91.6L222.4,91.5M208.2,81L207.1,82.6M169.3,119.5L167.5,120.4L166.8,120.1M170.6,105.3L171.9,104.4L173.8,105.1L176.3,104.4L178.4,104.4L180.3,103","regions":{"peru":[930.4,131.3],"indonesia":[421.7,122.1],"australia":[522.5,201.6],"safrica":[155.8,177.1],"amazon":[986.9,128.2],"sbrazil":[1005.3,207.7],"chile":[959.4,219.9],"eafrica":[192.5,116],"pacific":[620.3,167.9],"nh":[907.5,36.6]},"eq":116,"trN":44.5,"trS":187.5,"nino34":{"x":656.9,"y":100.7,"w":152.80000000000007,"h":30.60000000000001},"warmE":{"c":[785.3,116],"rx":177,"ry":24},"warmW":{"c":[504.2,116],"rx":92,"ry":21},"labels":{"africa":[137.5,97.7],"australia":[485.8,192.4],"samerica":[993.1,158.8],"pacific":[718.1,183.2],"indian":[320.8,177.1],"asia":[381.9,39.6]}};
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NS='http://www.w3.org/2000/svg';
+const el=(tag,attrs,parent)=>{const n=document.createElementNS(NS,tag);for(const k in attrs)n.setAttribute(k,attrs[k]);if(parent)parent.appendChild(n);return n};
+
+/* ================= EXPLORER ================= */
+const svg=$('enso');
+const lerp=(a,b,u)=>a+(b-a)*u;
+const mod=(a,n)=>((a%n)+n)%n;
+const KEY={sW:[238,244,251],sE:[261,256,249],yW:[425,400,355],yE:[285,305,372],wm:[.5,.75,.92],we:[0,.22,.88],
+  ws:[1.35,1,.4],ww:[5,3.5,2.2],wo:[1,.95,.5],cx:[160,200,520],cs:[1.12,1,.95],up:[1,.85,.08],us:[1.1,1,.4],
+  es:[1,1,.15],wsink:[0,0,1],rs:[1.2,1,.5],fo:[1,.9,.08],rain:[1,.9,.85]};
+const val=(k,t)=>{const a=KEY[k];return t<0?lerp(a[1],a[0],-t):lerp(a[1],a[2],t)};
+
+const windG=$('windG'),retG=$('retG'),upArrows=$('upArrows');
+const wind=[],ret=[];
+for(let i=0;i<6;i++){const g=el('g',{},windG);const l=el('line',{y1:0,y2:0,stroke:'var(--wind)','stroke-linecap':'round'},g);const h=el('path',{d:'M12,-9 L0,0 L12,9',fill:'none',stroke:'var(--wind)','stroke-linecap':'round','stroke-linejoin':'round'},g);wind.push({g,l,h})}
+for(let i=0;i<5;i++){const g=el('g',{},retG);const l=el('line',{y1:0,y2:0,stroke:'var(--air)','stroke-width':2.5,'stroke-linecap':'round'},g);const h=el('path',{d:'M-10,-7 L0,0 L-10,7',fill:'none',stroke:'var(--air)','stroke-width':2.5,'stroke-linecap':'round','stroke-linejoin':'round'},g);ret.push({g,l,h})}
+const upX=[770,812,854],ups=upX.map(()=>({s:el('path',{class:'upsh'},upArrows),h:el('path',{},upArrows)}));
+
+let cur=0,tw=null,offW=0,offR=0,phase='normal',visible=true;
+const phaseOf=t=>t>0.33?'elnino':t<-0.33?'lanina':'normal';
+
+function place(){
+  const sx=val('ws',cur),sw=val('ww',cur),op=val('wo',cur);
+  wind.forEach((w,i)=>{
+    const x=70+mod(110+i*140-70-offW,820),f=Math.max(0,Math.min(1,(x-70)/70,(890-x)/70));
+    w.g.setAttribute('transform','translate('+x.toFixed(1)+' 222)');
+    w.l.setAttribute('x1',(45*sx).toFixed(1));w.l.setAttribute('x2',(-45*sx).toFixed(1));
+    w.h.setAttribute('transform','translate('+(-45*sx).toFixed(1)+' 0)');
+    w.l.setAttribute('stroke-width',sw.toFixed(1));w.h.setAttribute('stroke-width',sw.toFixed(1));
+    w.g.style.opacity=(op*f).toFixed(2);
+  });
+  const rs=val('rs',cur);
+  ret.forEach((r,i)=>{
+    const x=100+mod(i*170+offR,800),f=Math.max(0,Math.min(1,(x-100)/70,(900-x)/70));
+    r.g.setAttribute('transform','translate('+x.toFixed(1)+' 36)');
+    r.l.setAttribute('x1',(-30*rs).toFixed(1));r.l.setAttribute('x2',(30*rs).toFixed(1));
+    r.h.setAttribute('transform','translate('+(30*rs).toFixed(1)+' 0)');
+    r.g.style.opacity=(f*(.35+.55*rs/1.2)).toFixed(2);
+  });
+}
+
+const TXT={
+  wind:['Stronger than normal','Blowing east to west','Weaker than normal'],
+  warm:['Piled up even farther west','Piled up in the west','Spreads east'],
+  thermo:['Steeper tilt','Deep west, shallow east','Flattened'],
+  up:['Stronger','Active','Weak or shut off'],
+  rain:['Far western Pacific','Western Pacific','Central and eastern Pacific']
+};
+function render(){
+  const t=cur,sW=val('sW',t),sE=val('sE',t),yW=val('yW',t),yE=val('yE',t);
+  const top='M70,'+sW.toFixed(1)+' L890,'+sE.toFixed(1);
+  const th='C420,'+yW.toFixed(1)+' 540,'+yE.toFixed(1)+' 890,'+yE.toFixed(1);
+  const back='C540,'+yE.toFixed(1)+' 420,'+yW.toFixed(1)+' 70,'+yW.toFixed(1);
+  $('surf').setAttribute('d',top);
+  const warm=top+' L890,'+yE.toFixed(1)+' '+back+' Z';
+  $('warmP').setAttribute('d',warm);$('fadeP').setAttribute('d',warm);
+  $('deepP').setAttribute('d','M70,'+yW.toFixed(1)+' '+th+' L890,490 L70,490 Z');
+  $('thermo').setAttribute('d','M70,'+yW.toFixed(1)+' '+th);
+  $('thermoL').setAttribute('y',((yW+yE)/2-10).toFixed(1));
+  const mix=p=>'color-mix(in srgb, var(--ocean-warm) '+Math.round(p*100)+'%, var(--ocean-cool))';
+  $('wS0').style.stopColor=mix(1);$('wS1').style.stopColor=mix(val('wm',t));$('wS2').style.stopColor=mix(val('we',t));
+  $('cloudG').setAttribute('transform','translate('+val('cx',t).toFixed(1)+' 0)');
+  $('cloudShapes').setAttribute('transform','translate(0 118) scale('+val('cs',t).toFixed(3)+') translate(0 -118)');
+  $('rainG').style.opacity=val('rain',t).toFixed(2);
+  $('dryE').style.opacity=val('es',t).toFixed(2);$('dryW').style.opacity=val('wsink',t).toFixed(2);
+  const us=val('us',t),tip=sE+14,yS=Math.min(yE+75,478);
+  upX.forEach((x,i)=>{
+    const sw=(2+2.2*us).toFixed(1);
+    ups[i].s.setAttribute('d','M'+x+','+yS+' V'+(tip+4));ups[i].s.setAttribute('stroke-width',sw);
+    ups[i].h.setAttribute('d','M'+(x-7)+','+(tip+11)+' L'+x+','+tip+' L'+(x+7)+','+(tip+11));ups[i].h.setAttribute('stroke-width',sw);
+  });
+  const upo=val('up',t).toFixed(2);upArrows.style.opacity=upo;
+  $('fishG').style.opacity=val('fo',t).toFixed(2);$('plankG').style.opacity=val('fo',t).toFixed(2);
+  place();
+  const ph=phaseOf(t),idx=ph==='lanina'?0:ph==='normal'?1:2;
+  const sst=t>=0?23+4*t:23+2*t,an=t*1.5;
+  $('r-wind').textContent=TXT.wind[idx];$('r-warm').textContent=TXT.warm[idx];$('r-thermo').textContent=TXT.thermo[idx];
+  $('r-up').textContent=TXT.up[idx];$('r-rain').textContent=TXT.rain[idx];$('r-sst').textContent='≈ '+sst.toFixed(0)+' °C';
+  $('anomTxt').textContent='Niño 3.4 anomaly ≈ '+(an>=0.05?'+':an<=-0.05?'−':'')+Math.abs(an).toFixed(1)+' °C';
+  if(ph!==phase){phase=ph;onPhase()}
+}
+function onPhase(){
+  ['normal','elnino','lanina'].forEach(p=>{$('pane-'+p).hidden=p!==phase});
+  document.querySelectorAll('.seg [data-phase][aria-pressed]').forEach(b=>{if(b.closest('.ctl'))b.setAttribute('aria-pressed',b.dataset.phase===phase?'true':'false')});
+  document.querySelectorAll('#cmp [data-col]').forEach(c=>{if(c.tagName==='TD')c.classList.toggle('on',c.dataset.col===phase)});
+  const d={normal:'A normal year: trade winds blow east to west, warm water piles up in the west, cold water rises off South America, and storm clouds form over the western Pacific.',
+    elnino:'El Niño: trade winds weaken, warm water spreads east, upwelling off South America weakens, and storm clouds move to the central Pacific.',
+    lanina:'La Niña: trade winds strengthen, more warm water piles up in the west, upwelling off South America strengthens, and storms concentrate in the far west.'};
+  $('ensoD').textContent=d[phase];
+  setFocus('');
+}
+function setFocus(f){
+  if(f)svg.dataset.focus=f;else delete svg.dataset.focus;
+  document.querySelectorAll('[data-focus]').forEach(b=>{if(b.tagName==='BUTTON')b.setAttribute('aria-pressed',b.dataset.focus===f&&f?'true':'false')});
+}
+document.querySelectorAll('button[data-focus]').forEach(b=>b.addEventListener('click',()=>setFocus(svg.dataset.focus===b.dataset.focus?'':b.dataset.focus)));
+$('clearFocus').addEventListener('click',()=>setFocus(''));
+
+const slider=$('tslider');
+slider.addEventListener('input',()=>{tw=null;cur=slider.value/100;render()});
+document.querySelectorAll('.ctl .seg button').forEach(b=>b.addEventListener('click',()=>{
+  const target=b.dataset.phase==='lanina'?-1:b.dataset.phase==='elnino'?1:0;
+  if(reduce){cur=target;slider.value=target*100;render();return}
+  tw={a:cur,b:target,t0:performance.now(),d:1000};
+}));
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(tw){
+    const u=Math.min(1,(now-tw.t0)/tw.d),e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    cur=tw.a+(tw.b-tw.a)*e;slider.value=Math.round(cur*100);if(u>=1)tw=null;render();
+  }else if(visible&&!reduce){
+    offW+=val('ws',cur)*40*dt;offR+=24*val('rs',cur)*dt;place();
+  }
+  requestAnimationFrame(frame);
+}
+if('IntersectionObserver' in window){new IntersectionObserver(es=>{visible=es[0].isIntersecting}).observe(svg)}
+render();onPhase();phase=phaseOf(cur);
+requestAnimationFrame(frame);
+
+/* ================= SCENES ================= */
+const cl=(x,y,s,c,o)=>'<g transform="translate('+x+' '+y+') scale('+s+')" fill="'+(c||'#fff')+'" opacity="'+(o==null?1:o)+'"><ellipse rx="26" ry="10"/><ellipse cx="-14" cy="-7" rx="14" ry="10"/><ellipse cx="9" cy="-11" rx="17" ry="13"/></g>';
+const bg=(id,a,b)=>'<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient></defs><rect width="320" height="170" fill="url(#'+id+')"/>';
+const sun=(x,y,r,c,rays)=>{let s='<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+c+'"/>';if(rays)for(let i=0;i<12;i++){const a=i*Math.PI/6;s+='<line x1="'+(x+Math.cos(a)*(r+4)).toFixed(1)+'" y1="'+(y+Math.sin(a)*(r+4)).toFixed(1)+'" x2="'+(x+Math.cos(a)*(r+11)).toFixed(1)+'" y2="'+(y+Math.sin(a)*(r+11)).toFixed(1)+'" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/>'}return s};
+const fish=(x,y,s,c,f)=>'<g transform="translate('+x+' '+y+') scale('+(f?-s:s)+' '+s+')" fill="'+c+'"><ellipse rx="9" ry="4"/><path d="M7,0 l8,-5 v10z"/></g>';
+const house=(x,y,w,h,wall,roof)=>'<g><rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+wall+'"/><path d="M'+(x-4)+','+y+' L'+(x+w/2)+','+(y-h*.6)+' L'+(x+w+4)+','+y+'Z" fill="'+roof+'"/><rect x="'+(x+w*.4)+'" y="'+(y+h*.4)+'" width="'+(w*.2)+'" height="'+(h*.6)+'" fill="#5b3b2a"/></g>';
+const tree=(x,y,s,c)=>'<g transform="translate('+x+' '+y+') scale('+s+')"><rect x="-2" y="-14" width="4" height="14" fill="#6b4a2f"/><circle cy="-22" r="13" fill="'+c+'"/><circle cx="-8" cy="-16" r="9" fill="'+c+'"/><circle cx="8" cy="-16" r="9" fill="'+c+'"/></g>';
+const flame=(x,y,s)=>'<g transform="translate('+x+' '+y+') scale('+s+')"><path d="M0,0 C-12,-10 -6,-24 0,-34 C2,-24 12,-18 10,-6 C8,-1 4,2 0,2Z" fill="#ff6a1a"/><path d="M0,0 C-6,-6 -3,-14 1,-20 C3,-12 8,-8 5,-2Z" fill="#ffd23f"/></g>';
+const boat=(x,y,hull)=>'<path d="M'+(x-42)+','+y+' h84 l-12,18 h-60z" fill="'+(hull||'#b5532a')+'"/><rect x="'+(x-10)+'" y="'+(y-18)+'" width="22" height="18" fill="#f2efe6"/><line x1="'+(x+28)+'" y1="'+y+'" x2="'+(x+28)+'" y2="'+(y-30)+'" stroke="#5b3b2a" stroke-width="3"/>';
+const cracks='<g stroke="#7a5428" stroke-width="1.6" fill="none" stroke-linecap="round"><path d="M18,142 l20,-6 l14,8 l22,-4 l10,10"/><path d="M110,150 l16,-8 l18,6 l14,-6"/><path d="M200,140 l18,8 l16,-6 l22,6"/><path d="M60,160 l22,-6 l18,6"/><path d="M250,160 l18,-8 l22,4"/></g>';
+const SC={
+fishgood:()=>bg('s1','#8fd3f4','#d9f1fb')+sun(272,30,16,'#ffd54a',true)+cl(70,34,1,'#fff')+'<rect y="78" width="320" height="92" fill="#1b6fa8"/><rect y="78" width="320" height="8" fill="#3b95d0" opacity=".7"/>'+boat(150,72)+'<path d="M118,92 Q150,150 184,92" fill="#cfe9f5" fill-opacity=".3" stroke="#e8f6fc" stroke-width="2"/>'+fish(140,112,1,'#fff')+fish(158,122,1,'#fff')+fish(170,108,1,'#fff')+[[40,120],[66,136],[84,116],[236,124],[262,142],[282,116],[100,152],[214,152],[246,100],[30,96]].map((p,i)=>fish(p[0],p[1],.9+(i%3)*.12,'#e3f2f8',i%2)).join('')+'<path d="M30,26 q6,-6 12,0 q6,-6 12,0 M220,48 q5,-5 10,0 q5,-5 10,0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>',
+fishbad:()=>bg('s2','#d9c6a8','#f1e5d0')+sun(268,34,16,'#e9a64d',false)+cl(60,36,1.1,'#cfc3b0')+'<rect y="82" width="320" height="88" fill="#6d8a89"/><rect y="82" width="320" height="8" fill="#8aa5a3" opacity=".7"/>'+boat(150,76,'#8a5a3a')+'<g stroke="#e9e3d6" stroke-width="1.8" fill="none" stroke-dasharray="4 4"><path d="M118,96 Q150,150 184,96"/><path d="M128,98 L144,138 M150,98 V146 M172,98 L158,138"/></g><g stroke="#efe8d8" stroke-width="2" stroke-linecap="round" fill="none"><path d="M230,138 h30 M236,138 l-3,-7 M244,138 l-3,7 M252,138 l-3,-7"/><circle cx="226" cy="138" r="4"/></g><path d="M40,44 q6,-6 12,0 q6,-6 12,0" fill="none" stroke="#7b6a55" stroke-width="2" stroke-linecap="round"/>',
+fire:()=>bg('s3','#5a4a4a','#f0924a')+sun(250,72,18,'#ff5a2a')+cl(60,30,1.4,'#6e6560',.95)+cl(190,24,1.7,'#7b726c',.95)+cl(280,44,1.1,'#5f5853',.9)+'<path d="M0,118 Q60,90 120,114 T240,104 T320,118 V170 H0Z" fill="#2c211c"/>'+[[40,0],[96,0],[170,0],[236,0]].map((p,i)=>'<g transform="translate('+p[0]+' 128)"><rect x="-2" y="-30" width="4" height="30" fill="#1a1411"/><circle cy="-34" r="12" fill="#1a1411"/></g>').join('')+flame(62,128,1)+flame(112,134,1.3)+flame(172,124,.9)+flame(228,132,1.4)+flame(286,126,1),
+drought:v=>bg('s4','#fbe9b0','#f6c978')+sun(250,44,26,'#ef7d1d',true)+'<path d="M0,100 Q80,92 160,100 T320,96 V170 H0Z" fill="#c99a5b"/><rect y="124" width="320" height="46" fill="#b8884a"/>'+cracks+(v==='dam'?'<ellipse cx="110" cy="120" rx="52" ry="12" fill="#a06f40"/><ellipse cx="110" cy="119" rx="22" ry="4" fill="#7fb4cc"/><g stroke="#6b4a2f" stroke-width="3" stroke-linecap="round"><path d="M244,100 L260,56 L276,100 M252,82 H268"/></g><g stroke="#6b4a2f" stroke-width="3" stroke-linecap="round" transform="translate(260 54)"><path d="M0,0 L-16,-10 M0,0 L16,10 M0,0 L10,-16 M0,0 L-10,16"/></g><g stroke="#6b4a2f" stroke-width="2.5"><path d="M20,100 V122 M44,100 V122 M20,108 H60"/></g>':'<g stroke="#4a3320" stroke-width="5" stroke-linecap="round" fill="none"><path d="M140,118 V70 M140,88 L118,66 M140,80 L162,58 M140,100 L170,84 M118,66 L110,56 M162,58 L170,48"/></g><g stroke="#8a6a2a" stroke-width="2" fill="none" stroke-linecap="round"><path d="M40,124 l-4,-12 M46,124 l2,-14 M52,124 l6,-10 M230,128 l-4,-12 M238,128 l2,-14"/></g>'),
+cropbad:()=>{let s=bg('s5','#f7e7b8','#f4d58f')+sun(262,36,20,'#ef9a2a',true)+'<rect y="92" width="320" height="78" fill="#b68c52"/>';for(let r=0;r<4;r++){const y=108+r*18,sc=.7+r*.18;for(let i=0;i<9-r;i++){const x=24+i*(34+r*4)+(r%2)*10;s+='<g transform="translate('+x+' '+y+') scale('+sc+')" fill="none" stroke="#8a6a2a" stroke-width="2.4" stroke-linecap="round"><path d="M0,0 V-14 Q0,-26 10,-26"/><path d="M0,-8 Q-8,-14 -12,-8"/></g>'}}return s},
+cropgood:()=>{let s=bg('s6','#8fd3f4','#e0f3fb')+sun(262,32,16,'#ffd54a',true)+cl(60,34,1.1,'#fff')+cl(170,24,.9,'#fff')+'<rect y="88" width="320" height="82" fill="#4f9a45"/>';for(let r=0;r<4;r++){const y=104+r*17,sc=.75+r*.17;for(let i=0;i<9-r;i++){const x=24+i*(34+r*4)+(r%2)*10;s+='<g transform="translate('+x+' '+y+') scale('+sc+')" fill="none" stroke="#1f6b2f" stroke-width="3" stroke-linecap="round"><path d="M0,0 V-24"/><path d="M0,-8 Q-10,-18 -14,-14 M0,-14 Q10,-24 14,-20"/></g><circle cx="'+x+'" cy="'+(y-24*sc)+'" r="'+(3*sc)+'" fill="#e9c93a"/>'}}return s},
+riverlow:()=>bg('s7','#cfe8f2','#f2f7f4')+sun(60,36,16,'#ffd54a',true)+'<rect y="70" width="320" height="100" fill="#a8855a"/><path d="M0,170 L120,170 Q140,130 150,100 Q156,84 160,70 L172,70 Q172,92 178,110 Q190,140 210,170Z" fill="#3b8fc4"/>'+cracks+tree(34,76,.8,'#3f8a47')+tree(86,74,.7,'#3f8a47')+tree(262,76,.8,'#3f8a47')+tree(300,74,.7,'#3f8a47')+'<g transform="translate(236 130) rotate(-12)"><path d="M-26,0 h52 l-8,12 h-36z" fill="#b5532a"/><rect x="-6" y="-12" width="14" height="12" fill="#f2efe6"/></g>',
+flood:v=>{let s=bg('s8','#8ea2b1','#c4d1d9')+cl(60,26,1.5,'#6e7f8d')+cl(200,20,1.8,'#7a8b99')+cl(285,38,1.2,'#6e7f8d');for(let i=0;i<16;i++){s+='<line x1="'+(10+i*20)+'" y1="'+(40+(i%3)*10)+'" x2="'+(4+i*20)+'" y2="'+(62+(i%3)*10)+'" stroke="#e6eef3" stroke-width="1.6" opacity=".6"/>'}
+ if(v==='river'){s+='<rect y="70" width="320" height="100" fill="#a98b5e"/>'+[[40,84],[120,78],[210,86],[290,80]].map(p=>'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="20" fill="#3f8a47"/>').join('')+'<rect y="96" width="320" height="74" fill="#a98b5e" opacity=".92"/><g transform="translate(168 124)"><path d="M-30,0 q30,16 60,0 l-6,-6 h-48z" fill="#b5532a"/><circle cx="2" cy="-14" r="6" fill="#e8b48a"/><rect x="-3" y="-8" width="10" height="9" fill="#2d6cdf"/></g>'}
+ else{s+='<rect y="92" width="320" height="78" fill="#6c8a54"/>';
+  if(v==='farm'){s+=house(116,66,60,44,'#f2e4c9','#9c4a2e')+tree(60,104,1.2,'#3f8a47')+'<g stroke="#6b4a2f" stroke-width="3"><path d="M200,104 V86 M222,104 V86 M244,104 V86 M200,92 H244"/></g>'}
+  else{s+=house(26,72,46,36,'#f2e4c9','#9c4a2e')+house(116,68,52,40,'#d9e4ee','#7a3b2b')+house(214,74,46,34,'#f6e2c0','#9c4a2e')+'<g stroke="#5b3b2a" stroke-width="3"><path d="M288,108 V60 M278,70 H298"/></g>'}
+  s+='<rect y="104" width="320" height="66" fill="#a98b5e" opacity=".93"/>'}
+ s+='<g stroke="#c9b283" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"><path d="M10,124 q10,-5 20,0 t20,0 M120,140 q10,-5 20,0 t20,0 M230,128 q10,-5 20,0 t20,0 M60,155 q10,-5 20,0 t20,0"/></g>';return s},
+reservoir:()=>bg('s9','#9fd6f2','#e6f5fb')+sun(40,32,14,'#ffd54a',true)+'<path d="M0,110 L60,52 L96,84 L140,36 L200,100 L250,60 L320,108 V170 H0Z" fill="#7a8fa3"/><path d="M140,36 L128,54 L140,50 L152,58Z M60,52 L50,66 L60,62 L70,68Z M250,60 L240,76 L250,70 L260,78Z" fill="#fff"/><path d="M0,112 Q80,98 160,112 T320,110 V170 H0Z" fill="#3f9fd6"/><rect x="214" y="96" width="14" height="40" fill="#8d96a0"/><path d="M214,96 H228 L236,136 H206Z" fill="#a7b0ba"/><g stroke="#dff2fb" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9"><path d="M30,128 q10,-5 20,0 t20,0 M100,142 q10,-5 20,0 t20,0 M150,124 q10,-5 20,0 t20,0"/></g>',
+coral:()=>bg('s10','#35b0dc','#0d4f74')+'<path d="M40,0 L120,170 H70Z M150,0 L220,170 H180Z M250,0 L296,170 H270Z" fill="#fff" opacity=".08"/><path d="M0,150 Q80,138 160,150 T320,148 V170 H0Z" fill="#c9b48a"/><g stroke="#f4f1e6" stroke-width="6" stroke-linecap="round" fill="none"><path d="M60,152 V120 M60,132 L46,114 M60,126 L74,108"/><path d="M130,152 V108 M130,124 L112,100 M130,116 L148,94 M148,94 L156,84"/><path d="M220,152 V124 M220,136 L206,118 M220,130 L234,114"/></g><g stroke="#e9708d" stroke-width="6" stroke-linecap="round" fill="none"><path d="M264,152 V132 M264,142 L254,126 M264,138 L276,124"/></g><g stroke="#f0a23a" stroke-width="6" stroke-linecap="round" fill="none"><path d="M18,152 V138 M18,144 L10,132"/></g>'+fish(90,70,1.1,'#ffd54a')+fish(180,50,1,'#ffd54a',true)+fish(240,84,.9,'#f5f5f5')+fish(40,50,.9,'#f5f5f5',true),
+storm:v=>{const sm=v==='small';let s=sm?bg('s11','#9fd6f2','#e6f5fb')+sun(60,32,14,'#ffd54a',true)+cl(110,30,1,'#fff'):bg('s11','#3b4a5c','#7b8a9a')+cl(40,26,1.4,'#56667a')+cl(280,30,1.5,'#56667a');s+='<rect y="112" width="320" height="58" fill="'+(sm?'#2f86c0':'#27425a')+'"/>';
+ const g=(x,y,k,o)=>{let q='<g transform="translate('+x+' '+y+') scale('+k+')" opacity="'+o+'">';for(let i=0;i<5;i++){q+='<ellipse rx="'+(58-i*9)+'" ry="'+(26-i*4)+'" fill="none" stroke="#fff" stroke-width="'+(5-i*.6)+'" stroke-dasharray="'+(34-i*4)+' '+(10+i*2)+'" transform="rotate('+(i*38)+')"/>'}q+='<circle r="6" fill="'+(sm?'#2f86c0':'#27425a')+'"/></g>';return q};
+ s+=sm?g(252,56,.45,.9):g(164,76,1.15,.95);s+='<g stroke="#e8f0f6" stroke-width="1.6" opacity=".6">'+(sm?'':[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>'<line x1="'+(20+i*26)+'" y1="'+(110+(i%3)*8)+'" x2="'+(14+i*26)+'" y2="'+(134+(i%3)*8)+'"/>').join(''))+'</g>';return s}
+};
+const scene=(k)=>'<svg viewBox="0 0 320 170" role="img" aria-label="Illustration">'+(SC[k[0]]?SC[k[0]](k[1]):'')+'</svg>';
+
+/* ================= MAP ================= */
+const REG={
+ peru:{n:'Peru & Ecuador coast',lat:-5,s:'Peru & Ecuador'},indonesia:{n:'Indonesia & Papua New Guinea',lat:-2,s:'Indonesia'},
+ australia:{n:'Eastern & southern Australia',lat:-28,s:'Australia'},safrica:{n:'Southern Africa',lat:-20,s:'S. Africa'},
+ amazon:{n:'Northern Brazil & the Amazon',lat:-4,s:'Amazon'},sbrazil:{n:'Southern Brazil, Uruguay & N. Argentina',lat:-30,s:'S. Brazil'},
+ chile:{n:'Central Chile',lat:-34,s:'Chile'},eafrica:{n:'Eastern Africa (Horn of Africa)',lat:0,s:'E. Africa'},
+ pacific:{n:'Pacific islands (Fiji, Kiribati)',lat:-17,s:'Pacific islands'},nh:{n:'Gulf of Mexico & southern U.S.',lat:26,s:'Gulf & U.S. south'}
+};
+const FX={
+elnino:[
+ {r:'peru',t:'harm',sc:['fishbad'],h:'Floods on land, empty nets at sea',
+  why:'Weak trade winds mean upwelling slows and warm water spreads to the coast. Nutrients drop, plankton fades, and warm moist air brings heavy rain to a normally dry coast.',
+  bad:['Anchoveta, the fish behind Peru\'s huge fishing industry, crash, and seabirds and sea lions starve','Floods and landslides on the desert coast (for example in 1982–83 and 1997–98)'],good:['Warm-water species such as scallops can boom','Dry desert land can briefly bloom']},
+ {r:'indonesia',t:'harm',sc:['fire'],h:'Rain moves away, fire moves in',
+  why:'The warm pool and its storm clouds slide east, so the air over Indonesia sinks instead of rising. The usual rain-making clouds do not form.',
+  bad:['Drought cuts rice harvests and delays the wet season','Forest and peat fires create smoke haze across Southeast Asia (1997, 2015)'],good:[]},
+ {r:'australia',t:'harm',sc:['drought','dam'],h:'Hotter, drier, higher fire risk',
+  why:'Less moisture is drawn in from the warm seas to the north and east, so winter and spring rainfall often falls below normal.',
+  bad:['Drought stress cuts wheat yields','Higher bushfire danger and less water in rivers and dams'],good:['Fewer tropical cyclones usually reach northern Australia']},
+ {r:'safrica',t:'harm',sc:['cropbad'],h:'Late and failing summer rains',
+  why:'ENSO shifts the tropical rain belts and circulation, bringing sinking air and fewer rain-bearing systems over the summer growing season.',
+  bad:['Maize and other staple crops fail and food prices rise','Low reservoirs cut hydropower and cause power cuts, as in Zambia and Zimbabwe in 2024'],good:[]},
+ {r:'amazon',t:'harm',sc:['riverlow'],h:'A hotter, drier rainforest',
+  why:'The rising branch of the air loop moves away from the Amazon, so rainfall drops and temperatures climb.',
+  bad:['Rivers fall to record lows, stranding boats and communities (2015–16, 2023)','Forest fire risk rises'],good:[]},
+ {r:'sbrazil',t:'good',sc:['cropgood'],h:'More rain for farms and pastures',
+  why:'A stronger subtropical jet stream feeds more moisture into storms over southeastern South America, so rainfall rises above normal.',
+  bad:['Heavy rain can cause river floods'],good:['Better soil moisture for soy, wheat and grazing land in the Pampas','Fuller reservoirs for hydropower']},
+ {r:'chile',t:'good',sc:['reservoir'],h:'Relief for a thirsty country',
+  why:'El Niño strengthens the jet stream and storm track that steer more winter storms toward central Chile.',
+  bad:['Strong storms can cause flooding and landslides'],good:['More winter rain and mountain snow refill reservoirs','Relief from long-running drought']},
+ {r:'eafrica',t:'mixed',sc:['flood','town'],h:'Short rains turn to floods',
+  why:'El Niño often goes along with a warm western Indian Ocean, which sends more moist air over East Africa in October to December.',
+  bad:['Severe floods (late 1997, 2023)','Higher risk of cholera, malaria and Rift Valley fever'],good:['Pasture and crops recover after dry spells','Reservoirs refill']},
+ {r:'pacific',t:'mixed',sc:['coral'],h:'Hot water, dry skies in the west',
+  why:'Warm water spreads east, and rain follows it. Western islands dry out, the central Pacific gets more rain, and tuna follow the warm water east.',
+  bad:['Drought and water shortages on western islands such as Fiji and Vanuatu','Heat stress bleaches coral reefs (1997–98, 2015–16)'],good:['Tuna fisheries shift east, boosting catches near central Pacific nations such as Kiribati']},
+ {r:'nh',t:'mixed',nh:1,sc:['storm','small'],h:'Fewer hurricanes, wetter winter',
+  why:'El Niño adds wind shear over the Atlantic, which tears hurricanes apart before they strengthen. The jet stream also steers more winter storms across the southern United States.',
+  bad:['Winter storms can bring flooding and landslides, especially in California'],good:['Fewer and weaker Atlantic hurricanes','Cooler, wetter winters can ease drought in the southern U.S.']}
+],
+lanina:[
+ {r:'peru',t:'good',sc:['fishgood'],h:'Cold water, full nets',
+  why:'Strong trade winds drive stronger upwelling, so cold, nutrient-rich water floods the coast and feeds plankton and fish.',
+  bad:['Little rain falls on the dry coast, so water stays scarce'],good:['Anchoveta thrive, boosting fishing and fishmeal exports','Seabird and sea lion colonies do well']},
+ {r:'indonesia',t:'mixed',sc:['flood','town'],h:'Wetter, so fires ease and floods rise',
+  why:'The warm pool grows and stays in the west, so even more storm clouds form over Indonesia.',
+  bad:['Flooding and landslides are more likely in the rainy season'],good:['Rice and palm oil crops get plentiful water','Fire and haze risk falls']},
+ {r:'australia',t:'mixed',sc:['flood','farm'],h:'A soaked east coast',
+  why:'More moisture streams in from the warm Coral Sea and western Pacific, so heavy rain and floods become more likely in eastern Australia.',
+  bad:['Major floods (Queensland 2010–11, New South Wales 2022)','More tropical cyclones near the northeast coast'],good:['Dams refill and drought breaks','Big grain harvests when the rain arrives at the right time']},
+ {r:'safrica',t:'good',sc:['cropgood'],h:'Good rains for crops',
+  why:'A cooler eastern Pacific changes the circulation so more moisture feeds the summer rains.',
+  bad:['Flood risk rises, especially in Mozambique and Malawi'],good:['Better maize harvests','Rivers and reservoirs fill']},
+ {r:'sbrazil',t:'harm',sc:['cropbad'],h:'A dry spell in the breadbasket',
+  why:'A cooler eastern Pacific shifts storm tracks away, so less moisture reaches southeastern South America during the summer crop season.',
+  bad:['Soy, corn and wheat yields drop, and a severe 2022–23 drought hit Argentina\'s harvest','Low water in rivers such as the Paraná disrupts shipping'],good:[]},
+ {r:'amazon',t:'mixed',sc:['flood','river'],h:'More rain, higher rivers',
+  why:'Rising air is stronger over northern South America, so rainfall is more abundant.',
+  bad:['River floods, including record river heights at Manaus in 2021'],good:['Forests and rivers recover from drought','Lower fire risk']},
+ {r:'eafrica',t:'harm',sc:['drought'],h:'Rains fail, herds suffer',
+  why:'A cooler eastern Pacific and warmer western Pacific reinforce dry conditions over East Africa in October to December.',
+  bad:['Back-to-back failed rainy seasons in 2020–2022 left millions facing hunger','Crops fail and livestock die'],good:[]},
+ {r:'chile',t:'harm',sc:['fire'],h:'Drier, hotter, burning',
+  why:'Storm tracks shift south, away from central Chile.',
+  bad:['Drought deepens the long-running Chilean megadrought','Wildfire risk rises and reservoirs shrink'],good:[]},
+ {r:'nh',t:'harm',nh:1,sc:['storm'],h:'More hurricanes, a drier south',
+  why:'Less wind shear over the Atlantic lets hurricanes grow. The jet stream shifts north, leaving the southern U.S. drier and warmer.',
+  bad:['More active Atlantic hurricane seasons','Drought and wildfire risk in the southern U.S.'],good:['More snow in the northern Rockies and Pacific Northwest']}
+]};
+const GLY={harm:'−',good:'+',mixed:'±'},OUT={harm:'Mostly harmful',good:'Mostly beneficial',mixed:'Mixed'};
+const hemi=lat=>lat<-3?'Southern Hemisphere':lat<=3?'Equatorial':'Northern Hemisphere';
+const wm=$('worldmap');
+wm.setAttribute('viewBox','0 0 '+MAP.W+' '+MAP.H);
+wm.innerHTML='<defs><radialGradient id="gEl"><stop offset="0" stop-color="#e5482a" stop-opacity=".7"/><stop offset="1" stop-color="#e5482a" stop-opacity="0"/></radialGradient><radialGradient id="gLa"><stop offset="0" stop-color="#2a78d9" stop-opacity=".75"/><stop offset="1" stop-color="#2a78d9" stop-opacity="0"/></radialGradient></defs>'+
+ '<rect width="'+MAP.W+'" height="'+MAP.H+'" style="fill:var(--map-ocean)"/>'+
+ '<rect y="'+MAP.eq+'" width="'+MAP.W+'" height="'+(MAP.H-MAP.eq)+'" style="fill:var(--map-sh)"/>'+
+ '<path d="'+MAP.land+'" style="fill:var(--map-land)"/><path d="'+MAP.borders+'" fill="none" style="stroke:var(--map-border)" stroke-width=".6"/>'+
+ '<g stroke="var(--map-ink)" fill="none" opacity=".4"><line x1="0" x2="'+MAP.W+'" y1="'+MAP.eq+'" y2="'+MAP.eq+'" stroke-width="1.2"/><line x1="0" x2="'+MAP.W+'" y1="'+MAP.trN+'" y2="'+MAP.trN+'" stroke-dasharray="3 5"/><line x1="0" x2="'+MAP.W+'" y1="'+MAP.trS+'" y2="'+MAP.trS+'" stroke-dasharray="3 5"/></g>'+
+ '<g id="anomG"></g>'+
+ '<rect x="'+MAP.nino34.x+'" y="'+MAP.nino34.y+'" width="'+MAP.nino34.w+'" height="'+MAP.nino34.h+'" fill="none" style="stroke:var(--map-ink)" stroke-width="1.4" stroke-dasharray="4 3"/>'+
+ '<text class="geo" x="'+(MAP.nino34.x+MAP.nino34.w/2)+'" y="'+(MAP.nino34.y+MAP.nino34.h+13)+'" style="font-size:9.5px;opacity:.85">Niño 3.4</text>'+
+ Object.entries({africa:'Africa',australia:'Australia',samerica:'South America',pacific:'Pacific Ocean',indian:'Indian Ocean'}).map(([k,v])=>'<text class="geo" x="'+MAP.labels[k][0]+'" y="'+MAP.labels[k][1]+'">'+v+'</text>').join('')+
+ '<text class="hemi" x="705" y="14">NORTHERN HEMISPHERE · weaker signal</text><text class="hemi" x="705" y="'+(MAP.H-8)+'" style="font-weight:600;opacity:1">SOUTHERN HEMISPHERE · strongest, most consistent impacts</text>'+
+ '<g id="mks"></g><g id="selLab"></g>';
+const state={ph:'elnino',sel:'peru'};
+function mapPhase(ph){
+  state.ph=ph;
+  if(!FX[ph].some(e=>e.r===state.sel))state.sel=FX[ph][0].r;
+  document.querySelectorAll('[data-mphase]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mphase===ph?'true':'false'));
+  const an=$('anomG');an.innerHTML='';
+  if(ph==='elnino'){
+    const e=MAP.warmE;an.innerHTML='<ellipse cx="'+e.c[0]+'" cy="'+e.c[1]+'" rx="'+e.rx+'" ry="'+(e.ry*1.6)+'" fill="url(#gEl)"/><text class="geo" x="'+e.c[0]+'" y="'+(e.c[1]-e.ry*1.6-4)+'" style="opacity:.95;font-size:10.5px;fill:var(--warm-t);font-weight:600">Warm water spreads east</text>';
+  }else{
+    const e=MAP.warmE,w=MAP.warmW;an.innerHTML='<ellipse cx="'+e.c[0]+'" cy="'+e.c[1]+'" rx="'+e.rx+'" ry="'+(e.ry*1.6)+'" fill="url(#gLa)"/><ellipse cx="'+w.c[0]+'" cy="'+w.c[1]+'" rx="'+w.rx+'" ry="'+(w.ry*1.5)+'" fill="url(#gEl)" opacity=".8"/><text class="geo" x="'+e.c[0]+'" y="'+(e.c[1]-e.ry*1.6-4)+'" style="opacity:.95;font-size:10.5px;fill:var(--cool-t);font-weight:600">Cooler than normal</text><text class="geo" x="'+(w.c[0]+10)+'" y="'+(w.c[1]-w.ry*1.5-4)+'" style="opacity:.95;font-size:10.5px;fill:var(--warm-t);font-weight:600">Extra-warm pool</text>';
+  }
+  const g=$('mks');g.innerHTML='';
+  FX[ph].forEach((e,i)=>{
+    const p=MAP.regions[e.r],r=e.nh?9:13;
+    const m0=el('g',{class:'mk','data-r':e.r,transform:'translate('+p[0]+' '+p[1]+')'},g);const m=el('g',{class:'mki',style:'animation-delay:'+(i*40)+'ms'},m0);
+    el('circle',{class:'halo',r:r+7},m);
+    if(e.nh)el('circle',{r:r+3,fill:'none',stroke:'var(--map-ink)','stroke-width':1.6,'stroke-dasharray':'3 3'},m);
+    el('circle',{class:'dot',r:r,fill:'var(--'+(e.t==='harm'?'harm':e.t==='good'?'good':'mixed')+')'},m);
+    const t=el('text',{class:'glyph',y:e.nh?5:6,'font-size':e.nh?14:18},m);t.textContent=GLY[e.t];
+    el('circle',{r:r+10,fill:'transparent'},m);
+    m0.addEventListener('click',()=>select(e.r));
+  });
+  const L=FX[ph],sh=L.filter(e=>REG[e.r].lat<=3).length,n=L.length-sh,c={harm:0,good:0,mixed:0};L.forEach(e=>c[e.t]++);
+  $('mapSummary').innerHTML='In the <b>'+(ph==='elnino'?'El Niño':'La Niña')+'</b> view, <b>'+sh+' of '+L.length+'</b> highlighted regions are in the Southern Hemisphere or straddle the equator, and <b>'+n+'</b> is in the north with a weaker signal. Tally: <b>'+c.harm+'</b> mostly harmful, <b>'+c.good+'</b> mostly beneficial, <b>'+c.mixed+'</b> mixed.';
+  const ch=$('regionChips');ch.innerHTML='';
+  L.forEach(e=>{const b=document.createElement('button');b.type='button';b.className='chip';b.dataset.r=e.r;b.innerHTML='<i class="lg" style="background:var(--'+(e.t==='harm'?'harm':e.t==='good'?'good':'mixed')+')">'+GLY[e.t]+'</i>'+REG[e.r].s;b.addEventListener('click',()=>select(e.r));ch.appendChild(b)});
+  select(state.sel);
+}
+function select(r){
+  state.sel=r;const e=FX[state.ph].find(x=>x.r===r),R=REG[r],p=MAP.regions[r];
+  document.querySelectorAll('#worldmap .mk').forEach(m=>m.classList.toggle('sel',m.dataset.r===r));
+  document.querySelectorAll('#regionChips .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.r===r?'true':'false'));
+  const mb=document.querySelector('.mapbox');
+  if(mb.scrollWidth>mb.clientWidth+4){const k=wm.getBoundingClientRect().width/MAP.W;mb.scrollTo({left:Math.max(0,p[0]*k-mb.clientWidth/2),behavior:reduce?'auto':'smooth'})}
+  const lab=$('selLab');lab.innerHTML='';const right=p[0]>800;
+  const t=el('text',{class:'mlabel',x:p[0]+(right?-20:20),y:p[1]-16,'text-anchor':right?'end':'start'},lab);t.textContent=R.s;
+  const li=(a)=>a.length?'<ul>'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'<p style="font-size:14.5px;color:var(--muted)">None that stand out.</p>';
+  $('detail').innerHTML='<div class="scene">'+scene(e.sc)+'<small>Simplified illustration of a typical '+(state.ph==='elnino'?'El Niño':'La Niña')+' scene.</small></div><div class="dbody"><div class="dtop"><span class="pill o" style="background:var(--'+(e.t==='harm'?'harm':e.t==='good'?'good':'mixed')+')">'+GLY[e.t]+' '+OUT[e.t]+'</span><span class="pill'+(e.nh?' nh':'')+'">'+hemi(R.lat)+'</span><span class="pill" style="color:'+(state.ph==='elnino'?'var(--warm-t)':'var(--cool-t)')+'">'+(state.ph==='elnino'?'El Niño':'La Niña')+'</span></div><h3>'+R.n+': '+e.h.charAt(0).toLowerCase()+e.h.slice(1)+'</h3><p class="why"><b>Why:</b> '+e.why+'</p>'+(e.nh?'<p class="weak">Northern Hemisphere effects are real but weaker and less consistent than those in the tropics and the south.</p>':'')+'<div class="gb"><div class="bad"><h4>Bad news</h4>'+li(e.bad)+'</div><div class="gd"><h4>Good news</h4>'+li(e.good)+'</div></div></div>';
+}
+document.querySelectorAll('[data-mphase]').forEach(b=>b.addEventListener('click',()=>mapPhase(b.dataset.mphase)));
+mapPhase('elnino');
+
+/* ================= MYTHS ================= */
+const MY=[
+ {s:'El Niño is a giant storm that hits coastlines.',a:false,f:'El Niño is not a storm. It is a pattern of warmer-than-normal water across the tropical Pacific that shifts where rain-making clouds form. It never makes landfall. The floods and droughts are effects of shifted weather.'},
+ {s:'If El Niño brings bad weather, La Niña must bring good weather.',a:false,f:'They are opposite phases, not opposite outcomes. Both have winners and losers. Peru\'s anchovy fishers lose in El Niño and gain in La Niña, while Argentine farmers gain in El Niño and lose in La Niña. Both phases bring floods somewhere.'},
+ {s:'El Niño happens every year at Christmas.',a:false,f:'Peruvian fishers named it for the Christ child because warm water often appears around December. But events come irregularly, every 2 to 7 years, and many years are neutral.'},
+ {s:'El Niño is just a warm current off the coast of Peru.',a:false,f:'That is where the name began, but scientists now know it is a basin-wide link between ocean and atmosphere that changes weather thousands of kilometers away.'},
+ {s:'Every flood or drought in an El Niño year is caused by El Niño.',a:false,f:'ENSO shifts the odds. It does not guarantee outcomes. Local weather and other climate patterns, such as the Indian Ocean Dipole, also matter, and no two events are the same.'},
+ {s:'ENSO mostly matters for North America.',a:false,f:'The strongest and most reliable effects are in the tropics and the Southern Hemisphere: Peru, Indonesia, Australia, southern Africa and southern Brazil. The north feels it too, mainly in winter, but the signal is weaker and more variable.'},
+ {s:'Climate change causes El Niño.',a:false,f:'El Niño is natural. Coral and sediment records show it has happened for thousands of years. Scientists are studying whether a warmer world changes how often it happens and how intense its rain and heat effects are.'},
+ {s:'El Niño and La Niña are the warm and cool phases of the same climate pattern.',a:true,f:'Correct. With neutral conditions, they make up ENSO, which is why the whole cycle has one name.'},
+ {s:'Forecasters can often see an El Niño coming months before its effects arrive.',a:true,f:'Correct. Ocean sensors, satellites and computer models can often flag a developing event 6 to 9 months ahead, which is what makes preparation possible.'}
+];
+let mAns=0,mRight=0;
+const mg=$('mgrid');
+MY.forEach((m,i)=>{
+  const c=document.createElement('div');c.className='card myth';
+  c.innerHTML='<p class="q">“'+m.s+'”</p><div class="tf" role="group" aria-label="True or false"><button type="button" class="btn" data-v="1">True</button><button type="button" class="btn" data-v="0">False</button></div><div class="res" hidden></div>';
+  c.querySelectorAll('.tf .btn').forEach(b=>b.addEventListener('click',()=>{
+    const v=b.dataset.v==='1',ok=v===m.a;mAns++;if(ok)mRight++;
+    c.classList.add('done');c.querySelectorAll('.tf .btn').forEach(x=>x.disabled=true);
+    const r=c.querySelector('.res');r.hidden=false;
+    r.innerHTML='<span class="tag '+(m.a?'fact-t':'myth-t')+'">'+(m.a?'Fact':'Myth')+'</span><p class="you">'+(ok?'You got it.':'Not this time.')+' You said '+(v?'true':'false')+'.</p><p><b>The record:</b> '+m.f+'</p>';
+    $('mScore').textContent='You judged '+mRight+' of '+mAns+' correctly'+(mAns===MY.length?'. All '+MY.length+' answered.':'.');
+    $('mMeter').style.width=(mAns/MY.length*100)+'%';
+  }));
+  mg.appendChild(c);
+});
+
+/* ================= FORECAST GAUGE ================= */
+const an=$('anom');
+function gauge(){
+  const v=an.value/10,a=Math.abs(v);
+  $('anomVal').textContent=(v>0?'+':v<0?'−':'')+a.toFixed(1)+' °C';
+  $('ptr').style.left=((v+2.5)/5.5*100)+'%';
+  let h,s;
+  if(a<0.5){h='Neutral';s='The ocean is close to its average. Neither El Niño nor La Niña conditions are present.'}
+  else{
+    const st=a<1?'Weak':a<1.5?'Moderate':a<2?'Strong':'Very strong',ph=v>0?'El Niño':'La Niña';
+    h=st+' '+ph;
+    s=(v>0?'The central Pacific is warmer than average: ':'The central Pacific is cooler than average: ')+'this meets the ±0.5 °C threshold. Forecasters would check that it lasts and that winds and rain respond before calling an official episode.';
+  }
+  $('gres').innerHTML='<b>'+h+'</b><span>'+s+'</span>';
+}
+an.addEventListener('input',gauge);gauge();
+
+/* ================= QUIZ ================= */
+const QZ=[
+ {t:'ocean',q:'In a normal year, which way do the trade winds blow along the equator in the Pacific?',o:['East to west','West to east','North to south','They change direction every week'],a:0,e:'Trade winds blow from east to west. They drag warm surface water toward Indonesia and Australia.'},
+ {t:'ocean',q:'Where is the warmest surface water found in a normal year?',o:['Off the coast of Peru','The western Pacific, near Indonesia and Australia','Spread evenly across the Pacific','Near the poles'],a:1,e:'The trade winds pile warm water up in the west, forming the warm pool.'},
+ {t:'ocean',q:'Why is the sea off Peru normally cool and full of life?',o:['Glaciers melt into the ocean there','Rivers flush nutrients into the sea','Upwelling brings cold, nutrient-rich water to the surface','Warm currents bring fish from Asia'],a:2,e:'Upwelling replaces the surface water pushed west with cold, nutrient-rich water from below. It feeds plankton and anchovies.'},
+ {t:'ocean',q:'Which change marks the start of an El Niño?',o:['Trade winds strengthen','Trade winds weaken and warm water flows east','Upwelling strengthens off South America','The thermocline tilts more steeply'],a:1,e:'Weaker trade winds let warm water slide east, which flattens the thermocline and weakens upwelling.'},
+ {t:'ocean',q:'Compared with a normal year, how does the thermocline slope during La Niña?',o:['It flattens completely','It tilts the opposite way','It tilts more steeply','It disappears'],a:2,e:'Stronger winds push more warm water west, so the warm layer is deeper in the west and shallower in the east.'},
+ {t:'impacts',q:'Fishers in Peru see anchovy catches collapse, and floods hit the dry coast. Which phase is most likely?',o:['La Niña','El Niño','A neutral year','None. This is unrelated to ENSO'],a:1,e:'In El Niño, upwelling weakens and warm, moist air brings heavy coastal rain.'},
+ {t:'impacts',q:'Which region typically faces drought during La Niña?',o:['Indonesia','Southern Africa','Argentina and Uruguay','Eastern Australia'],a:2,e:'La Niña tends to push rain away from southeastern South America. The 2022–23 drought hit Argentina\'s harvest hard. Indonesia, southern Africa and eastern Australia usually get wetter.'},
+ {t:'impacts',q:'Where are ENSO\'s effects strongest and most consistent?',o:['Only in North America','Evenly around the whole world','In the tropics and the Southern Hemisphere','Only on the coast of Peru'],a:2,e:'The ocean changes happen on the equator, and the shifts hit the tropics hardest. Many of the most affected regions lie in the Southern Hemisphere. The north is affected more weakly, mainly in winter.'},
+ {t:'myths',q:'El Niño is best described as…',o:['A giant storm that makes landfall','A pattern of ocean warming and shifting winds and rain','One warm current off Peru','A type of hurricane'],a:1,e:'El Niño is a climate pattern linking ocean and atmosphere. Storms, floods and droughts are effects of the shifted weather.'},
+ {t:'myths',q:'How often do El Niño events occur?',o:['Every year at Christmas','Exactly every four years','Irregularly, about every 2 to 7 years','Once a century'],a:2,e:'The name comes from the Christmas timing of warm water, but events are irregular, and many years are neutral.'},
+ {t:'forecast',q:'The 3-month average sea surface temperature in the Niño 3.4 region is +1.2 °C above normal. How would forecasters classify this?',o:['Weak El Niño','Moderate El Niño','Neutral','Moderate La Niña'],a:1,e:'Anomalies of +0.5 °C or more mean El Niño. 1.0 to 1.4 °C is moderate, with 0.5 to 0.9 weak and 1.5 and above strong.'},
+ {t:'forecast',q:'Forecasters expect a strong El Niño in six months. Which action best uses the warning in southern Africa?',o:['Wait until the drought starts','Plant water-hungry crops everywhere','Plant drought-tolerant crops and stockpile grain before the rains fail','Ignore it, because forecasts are never useful'],a:2,e:'Months of lead time let farmers and governments adjust planting, build reserves and set water rules before the harm arrives.'}
+];
+const TOPIC={ocean:['Ocean and wind','#explorer'],impacts:['Impacts and map','#map'],myths:['Myths','#myths'],forecast:['Forecasting','#forecast']};
+const box=$('quizBox');
+let qi=0,score=0,order=[],tally={};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function startQuiz(){qi=0;score=0;tally={};order=QZ.map(q=>shuffle(q.o.map((t,i)=>({t,c:i===q.a}))));showQ()}
+function showQ(){
+  const q=QZ[qi],opts=order[qi],K='ABCD';
+  box.innerHTML='<div class="qbar"><span>Question '+(qi+1)+' of '+QZ.length+'</span><span>Score '+score+'</span></div><div class="qprog" aria-hidden="true"><i style="width:'+(qi/QZ.length*100)+'%"></i></div><p class="qtext" id="qt">'+q.q+'</p><div class="opts" role="group" aria-labelledby="qt">'+opts.map((o,i)=>'<button type="button" class="opt" data-i="'+i+'"><span class="k">'+K[i]+'</span><span>'+o.t+'</span></button>').join('')+'</div><div class="fb" id="fb" hidden aria-live="polite"></div><div class="qact"><button type="button" class="btn primary" id="nextQ" hidden>'+(qi===QZ.length-1?'See results':'Next question')+'</button></div>';
+  box.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+    const i=+b.dataset.i,ok=opts[i].c;
+    box.querySelectorAll('.opt').forEach((x,j)=>{x.disabled=true;if(opts[j].c)x.classList.add('right')});
+    if(!ok)b.classList.add('wrong');
+    tally[q.t]=tally[q.t]||[0,0];tally[q.t][1]++;if(ok){score++;tally[q.t][0]++}
+    const fb=$('fb');fb.hidden=false;fb.innerHTML='<b>'+(ok?'Correct.':'Not quite.')+'</b><span>'+q.e+'</span>';
+    const nx=$('nextQ');nx.hidden=false;nx.focus();
+  }));
+  $('nextQ').addEventListener('click',()=>{qi++;qi<QZ.length?showQ():showEnd()});
+}
+function showEnd(){
+  const pct=Math.round(score/QZ.length*100);
+  const msg=pct>=90?'Excellent. You understand ENSO well.':pct>=70?'Solid understanding. Review the topics below to close the gaps.':'A good start. Revisit the sections below, then try again.';
+  const rows=Object.keys(tally).map(k=>{const [r,n]=tally[k];return '<div><span>'+TOPIC[k][0]+'</span><span class="m"><i style="width:'+(r/n*100)+'%"></i></span><span class="t">'+r+'/'+n+'</span></div>'}).join('');
+  const rev=Object.keys(tally).filter(k=>tally[k][0]<tally[k][1]).map(k=>'<a href="'+TOPIC[k][1]+'">'+TOPIC[k][0]+'</a>');
+  box.innerHTML='<div class="final"><p class="eyebrow">Results</p><p class="big">'+score+' / '+QZ.length+'</p><p>'+msg+'</p><div class="brk">'+rows+'</div>'+(rev.length?'<p>Worth another look: '+rev.join(', ')+'.</p>':'')+'<div class="qact"><button type="button" class="btn primary" id="again">Try again</button></div></div>';
+  $('again').addEventListener('click',startQuiz);
+}
+startQuiz();
+})();
+</script>
+</body>
+</html>

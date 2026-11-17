@@ -620,3 +620,8 @@ p.fq-type{margin:0 0 6px}
 .bd-tw{overflow-x:auto}.bd-t{width:100%;table-layout:fixed;border-collapse:collapse;font-size:13.5px;line-height:1.4}.bd-t th,.bd-t td{white-space:normal;overflow-wrap:anywhere;text-align:left;vertical-align:top;padding:6px 8px;border-bottom:1px solid var(--line,#ddd)}.bd-t th{font-size:12.5px;color:var(--muted,#555)}
 @media (max-width:640px){.bd-t thead{display:none}.bd-t tr{display:block;padding:6px 0;border-bottom:1px solid var(--line,#ddd)}.bd-t td{display:block;border:0;padding:2px 0}}
 @media print{.bd-box{display:block!important}}
+/* Teacher-made tools (external) */
+.sim.ext .bench,.sim.ext .readouts,.sim.ext .lower,.sim.ext .panel.trials,.sim.ext .panel.review,.sim.ext .rv-note{display:none!important}
+.ext-wrap{margin:10px 0 16px}.ext-by{margin:0 0 10px;font-size:15px;padding:8px 12px;border-left:4px solid var(--rj);background:var(--card2)}
+.ext-intro{margin:0 0 10px}.ext-frame{display:block;width:100%;border:1px solid var(--line);border-radius:10px;background:#fff}
+.ext-open{margin:6px 0 0;font-size:14px;color:var(--muted)}.card-by{display:block;font-size:13px;color:var(--rj-ink);font-weight:600;margin-top:4px}
