@@ -61,7 +61,7 @@ BioLab.COURSES = [
       { n: 'Unit 4', t: 'Earth systems and resources', ids: ['plates', 'soil', 'seasons', 'albedo', 'enso'], note: 'Plate tectonics, soil, solar radiation and seasons, albedo, atmospheric circulation, ocean currents and ENSO.' },
       { n: 'Unit 5', t: 'Land and water use', ids: ['commons', 'farm', 'gmotrial', 'footprint', 'treecarbon', 'mining', 'cityscore'], note: 'Tragedy of the commons, agriculture (irrigation, fertilizer and pest control), forestry and tree carbon, mining and reclamation, carbon footprints, and urbanization and sustainability indicators.' },
       { n: 'Unit 9', t: 'Global change', ids: ['climate', 'carboncycle'], note: 'Greenhouse effect, climate impacts, stabilization wedges and ocean acidification.' },
-      { n: 'Unit 6', t: 'Energy resources and consumption', ids: ['energycalc', 'gridmix'], note: 'Energy sources, efficiency calculations and the lightbulb lab.' },
+      { n: 'Unit 6', t: 'Energy resources and consumption', ids: ['energycalc', 'gridmix', 'evwhatif'], note: 'Energy sources, efficiency calculations and the lightbulb lab.' },
       { n: 'Unit 7', t: 'Atmospheric pollution', ids: ['smog', 'acidrain'], note: 'Denver air quality, smog, thermal inversions and acid rain.' },
       { n: 'Unit 8', t: 'Aquatic and terrestrial pollution', ids: ['eutrophication', 'ld50', 'energy'], note: 'Eutrophication, dose–response and LD50, biomagnification.' }
     ],
@@ -91,7 +91,7 @@ BioLab.TOPIC_ORDER = {
   9: ['dissection', 'homeostasis'],
   10: ['pipette', 'gel', 'plasmid', 'pcr', 'blast', 'transformation'],
   12: ['plates', 'soil', 'seasons', 'albedo', 'enso', 'climate'],
-  13: ['commons', 'farm', 'gmotrial', 'footprint', 'treecarbon', 'mining', 'energycalc', 'gridmix', 'cityscore'],
+  13: ['commons', 'farm', 'gmotrial', 'footprint', 'treecarbon', 'mining', 'energycalc', 'gridmix', 'evwhatif', 'cityscore'],
   14: ['smog', 'acidrain', 'eutrophication', 'ld50'],
   11: ['sanger', 'crispr', 'synthbio', 'qpcr', 'epidemic', 'antibiotic', 'molclock']
 };
