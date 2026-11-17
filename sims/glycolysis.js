@@ -12,13 +12,16 @@ const AER=[[6.0,{co2:2,nadh:2,tag:'+2 CO₂, +2 NADH',x:440,y:262,co2c:[2,5]}],[
   [12.0,{atp:28,ox:28,o2:6,tag:'+28 ATP',x:735,y:345}]];
 const FER={yeast:[[6.0,{co2:2,nadhUsed:2,eth:2,tag:'+2 CO₂, 2 ethanol',x:205,y:372,co2c:[2,5]}]],muscle:[[6.0,{nadhUsed:2,lac:2,tag:'2 lactate',x:205,y:372}]]};
 const END={aer:12.6,yeast:7.2,muscle:7.2};
-const SUG={glu:{l:'Glucose',f:1,lag:3},suc:{l:'Sucrose',f:0.85,lag:6},lac:{l:'Lactose',f:0.03,lag:6},none:{l:'Water only',f:0,lag:3}};
+const SUG={glu:{l:'Glucose',f:1,lag:3},suc:{l:'Sucrose',f:0.85,lag:6},lac:{l:'Lactose',f:0.03,lag:6},lacz:{l:'Lactose + lactase',f:0.85,lag:9,S:2.5},none:{l:'Water only',f:0,lag:3}};
+/* lacz: lactase splits 5 g lactose into glucose + galactose. Baker's yeast ferment the glucose half at once;
+   galactose needs GAL genes switched on (hours), so in a one-hour demo only ~2.5 g is usable. */
+const FLASK=['glu','suc','lac','lacz','none'],BCOL={glu:'#f2c12e',suc:'#2f8fd8',lac:'#ec6fa8',lacz:'#8a4fc8',none:'#26262b'},BTXT={glu:'#3a2a00',suc:'#fff',lac:'#3a0d22',lacz:'#fff',none:'#fff'};
 const yT=T=>Math.pow(2,(T-30)/10)/(1+Math.exp((T-45)/2.5));
 const WHEEL={x:600,y:190,r:72};
 
-function newYeast(){const y={};for(const k in SUG)y[k]={V:0,S:5,rate:0};return y;}
+function newYeast(){const y={};for(const k in SUG)y[k]={V:0,S:SUG[k].S||5,rate:0};return y;}
 function hideTiles(sim){if(!sim.ui||!sim.ui.tiles)return;const bal=sim.p.mode==='balloon'&&atLeast('honors');
-  ['b_glu','b_suc','b_lac','b_none'].forEach(id=>{const t=sim.ui.tiles[id];if(t)t.num.closest('.tile').hidden=!bal;});}
+  ['b_glu','b_suc','b_lac','b_lacz','b_none'].forEach(id=>{const t=sim.ui.tiles[id];if(t)t.num.closest('.tile').hidden=!bal;});}
 function perGlucose(p){const aer=p.o2;return {atp:aer?32:2,nadh:aer?10:2,fadh:aer?2:0,ox:aer?28:0,co2:aer?6:(p.ferm==='muscle'?0:2)};}
 
 const SIM={
@@ -61,17 +64,18 @@ const SIM={
     {id:'b_glu',label:'Balloon: glucose',unit:'mL CO₂',lvl:'honors',min:0,max:null,d:0,get:s=>s.st.y.glu.V},
     {id:'b_suc',label:'Balloon: sucrose',unit:'mL CO₂',lvl:'honors',min:0,max:null,d:0,get:s=>s.st.y.suc.V},
     {id:'b_lac',label:'Balloon: lactose',unit:'mL CO₂',lvl:'honors',min:0,max:null,d:0,get:s=>s.st.y.lac.V},
+    {id:'b_lacz',label:'Balloon: lactose + lactase',unit:'mL CO₂',lvl:'honors',min:0,max:null,d:0,get:s=>s.st.y.lacz.V},
     {id:'b_none',label:'Balloon: water only',unit:'mL CO₂',lvl:'honors',min:0,max:null,d:0,get:s=>s.st.y.none.V}
   ],
   graphs:[{id:'atp',label:'ATP made so far',lines:['atpTot']},{id:'co2',label:'CO₂ released',lines:['co2Tot']},{id:'balloons',label:'Yeast balloons (CO₂ volume)',lvl:'honors',custom:true}],
   defaultGraph:'atp',
-  plot(sim,ctx,box){const keys=['b_glu','b_suc','b_lac','b_none'],names=['Glucose','Sucrose','Lactose','Water only'];
+  plot(sim,ctx,box){const keys=['b_glu','b_suc','b_lac','b_lacz','b_none'],names=['Glucose','Sucrose','Lactose','Lactose + lactase','Water only'],cols=['#c99a00','#2f8fd8','#e0559a','#8a4fc8','#26262b'];
     const h=sim.hist,xmax=Math.max(40,sim.t),xmin=xmax-40;let ymax=50;h.forEach(r=>keys.forEach(k=>{if(r.v[k]>ymax)ymax=r.v[k];}));
     const ax=axes(ctx,{...box,T:34,H:box.H-22},{xmin,xmax,ymin:0,ymax:ymax*1.1,xl:'Time (min)',yl:'CO₂ in balloon (mL)'});
-    keys.forEach((k,i)=>{const pts=h.filter(r=>r.t>=xmin);if(pts.length<2)return;ctx.strokeStyle=serColor(i);ctx.lineWidth=2.5;ctx.beginPath();pts.forEach((r,j)=>{j?ctx.lineTo(ax.X(r.t),ax.Y(r.v[k])):ctx.moveTo(ax.X(r.t),ax.Y(r.v[k]));});ctx.stroke();});
-    legend(ctx,box.L,14,names.map((n,i)=>({label:n,color:serColor(i)})));},
+    keys.forEach((k,i)=>{const pts=h.filter(r=>r.t>=xmin);if(pts.length<2)return;ctx.strokeStyle=cols[i];ctx.lineWidth=2.5;ctx.beginPath();pts.forEach((r,j)=>{j?ctx.lineTo(ax.X(r.t),ax.Y(r.v[k])):ctx.moveTo(ax.X(r.t),ax.Y(r.v[k]));});ctx.stroke();});
+    legend(ctx,box.L,14,names.map((n,i)=>({label:n,color:cols[i]})));},
   onLevel(sim){hideTiles(sim);},
-  initVis(sim){sim.vis.tok=[];sim.vis.co2=[];sim.vis.tags=[];sim.vis.seen=new WeakMap();sim.vis.bub=[[],[],[],[]];},
+  initVis(sim){sim.vis.tok=[];sim.vis.co2=[];sim.vis.tags=[];sim.vis.seen=new WeakMap();sim.vis.bub=[[],[],[],[],[]];},
   draw(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis,hon=atLeast('honors'),ap=atLeast('ap');if(!v.tok)SIM.initVis(sim);
     if(p.mode==='balloon'&&hon){drawBalloons(sim,ctx,vdt,k,t);return;}
     // background: cytoplasm and mitochondrion
@@ -129,7 +133,7 @@ const SIM={
     if(v.tok.length>120)v.tok.splice(0,v.tok.length-120);if(v.tags.length>12)v.tags.splice(0,v.tags.length-12);
   },
   narrate(sim){const s=sim.st,p=sim.p,hon=atLeast('honors');
-    if(p.mode==='balloon'&&hon){const y=s.y;return '<b>Yeast ferment sugar and release CO₂</b>, which inflates the balloons. Glucose: '+y.glu.V.toFixed(0)+' mL, sucrose: '+y.suc.V.toFixed(0)+' mL, lactose: '+y.lac.V.toFixed(0)+' mL, water only: '+y.none.V.toFixed(0)+' mL at '+p.temp+' °C.';}
+    if(p.mode==='balloon'&&hon){const y=s.y;return '<b>Yeast ferment sugar and release CO₂</b>, which inflates the balloons. Glucose: '+y.glu.V.toFixed(0)+' mL, sucrose: '+y.suc.V.toFixed(0)+' mL, lactose: '+y.lac.V.toFixed(0)+' mL, lactose + lactase: '+y.lacz.V.toFixed(0)+' mL, water only: '+y.none.V.toFixed(0)+' mL at '+p.temp+' °C.';}
     const g=s.gl.length?s.gl[0]:null;if(!g)return 'Waiting for the next glucose.';const age=s.time-g.t0;
     if(age<1.4)return '<b>A glucose molecule enters the cytoplasm.</b> Its six carbons are shown as six colored balls so you can follow each one.';
     if(age<2.2)return '<b>The cell invests 2 ATP</b>, sticking phosphate groups on the glucose to make it reactive. It spends energy to make energy.';
@@ -149,11 +153,11 @@ const SIM={
     {title:'The Krebs cycle',text:'The remaining carbons go around the Krebs cycle and leave as CO₂. Every carbon from the glucose has now been breathed out, and the energy is stored in NADH, FADH₂ and 2 ATP.',focus:[505,90,195,205],speed:0.25},
     {title:'Electron transport makes most of the ATP',text:'NADH and FADH₂ deliver electrons to the electron transport chain. Oxygen catches them at the end, and ATP synthase makes about 28 ATP. See the Cellular respiration simulation for this step up close.',focus:[400,300,370,115],speed:0.25},
     {lvl:'honors',title:'No oxygen: fermentation',text:'Take away oxygen and the mitochondrion stalls. Pyruvate is turned into ethanol and CO₂ (yeast) or lactate (muscle) instead. That makes no ATP, but it recycles NAD⁺ so glycolysis can keep making its 2 ATP.',focus:[30,240,330,190],speed:0.25,setup(sim){BioLab.setValues(sim,{o2:false});}},
-    {lvl:'honors',title:'The yeast balloon lab',text:'Yeast in sealed flasks ferment sugar and release CO₂, which fills the balloons. Compare glucose, sucrose, lactose and plain water.',focus:[0,40,800,410],speed:2,setup(sim){BioLab.setValues(sim,{o2:true,mode:'balloon'});}}
+    {lvl:'honors',title:'The yeast balloon lab',text:'Yeast in sealed flasks ferment sugar and release CO₂, which fills the balloons. Five flasks, like the class demo: glucose, sucrose, lactose, lactose with the enzyme lactase added, and plain water.',focus:[0,40,800,410],speed:2,setup(sim){BioLab.setValues(sim,{o2:true,mode:'balloon'});}}
   ],
   onTourExit(sim){BioLab.setValues(sim,{o2:true,mode:'cell'});},
   lab:{bio:'<p><b>Question:</b> How much ATP does a cell get from one glucose, with and without oxygen?</p><ol><li>With oxygen on, watch one glucose all the way through and record a trial.</li><li>Turn oxygen off and record another trial.</li><li>Compare ATP per glucose and CO₂ released.</li></ol><p>Explain why you breathe harder during a sprint.</p>',
-       honors:'<p><b>Question:</b> Which sugars can yeast ferment, and how does temperature change the rate?</p><ol><li>Switch to the yeast balloon lab. Record the four balloon volumes at 20 minutes.</li><li>Repeat at 15, 25, 35 and 45 °C (press Reset before each run).</li><li>Plot temperature (x) against the glucose balloon volume (y).</li></ol><p>Explain the lactose result and the shape of your temperature graph.</p>',
+       honors:'<p><b>Question:</b> Which sugars can yeast ferment, and how does temperature change the rate?</p><ol><li>Switch to the yeast balloon lab. Record the five balloon volumes at 20 minutes.</li><li>Repeat at 15, 25, 35 and 45 °C (press Reset before each run).</li><li>Plot temperature (x) against the glucose balloon volume (y).</li></ol><p>Explain why the lactose balloon stays flat but the lactose + lactase balloon fills, and the shape of your temperature graph.</p>',
        ap:'<p><b>Question:</b> Where does each ATP come from?</p><ol><li>Record per-glucose ATP, NADH, FADH₂ and electron-transport ATP with oxygen, then without.</li><li>Calculate substrate-level vs. oxidative phosphorylation.</li></ol><p><b>Claim–evidence–reasoning:</b> Explain why fermentation evolved even though it makes no ATP itself.</p>'},
   terms:[{t:'Glycolysis',d:'Splitting glucose into 2 pyruvate in the cytoplasm. Net 2 ATP and 2 NADH. No oxygen needed.'},{t:'Krebs cycle',d:'A cycle in the mitochondrial matrix that releases CO₂ and loads energy onto NADH and FADH₂.'},{t:'Fermentation',d:'Turning pyruvate into ethanol and CO₂ or lactate when oxygen is missing.'},
     {lvl:'honors',t:'NADH / FADH₂',d:'Electron carriers that take energy to the electron transport chain.'},{lvl:'honors',t:'Pyruvate oxidation',d:'Pyruvate loses a CO₂ and becomes acetyl-CoA, which enters the Krebs cycle.'},{lvl:'honors',t:'NAD⁺ regeneration',d:'Fermentation turns NADH back into NAD⁺, which glycolysis needs to keep running.'},
@@ -168,6 +172,8 @@ const SIM={
      explain:'Fermentation needs a sugar to break down. With no sugar, the yeast make almost no CO₂, so the balloon stays flat. This flask is the control.'},
     {lvl:'honors',q:'Baker’s yeast is given lactose (milk sugar). Will it inflate the balloon like glucose does?',choices:['Yes, about the same','No, it barely inflates','It inflates faster than glucose'],correct:1,baseline:{mode:'balloon'},reveal:22,changeText:'Yeast flasks fermenting',watch:'balloons',
      explain:'Baker’s yeast don’t make lactase, the enzyme that splits lactose into glucose and galactose. Without it they can’t ferment lactose, so almost no CO₂ is made.'},
+    {lvl:'honors',q:'Flask 4 has the same lactose, plus the enzyme lactase. What happens to its balloon?',choices:['It stays flat, like plain lactose','It fills, close to the sucrose balloon','It fills more than glucose'],correct:1,baseline:{mode:'balloon'},reveal:22,changeText:'Yeast flasks fermenting',watch:'balloons',
+     explain:'Lactase splits each lactose into glucose and galactose. The yeast ferment that glucose right away, so the balloon fills. It stays a little behind glucose because only half of each lactose is glucose; yeast need hours to switch on the genes for galactose.'},
     {lvl:'honors',q:'You warm the yeast flasks from 20 °C to 37 °C. What happens to the glucose balloon?',choices:['It inflates faster','It inflates slower','No change'],correct:0,baseline:{mode:'balloon',temp:20},change:{temp:37},at:2,reveal:14,changeText:'Warmed to 37 °C',watch:'balloons',
      explain:'Fermentation runs on enzymes. Warming them toward their optimum speeds up the reactions, so CO₂ builds up faster. Too hot (above about 45 °C) and the enzymes denature.'},
     {lvl:'ap',instant:true,q:'Fermentation makes no ATP of its own. Why do cells do it?',choices:['It makes extra glucose for the next round','It turns NADH back into NAD⁺ for glycolysis','It produces oxygen when oxygen runs out'],correct:1,
@@ -194,8 +200,8 @@ function drawBalloons(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis;
   ctx.fillStyle=PAL['card'];ctx.fillRect(0,0,800,450);
   ctx.fillStyle=PAL['cv-water'];rr(ctx,20,250,760,150,14);ctx.fill();ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2;rr(ctx,20,250,760,150,14);ctx.stroke();
   ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,400,800,50);
-  txt(ctx,'Yeast lab: '+sim.t.toFixed(1)+' min',16,28,{s:15*k,w:700});txt(ctx,'Water bath at '+p.temp+' °C · each flask has yeast + 5 g of sugar',16,48,{s:12.5*k,c:PAL['cv-soft']});
-  ['glu','suc','lac','none'].forEach((key,i)=>{const f=s.y[key],cx=110+i*193,bot=390,top=230;
+  txt(ctx,'Yeast lab: '+sim.t.toFixed(1)+' min',16,28,{s:15*k,w:700});txt(ctx,k>1.15?p.temp+' °C · 50 mL yeast + 5 g sugar each':'Water bath at '+p.temp+' °C · each flask: 50 mL yeast solution + 5 g of sugar (water flask: no sugar)',16,48,{s:12.5*k,c:PAL['cv-soft']});
+  FLASK.forEach((key,i)=>{const f=s.y[key],cx=88+i*156,bot=390,top=230;
     // flask
     ctx.fillStyle='rgba(214,170,90,.55)';ctx.beginPath();ctx.moveTo(cx-20,top);ctx.lineTo(cx-20,top+60);ctx.lineTo(cx-62,bot);ctx.lineTo(cx+62,bot);ctx.lineTo(cx+20,top+60);ctx.lineTo(cx+20,top);ctx.closePath();
     ctx.save();ctx.clip();ctx.fillRect(cx-70,top+90,140,bot-top-90);ctx.restore();
@@ -206,10 +212,11 @@ function drawBalloons(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis;
     v.bub[i]=v.bub[i].filter(b=>b.y>top+95);
     // balloon
     const r=12+4.4*Math.cbrt(f.V);const by=top-r+6;
-    ctx.fillStyle=['#d1495b','#30638e','#4f9a6a','#8e5572'][i];ctx.beginPath();ctx.ellipse(cx,by,r*0.9,r,0,0,6.29);ctx.fill();
+    ctx.fillStyle=BCOL[key];ctx.beginPath();ctx.ellipse(cx,by,r*0.9,r,0,0,6.29);ctx.fill();
     ctx.fillStyle='rgba(255,255,255,.3)';ctx.beginPath();ctx.ellipse(cx-r*0.35,by-r*0.35,r*0.18,r*0.28,-0.5,0,6.29);ctx.fill();
-    txt(ctx,f.V.toFixed(0)+' mL',cx,by+5,{s:13*k,w:700,c:'#fff',a:'center'});
-    txt(ctx,SUG[key].l,cx,bot+26,{s:13.5*k,w:700,a:'center'});});
+    if(r>=24)txt(ctx,f.V.toFixed(0)+' mL',cx,by+5,{s:13*k,w:700,c:BTXT[key],a:'center'});else txt(ctx,f.V.toFixed(0)+' mL',cx,by-r-8,{s:13*k,w:700,a:'center'});
+    if(k>1.15){const L={lacz:['Lactose +','lactase'],none:['Water']}[key]||[SUG[key].l];L.forEach((l,j)=>txt(ctx,l,cx,bot+20+j*17*k,{s:12.5*k,w:700,a:'center'}));}
+    else{txt(ctx,'Flask '+(i+1),cx,bot+20,{s:11.5*k,w:600,c:PAL['cv-soft'],a:'center'});txt(ctx,SUG[key].l,cx,bot+38,{s:13*k,w:700,a:'center'});}});
 }
 BioLab.register(SIM);
 })();
