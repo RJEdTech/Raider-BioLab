@@ -1282,7 +1282,7 @@ gel:{questions:[
 ]},
 plasmid:{questions:[
   {id:'enzyme',kind:'test',lvl:'bio',q:'What does a restriction enzyme do?',
-    choices:['Copies DNA','Cuts DNA at one specific short sequence','Joins DNA pieces together','Reads DNA'],correct:1,
+    choices:['Copies a stretch of DNA many times over','Cuts DNA at one short, specific sequence','Joins two DNA pieces together into one','Reads DNA to find where a gene starts'],correct:1,
     steps:['Each enzyme recognizes its own sequence, like EcoRI and GAATTC.','It cuts the DNA wherever that sequence appears.','Bacteria use them to chop up invading viral DNA.'],lab:{set:{mol:'pBR322',e1:'EcoRI',e2:'none'},look:'Cut the plasmid and predict the fragments.'}},
   {id:'circ',kind:'test',lvl:'honors',q:'An enzyme cuts a circular plasmid at 3 places. How many fragments do you get?',
     num:{ans:3,tol:0,unit:'fragments'},
@@ -1291,7 +1291,7 @@ plasmid:{questions:[
     num:{ans:4,tol:0,unit:'fragments'},
     steps:['Think of cutting a string.','Each cut adds one piece to the 1 you started with.','3 cuts: 4 fragments.'],lab:{set:{mol:'lambda',e1:'EcoRI',e2:'none'},look:'Cut linear λ DNA.'}},
   {id:'sticky',kind:'test',lvl:'bio',q:'To put a gene into a plasmid, why cut both with the same restriction enzyme?',
-    choices:['So their matching sticky ends can pair up and be joined','To make the plasmid smaller','So the gene is destroyed','It doesn’t matter which enzyme'],correct:0,
+    choices:['So their matching sticky ends can pair and be joined','To make the plasmid small enough to enter a cell','So the old gene in the plasmid is destroyed first','It doesn’t matter; any two enzymes leave ends that join'],correct:0,
     steps:['Many enzymes leave short single-stranded overhangs: sticky ends.','The same enzyme leaves matching ends on both pieces.','They base-pair, and DNA ligase seals them together.']},
   {id:'once',kind:'test',lvl:'honors',q:'pBR322 is a 4,361 bp circular plasmid with one EcoRI site. What do you see on a gel after cutting with EcoRI?',
     num:{ans:4361,tol:0,unit:'bp (one band)'},
@@ -1347,16 +1347,16 @@ transformation:{questions:[
 ]},
 sanger:{questions:[
   {id:'dd',kind:'test',lvl:'bio',q:'Why does a ddNTP stop the DNA chain from growing?',
-    choices:['It is too big','It glows','It lacks the 3′ –OH group needed to attach the next nucleotide','It cuts the DNA'],correct:2,
+    choices:['It is too big to fit in the polymerase','It glows, and the dye pushes the polymerase off','It lacks the 3′ –OH the next nucleotide bonds to','It cuts the DNA strand right where it is added'],correct:2,
     steps:['Each new nucleotide bonds to the 3′ –OH of the one before.','A dideoxynucleotide has no 3′ –OH.','Once it is added, nothing more can attach, and the chain stops.'],lab:{set:{sample:'normal'},look:'Watch chains stop at each letter.'}},
   {id:'read',kind:'test',lvl:'bio',q:'How is the sequence read from the fragments?',
-    choices:['Sort them by size; the color of each one’s last letter, shortest to longest, gives the sequence','Read the longest fragment only','Count the fragments','Read them in random order'],correct:0,
+    choices:['Sort by size; read each one’s last color, short to long','Read the longest fragment only, since it has every base','Count how many fragments of each color there are','Read them in the order they were made in the tube'],correct:0,
     steps:['Each fragment ends in a colored, chain-stopping letter.','Fragments are sorted by length, one letter apart.','Reading the end colors from shortest to longest spells out the sequence.']},
   {id:'sickle',kind:'test',lvl:'honors',q:'Sequencing the HBB gene of a sickle-cell patient shows one difference from normal. What is it?',
-    choices:['A whole gene is missing','Extra chromosomes','Thousands of changes','A single base change (GAG → GTG) that swaps one amino acid, glutamic acid → valine'],correct:3,
+    choices:['A whole gene is missing from one chromosome','An extra copy of chromosome 11 with the gene on it','Thousands of base changes spread across the gene','One base change (GAG → GTG): Glu becomes Val'],correct:3,
     steps:['Sickle-cell disease comes from one point mutation in codon 6.','GAG (glutamic acid) becomes GTG (valine).','That one change makes hemoglobin clump and red cells sickle.'],lab:{set:{sample:'sickle'},look:'Compare the patient’s peaks with normal.'}},
   {id:'carrier',kind:'test',lvl:'honors',q:'What does a sickle-cell carrier’s sequence look like at that position?',
-    choices:['A normal single peak','Two overlapping peaks, A and T, because one copy is normal and one is not','No peak at all','A very tall single peak'],correct:1,
+    choices:['A normal single peak, since the normal copy hides the other','Two overlapping peaks, A and T: one copy of each allele','No peak at all, because the two copies cancel out','A very tall single peak, twice the normal height'],correct:1,
     steps:['A carrier has one normal and one sickle allele.','Both copies are sequenced together.','So that position shows two peaks at once.'],lab:{set:{sample:'het'},look:'Look at the carrier’s peaks.'}}
 ]}
 });

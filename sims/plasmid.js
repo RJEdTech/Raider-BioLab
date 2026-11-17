@@ -100,7 +100,7 @@ const PL={
      choices:['Ampicillin','Tetracycline','Both'],correct:0,instant:true,show:{mol:'pBR322',e1:'PstI',e2:'none'},
      explain:{ap:'The PstI site (3,609) sits inside the ampR (bla) gene, so the insert breaks that gene. Recombinant cells grow on tetracycline but not on ampicillin. This is insertional inactivation.'}},
     {lvl:'ap',q:'You clone into the BamHI site, then plate cells on ampicillin and replica-plate them onto tetracycline. Which colonies carry the recombinant plasmid?',
-     choices:['Colonies that grow on both plates','Colonies that grow on ampicillin but not tetracycline','Colonies that grow on neither'],correct:1,instant:true,show:{mol:'pBR322',e1:'BamHI',e2:'none'},
+     choices:['Colonies that grow on both ampicillin and tetracycline','Colonies that grow on ampicillin but not tetracycline','Colonies that grow on tetracycline but not ampicillin'],correct:1,instant:true,show:{mol:'pBR322',e1:'BamHI',e2:'none'},
      explain:{ap:'BamHI (375) cuts inside tetR. An insert there destroys tetracycline resistance but leaves ampR intact. Plasmids that closed back up with no insert still grow on both, so recombinants are the amp-resistant, tet-sensitive colonies.'}}
   ],
   onChallenge(sim,ch,phase){if(phase==='done'&&ch.show){BioLab.setValues(sim,ch.show);restart(sim,false);}},

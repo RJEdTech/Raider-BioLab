@@ -162,7 +162,7 @@ const SIM={
   challenges:[
     {lvl:'bio',q:'The cell runs out of oxygen. How much ATP does each glucose make now?',choices:['About 32, same as before','Only 2','None at all'],correct:1,change:{o2:false},changeText:'Oxygen removed',watch:'atp',
      explain:{bio:'Without oxygen the mitochondrion can’t use NADH, so only glycolysis works. Each glucose gives just 2 ATP instead of about 32. That is why your muscles tire fast when they run short of oxygen.'}},
-    {lvl:'bio',instant:true,q:'Where does the carbon in the CO₂ you breathe out come from?',choices:['From the oxygen you breathed in','From the glucose and other food you broke down','From water'],correct:1,
+    {lvl:'bio',instant:true,q:'Where does the carbon in the CO₂ you breathe out come from?',choices:['From the oxygen you breathed in, which picks up carbon','From the glucose and other food you broke down','From water, split apart inside your cells'],correct:1,
      explain:'Watch the colored carbon balls: they start in glucose and leave as CO₂ during pyruvate oxidation and the Krebs cycle. The oxygen you breathe in ends up in water.'},
     {lvl:'honors',q:'This flask holds yeast and water but no sugar. What happens to its balloon?',choices:['It inflates like the others','It stays almost flat','It inflates the most'],correct:1,baseline:{mode:'balloon'},reveal:22,changeText:'Yeast flasks fermenting',watch:'balloons',
      explain:'Fermentation needs a sugar to break down. With no sugar, the yeast make almost no CO₂, so the balloon stays flat. This flask is the control.'},
@@ -170,9 +170,9 @@ const SIM={
      explain:'Baker’s yeast don’t make lactase, the enzyme that splits lactose into glucose and galactose. Without it they can’t ferment lactose, so almost no CO₂ is made.'},
     {lvl:'honors',q:'You warm the yeast flasks from 20 °C to 37 °C. What happens to the glucose balloon?',choices:['It inflates faster','It inflates slower','No change'],correct:0,baseline:{mode:'balloon',temp:20},change:{temp:37},at:2,reveal:14,changeText:'Warmed to 37 °C',watch:'balloons',
      explain:'Fermentation runs on enzymes. Warming them toward their optimum speeds up the reactions, so CO₂ builds up faster. Too hot (above about 45 °C) and the enzymes denature.'},
-    {lvl:'ap',instant:true,q:'Fermentation makes no ATP of its own. Why do cells do it?',choices:['It makes extra glucose','It turns NADH back into NAD⁺ so glycolysis can keep making 2 ATP','It produces oxygen'],correct:1,
+    {lvl:'ap',instant:true,q:'Fermentation makes no ATP of its own. Why do cells do it?',choices:['It makes extra glucose for the next round','It turns NADH back into NAD⁺ for glycolysis','It produces oxygen when oxygen runs out'],correct:1,
      explain:'Glycolysis needs NAD⁺ to accept electrons. Without oxygen, NADH piles up and glycolysis would stop. Fermentation dumps those electrons onto pyruvate (or acetaldehyde), regenerating NAD⁺.'},
-    {lvl:'ap',instant:true,q:'With oxygen, roughly how much of the ATP from one glucose comes from oxidative phosphorylation?',choices:['About 4 of 32','About 28 of 32','All 32'],correct:1,
+    {lvl:'ap',instant:true,q:'With oxygen, roughly how much of the ATP from one glucose comes from oxidative phosphorylation?',choices:['About 4 of 32','About 28 of 32','All 32 of 32'],correct:1,
      explain:'Glycolysis and the Krebs cycle make 4 ATP directly (substrate-level). The other ~28 come from ATP synthase powered by the electron transport chain: 10 NADH × 2.5 + 2 FADH₂ × 1.5 = 28.'}
   ]
 };

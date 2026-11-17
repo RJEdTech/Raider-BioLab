@@ -538,7 +538,7 @@ const RESP={
      change:{dnp:true},changeText:'DNP added',watch:'o2use',
      explain:{ap:'DNP is an uncoupler. H⁺ leaks back without passing through ATP synthase, so the proton-motive force collapses and the energy is released as heat. With no back-pressure, electron transport speeds up and O₂ use rises, but ATP output and the P/O ratio crash. DNP was sold as a diet drug in the 1930s and caused fatal overheating.'}},
     {lvl:'ap',q:'Cyanide binds Complex IV. What happens to the proton-motive force?',
-     choices:['It rises','It collapses toward zero','It is unchanged'],correct:1,
+     choices:['It rises, because protons pile up','It collapses toward zero','It is unchanged; Complex IV isn’t a pump'],correct:1,
      change:{cn:true},changeText:'Cyanide added',watch:'pmf',
      explain:{ap:'Cyanide stops electron transfer to O₂, so no complex can pump. ATP synthase and the small leak keep draining the gradient, and the proton-motive force decays toward zero. Compare this with oligomycin, where the force goes up instead.'}}
   ],

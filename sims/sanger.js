@@ -43,22 +43,22 @@ const SG={
     {id:'b20',label:'Base 20',unit:'',lvl:'ap',text:true,get:s=>{const c=calls(s)[SICK];return c==='W'?'A + T (double peak)':c==='N'?'No call':c;}}
   ],
   challenges:[
-    {lvl:'bio',instant:true,q:'The fragments race through the capillary toward the detector. Which one arrives first?',choices:['The shortest one, which stopped right after the primer','The longest one','They all arrive together'],correct:0,
+    {lvl:'bio',instant:true,q:'The fragments race through the capillary toward the detector. Which one arrives first?',choices:['The shortest one, which stopped right after the primer','The longest one, because it has the most dye on it','They all arrive together, since they have the same charge'],correct:0,
      explain:'Short pieces of DNA move through the gel-filled capillary fastest. The shortest fragment stopped at the first letter after the primer, so the detector reads the sequence in order, one letter longer each time.'},
-    {lvl:'bio',q:'You add ten times more ddNTPs to the reaction. What happens to the read?',choices:['It gets longer','Only the first part can be read','Nothing changes'],correct:1,
+    {lvl:'bio',q:'You add ten times more ddNTPs to the reaction. What happens to the read?',choices:['It gets longer and clearer at the end','Only the first part can be read','Nothing changes in the read'],correct:1,
      baseline:{sample:'normal',dd:3},change:{dd:30},changeAction:'run',changeText:'ddNTPs raised to 30%',
      explain:{bio:'With so many stop letters, almost every copy stops in the first few bases. There are plenty of short fragments but hardly any long ones, so the later peaks are too small to read.',
               ap:'Strands reaching position k fall off as (1 − f)^(k−1). At f = 30% that drops below the noise threshold after about 12 bases.'}},
-    {lvl:'honors',instant:true,q:'Why does a ddNTP stop the growing chain?',choices:['It has no 3′-OH group, so the next nucleotide can’t attach','It is too large to fit','It binds and blocks the polymerase'],correct:0,
+    {lvl:'honors',instant:true,q:'Why does a ddNTP stop the growing chain?',choices:['It has no 3′-OH, so the next base can’t attach','It is too large to fit in the polymerase','It binds the polymerase and blocks it from moving on'],correct:0,
      explain:'DNA polymerase links each new nucleotide to the 3′-OH of the last one. A dideoxy nucleotide is missing that oxygen, so once it is added, nothing can come after it.'},
     {lvl:'honors',instant:true,q:'The template strand reads 3′-TACCAC-5′. What does the reaction write, 5′→3′?',choices:['5′-ATGGTG-3′','5′-TACCAC-3′','5′-GTGGTA-3′'],correct:0,
      explain:'The polymerase builds the complementary strand: T pairs with A, A with T, C with G. So the read is the complement of the template, here ATGGTG, the start of the β-globin gene.'},
-    {lvl:'honors',q:'You use ten times fewer ddNTPs than the default. What happens?',choices:['A longer, cleaner read','The peaks get so weak the read fails','Nothing changes'],correct:1,
+    {lvl:'honors',q:'You use ten times fewer ddNTPs than the default. What happens?',choices:['A longer, cleaner read with sharper peaks','The peaks get so weak the read fails','Nothing changes, since a few still get in'],correct:1,
      baseline:{sample:'normal',dd:3},change:{dd:0.3},changeAction:'run',changeText:'ddNTPs cut to 0.3%',
      explain:{honors:'With very few stop letters, most copies run past the end without stopping. Each position gets only a few labeled fragments, and the peaks sink into the background noise. Sequencing needs a balanced ratio.'}},
-    {lvl:'ap',instant:true,q:'A patient’s read shows a green A peak and a red T peak, each half height, at base 20. What does that mean?',choices:['A sequencing error','They carry one normal and one sickle allele (carrier)','They have two sickle alleles'],correct:1,
+    {lvl:'ap',instant:true,q:'A patient’s read shows a green A peak and a red T peak, each half height, at base 20. What does that mean?',choices:['A sequencing error at that one base','One normal and one sickle allele: a carrier','Two sickle alleles, one on each chromosome'],correct:1,
      explain:'Sanger sequencing reads both copies of the gene at once. Half-height overlapping peaks mean the two alleles differ at that base: one A (normal, GAG) and one T (sickle, GTG). The person is heterozygous, a carrier with sickle-cell trait.'},
-    {lvl:'ap',instant:true,q:'Compared with the reference, the sickle-cell patient’s read differs at base 20. What is the change, and what does it do to codon 7?',choices:['A→T, turning GAG (Glu) into GTG (Val)','G→A, turning GAG into AAG','T→C, a silent change'],correct:0,
+    {lvl:'ap',instant:true,q:'Compared with the reference, the sickle-cell patient’s read differs at base 20. What is the change, and what does it do to codon 7?',choices:['A→T, turning GAG (Glu) into GTG (Val)','G→A, turning GAG (Glu) into AAG (Lys)','T→C, a silent change that keeps Glu'],correct:0,
      explain:'Base 20 is the middle letter of codon 7. A→T changes GAG (glutamate) to GTG (valine). That one amino acid change makes hemoglobin stick together when oxygen is low.'}
   ],
   narrate(sim){const s=sim.st,ph=s.running?PH[s.phase][0]:null,L=readLen(sim),f=sim.p.dd;
