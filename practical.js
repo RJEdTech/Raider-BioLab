@@ -1425,3 +1425,23 @@ cityscore: {
   takeaway: 'Different measures measure different things. GDP counts spending, including spending on problems. Before you accept “best,” ask: best by which measure, and who chose the weights?'
 }
 });
+
+BioLab.addPractical({
+gmotrial: {
+  hookSet: { q: 'bt', season: 'borers', ctrl: 'side', n: 6, layout: 'random', fair: 'same' },
+  hook: 'A seed dealer tells your family’s farm in eastern Colorado that his new Bt corn “yields 15% more.” You have 24 test plots this summer. How do you set up a test you can trust?',
+  answer: 'Grow regular corn beside it the same year, as a control. Plant several plots of each (6 or more), assign them at random so the field’s good and poor spots are shared, and treat every plot the same except the seed. Then compare the gap with the spread between plots. And expect Bt to help only if corn borers show up.',
+  uses: [
+    'Crop variety trials: land-grant universities such as Colorado State test seed varieties on many farms over several years and publish all the results, so farmers don’t have to rely on company plots.',
+    'Medicine: a drug trial is the same design. Patients are assigned at random to the drug or a placebo, many patients are enrolled, and neither group is treated differently in any other way.',
+    'Your own tests: comparing two study methods, two fertilizers for a garden, or two phone chargers works the same way: a control, repeats, and only one thing changed.'
+  ],
+  takeaway: 'A trustworthy test compares against a control grown at the same time, repeats each treatment, places treatments at random, and changes only one thing. A GMO trait, like any tool, helps only when the problem it targets shows up.',
+  tour: [
+    'A seed company says its Bt corn yields more. Bt corn makes a protein that kills corn borer caterpillars. You have 24 plots to find out if the claim holds on your farm.',
+    'Plant regular corn in the same field, the same year, as the comparison. Everything else stays the same: water, fertilizer, planting day. Only the seed changes.',
+    'Six plots of each seed, placed at random, so luck and soil differences spread across both seeds. Watch the season, then the harvest.',
+    'Compare the averages and the spread of the dots. A gap much bigger than the spread is probably the seed, not luck.'
+  ]
+}
+});

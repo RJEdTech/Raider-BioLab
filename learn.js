@@ -4382,4 +4382,91 @@ return {niche:{
 }};
 })());
 
+/* ---------- gmotrial (replaces Gizmos "Experimental Design Practice – GMOs" and "GMO – Design Your Own Experiment", APES) ---------- */
+BioLab.addLearn((function(){
+const G=sim=>sim.def._gm,M=(sim,id)=>{const m=sim.def.metrics.find(x=>x.id===id);return m?m.get(sim):null;};
+const D=v=>(v>=0?'+':'−')+Math.abs(v).toFixed(0);
+const card=(ctx,k,rows)=>dcCard(ctx,k,486,44,300,rows);
+const done=sim=>sim.st.phase==='done';
+const again=sim=>{const st=sim.st,r=G(sim).results(sim);if(r)st.hist.push(r.diff);st.seed++;G(sim).grow(sim);};
+const START={q:'bt',season:'borers',ctrl:'side',n:6,layout:'random',fair:'same'};
+return {
+gmotrial: {
+  goals: {
+    bio: ['Why a fair test needs a control group grown at the same time', 'Why one plot of each seed can’t tell you anything', 'How a bad layout or extra fertilizer can create a difference the seed didn’t cause', 'Why a GMO trait helps only when its problem shows up'],
+    honors: ['How error bars separate a real difference from noise', 'Why randomized matched pairs need fewer plots'],
+    ap: ['What a p-value and a confidence interval do and don’t tell you']
+  },
+  matters: 'Seed companies, drug makers and supplement ads all say “studies show.” The same few design questions tell you whether to believe them: compared with what, how many times, and was anything else different?',
+  question: 'A seed dealer says new Bt corn “yields 15% more.” Your family farm has 24 test plots. How would you find out if that’s true on your land?',
+  startKey: 'one', startRun: true,
+  steps: [
+    { key: 'one', title: 'One plot of each', set: Object.assign({}, START, { n: 1 }), fresh: true, speed: 1,
+      run(sim){atReset(sim);G(sim).replan(sim);},
+      see: 'One plot of Bt corn and one of regular corn, in a year with corn borers. Watch the harvest.',
+      why: 'One plot each gives one number each. But two plots of the same seed never yield the same: soil, water and insects vary across a field. With one plot, you can’t tell the seed’s effect from luck.',
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,0.4,'g',s=>{s.st.seed=2;G(s).grow(s);});if(done(sim))card(ctx,k,[['One plot each: '+D(M(sim,'diff'))+' bu/acre',{w:700}],['Is that the seed, or luck?',{c:'#c8102e',w:700}]]);} },
+    { key: 'again', title: 'Run it again… and again', set: Object.assign({}, START, { n: 1 }), fresh: true, speed: 1,
+      run(sim){atReset(sim);G(sim).replan(sim);},
+      see: 'The same one-plot design, run three times, as if in three different years.',
+      why: 'The difference jumps around by tens of bushels from run to run. A single comparison can even point the wrong way. Repeating the treatment, called replication, is how you see that spread.',
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,0.3,'g',s=>{s.st.seed=5;G(s).grow(s);});atT(sim,tau,4.3,'a',again);atT(sim,tau,8.3,'b',again);
+        const h=sim.st.hist.concat(done(sim)?[M(sim,'diff')]:[]);card(ctx,k,[['One plot each, run '+Math.max(1,h.length)+' times',{w:700}],[h.length?h.map(D).join(', ')+' bu/acre':'…',{c:'#c8102e',w:700}],'Same design, very different answers']);} },
+    { key: 'reps', title: 'Six plots each, placed at random', set: START, fresh: true, speed: 1,
+      run(sim){atReset(sim);G(sim).replan(sim);},
+      see: 'Now 6 plots of each seed, scattered at random across the field. Watch the dots, then two more runs.',
+      why: 'Averages of 6 plots wobble much less than single plots, and random placement spreads good and poor soil across both seeds. Run after run, Bt comes out about 20 bu/acre ahead: in a borer year, the trait really works.',
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,0.3,'g',s=>{s.st.seed=G(s).rep(s,22,3);});atT(sim,tau,4.3,'a',again);atT(sim,tau,8.3,'b',again);
+        const h=sim.st.hist.concat(done(sim)?[M(sim,'diff')]:[]);card(ctx,k,[['6 plots each, at random',{w:700}],[h.length?h.map(D).join(', ')+' bu/acre':'…',{c:'#1b7a3a',w:700}],'Runs now agree: Bt helps in a borer year']);} },
+    { key: 'normal', title: 'A year without corn borers', set: Object.assign({}, START, { season: 'normal' }), fresh: true, speed: 1,
+      run(sim){atReset(sim);G(sim).replan(sim);},
+      see: 'The same fair trial in a normal year, with few corn borers.',
+      why: 'The difference shrinks to about zero. Bt’s protein only kills corn borers; when they don’t show up, it has nothing to do. A GMO trait is a tool for one problem, not extra yield in general.',
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,0.3,'g',s=>{s.st.seed=G(s).rep(s,0,2);});if(done(sim))card(ctx,k,[['Normal year: '+D(M(sim,'diff'))+' bu/acre',{w:700}],['No borers, nothing for Bt to do',{c:'#c8102e',w:700}]]);} },
+    { key: 'split', title: 'A layout that fools you', set: Object.assign({}, START, { season: 'normal', layout: 'split' }), fresh: true, speed: 1,
+      run(sim){atReset(sim);G(sim).replan(sim);},
+      see: 'Same normal year, but now all the Bt plots are on the east half. Watch the result, then the soil map.',
+      why: 'Bt suddenly “wins” by about 25 bu/acre, in a year when it can’t help. The east end has deeper soil, and only Bt was planted there. Soil and seed are confounded: you can’t tell which one made the difference. Random placement prevents this.',
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,0.3,'g',s=>{s.st.seed=G(s).rep(s,26,3);});atT(sim,tau,4.6,'s',s=>{s.st.soil=true;});
+        if(done(sim))card(ctx,k,[['Bt on the east half: '+D(M(sim,'diff'))+' bu/acre',{w:700}],[sim.st.soil?'The east has the better soil':'But this is a no-borer year…',{c:'#c8102e',w:700}]]);} },
+    { key: 'fert', title: 'One extra difference', set: Object.assign({}, START, { season: 'normal', fair: 'extra' }), fresh: true, speed: 1,
+      run(sim){atReset(sim);G(sim).replan(sim);},
+      see: 'Random placement again, but the dealer’s Bt plots also got extra fertilizer.',
+      why: 'Bt “wins” by about 14 bu/acre, all of it from the fertilizer. When two things differ between groups, the result can’t tell you which one did it. Change only the variable you are testing.',
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,0.3,'g',s=>{s.st.seed=G(s).rep(s,14,3);});if(done(sim))card(ctx,k,[['Extra fertilizer on Bt: '+D(M(sim,'diff'))+' bu/acre',{w:700}],['That’s the fertilizer, not the seed',{c:'#c8102e',w:700}]]);} },
+    { key: 'last', title: 'No control group', set: { q: 'dt', season: 'drought', ctrl: 'last', n: 6, layout: 'random', fair: 'same' }, fresh: true, speed: 1,
+      run(sim){atReset(sim);G(sim).replan(sim);},
+      see: 'A farmer tries drought-tolerant corn in a dry summer and compares it with last year’s 178 bu/acre.',
+      why: 'It looks like a disaster, about 45 bu/acre down. But the drought hit every field. Without regular corn grown beside it this year, she can’t see that regular corn did even worse. The control group has to share the same season.',
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,0.3,'g',s=>{s.st.seed=G(s).rep(s,-46,3);});if(done(sim))card(ctx,k,[['Against last year: '+D(M(sim,'diff'))+' bu/acre',{w:700}],['The drought, not the seed',{c:'#c8102e',w:700}]]);} },
+    { key: 'pairs', lvl: 'honors', title: 'Error bars and matched pairs', set: { q: 'dt', season: 'drought', ctrl: 'side', n: 12, layout: 'random', fair: 'same' }, fresh: true, speed: 1,
+      run(sim){atReset(sim);G(sim).replan(sim);sim._gmSE=null;},
+      see: 'Drought-tolerant vs regular corn in a dry summer, 12 plots each at random. Then the same 24 plots as 12 neighbor pairs.',
+      why: 'The trait’s gain, about 12 bu/acre, is small next to the soil and plot noise, so random plots leave wide error bars. In matched pairs each comparison shares its soil, so soil cancels out and the uncertainty shrinks: the same 24 plots can now detect a smaller effect.',
+      overlay(sim,ctx,LH,k,tau){atT(sim,tau,0.3,'g',s=>{s.st.seed=G(s).rep(s,12,2);});atT(sim,tau,4.4,'p',s=>{s._gmSE=M(s,'se');BioLab.setValues(s,{layout:'blocks'});s.st.seed=G(s).rep(s,12,2);});
+        card(ctx,k,[['Difference '+(done(sim)?D(M(sim,'diff')):'…')+' bu/acre',{w:700}],sim._gmSE!=null?'At random: ± '+sim._gmSE.toFixed(1)+' (standard error)':'At random: ± '+(done(sim)?M(sim,'se').toFixed(1):'…'),sim._gmSE!=null?['In pairs: ± '+(done(sim)?M(sim,'se').toFixed(1):'…'),{c:'#1b7a3a',w:700}]:'']);} },
+    { lvl: 'ap', key: 'pval', title: 'p-values from repeated trials', set: Object.assign({}, START, { layout: 'blocks' }), fresh: true, speed: 1,
+      run(sim){atReset(sim);G(sim).replan(sim);sim._gmP=[];},
+      see: 'Six Bt-vs-regular pairs in a borer year, run three times. Read the p-value each time.',
+      why: 'Each p-value is the chance of a difference this big if the seeds truly yielded the same. Small p-values run after run mean the effect is real. A p-value does not measure how big or important the effect is; the confidence interval does that.',
+      overlay(sim,ctx,LH,k,tau){const rec=s=>{s._gmP.push(M(s,'pv'));again(s);};atT(sim,tau,0.3,'g',s=>{s.st.seed=7;G(s).grow(s);});atT(sim,tau,4.3,'a',rec);atT(sim,tau,8.3,'b',rec);
+        const ps=sim._gmP.concat(done(sim)?[M(sim,'pv')]:[]);card(ctx,k,[['p-values: '+(ps.length?ps.map(p=>p<0.001?'< 0.001':p.toFixed(3)).join(', '):'…'),{w:700}],['95% CI: '+M(sim,'ci'),{c:'#1b7a3a',w:700}]]);} }
+  ],
+  useIt: [
+    { do: 'When an ad or headline says “studies show,” ask three questions: compared with what, how many times, and was anything else different?',
+      why: 'Those are the control group, replication and confounding. A claim that can’t answer them is a guess, however confident it sounds.' },
+    { do: 'Look for independent trials before you trust a product claim.',
+      why: 'Land-grant universities such as Colorado State run their own crop variety trials across many farms and years and publish every result. One company plot in one good year proves little.' },
+    { do: 'Expect a fix to work only on the problem it targets.', lvl: 'honors',
+      why: 'Bt corn cut corn borer damage so much that borer numbers fell across whole regions of the Midwest, helping even farmers who planted regular corn. But it does nothing for drought, and borers that survive it can evolve resistance, which is why the EPA requires refuges of non-Bt corn.' }
+  ],
+  tryIt: [
+    { title: 'the fair coin test (5 minutes)',
+      steps: ['Flip a coin 4 times and count heads. Then flip it 40 times.', 'Pretend each flip is a test plot of a “miracle seed” and heads means it yielded more.', 'Compare the share of heads in 4 flips and in 40.'],
+      look: 'Four flips often give 3 or 4 heads, which looks like a big effect from pure luck. Forty flips land much closer to half. That is why trials need many plots.' }
+  ]
+}
+};
+})());
+
 })();
