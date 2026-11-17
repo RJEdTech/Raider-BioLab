@@ -22,6 +22,24 @@ function scaleBar(ctx,x,y,px,lab,k){ctx.save();ctx.strokeStyle=PAL['cv-ink'];ctx
 function fat(ctx,x,y,R,ang){const nm=R/2.5,tail=nm*2.1;ctx.save();ctx.translate(x,y);ctx.rotate(ang||0);ctx.strokeStyle='#c99a06';ctx.fillStyle='#c99a06';ctx.lineWidth=nm*0.13;ctx.lineJoin='round';
   for(let i=-1;i<=1;i++){const y0=i*nm*0.45;ctx.beginPath();ctx.moveTo(0,y0);for(let j=1;j<=14;j++)ctx.lineTo(j*tail/14,y0+(j%2?1:-1)*nm*0.09);ctx.stroke();ctx.beginPath();ctx.arc(0,y0,nm*0.17,0,6.29);ctx.fill();}
   ctx.beginPath();ctx.moveTo(0,-nm*0.45);ctx.lineTo(0,nm*0.45);ctx.stroke();ctx.restore();}
+/* ---------- Think again: shared visual moves (from PhysLab, Nov 17 2026) ----------
+   A magenta badge marks a thinking moment; a dashed magenta ghost or ring is a prediction
+   or a comparison drawn beside what really happens. Magenta, because the series colors already use purple. */
+function TK(){const c=(PAL['cv-bg']||'#fff').replace('#','');if(c.length>=6){const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);if((r*0.3+g*0.59+b*0.11)<110)return '#ec74da';}return '#a8178f';}
+function TKA(a){return TK()==='#a8178f'?'rgba(168,23,143,'+a+')':'rgba(236,116,218,'+a+')';}
+function thinkBadge(ctx,kind,label,k,tau,pos){k=Math.min(k,1.3);const sz=12.5*k;ctx.save();ctx.font='700 '+sz+'px '+H.FONT;const tw=ctx.measureText(label).width,ic=22*k,w=tw+ic+sz*1.6,h=sz*2.2;let x=pos&&pos.x!=null?pos.x:20,y=pos&&pos.y!=null?pos.y:18;if(pos&&pos.right)x=pos.right-w;
+  H.rr(ctx,x,y,w,h,h/2);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=TK();ctx.stroke();
+  const cx=x+sz*0.7+ic/2,cy=y+h/2;ctx.strokeStyle=TK();ctx.fillStyle=TK();ctx.lineWidth=1.8;
+  if(kind==='compare'){[-5,5].forEach(d=>{ctx.strokeRect(cx+d*k-2.5*k,cy-7*k,5*k,13*k);});ctx.beginPath();ctx.moveTo(cx-2*k,cy-1*k);ctx.lineTo(cx+2*k,cy-1*k);ctx.moveTo(cx-2*k,cy+2*k);ctx.lineTo(cx+2*k,cy+2*k);ctx.stroke();}
+  else if(kind==='spread'){ctx.globalAlpha=0.3;ctx.fillRect(cx-9*k,cy-3*k,18*k,6*k);ctx.globalAlpha=1;[-7,-2,1,6].forEach((d,i)=>{ctx.beginPath();ctx.arc(cx+d*k,cy+(i%2?-2:2)*k,2*k,0,6.29);ctx.fill();});}
+  else{ctx.beginPath();ctx.arc(cx-2*k,cy-2*k,5.5*k,0,6.29);ctx.stroke();ctx.lineWidth=2.6;ctx.beginPath();ctx.moveTo(cx+2*k,cy+2*k);ctx.lineTo(cx+7*k,cy+7*k);ctx.stroke();}
+  H.txt(ctx,label,x+sz*0.7+ic+sz*0.4,cy+1,{s:sz,w:700,c:TK(),b:'middle'});ctx.restore();}
+/* Commit first: guess buttons in the step text. Real buttons, so keyboards work. The pick is kept in sim._picks[key]. */
+function pickHTML(key,q,choices){return '<span class="think-pick" data-pick="'+key+'" role="group" aria-label="Your guess" style="display:block;margin-top:8px"><b style="color:'+TK()+'">'+q+'</b><br>'+choices.map(([v,l])=>'<button type="button" class="btn" data-pv="'+v+'" aria-pressed="false" style="border:2px solid '+TK()+';color:'+TK()+';background:transparent;margin:6px 8px 0 0">'+l+'</button>').join('')+'</span>';}
+function pickSync(sim){const b0=sim.ui&&sim.ui.tourbar;if(!b0)return;b0.querySelectorAll('[data-pick]').forEach(g=>{const v=(sim._picks||{})[g.dataset.pick];g.querySelectorAll('[data-pv]').forEach(b=>{const on=b.dataset.pv===v;b.setAttribute('aria-pressed',String(on));b.style.background=on?TK():'transparent';b.style.color=on?'#fff':TK();});});}
+function pickWire(sim){if(!sim._pickWired&&sim.ui&&sim.ui.tourbar){sim._pickWired=true;sim.ui.tourbar.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pv]');if(!b)return;const g=b.closest('[data-pick]');sim._picks=sim._picks||{};sim._picks[g.dataset.pick]=b.dataset.pv;pickSync(sim);});}setTimeout(()=>pickSync(sim),0);}
+const pickOf=(sim,key)=>(sim._picks||{})[key];
+function ringRect(ctx,x,y,w,h){ctx.save();ctx.setLineDash([5,4]);ctx.lineWidth=2.4;ctx.strokeStyle=TK();ctx.fillStyle=TKA(.08);H.rr(ctx,x,y,w,h,8);ctx.fill();ctx.stroke();ctx.restore();}
 const art=sim=>sim.def.art;
 function hits10(sim){const v=sim.vis,t=sim.vt;return (v.hitT||[]).filter(x=>x>t-10).length;}
 
@@ -351,14 +369,30 @@ potato: {
       overlay(sim,ctx,LH,k,tau){potZoom(ctx,sim,k,tau,{x:250,y:232,r:118,to:[PBX(5)-20,350]});tag(ctx,'← water moves OUT',250,98,k,{s:13,hi:true,c:'#b3261e'});tag(ctx,'membranes pull away from the walls',250,372,k,{s:12});} },
     { key: 'weigh', title: 'Read the balance', set: { bal: 6 }, speed: 1,
       see: 'The card works out the core on the balance as it soaks: its starting mass, its mass now and the percent change.',
-      why: 'You cannot see water moving in a real lab, but you can weigh it. A heavier core took in water and a lighter core lost water. We use <b>percent change</b> = (now − start) ÷ start × 100 because the cores start at different masses, like comparing test scores out of different totals.',
+      why: 'You cannot see water moving in a real lab, but you can weigh it. A heavier core took in water and a lighter core lost water. We use <b>percent change</b> = (now − start) ÷ start × 100 because the cores start at different masses, like comparing test scores out of different totals.'+pickHTML('pot','Your guess before the next step: in what strength of sugar water would a core not change at all?',[['0','plain water'],['3','about 0.3 M'],['10','1.0 M']]),
+      run(sim){pickWire(sim);},
       overlay(sim,ctx,LH,k){const c=pCore(sim),m=pMass(c),p=pPct(c);
         potCard(ctx,[['Core from beaker '+(sim.p.bal|0),700],['started: '+c.m0.toFixed(3)+' g'],['now: '+m.toFixed(3)+' g'],['('+m.toFixed(2)+' − '+c.m0.toFixed(2)+') ÷ '+c.m0.toFixed(2)+' × 100'],['= '+(p>=0?'+':'')+p.toFixed(1)+'%',700,16,p<0?'#b3261e':PAL['s2']],[p<-0.3?'lost mass → water left':p>0.3?'gained mass → water entered':'barely changed',600,12]],k);} },
     { key: 'graph', title: 'Find where nothing changes', fresh: true, speed: 1.5,
       see: 'The red line above the beakers is a graph: each dot sits over its beaker, higher if that core gained mass and lower if it lost. Watch the line cross the dashed zero line.',
       why: 'Below about 0.3 M the cores gain and above it they lose, so somewhere in between a core would not change at all. That crossing is the <b>isotonic point</b>: sugar water as concentrated as the inside of the potato cells, so water moves in and out equally.',
       so: 'In your lab you make this same graph: molarity on x, percent change on y.',
-      overlay(sim,ctx,LH,k){potGraph(ctx,sim,k);} },
+      overlay(sim,ctx,LH,k){potGraph(ctx,sim,k);const g=pickOf(sim,'pot');if(g&&sim.st.tSoak>3)tag(ctx,'Your guess: '+({0:'plain water',3:'about 0.3 M',10:'1.0 M'})[g]+(g==='3'?'  ✓':'  ✗'),690,180,Math.min(k,1.1),{s:13,c:TK()});} },
+    { key: 'repeat', title: 'One run or five?', fresh: true, speed: 4, run(sim){sim._runs=[];},
+      see: 'The soak runs five times, each time with fresh cores. The magenta rings are the earlier runs. Each run crosses zero in a slightly different place, and the shaded band shows how far the answer moves.',
+      why: 'Real potatoes vary: no two cores are exactly alike, and every balance reading has a little error. One run gives one number that looks exact. Repeating the trials shows how sure you can be, so report the range, not just one number.',
+      so: 'This is why your lab asks for more than one trial, and why scientists report an answer with a ±.',
+      overlay(sim,ctx,LH,k,tau){const st=sim.st,R=sim._runs||(sim._runs=[]),Y0=56,S=1.9;
+        if(!st.restart&&st.tSoak>=12&&R.length<5&&R._t!==st){R._t=st;let it=null;const cs=st.cores;for(let i=0;i<cs.length-1;i++){const a=pPct(cs[i]),b=pPct(cs[i+1]);if(a>=0&&b<0){const f=a/(a-b);it={m:cs[i].c+(cs[i+1].c-cs[i].c)*f,x:lerp(PBX(i),PBX(i+1),f)};break;}}
+          R.push({pts:st.cores.map((c,i)=>[PBX(i),clamp(Y0-S*pPct(c),12,112)]),m:it?it.m:NaN,x:it?it.x:NaN});if(R.length<5)st.restart=true;}
+        const iso=potGraph(ctx,sim,k,{iso:R.length>=5});
+        R.forEach((r0,j)=>{if(j===R.length-1&&R.length>=5)return;ctx.save();ctx.strokeStyle=TK();ctx.lineWidth=1.6;ctx.setLineDash([3,3]);ctx.beginPath();r0.pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.globalAlpha=0.55;ctx.stroke();ctx.globalAlpha=1;ctx.setLineDash([]);
+          r0.pts.forEach(q=>{ctx.beginPath();ctx.arc(q[0],q[1],5,0,6.29);ctx.stroke();});ctx.restore();});
+        const ms=R.map(r0=>r0.m).filter(Number.isFinite),xs=R.map(r0=>r0.x).filter(Number.isFinite);
+        if(xs.length>=2){const x0=Math.min(...xs),x1=Math.max(...xs);ctx.save();ctx.fillStyle=TKA(.25);ctx.fillRect(x0-2,Y0-16,x1-x0+4,32);ctx.restore();
+          tag(ctx,(R.length>=5?'5 runs: ':'run '+R.length+' of 5: ')+Math.min(...ms).toFixed(2)+' to '+Math.max(...ms).toFixed(2)+' M',690,180,Math.min(k,1.1),{s:13,c:TK()});}
+        else tag(ctx,'run '+(R.length+1)+' of 5',690,180,Math.min(k,1.1),{s:13,c:TK()});
+        thinkBadge(ctx,'spread','One trial or many?',k,tau,{right:790,y:14});} },
     { lvl: 'honors', key: 'zoomin', title: 'Zoom in to measure better', set: { range: 'fine' }, fresh: true, speed: 2,
       see: 'New beakers from 0.20 to 0.45 M, all close to the crossing. The red line is now much flatter, and its zero crossing is easier to pin down.',
       why: 'The first run showed the answer is between 0.2 and 0.4 M. Spacing new trials closely around it gives a more precise isotonic point, about 0.30 M for this potato. Scientists zoom in like this whenever a first run brackets the answer.',
@@ -652,8 +686,8 @@ foodtests: {
         fTubeTag(ctx,k,1,'glucose');fTubeTag(ctx,k,7,'apple juice');} },
     { key: 'sudan', title: 'Sudan III finds fat', set: { reagent: 'sudan' }, speed: 1, run(sim){fAct(sim,'addAll');},
       see: 'Red Sudan III drips in. In the oil and milk tubes, a red layer floats on top. In the rest, the dye just mixes into a pale pink with no layer.',
-      why: 'Sudan III is a dye that dissolves in fat but not in water. Fats and oils are less dense than water, so they float, and the dye goes up with them. A red layer on top means fat.',
-      overlay(sim,ctx,LH,k){fCard(ctx,k,'The dye dissolves in fat, and fat floats','Oil drops collect the red dye and rise to the top.');
+      why: 'Sudan III is a dye that dissolves in fat but not in water. Fats and oils are less dense than water, so they float, and the dye goes up with them. A red layer on top means fat. Pink alone doesn’t: the glucose tube turns pink too, and it looks just like the water tube, so it has no fat. Always judge a result against the control.',
+      overlay(sim,ctx,LH,k,tau){ringRect(ctx,62-20,142,40,168);ringRect(ctx,124-20,142,40,168);tag(ctx,'pink, no layer = same as water',140,372,Math.min(k,1.1),{s:12,c:TK()});thinkBadge(ctx,'compare','Compared to what?',k,tau,{x:520,y:410});fCard(ctx,k,'The dye dissolves in fat, and fat floats','Oil drops collect the red dye and rise to the top.');
         ctx.fillStyle='#d9ecf5';H.rr(ctx,300,46,240,48,6);ctx.fill();ctx.fillStyle='#c8332e';H.rr(ctx,300,46,240,14,6);ctx.fill();[[340,78],[420,84],[480,72]].forEach(([x,y])=>{ctx.fillStyle='#e05a4a';ctx.beginPath();ctx.arc(x,y,6,0,6.29);ctx.fill();});
         H.txt(ctx,'red layer = fat',556,74,{s:13*k,w:700,c:'#c8332e'});fTubeTag(ctx,k,4,'oil');fTubeTag(ctx,k,5,'milk');} },
     { key: 'unknown', title: 'Identify a mystery food', speed: 1, run(sim){const st=sim.st;['iodine','biuret','benedict','sudan'].forEach(r=>st.tubes[r].forEach(tb=>{tb.added=1;tb.mix=1;tb.heat=5;tb.delay=0;}));BioLab.setValues(sim,{reagent:'benedict',tube:'8'});},
