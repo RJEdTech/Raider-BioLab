@@ -1125,6 +1125,24 @@ soil: {
     'Pour 100 mL into sand, your sample and clay. Water races through the big gaps between sand grains but crawls through clay’s tiny ones, and clay holds on to more of it: about 43 mL, versus 10 mL in sand.'
   ]
 },
+plates: {
+  hook: 'RJ’s Quito immersion stays in a city of almost 3 million people ringed by volcanoes: Cotopaxi is about 50 km away, and in 1999 ash from Pichincha, right next to the city, fell on Quito’s streets. Denver has no active volcanoes. What kind of plate boundary sits off Ecuador’s coast, and why does it put volcanoes and big earthquakes near Quito?',
+  answer: 'Ocean meets continent. The Nazca plate sinks under South America at about 6.5 cm a year at a trench about 8 km deep off the coast. About 100 km down, water from the sinking plate melts the rock above it, and the magma rises about 200–300 km inland to build the Andes volcanoes around Quito. The sinking plate also sets off earthquakes, shallow near the coast and deeper inland, and the big ones can start tsunamis. Denver is more than 1,000 km from the nearest plate boundary.',
+  uses: [
+    'Colorado has its own slow, small rift: the Rio Grande Rift runs from central Colorado into New Mexico, and the San Luis Valley is one of its sunken basins.',
+    'The magnitude 9.0 earthquake off Japan in 2011 struck where the Pacific plate dives under Japan. It lifted the sea floor, and the tsunami reached parts of the coast in under an hour.',
+    'GPS stations measure plate motion directly: stations near the California coast move a few centimeters a year northwest compared with the rest of North America.'
+  ],
+  takeaway: 'Plates move only a few centimeters a year, but over millions of years that builds mountains, opens oceans and sets off earthquakes and volcanoes, almost all of them at the edges where plates meet.',
+  lede: 'Pull plates apart, push them together and slide them past each other. See where mountains, trenches, volcanoes and earthquakes come from, and why Quito has volcanoes when Denver doesn’t.',
+  tour: [
+    'Earth’s rigid outer shell is broken into plates about 100 km thick. Under them, the hot rock of the asthenosphere flows very slowly in convection currents, a few centimeters a year, about as fast as your fingernails grow.',
+    'At a mid-ocean ridge the plates pull apart. Hot rock rises into the gap, melts and hardens into new sea floor. The youngest rock is at the ridge; it gets older on both sides.',
+    'Where a dense ocean plate meets a continent, the ocean plate dives under. A deep trench forms offshore, and magma from the sinking plate builds volcanoes about 200 km inland, like the Andes around Quito.',
+    'Continents are too light to sink, so when two collide they crumple into high mountains. India is still pushing into Asia, so the Himalayas are still rising.',
+    'At a transform fault the plates slide past each other. Friction keeps the fault stuck while strain builds, and then it slips several meters at once: an earthquake.'
+  ]
+},
 seasons: {
   hook: 'Earth is about 5 million km closer to the Sun in late December than in late June, yet Denver is cold in December. How much sunlight energy does Denver get on the December solstice compared with June, and why?',
   answer: 'About a third as much: roughly 160 W/m² averaged over the day in December versus 480 in June. The tilt does it. In December Denver’s noon Sun is only 27° up instead of 74°, and the day lasts about 9 hours instead of almost 15. Being 3% closer to the Sun barely helps.',

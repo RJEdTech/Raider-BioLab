@@ -4234,4 +4234,88 @@ return {wolfmoose:{
 }};
 })());
 
+/* ---------- Plate tectonics (APES Topic 4.1) ---------- */
+BioLab.addLearn((function(){
+const plM=(sim,id)=>{const m=(sim.def.metrics||[]).find(x=>x.id===id);return m?m.get(sim):NaN;};
+const plCard=(ctx,k,LH,rows)=>dcCard(ctx,k,12,(LH||450)-30,262,rows,{up:true,hi:false});
+const f1=v=>Number.isFinite(v)?v.toFixed(1):'—',f0=v=>Number.isFinite(v)?Math.round(v).toLocaleString('en-US'):'—';
+return {plates:{
+  goals:{
+    bio:['What plates are and what moves them','What happens where plates pull apart, crash together and slide past each other','Why earthquakes and volcanoes happen where they do','How hot spots build island chains like Hawaii'],
+    honors:['What plates are and what moves them','The landforms and hazards at each kind of boundary','How magnetic stripes and earthquake depths show the plates moving','How hot spots build island chains like Hawaii'],
+    ap:['The landforms and hazards at each kind of boundary','Evidence for plate motion: magnetic stripes, earthquake depths, hot-spot tracks','Calculating plate speed from distance and age','Why a locked fault releases its slip in big earthquakes']},
+  matters:'Earthquakes, tsunamis and volcanoes kill people and shape where cities are built. Knowing which kind of boundary is near a place tells you which hazards to expect there, whether that is an immersion in Quito, a college in Seattle or a trip to Japan.',
+  startKey:'start',startRun:true,
+  steps:[
+    {key:'shell',title:'Earth’s shell is broken into plates',set:{view:'boundary',type:'ridge',speed:2.5,stripes:false,convect:true},fresh:true,speed:2,
+     see:'A slice through the top 700 km of Earth under the Atlantic Ocean. The gray layer is the rigid plate. The orange below it is the asthenosphere. Watch the arrows in the orange.',
+     why:'Earth’s outer shell, about 100 km thick, is broken into a dozen big <b>plates</b>. Below them the rock is so hot it flows very slowly, in loops called <b>convection currents</b>: hot rock rises, spreads out, cools and sinks. The plates ride along at a few centimeters a year.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[['These plates move 2.5 cm a year',{w:700}],['Your fingernails grow about 3–4 cm a year',{w:600}],['Over 1 million years: 25 km',{w:800,c:CE_RED}]]);}},
+    {key:'ridge',title:'Pulling apart: new sea floor',set:{view:'boundary',type:'ridge',speed:2.5,stripes:false},fresh:true,speed:2,
+     see:'The white ticks are spots on the sea floor. Watch them move away from the ridge on both sides.',
+     why:'As the plates pull apart, hot rock rises into the gap. The pressure on it drops, so it melts and erupts as lava that hardens into <b>new sea floor</b>. The youngest rock is at the ridge, and it gets older the farther away you go. Only small, shallow earthquakes happen here. Iceland is a piece of the Mid-Atlantic Ridge sticking above the sea.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[['New sea floor so far: '+f0(plM(sim,'moved'))+' km',{w:700}],['Deepest quake: '+f0(plM(sim,'deep'))+' km',{w:800,c:CE_RED}]]);}},
+    {key:'stripes',lvl:'honors',title:'The sea floor’s magnetic stripes',set:{view:'boundary',type:'ridge',speed:2.5,stripes:true},fresh:true,speed:2,cause:{from:{stripes:false},delay:1.5,label:'Magnetic stripes',at:[620,330]},
+     see:'The strip at the top is the sea floor near the ridge, seen from above. Watch new stripes form at the ridge as time runs.',
+     why:'Lava contains iron minerals that line up with Earth’s magnetic field as it cools, like tiny compass needles frozen in place. Earth’s field flips every few hundred thousand years. Each flip starts a new stripe at the ridge, and spreading carries the older stripes away on both sides, so the pattern is a <b>mirror image</b>. Finding these stripes in the 1960s convinced scientists the sea floor really spreads.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[['Black: field the way it is now',{w:700}],['White: field flipped',{w:700}],['Same pattern on both sides',{w:800,c:CE_RED}]]);}},
+    {key:'rift',title:'A continent splits',set:{view:'boundary',type:'rift',speed:0.7,stripes:false},fresh:true,speed:8,
+     see:'The same pulling apart, under a continent, running fast. Watch the middle drop, volcanoes grow on the edges, and then what happens to the valley.',
+     why:'Stretching thins the continent, and the middle drops into a long <b>rift valley</b> with volcanoes and shallow earthquakes, like East Africa, where Kilimanjaro stands. If it keeps pulling apart, the valley drops below sea level and <b>the ocean floods in</b>, like the Red Sea between Africa and Arabia. A smaller, much slower rift, the Rio Grande Rift, runs from central Colorado into New Mexico.',
+     overlay(sim,ctx,LH,k){const D=plM(sim,'moved');plCard(ctx,k,LH,[['Pulled apart: '+f0(D)+' km',{w:700}],[D>140?'Flooded: a new ocean':'Still a valley on land',{w:800,c:D>140?CE_BLUE:CE_RED}]]);}},
+    {key:'oc',title:'Ocean meets continent: a plate dives',set:{view:'boundary',type:'oc',speed:6.5},fresh:true,speed:1.5,
+     see:'Ocean floor on the left, a continent on the right. Follow the white ticks on the ocean plate and watch where magma rises.',
+     why:'Ocean crust is made of dense basalt; continents are lighter granite. When they push together, the ocean plate sinks under the continent: <b>subduction</b>. Where it bends down, the sea floor forms a deep <b>trench</b>. About 100 km down, water squeezed out of the sinking plate makes the hot rock above it melt. That magma rises to build a chain of <b>volcanoes</b> about 200 km inland: the Andes.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[['Trench: '+f1(plM(sim,'low'))+' km deep',{w:700}],['Volcanoes: '+f1(plM(sim,'high'))+' km high',{w:800,c:CE_RED}]]);}},
+    {key:'deep',title:'Earthquakes follow the sinking plate',set:{view:'boundary',type:'oc',speed:6.5},fresh:true,speed:2,
+     see:'Watch where the earthquakes happen. Red ones are shallow, orange are medium, purple are deep.',
+     why:'The sinking plate stays colder and more brittle than the mantle around it, so it cracks as it goes down. The earthquakes trace the slab: <b>shallow near the trench and deeper and deeper inland</b>, down to about 660 km. Only subduction makes earthquakes that deep. It also makes the biggest ones: Chile’s magnitude 9.5 in 1960 is the strongest ever recorded.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[['Deepest earthquake so far:',{w:700}],[f0(plM(sim,'deep'))+' km down',{w:800,c:CE_RED,s:16}]]);}},
+    {key:'oo',title:'Ocean meets ocean: an island arc',set:{view:'boundary',type:'oo',speed:8},fresh:true,speed:2,
+     see:'Two ocean plates meet. Watch a volcano grow from the sea floor.',
+     why:'The older ocean plate is colder and denser, so it is the one that sinks. The trench here is the deepest kind: the Mariana Trench reaches about 11 km. Magma from the sinking plate builds volcanoes that rise out of the sea as a curved <b>island arc</b>, like Japan. In 2011 a magnitude 9.0 earthquake here pushed up the sea floor and sent a tsunami onto Japan’s coast.',
+     overlay(sim,ctx,LH,k){const h=plM(sim,'high');plCard(ctx,k,LH,[['Trench: '+f1(plM(sim,'low'))+' km deep',{w:700}],[h>0?'Island: '+f1(h)+' km above the sea':'Volcano still under water',{w:800,c:CE_RED}]]);}},
+    {key:'cc',title:'Continents collide',set:{view:'boundary',type:'cc',speed:4},fresh:true,speed:4,
+     see:'India on the left, Asia on the right, running fast. Watch the middle.',
+     why:'Continents are too thick and light to sink. So when two meet, the crust <b>crumples, folds and stacks up</b> into high mountains with a deep root below them. India has been pushing into Asia for about 50 million years, and the Himalayas, with Mount Everest at 8.8 km, are still rising. There are big, shallow earthquakes (Nepal, 2015) but <b>no volcanoes</b>, because no plate sinks deep enough to melt.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[['Mountains: '+f1(plM(sim,'high'))+' km high',{w:800,c:CE_RED}],['Volcanoes: none',{w:700}]]);}},
+    {key:'transform',title:'Sliding past: the road bends, then snaps',set:{view:'boundary',type:'transform',speed:3.5},fresh:true,speed:1,
+     see:'The San Andreas Fault, seen from above. A road and a stream cross the fault. Watch the road near the fault, then watch what happens.',
+     why:'The plates slide past each other steadily, but friction keeps the fault <b>locked</b>. The ground near the fault bends and stores up strain, like a ruler you are bending. When the strain beats the friction, the fault slips several meters in seconds: an <b>earthquake</b>. The road snaps straight again, now offset. In 1906, roads and fences near San Francisco were offset by up to about 6 m.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[['Strain stored: '+f1(plM(sim,'strain'))+' m',{w:700}],['Road offset so far: '+f1(plM(sim,'offset'))+' m',{w:700}],['Big earthquakes: '+f0(plM(sim,'nq')),{w:800,c:CE_RED}]]);}},
+    {key:'hawaii',title:'Hot spots: Hawaii',set:{view:'hotspot',spot:'hawaii',speed:8},fresh:true,speed:3,
+     see:'A plume of hot rock rises from deep in the mantle and stays in one place. Watch the plate carry each new volcano away.',
+     why:'Each volcano forms over the <b>hot spot</b>, then rides the Pacific plate northwest, away from its magma. It stops erupting, wears down and slowly sinks. So the islands get <b>older the farther they are from the hot spot</b>: the Big Island is under 1 million years old and Kauai is about 5 million.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[['Volcanoes formed: '+f0(plM(sim,'nisl')),{w:700}],['Oldest: '+f1(plM(sim,'oldest'))+' million years, '+f0(plM(sim,'odist'))+' km away',{w:800,c:CE_RED}]]);}},
+    {key:'yellowstone',title:'Hot spots: Yellowstone',set:{view:'hotspot',spot:'yellowstone',speed:2.5},fresh:true,speed:4,
+     see:'The same kind of hot spot, under a continent. Watch the craters it leaves behind.',
+     why:'Under a continent, a hot spot makes huge eruptions that leave giant craters called <b>calderas</b>. As the North American plate drifts southwest, it leaves a trail of old calderas across Idaho, now buried under flat lava plains. Yellowstone sits over the hot spot today; its last giant eruption was about 640,000 years ago, and the same heat powers its geysers.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[['Craters formed: '+f0(plM(sim,'nisl')),{w:700}],['Oldest: '+f0(plM(sim,'odist'))+' km away',{w:800,c:CE_RED}]]);}},
+    {key:'hook',title:'Your question: why volcanoes around Quito?',set:{view:'boundary',type:'oc',speed:6.5},fresh:true,speed:1.5,
+     see:'The boundary off Ecuador’s coast: the Nazca plate diving under South America.',
+     why:'It is <b>ocean meeting continent</b>. The Nazca plate sinks under South America at about 6.5 cm a year at a trench about 8 km deep offshore. About 100 km down, the sinking plate melts the rock above it, and the magma rises about 200–300 km inland, right where Quito sits, to build volcanoes like Cotopaxi and Pichincha. The same sinking plate sets off earthquakes, and big ones near the coast can start tsunamis. Denver is more than 1,000 km from the nearest plate boundary.',
+     so:'Living near a subduction zone means planning for both earthquakes and volcanic ash. Ecuador watches its volcanoes closely and posts alert levels.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[['Plate speed: 6.5 cm a year',{w:700}],['Trench: '+f1(plM(sim,'low'))+' km deep',{w:700}],['Volcanoes: '+f1(plM(sim,'high'))+' km high, about 200 km inland',{w:800,c:CE_RED}]]);}},
+    {key:'rate',lvl:'ap',title:'Measure the plate’s speed',set:{view:'hotspot',spot:'hawaii',speed:8},fresh:true,speed:3,
+     see:'Hawaii again. The card divides the oldest volcano’s distance by its age.',
+     why:'Speed = distance ÷ time. A volcano 400 km from the hot spot that formed 5.0 million years ago has moved 40,000,000 cm in 5,000,000 years: <b>8 cm a year</b>. Shortcut: km per million years ÷ 10 = cm per year. The same math works on magnetic stripes: measure a stripe’s distance from the ridge and divide by its age.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[[f0(plM(sim,'odist'))+' km ÷ '+f1(plM(sim,'oldest'))+' million years',{w:700}],['= '+f1(plM(sim,'calc'))+' cm a year',{w:800,c:CE_RED,s:15}]]);}},
+    {key:'recur',lvl:'ap',title:'How often does the fault break?',set:{view:'boundary',type:'transform',speed:7},fresh:true,speed:1,
+     see:'The fault again, with the plates sliding twice as fast. Watch the gap between earthquakes.',
+     why:'Each big earthquake releases the slip stored since the last one, a few meters. Time between quakes ≈ slip ÷ speed: 4.5 m ÷ 3.5 cm/yr ≈ 130 years, and at 7 cm/yr about 65 years. Real faults are messier, so scientists give odds rather than dates, but the pattern holds: <b>faster plates, more frequent quakes</b>.',
+     overlay(sim,ctx,LH,k){plCard(ctx,k,LH,[['Big earthquakes: '+f0(plM(sim,'nq')),{w:700}],['Years between the last two: '+f0(plM(sim,'gap')),{w:800,c:CE_RED}]]);}}
+  ],
+  useIt:[
+    {do:'Before a trip near a plate boundary, like an immersion in Quito or Peru, a college visit to Seattle or Los Angeles, or a trip to Japan, practice Drop, Cover and Hold On.',
+     why:'Most earthquake injuries come from things falling on people or people falling, not from buildings collapsing. Getting down under a sturdy table protects you from both (Ready.gov).'},
+    {do:'At the coast, if you feel strong shaking or shaking that lasts a long time, go to high ground right away. Don’t wait for an official warning.',
+     why:'A subduction-zone earthquake can lift the sea floor and send a tsunami ashore within minutes. The shaking is your warning (NOAA).'},
+    {do:'At Yellowstone, stay on the boardwalks in the geyser basins.',
+     why:'The hot spot heats the water close to boiling, and the ground can be a thin crust over it. People are badly burned there every few years after stepping off (National Park Service).'}],
+  tryIt:[{title:'the paper-towel mountains (2 minutes)',
+    steps:['Lay two damp paper towels flat on a table with their edges touching.','Put a hand flat on each towel and slowly push them together.','Now try sliding the edge of one towel under a hardcover book instead.'],
+    look:'The towels can’t sink into the table, so they buckle up into folds, like two continents making the Himalayas. The towel that slides under the book is like an ocean plate subducting.'}]
+}};
+})());
+
 })();
