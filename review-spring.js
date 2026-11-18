@@ -44,7 +44,11 @@ crosses:{
     q:'In a testcross, 180 of 1000 offspring are recombinant. How far apart are the two genes?',
     num:{ans:18,tol:.1,unit:'map units'},
     steps:['Recombination frequency = 180 ÷ 1000 = 0.18.','1% recombinants = 1 map unit.','So the genes are 18 map units apart on the same chromosome.'],
-    lab:{set:{mode:'linked',rf:18},act:'breed100',look:'Read <b>Recombinant offspring</b>.'}}
+    lab:{set:{mode:'linked',rf:18},act:'breed100',look:'Read <b>Recombinant offspring</b>.'}},
+  {id:'aaxaa',kind:'test',lvl:'bio',
+    q:'<p>A heterozygous purple plant (Pp) is crossed with a white plant (pp). What fraction of the offspring are expected to be white?</p>',
+    choices:['1/2','1/4','3/4','0'],correct:0,
+    steps:['Pp makes P and p gametes; pp makes only p.','The Punnett square gives 2 Pp and 2 pp.','So half are expected to be white.']}
   ]},
 bloodtype:{
   apNote:'Released questions from College Board. Blood-type questions combine codominance, multiple alleles and antigen–antibody reactions.',
@@ -77,7 +81,11 @@ bloodtype:{
     q:'In a sample, 49% of people are type O (ii). Assuming Hardy–Weinberg, what is the frequency of the i allele?',
     num:{ans:.7,tol:.01},
     steps:['Type O is ii, so q² = 0.49.','q = √0.49 = 0.70.','That is close to many real populations, where i is the most common ABO allele.'],
-    lab:{set:{view:'pop'},act:'pop',look:'Read <b>Type O in sample</b> and <b>Estimated i allele</b>.'}}
+    lab:{set:{view:'pop'},act:'pop',look:'Read <b>Type O in sample</b> and <b>Estimated i allele</b>.'}},
+  {id:'oreceive',kind:'test',lvl:'bio',
+    q:'<p>A patient with type O blood needs red blood cells. Which type can they safely receive?</p>',
+    choices:['Type O only','Type A only','Any type at all','Type AB only'],correct:0,
+    steps:['Type O plasma carries both anti-A and anti-B antibodies.','Those would clump A, B or AB cells.','So a type O patient can receive only type O red cells.']}
   ]},
 pedigree:{
   apNote:'Released questions from College Board. Pedigree questions ask you to decide the pattern of inheritance from a family tree.',
@@ -104,7 +112,11 @@ pedigree:{
     q:'In a pedigree, nearly all affected people are males, and affected males’ daughters have affected sons. Which pattern fits?',
     choices:['X-linked recessive','Autosomal dominant','Y-linked','Autosomal recessive'],correct:0,
     steps:['Males have one X, so one recessive allele shows.','An affected father passes his X to every daughter, making them carriers.','Carrier daughters pass it to half their sons: the classic hemophilia pattern.'],
-    lab:{act:'newfam',look:'Try several families and decide the pattern for each.'}}
+    lab:{act:'newfam',look:'Try several families and decide the pattern for each.'}},
+  {id:'twothirds',kind:'test',lvl:'honors',
+    q:'<p>Two carrier parents (Aa × Aa) have an unaffected child. What is the chance that this child is a carrier?</p>',
+    choices:['2/3','1/2','1/4','3/4'],correct:0,
+    steps:['Aa × Aa gives 1 AA : 2 Aa : 1 aa.','The child is unaffected, so aa is ruled out.','Of the 3 remaining boxes, 2 are Aa: a 2/3 chance.']}
   ]},
 karyotype:{
   apNote:'Released questions from College Board. Karyotype questions link chromosome number to nondisjunction in meiosis.',
@@ -131,7 +143,11 @@ karyotype:{
   {id:'turner',kind:'ap',lvl:'ap',
     q:'A karyogram shows 45 chromosomes with a single X and no Y. What is it?',
     choices:['Turner syndrome (45,X)','Klinefelter syndrome (47,XXY)','Down syndrome','A typical male'],correct:0,
-    steps:['Only one sex chromosome, an X.','45,X is Turner syndrome, which affects females.','It can come from nondisjunction in either parent; Klinefelter is the extra-X condition in males.']}
+    steps:['Only one sex chromosome, an X.','45,X is Turner syndrome, which affects females.','It can come from nondisjunction in either parent; Klinefelter is the extra-X condition in males.']},
+  {id:'match',kind:'test',lvl:'bio',
+    q:'<p>How do you find a chromosome’s partner in a karyogram?</p>',
+    choices:['Match size, centromere spot and band pattern','Match only the color the stain turns it','Pick the chromosome lying closest to it','Pair each one with the next smaller one'],correct:0,
+    steps:['Partners carry the same genes in the same order.','So they match in size, centromere position and banding.','Bands settle close calls.']}
   ]},
 replication:{
   apNote:'Released questions from College Board. Replication questions ask what each enzyme does and why one strand is made in pieces.',
@@ -164,7 +180,11 @@ replication:{
     q:'Meselson and Stahl grew E. coli in ¹⁵N, then moved them to ¹⁴N. After one generation they saw one band at hybrid density. What did that prove?',
     choices:['Not conservative: each new DNA keeps one old strand','Conservative: the old double helix stays together','DNA is made of protein, which takes up the ¹⁵N','Nothing; one generation is too short to tell'],correct:0,
     steps:['Conservative replication would give one heavy and one light band.','One hybrid band rules that out.','After a second generation, a hybrid and a light band appeared, which ruled out dispersive and fit semiconservative.'],
-    lab:{set:{mode:'ms'},look:'Read the heavy, hybrid and light percentages generation by generation.'}}
+    lab:{set:{mode:'ms'},look:'Read the heavy, hybrid and light percentages generation by generation.'}},
+  {id:'ligase',kind:'test',lvl:'bio',
+    q:'<p>Which enzyme seals the gaps between Okazaki fragments?</p>',
+    choices:['DNA ligase','Helicase','Primase','Topoisomerase'],correct:0,
+    steps:['The lagging strand is made in short pieces.','After the RNA primers are replaced, a nick is left between pieces.','DNA ligase seals each nick into one strand.']}
   ]},
 expression:{
   apNote:'Released questions from College Board. Expression questions use the codon table and the effects of mutations on proteins.',
@@ -198,7 +218,11 @@ expression:{
     q:'What happens to introns before a eukaryotic mRNA leaves the nucleus?',
     choices:['They are spliced out, and the exons are joined','They are translated first, before the exons','They are kept and translated with the exons','They are folded up to become the 5′ cap'],correct:0,
     steps:['Introns are stretches inside the gene that don’t code for the protein.','Spliceosomes cut them out and join the exons.','The mature mRNA also gets a 5′ cap and a poly-A tail. Alternative splicing lets one gene make several proteins.'],
-    lab:{set:{introns:true},act:'replay',look:'Read <b>RNA processing</b>.'}}
+    lab:{set:{introns:true},act:'replay',look:'Read <b>RNA processing</b>.'}},
+  {id:'pair',kind:'test',lvl:'bio',fixed:true,
+    q:'<p>A DNA template strand reads TAC. What is the matching mRNA codon?</p>',
+    choices:['AUG','ATG','UAC','GUA'],correct:0,
+    steps:['RNA pairs A with U, T with A, G with C and C with G.','Template T, A, C becomes A, U, G.','AUG is the start codon. ATG has a T, which RNA doesn’t use.']}
   ]},
 lacoperon:{
   apNote:'Released questions from College Board. Operon questions ask how repressors and activators respond to the cell’s environment.',
@@ -227,7 +251,11 @@ lacoperon:{
     q:'A lacI⁻ mutant makes no working repressor. What happens with no lactose (and no glucose)?',
     choices:['The genes are on all the time','The genes are off all the time','Only some of the genes are on'],correct:0,
     steps:['lacI codes for the repressor.','No repressor means nothing blocks the operator.','The operon is always on: “constitutive” expression.'],
-    lab:{set:{lacI:true,lac:false,glc:false},look:'Read <b>Lac genes</b>.'}}
+    lab:{set:{lacI:true,lac:false,glc:false},look:'Read <b>Lac genes</b>.'}},
+  {id:'allo',kind:'test',lvl:'honors',
+    q:'<p>What does allolactose do to switch the lac operon on?</p>',
+    choices:['It binds the repressor so it falls off the DNA','It binds RNA polymerase and speeds it up','It cuts the operator out of the DNA','It turns into the enzymes the cell needs'],correct:0,
+    steps:['With no lactose, the repressor sits on the operator.','Allolactose binds the repressor and changes its shape.','The repressor falls off, and RNA polymerase reads the genes.']}
   ]},
 virus:{
   apNote:'Released questions from College Board. Virus questions compare lytic and lysogenic cycles and retroviruses.',
@@ -257,7 +285,11 @@ virus:{
     q:'Why is HIV treated with three drugs at once instead of one?',
     choices:['A virus is unlikely to resist all three at once','Three drugs together cost less than one strong drug','One drug alone would be too strong for the body','Each drug kills a different kind of HIV in the blood'],correct:0,
     steps:['HIV copies itself with many mistakes, so resistant mutants appear often.','With one drug, those mutants survive and take over.','Needing three lucky mutations at once makes resistance rare. Combination therapy turned HIV into a manageable condition.'],
-    lab:{set:{type:'hiv',drug:'combo'},look:'Compare <b>Drug-resistant virus</b> with one drug and with the combo.'}}
+    lab:{set:{type:'hiv',drug:'combo'},look:'Compare <b>Drug-resistant virus</b> with one drug and with the combo.'}},
+  {id:'lytlys',kind:'test',lvl:'bio',
+    q:'<p>How does the lysogenic cycle differ from the lytic cycle?</p>',
+    choices:['The viral DNA joins the host chromosome','The host cell bursts open right away','The virus copies itself outside the cell','The virus injects proteins, not DNA'],correct:0,
+    steps:['In the lytic cycle the virus builds copies and bursts the cell.','In the lysogenic cycle its DNA joins the host chromosome as a prophage.','The prophage is copied each time the cell divides, until stress switches it to lytic.']}
   ]},
 beaks:{
   apNote:'Released questions from College Board. Natural selection questions ask how variation, inheritance and differential survival change a population.',
@@ -284,7 +316,11 @@ beaks:{
   {id:'fitness',kind:'ap',lvl:'ap',
     q:'In one round, 80% of clothespin birds survive and 40% of spoon birds survive. What is the relative fitness of spoons, with clothespins = 1?',
     num:{ans:.5,tol:.01},
-    steps:['Relative fitness = survival of the type ÷ survival of the best type.','= 0.40 ÷ 0.80.','= 0.50.']}
+    steps:['Relative fitness = survival of the type ÷ survival of the best type.','= 0.40 ÷ 0.80.','= 0.50.']},
+  {id:'nochange',kind:'test',lvl:'bio',
+    q:'<p>On an island with only small seeds, tweezer beaks become common. Which statement is correct?</p>',
+    choices:['Tweezer birds left more offspring with tweezer beaks','Each bird reshaped its beak to fit small seeds','Birds chose to grow tweezer beaks to survive','The seeds caused new beaks to appear on demand'],correct:0,
+    steps:['Birds can’t change their own beaks.','Birds that already fit the food survived and bred.','Their young inherited the beak, so it became common.']}
   ]},
 cladogram:{
   apNote:'Released questions from College Board. Phylogeny questions use shared derived characters to read and build trees.',
@@ -311,7 +347,15 @@ cladogram:{
   {id:'ladder',kind:'ap',lvl:'ap',
     q:'A student says, “Humans evolved from chimpanzees.” What does a cladogram show instead?',
     choices:['Humans and chimps share an ancestor; both kept evolving','Chimps are the ancestors of humans, who split off later','Humans are more evolved than chimps, who stopped changing','Humans and chimps are unrelated and evolved separately'],correct:0,
-    steps:['Living species sit at the tips of a tree, not along a ladder.','Humans and chimpanzees branch from an ancestor that lived about 6 to 7 million years ago.','Chimps have been evolving for exactly as long as we have.']}
+    steps:['Living species sit at the tips of a tree, not along a ladder.','Humans and chimpanzees branch from an ancestor that lived about 6 to 7 million years ago.','Chimps have been evolving for exactly as long as we have.']},
+  {id:'fig',kind:'test',lvl:'bio',
+    q:'<p>Using the cladogram, which animal is most closely related to the mouse?</p><svg viewBox="0 0 420 230" style="display:block;width:100%;max-width:440px;height:auto;margin:10px 0 4px;color:inherit" role="img" aria-label="Cladogram: shark branches off first, then frog, then lizard, then mouse and human as the closest pair. Marks for jaws, lungs, amniotic egg and hair sit along the main line in that order."><path d="M40 200 L360 40" stroke="currentColor" stroke-width="2.5" fill="none"/><path d="M80 180 L80 20" stroke="currentColor" stroke-width="2.5"/><text x="80.0" y="14.0" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Shark</text><path d="M150 145 L150 20" stroke="currentColor" stroke-width="2.5"/><text x="150.0" y="14.0" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Frog</text><path d="M220 110 L220 20" stroke="currentColor" stroke-width="2.5"/><text x="220.0" y="14.0" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Lizard</text><path d="M290 75 L290 20" stroke="currentColor" stroke-width="2.5"/><text x="290.0" y="14.0" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Mouse</text><text x="360.0" y="14.0" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Human</text><path d="M66 198l8 -8" stroke="#c8102e" stroke-width="3"/><text x="76.0" y="216.0" font-size="12" font-weight="600" text-anchor="start" fill="#c8102e">jaws</text><path d="M126 161l8 -8" stroke="#c8102e" stroke-width="3"/><text x="136.0" y="179.0" font-size="12" font-weight="600" text-anchor="start" fill="#c8102e">lungs</text><path d="M196 126l8 -8" stroke="#c8102e" stroke-width="3"/><text x="206.0" y="144.0" font-size="12" font-weight="600" text-anchor="start" fill="#c8102e">amniotic egg</text><path d="M264 91l8 -8" stroke="#c8102e" stroke-width="3"/><text x="274.0" y="109.0" font-size="12" font-weight="600" text-anchor="start" fill="#c8102e">hair</text></svg>',
+    choices:['Human','Lizard','Frog','Shark'],correct:0,
+    steps:['Closest relatives share the most recent branch point.','Mouse and human branch from the same point, after hair evolved.','The lizard branched off earlier.']},
+  {id:'trait',kind:'test',lvl:'bio',
+    q:'<p>On the same cladogram, which animals have lungs?</p><svg viewBox="0 0 420 230" style="display:block;width:100%;max-width:440px;height:auto;margin:10px 0 4px;color:inherit" role="img" aria-label="Cladogram: shark branches off first, then frog, then lizard, then mouse and human as the closest pair. Marks for jaws, lungs, amniotic egg and hair sit along the main line in that order."><path d="M40 200 L360 40" stroke="currentColor" stroke-width="2.5" fill="none"/><path d="M80 180 L80 20" stroke="currentColor" stroke-width="2.5"/><text x="80.0" y="14.0" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Shark</text><path d="M150 145 L150 20" stroke="currentColor" stroke-width="2.5"/><text x="150.0" y="14.0" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Frog</text><path d="M220 110 L220 20" stroke="currentColor" stroke-width="2.5"/><text x="220.0" y="14.0" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Lizard</text><path d="M290 75 L290 20" stroke="currentColor" stroke-width="2.5"/><text x="290.0" y="14.0" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Mouse</text><text x="360.0" y="14.0" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Human</text><path d="M66 198l8 -8" stroke="#c8102e" stroke-width="3"/><text x="76.0" y="216.0" font-size="12" font-weight="600" text-anchor="start" fill="#c8102e">jaws</text><path d="M126 161l8 -8" stroke="#c8102e" stroke-width="3"/><text x="136.0" y="179.0" font-size="12" font-weight="600" text-anchor="start" fill="#c8102e">lungs</text><path d="M196 126l8 -8" stroke="#c8102e" stroke-width="3"/><text x="206.0" y="144.0" font-size="12" font-weight="600" text-anchor="start" fill="#c8102e">amniotic egg</text><path d="M264 91l8 -8" stroke="#c8102e" stroke-width="3"/><text x="274.0" y="109.0" font-size="12" font-weight="600" text-anchor="start" fill="#c8102e">hair</text></svg>',
+    choices:['Frog, lizard, mouse and human','Only the mouse and the human','Every animal shown, including the shark','Only the frog and the lizard'],correct:0,
+    steps:['A trait mark applies to every branch above it.','Lungs appear after the shark branches off.','So frog, lizard, mouse and human have lungs.']}
   ]},
 hominids:{
   apNote:'Released questions from College Board. Human evolution questions use fossil evidence and the branching pattern of evolution.',
@@ -340,7 +384,11 @@ hominids:{
     q:'Why do scientists compare brain size to body size (EQ) instead of brain size alone?',
     choices:['Bigger bodies need bigger brains just to run them','Brain size is too hard to measure from a skull','EQ is the same for every species, so it’s fair','Body size doesn’t matter, but EQ is easier to compute'],correct:0,
     steps:['An elephant’s brain is far bigger than ours.','Much of any brain controls the body, so large animals need large brains.','EQ asks how much brain a species has compared with what its body size predicts.'],
-    lab:{set:{scene:'eq'},look:'Read <b>Encephalization quotient (EQ)</b> for each species.'}}
+    lab:{set:{scene:'eq'},look:'Read <b>Encephalization quotient (EQ)</b> for each species.'}},
+  {id:'first',kind:'test',lvl:'bio',
+    q:'<p>Lucy walked upright with a brain about a third the size of ours. What does that show?</p>',
+    choices:['Walking upright came before big brains','Big brains came before walking upright','Lucy was a direct ancestor of chimpanzees','Brain size never changed in human evolution'],correct:0,
+    steps:['Lucy’s hips and legs show upright walking 3.4 million years ago.','Her brain was about 450 cc, near a chimp’s.','Brains grew much later, with Homo.']}
   ]},
 dissection:{
   apNote:'Released questions from College Board. Organ system questions link structure to function.',
@@ -370,7 +418,11 @@ dissection:{
     q:'A grasshopper has no lungs. How does oxygen reach its cells?',
     choices:['Air goes through spiracles and tracheae to the cells','Through its blood, which carries oxygen like ours','Through its gizzard, which absorbs air it swallows','Through its skin, which takes in oxygen directly'],correct:0,
     steps:['Spiracles are small openings along the body.','They lead into air tubes that branch to every tissue.','This works only over short distances, one reason insects stay small today.'],
-    lab:{set:{mode:'hopper',hstep:'hext',hpart:'spiracle'},look:'Find the spiracles.'}}
+    lab:{set:{mode:'hopper',hstep:'hext',hpart:'spiracle'},look:'Find the spiracles.'}},
+  {id:'bile',kind:'test',lvl:'bio',
+    q:'<p>In the fetal pig, which organ stores bile made by the liver?</p>',
+    choices:['The gallbladder','The spleen','The pancreas','The stomach'],correct:0,
+    steps:['The liver makes bile.','The small green gallbladder under the liver stores it.','Bile helps break fat into small droplets in the small intestine.']}
   ]},
 homeostasis:{
   apNote:'Released questions from College Board. Homeostasis questions describe negative feedback loops and what happens when they fail.',
@@ -399,7 +451,11 @@ homeostasis:{
     q:'In type 1 diabetes the immune system destroys insulin-making beta cells. Why does blood sugar stay high?',
     choices:['Without insulin, cells don’t take glucose from blood','Glucagon stops working, so sugar can’t be stored','The person eats too much sugar to keep up with','The liver stops storing glucose, but cells still take it'],correct:0,
     steps:['Insulin is the signal for cells to take in glucose.','No insulin, no signal: glucose builds up in the blood.','People with type 1 inject insulin, which replaces the missing part of the loop.'],
-    lab:{set:{mode:'glucose',t1:true},look:'Read <b>Blood glucose</b>, then try <b>Inject insulin</b>.'}}
+    lab:{set:{mode:'glucose',t1:true},look:'Read <b>Blood glucose</b>, then try <b>Inject insulin</b>.'}},
+  {id:'t2vst1',kind:'test',lvl:'honors',
+    q:'<p>How is type 2 diabetes different from type 1?</p>',
+    choices:['In type 2, cells respond weakly to insulin','In type 2, the pancreas makes no insulin at all','In type 2, the body makes too much glucagon','In type 2, the kidneys stop filtering glucose'],correct:0,
+    steps:['In type 1 the insulin-making cells are destroyed, so there is no insulin.','In type 2 the pancreas makes insulin, often plenty.','But the cells respond weakly to it: insulin resistance.']}
   ]},
 climate:{
   apNote:'Released questions from College Board. APES climate questions link greenhouse gases, warming and solutions.',
@@ -434,7 +490,11 @@ climate:{
     q:'Ocean pH has fallen from about 8.2 to 8.05. Why does that matter for shellfish and corals?',
     choices:['More CO₂ makes it acidic, leaving less carbonate','Higher pH dissolves shells and coral skeletons','pH doesn’t affect shells, only the temperature does','The water is warming, and that’s the only harm'],correct:0,
     steps:['CO₂ dissolves in seawater and forms carbonic acid.','The extra H⁺ ties up carbonate ions that animals need for calcium carbonate shells.','A 0.15 drop in pH is about 40% more H⁺. Oyster hatcheries in the Pacific Northwest already adjust their water.'],
-    lab:{set:{path:'bau'},look:'Read <b>Ocean surface pH</b>.'}}
+    lab:{set:{path:'bau'},look:'Read <b>Ocean surface pH</b>.'}},
+  {id:'stop',kind:'test',lvl:'bio',
+    q:'<p>What has to happen for CO₂ in the air to stop rising?</p>',
+    choices:['Emissions fall to about what nature removes','Emissions stay flat at today’s level','Emissions grow more slowly each year','Methane is cut, with CO₂ left the same'],correct:0,
+    steps:['Emissions are the faucet; oceans and forests are the drain.','Today the faucet runs about twice as fast as the drain.','CO₂ stops rising only near net zero.']}
   ]},
 energycalc:{
   apNote:'Released questions from College Board. APES energy questions use kWh, efficiency and unit conversions.',
@@ -525,7 +585,11 @@ smog:{
     q:'In summer, gasoline sold along the Front Range is blended to evaporate less. Why?',
     choices:['It cuts VOCs, one of the two ingredients of ozone','It saves money, since less fuel is wasted','It lowers CO₂ from every gallon burned','It reduces the soot particles from engines'],correct:0,
     steps:['Gasoline vapor is a VOC, and gas evaporates faster in summer heat.','Ozone needs NOx and VOCs plus sunlight.','The Front Range doesn’t meet the federal ozone standard, so it targets VOCs in summer.'],
-    lab:{set:{season:'summer',voc:30},look:'Compare the ozone peak at 100% and 30% VOCs.'}}
+    lab:{set:{season:'summer',voc:30},look:'Compare the ozone peak at 100% and 30% VOCs.'}},
+  {id:'graph',kind:'test',lvl:'bio',
+    q:'<p>The graph shows ozone on a summer day. Why does it peak in mid-afternoon instead of at rush hour?</p><svg viewBox="0 0 420 230" style="display:block;width:100%;max-width:440px;height:auto;margin:10px 0 4px;color:inherit" role="img" aria-label="Graph of ozone over a summer day: low overnight and at the 8:00 rush hour, rising to a peak near 60 ppb around 15:00, then falling in the evening."><path d="M58 16V180H406" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M58.0 180v4" stroke="currentColor"/><text x="58.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">0:00</text><path d="M143.5 180v4" stroke="currentColor"/><text x="143.5" y="196" font-size="12" text-anchor="middle" fill="currentColor">6:00</text><path d="M229.0 180v4" stroke="currentColor"/><text x="229.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">12:00</text><path d="M314.5 180v4" stroke="currentColor"/><text x="314.5" y="196" font-size="12" text-anchor="middle" fill="currentColor">18:00</text><path d="M400.0 180v4" stroke="currentColor"/><text x="400.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">24:00</text><path d="M54 180.0h4" stroke="currentColor"/><text x="51" y="184.0" font-size="12" text-anchor="end" fill="currentColor">0</text><path d="M54 101.0h4" stroke="currentColor"/><text x="51" y="105.0" font-size="12" text-anchor="end" fill="currentColor">40</text><path d="M54 22.0h4" stroke="currentColor"/><text x="51" y="26.0" font-size="12" text-anchor="end" fill="currentColor">80 ppb</text><text x="229.0" y="216" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Time of day</text><text transform="translate(16 101.0) rotate(-90)" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Ozone</text><path d="M58.0 161.0L59.7 161.0L61.4 161.0L63.1 161.0L64.8 161.0L66.5 161.0L68.3 161.0L70.0 161.0L71.7 161.0L73.4 161.0L75.1 161.0L76.8 161.0L78.5 161.0L80.2 161.0L81.9 161.0L83.7 161.0L85.4 161.0L87.1 161.0L88.8 161.0L90.5 161.0L92.2 161.0L93.9 161.0L95.6 161.0L97.3 161.0L99.0 161.0L100.8 161.0L102.5 161.0L104.2 161.0L105.9 161.0L107.6 161.0L109.3 161.0L111.0 161.0L112.7 161.0L114.4 161.0L116.1 161.0L117.8 161.0L119.6 161.0L121.3 161.0L123.0 161.0L124.7 161.0L126.4 161.0L128.1 161.0L129.8 161.0L131.5 161.0L133.2 161.0L134.9 161.0L136.7 161.0L138.4 161.0L140.1 161.0L141.8 161.0L143.5 161.0L145.2 161.0L146.9 161.0L148.6 161.0L150.3 160.9L152.1 160.9L153.8 160.9L155.5 160.9L157.2 160.8L158.9 160.8L160.6 160.7L162.3 160.7L164.0 160.6L165.7 160.5L167.4 160.4L169.2 160.3L170.9 160.2L172.6 160.0L174.3 159.8L176.0 159.6L177.7 159.4L179.4 159.1L181.1 158.8L182.8 158.4L184.5 158.0L186.2 157.5L188.0 157.0L189.7 156.4L191.4 155.7L193.1 155.0L194.8 154.2L196.5 153.3L198.2 152.2L199.9 151.1L201.6 149.9L203.3 148.6L205.1 147.1L206.8 145.5L208.5 143.8L210.2 141.9L211.9 139.9L213.6 137.7L215.3 135.4L217.0 133.0L218.7 130.4L220.4 127.6L222.2 124.7L223.9 121.7L225.6 118.5L227.3 115.2L229.0 111.8L230.7 108.3L232.4 104.7L234.1 101.0L235.8 97.3L237.6 93.5L239.3 89.7L241.0 85.9L242.7 82.1L244.4 78.4L246.1 74.7L247.8 71.1L249.5 67.6L251.2 64.3L252.9 61.1L254.6 58.1L256.4 55.3L258.1 52.7L259.8 50.4L261.5 48.4L263.2 46.6L264.9 45.2L266.6 44.0L268.3 43.2L270.0 42.7L271.8 42.5L273.5 42.7L275.2 43.2L276.9 44.0L278.6 45.2L280.3 46.6L282.0 48.4L283.7 50.4L285.4 52.7L287.1 55.3L288.9 58.1L290.6 61.1L292.3 64.3L294.0 67.6L295.7 71.1L297.4 74.7L299.1 78.4L300.8 82.1L302.5 85.9L304.2 89.7L305.9 93.5L307.7 97.3L309.4 101.0L311.1 104.7L312.8 108.3L314.5 111.8L316.2 115.2L317.9 118.5L319.6 121.7L321.3 124.7L323.1 127.6L324.8 130.4L326.5 133.0L328.2 135.4L329.9 137.7L331.6 139.9L333.3 141.9L335.0 143.8L336.7 145.5L338.4 147.1L340.1 148.6L341.9 149.9L343.6 151.1L345.3 152.2L347.0 153.3L348.7 154.2L350.4 155.0L352.1 155.7L353.8 156.4L355.5 157.0L357.2 157.5L359.0 158.0L360.7 158.4L362.4 158.8L364.1 159.1L365.8 159.4L367.5 159.6L369.2 159.8L370.9 160.0L372.6 160.2L374.4 160.3L376.1 160.4L377.8 160.5L379.5 160.6L381.2 160.7L382.9 160.7L384.6 160.8L386.3 160.8L388.0 160.9L389.7 160.9L391.4 160.9L393.2 160.9L394.9 161.0L396.6 161.0L398.3 161.0L400.0 161.0" fill="none" stroke="#2a6fdb" stroke-width="3"/><text x="172.0" y="108.9" font-size="12" font-weight="600" text-anchor="middle" fill="currentColor">rush hour</text><path d="M172.0 116.8V164.2" stroke="currentColor" stroke-dasharray="3 3"/></svg>',
+    choices:['Sunlight needs hours to turn exhaust into ozone','Cars give off ozone mostly in the afternoon','Ozone blows in from other states each afternoon','Ozone forms only when the air cools down'],correct:0,
+    steps:['Ozone isn’t emitted directly; it forms from NOx and VOCs in sunlight.','Morning exhaust needs hours of strong sun to react.','So ozone builds through the day and peaks mid-afternoon.']}
   ]},
 acidrain:{
   apNote:'Released questions from College Board. Acid deposition questions use the pH scale, sources of SO₂ and NOx, and buffering.',
@@ -554,7 +618,11 @@ acidrain:{
     q:'Adding limestone to an acid lake raises its pH. Why is it not a permanent fix if the acid rain continues?',
     choices:['The limestone is used up as it neutralizes new acid','Limestone keeps neutralizing acid forever','It lowers the pH, making the lake worse','Fish and plants eat the limestone'],correct:0,
     steps:['Each mole of CaCO₃ neutralizes 2 moles of H⁺ and is gone.','If acid keeps arriving, the buffer runs out.','Fixing the source (scrubbers, low-sulfur coal, cleaner cars) is what lasts.'],
-    lab:{act:'lime',look:'Add limestone and watch the pH jump, then fall back.'}}
+    lab:{act:'lime',look:'Add limestone and watch the pH jump, then fall back.'}},
+  {id:'hundred',kind:'test',lvl:'bio',
+    q:'<p>Rain at pH 4 is how many times more acidic than water at pH 6?</p>',
+    choices:['100 times','2 times','20 times','10 times'],correct:0,
+    steps:['Each pH unit is a factor of 10 in H⁺.','pH 4 to pH 6 is two units.','10 × 10 = 100 times more H⁺.']}
   ]},
 eutrophication:{
   apNote:'Released questions from College Board. Eutrophication questions trace nutrients to algae to oxygen loss.',
@@ -584,7 +652,11 @@ eutrophication:{
     q:'Each summer a dead zone of several thousand square miles forms in the Gulf of Mexico. What is the main source of its nutrients?',
     choices:['Farm fertilizer carried down the Mississippi','Oil spills from offshore drilling platforms','Ocean currents carrying nutrients from the Atlantic','Hurricanes stirring up mud from the sea floor'],correct:0,
     steps:['The Mississippi drains farmland across 31 states.','Its nitrate and phosphate feed huge blooms in the Gulf.','Decomposition strips oxygen from the bottom water, and stratification keeps it from mixing back in.'],
-    lab:{set:{runoff:60,strat:true},look:'Compare <b>Bottom oxygen</b> with and without stratification.'}}
+    lab:{set:{runoff:60,strat:true},look:'Compare <b>Bottom oxygen</b> with and without stratification.'}},
+  {id:'sequence',kind:'test',lvl:'bio',
+    q:'<p>Which order of events leads to a fish kill after fertilizer runoff?</p>',
+    choices:['Algae bloom, algae die, bacteria use up the oxygen','Bacteria bloom, algae die, the fish eat the algae','Fish eat the fertilizer, then the algae die off','Oxygen rises, algae bloom, then the fish leave'],correct:0,
+    steps:['Nutrients feed a bloom of algae.','The algae die and sink.','Bacteria decompose them and use up the deep water’s oxygen, so fish suffocate.']}
   ]},
 ld50:{
   apNote:'Released questions from College Board. Toxicology questions read dose–response curves and define LD50.',
@@ -611,6 +683,28 @@ ld50:{
   {id:'chronic',kind:'ap',lvl:'ap',
     q:'Why are LD50 tests not enough to set safe limits for drinking water?',
     choices:['They measure short-term toxicity, not years of small doses','They are too accurate, so limits end up set too strict','They only test plants, which react differently from people','They measure chronic toxicity, which is too slow to matter'],correct:0,
-    steps:['LD50 tests use a single large dose.','Many chemicals (lead, some pesticides) cause harm slowly at low doses.','Regulators use chronic studies, the NOAEL and safety factors (often 100 to 1000×).']}
+    steps:['LD50 tests use a single large dose.','Many chemicals (lead, some pesticides) cause harm slowly at low doses.','Regulators use chronic studies, the NOAEL and safety factors (often 100 to 1000×).']},
+  {id:'readcurve',kind:'test',lvl:'bio',
+    q:'<p>The graph shows radish seeds sprouting at different salt levels. About what is the LD50?</p><svg viewBox="0 0 420 230" style="display:block;width:100%;max-width:440px;height:auto;margin:10px 0 4px;color:inherit" role="img" aria-label="Dose-response curve: seeds sprouted fall from 100% at 0% salt, crossing 50% at about 1.1% salt, to under 10% at 3% salt."><path d="M58 16V180H406" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M58.0 180v4" stroke="currentColor"/><text x="58.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">0</text><path d="M143.5 180v4" stroke="currentColor"/><text x="143.5" y="196" font-size="12" text-anchor="middle" fill="currentColor">1</text><path d="M229.0 180v4" stroke="currentColor"/><text x="229.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">2</text><path d="M314.5 180v4" stroke="currentColor"/><text x="314.5" y="196" font-size="12" text-anchor="middle" fill="currentColor">3</text><path d="M400.0 180v4" stroke="currentColor"/><text x="400.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">4</text><path d="M54 180.0h4" stroke="currentColor"/><text x="51" y="184.0" font-size="12" text-anchor="end" fill="currentColor">0</text><path d="M54 101.0h4" stroke="currentColor"/><text x="51" y="105.0" font-size="12" text-anchor="end" fill="currentColor">50</text><path d="M54 22.0h4" stroke="currentColor"/><text x="51" y="26.0" font-size="12" text-anchor="end" fill="currentColor">100</text><text x="229.0" y="216" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Salt (%)</text><text transform="translate(16 101.0) rotate(-90)" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Seeds sprouted (%)</text><path d="M58 101.0H400" stroke="currentColor" stroke-dasharray="4 4" opacity=".5"/><path d="M58.0 22.0L59.7 22.0L61.4 22.0L63.1 22.0L64.8 22.1L66.5 22.1L68.3 22.2L70.0 22.3L71.7 22.5L73.4 22.7L75.1 22.9L76.8 23.3L78.5 23.6L80.2 24.1L81.9 24.6L83.7 25.1L85.4 25.8L87.1 26.5L88.8 27.4L90.5 28.3L92.2 29.2L93.9 30.3L95.6 31.5L97.3 32.8L99.0 34.1L100.8 35.6L102.5 37.1L104.2 38.7L105.9 40.4L107.6 42.2L109.3 44.1L111.0 46.0L112.7 48.0L114.4 50.1L116.1 52.2L117.8 54.4L119.6 56.6L121.3 58.9L123.0 61.2L124.7 63.5L126.4 65.9L128.1 68.3L129.8 70.7L131.5 73.1L133.2 75.5L134.9 77.9L136.7 80.3L138.4 82.7L140.1 85.1L141.8 87.4L143.5 89.8L145.2 92.1L146.9 94.4L148.6 96.6L150.3 98.8L152.1 101.0L153.8 103.1L155.5 105.2L157.2 107.3L158.9 109.3L160.6 111.3L162.3 113.2L164.0 115.0L165.7 116.9L167.4 118.7L169.2 120.4L170.9 122.1L172.6 123.7L174.3 125.3L176.0 126.9L177.7 128.4L179.4 129.9L181.1 131.3L182.8 132.7L184.5 134.0L186.2 135.3L188.0 136.6L189.7 137.8L191.4 139.0L193.1 140.1L194.8 141.2L196.5 142.3L198.2 143.4L199.9 144.4L201.6 145.4L203.3 146.3L205.1 147.2L206.8 148.1L208.5 149.0L210.2 149.8L211.9 150.6L213.6 151.4L215.3 152.2L217.0 152.9L218.7 153.6L220.4 154.3L222.2 155.0L223.9 155.6L225.6 156.3L227.3 156.9L229.0 157.5L230.7 158.0L232.4 158.6L234.1 159.1L235.8 159.6L237.6 160.1L239.3 160.6L241.0 161.1L242.7 161.6L244.4 162.0L246.1 162.4L247.8 162.9L249.5 163.3L251.2 163.7L252.9 164.0L254.6 164.4L256.4 164.8L258.1 165.1L259.8 165.5L261.5 165.8L263.2 166.1L264.9 166.4L266.6 166.7L268.3 167.0L270.0 167.3L271.8 167.6L273.5 167.9L275.2 168.1L276.9 168.4L278.6 168.6L280.3 168.9L282.0 169.1L283.7 169.3L285.4 169.6L287.1 169.8L288.9 170.0L290.6 170.2L292.3 170.4L294.0 170.6L295.7 170.8L297.4 171.0L299.1 171.1L300.8 171.3L302.5 171.5L304.2 171.7L305.9 171.8L307.7 172.0L309.4 172.1L311.1 172.3L312.8 172.4L314.5 172.6L316.2 172.7L317.9 172.9L319.6 173.0L321.3 173.1L323.1 173.2L324.8 173.4L326.5 173.5L328.2 173.6L329.9 173.7L331.6 173.8L333.3 173.9L335.0 174.0L336.7 174.2L338.4 174.3L340.1 174.4L341.9 174.5L343.6 174.6L345.3 174.6L347.0 174.7L348.7 174.8L350.4 174.9L352.1 175.0L353.8 175.1L355.5 175.2L357.2 175.2L359.0 175.3L360.7 175.4L362.4 175.5L364.1 175.5L365.8 175.6L367.5 175.7L369.2 175.8L370.9 175.8L372.6 175.9L374.4 176.0L376.1 176.0L377.8 176.1L379.5 176.1L381.2 176.2L382.9 176.3L384.6 176.3L386.3 176.4L388.0 176.4L389.7 176.5L391.4 176.5L393.2 176.6L394.9 176.6L396.6 176.7L398.3 176.7L400.0 176.8" fill="none" stroke="#c8102e" stroke-width="3"/></svg>',
+    choices:['About 1.1% salt','About 0.5% salt','About 2.5% salt','About 4% salt'],correct:0,
+    steps:['LD50 is the dose that affects half the group.','Find where the curve crosses 50% sprouted.','That is about 1.1% salt.']}
   ]}
+});
+
+/* Nov 18 rework: practice questions for a tool that had none */
+BioLab.addReview({
+whogetscare: {questions:[
+  {id:'proxy',kind:'test',lvl:'bio',
+    q:'<p>A program picks patients for extra care by ranking last year’s care cost. Group B gets less spent on them for the same illness. What happens?</p>',
+    choices:['Group B is picked less often, even though they are just as sick','Group B is picked more often, since cost tracks need exactly','Both groups are picked equally, since the program ignores groups','Nobody in group B can be picked, since cost is the only data'],correct:0,
+    steps:['Ranking by cost treats spending as a stand-in for sickness.','Less is spent on group B for the same illness, so they look healthier.','So the program flags fewer of them than their share of sick patients.']},
+  {id:'share',kind:'test',lvl:'bio',fixed:true,
+    q:'<p>Group B is 762 of 3,000 patients. If the 90 patients flagged were picked in fair proportion, about how many would be from group B?</p>',
+    choices:['About 23','About 6','About 45','About 76'],correct:0,
+    steps:['Group B’s share is 762 ÷ 3,000 = 25.4%.','25.4% of 90 = 0.254 × 90 ≈ 22.9.','So about 23. The cost ranking flagged only 6.']},
+  {id:'fixit',kind:'test',lvl:'honors',
+    q:'<p>Which change to the program would fix the bias the most?</p>',
+    choices:['Rank patients by their health needs instead of cost','Rank patients by cost from the last five years instead','Flag the top 5% of patients by cost instead of the top 3%','Remove group labels from the data before ranking by cost'],correct:0,
+    steps:['The bias comes from what the program ranks by: cost, not sickness.','More years of cost data or a bigger cutoff keeps the same bias.','Hiding group labels doesn’t help either, because cost itself carries the gap.']}
+]}
 });
