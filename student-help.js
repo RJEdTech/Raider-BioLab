@@ -17,7 +17,7 @@ let on=CAN_SPEAK&&get(KEY_RA),easy=get(KEY_ER),lastSig='',voice=null;
    Science engine (BioLab, ChemLab, PhysLab, ForensicsLab, AnatomyLab, SportsMedLab) and math engine (MathLab family). */
 const SH_SEL=[
   ['tour','.tourbar','.tb-h'],['review','.panel.review','.rv-head'],['predict','.panel.predict','.p-head'],['done','.donecard',null],
-  ['guide','.gd-card, .guide-card, .walk-card',null],['quiz','.rv-card, .quiz-card',null]];
+  ['guide','.gutbox',null]];
 /* ---------- 1. Read aloud ---------- */
 function pickVoice(){if(!CAN_SPEAK)return;const vs=SS.getVoices()||[];const en=vs.filter(v=>/^en(-|_)?US/i.test(v.lang));const pool=en.length?en:vs.filter(v=>/^en/i.test(v.lang));
   voice=pool.find(v=>/natural|online|neural/i.test(v.name))||pool.find(v=>v.default)||pool[0]||null;}
@@ -69,7 +69,7 @@ function ensureButtons(){SH_SEL.forEach(([kind,sel,head])=>{document.querySelect
   if(box)return;box=document.createElement('span');box.className='sh-tools';if(kind==='tour')box.dataset.sig=stepSig(el);
   if(CAN_SPEAK)box.appendChild(mk('sh-ra',()=>{on=!on;put(KEY_RA,on);sync();if(on){lastSig='';tick(true);}else SS.cancel();}));
   box.appendChild(mk('sh-er',()=>{easy=!easy;put(KEY_ER,easy);sync();}));
-  if(kind==='tour'||kind==='review'||kind==='guide'||kind==='quiz'){const c=mk('sh-cf',b=>countConfused(el,b));c.textContent='😕 This confused me';c.title='Tell us this part was confusing (counted anonymously)';box.appendChild(c);}
+  if(kind==='tour'||kind==='review'||kind==='guide'){const c=mk('sh-cf',b=>countConfused(el,b));c.textContent='😕 This confused me';c.title='Tell us this part was confusing (counted anonymously)';box.appendChild(c);}
   if(head)host.appendChild(box);else host.insertBefore(box,host.firstChild);});});sync();}
 const stepSig=el=>{const n=el.querySelector('.tb-n'),t=el.querySelector('.tb-t');return (n?n.textContent:'')+'|'+(t?t.textContent:'')+'|'+location.hash;};
 /* The panel the student is looking at now. */
@@ -80,9 +80,9 @@ function boot(){ensureButtons();mo.observe(document.body,{childList:true,subtree
 window.addEventListener('hashchange',()=>{if(CAN_SPEAK)SS.cancel();lastSig='';});window.addEventListener('pagehide',()=>{if(CAN_SPEAK)SS.cancel();});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 /* ---------- 2. Easier reading styles (only text panels; the canvas is unchanged) ---------- */
-const T='.tourbar,.panel.review,.panel.predict,.donecard,.gd-card,.guide-card,.walk-card,.rv-card,.quiz-card';
+const T='.tourbar,.panel.review,.panel.predict,.donecard,.gutbox';
 const st=document.createElement('style');st.textContent=
-`.sh-tools{display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:auto;align-items:center}.donecard>.sh-tools,.gd-card>.sh-tools,.guide-card>.sh-tools,.walk-card>.sh-tools,.rv-card>.sh-tools,.quiz-card>.sh-tools{display:flex;justify-content:flex-end;margin:0 0 8px}
+`.sh-tools{display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:auto;align-items:center}.donecard>.sh-tools,.gutbox>.sh-tools{display:flex;justify-content:flex-end;margin:0 0 8px}
 .sh-btn{font-size:13.5px;padding:4px 10px;line-height:1.3}.sh-btn[aria-pressed="true"]{background:var(--rj,#c8102e);color:#fff;border-color:var(--rj,#c8102e)}.sh-cf[disabled]{opacity:.8;cursor:default}
 .sh-tip{font-size:13px;color:var(--muted,#666)}
 html.sh-easy :is(${T}) :is(p,li,.tb-x,.rv-q,.q,.choice,.verdict,.help){font-size:18px!important;line-height:1.75!important;letter-spacing:.035em!important;word-spacing:.14em!important;text-align:left!important;max-width:62ch}

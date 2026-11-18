@@ -129,4 +129,18 @@ Her Plate Boundary Explorer, ENSO Explorer and Soil Investigation Lab showed wha
 - **Teacher-made tools (BioLab).** A def with `external:{src,height,time,intro}` and `credit:{name,role,note,short}` shows a teacher's own page from `teacher/` in a frame, with "Created by …" under the title and "By …" on the home card. First use: `sims/robertson.js`, Dr. Sandy Robertson's four APES Unit 4 tools (her files unchanged except an author meta tag).
 
 ## Student help: read aloud, easier reading, "this confused me" (Nov 18, 2026)
-`student-help.js` (loaded after `BioLab.start()`) puts a **🔊 Read aloud** button on every Learn it step, Test yourself prediction, review question and end card. Turning it on reads the current text with the browser's own voice (Web Speech API, nothing leaves the device), then reads each new step or question as it appears, until the student turns it off. The choice is kept in `localStorage` (`raider-labs-readaloud`). It only watches the page, so no tool needs changes. Write step text so it makes sense heard aloud: the canvas labels are not read, so "What you see" must say what the picture shows.
+`student-help.js` (loaded after `BioLab.start()`, same file on every Raider Labs site) adds three buttons to every Learn it step, Test yourself prediction, review question, gut check and end card:
+- **🔊 Read aloud:** reads the current text with the browser's own voice (Web Speech API; nothing leaves the device), then each new step or question, until turned off. It prefers Edge's Natural voices and says symbols as words (°C, µmol/min, H⁺, CO₂, Km).
+- **Aa Easier reading:** a reading view for dyslexic readers and anyone who finds dense text hard. It adds space between lines, letters and words, makes lines shorter, removes all-caps headings and drops italics. Only text panels change; the canvas is unchanged.
+- **😕 This confused me:** one click counts a GoatCounter event, `confused/<site>/<tool>/<level>/<step>`. It sends no names and no text. To see which steps students flag most, check the Events list in the rjedtech.goatcounter.com dashboard.
+- Both settings are saved per browser (`raider-labs-readaloud`, `raider-labs-easyread`). The file only watches the page, so no tool needs changes. Panel selectors are in `SH_SEL` at the top of the file.
+
+## Writing Learn it steps (Nov 18, 2026, from Honors Bio student feedback on Enzymes)
+Students called the enzyme walkthrough "helpful but confusing… a little overwhelming". These rules come from that feedback.
+- **About 40 words per step, at most,** across What you see + Why it happens + Why it matters. One idea per step. Run `claude/learn-words-check.js` (project doc); its output lists any step over 40.
+- **Show the result on the picture.** The one number the step is about (rate, mass change, ATP count) goes on the canvas, with a mark for "normal". Readout tiles below the canvas are off-screen during Learn it.
+- **Put it on the graph students are tested on.** Each tool needs one step that builds the unit's standard graph (rate vs temperature, mass change vs molarity, O₂ vs light) from the model, so the particle view connects to the test graph.
+- **Check against the unit quiz.** Before building, list the core ideas the course's quiz tests (activation energy was missing from Enzymes). Each one needs a step or a practice question.
+- **Text must stand alone when heard.** Read aloud (ours or Edge's) cannot read the canvas, so "What you see" must say what the picture shows.
+- **Labels never overlap at phone width.** Anchor labels by their edge (`ezTagA` in BioLab learn.js), and check `stepshots` at 390 px.
+- **Practice questions that look like tests:** in each unit, include some questions with a figure (inline SVG built from the model) and questions tied to the class's own lab.
