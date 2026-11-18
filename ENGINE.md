@@ -144,3 +144,6 @@ Students called the enzyme walkthrough "helpful but confusing… a little overwh
 - **Text must stand alone when heard.** Read aloud (ours or Edge's) cannot read the canvas, so "What you see" must say what the picture shows.
 - **Labels never overlap at phone width.** Anchor labels by their edge (`ezTagA` in BioLab learn.js), and check `stepshots` at 390 px.
 - **Practice questions that look like tests:** in each unit, include some questions with a figure (inline SVG built from the model) and questions tied to the class's own lab.
+
+### Graph kit for Learn it overlays (`learn-graph-kit.js`, Nov 18, 2026)
+Loaded after the sims and before the review and learn files. Inside an overlay, `const K=BioLab.lg;` gives `K.dim(ctx,LH)` (an opaque cover), `K.axes(ctx,B,k,{xr,xt,yt,xl,yl})`, `K.curve(ctx,B,xr,fn,to,col,dash)` (fn returns 0..1), `K.dot`, `K.bars`, `K.tag` and `K.tagA(…,'l'|'r')` (edge-anchored labels that stay on the canvas at phone size), plus `K.X`, `K.Y`, `K.ease` and `K.lerp`. Build each curve from the sim's own formulas, and say so in a comment.
