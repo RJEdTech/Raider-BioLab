@@ -7,7 +7,7 @@ BioLab.COURSES = [
     blurb: 'Tools in the order the Biology course covers them, unit by unit.',
     units: [
       { n: 'Unit 1', t: 'Nature of science', ids: ['expdesign', 'pillbug'] },
-      { n: 'New', t: 'Ecology', ids: ['energy', 'carboncycle', 'popgrowth', 'wolfmoose', 'predprey', 'niche', 'biodiversity'], note: 'Ecology is being added to Biology. These are the tools Honors Biology uses for it.' },
+      { n: 'New', t: 'Ecology', ids: ['energy', 'carboncycle', 'popgrowth', 'wolfmoose', 'predprey', 'niche', 'biodiversity', 'mountain'], note: 'Ecology is being added to Biology. These are the tools Honors Biology uses for it.' },
       { n: 'Unit 2', t: 'Chemistry of life', ids: ['lifebonds', 'waterprops', 'water', 'macromolecules', 'phlife', 'foodtests'] },
       { n: 'Unit 3', t: 'Cells and microscopes', ids: ['cellexplorer', 'microscope', 'transport', 'potato'] },
       { n: 'Unit 4', t: 'Cell energy', ids: ['enz', 'photo', 'chloroplast', 'glycolysis', 'resp'] },
@@ -22,7 +22,7 @@ BioLab.COURSES = [
     blurb: 'Tools in the order Honors Biology covers them: first semester, then second.',
     units: [
       { n: 'Fall 1', t: 'Science skills: experimental design and data', ids: ['expdesign', 'pillbug'] },
-      { n: 'Fall 2', t: 'Ecology', ids: ['energy', 'carboncycle', 'popgrowth', 'wolfmoose', 'predprey', 'niche', 'biodiversity'] },
+      { n: 'Fall 2', t: 'Ecology', ids: ['energy', 'carboncycle', 'popgrowth', 'wolfmoose', 'predprey', 'niche', 'biodiversity', 'mountain'] },
       { n: 'Fall 3', t: 'Biochemistry and water', ids: ['lifebonds', 'waterprops', 'water', 'macromolecules', 'phlife', 'protein', 'foodtests'] },
       { n: 'Fall 4', t: 'Cells', ids: ['cellexplorer', 'microscope', 'sav'] },
       { n: 'Fall 5', t: 'Membranes and transport', ids: ['transport', 'potato'] },
@@ -59,7 +59,7 @@ BioLab.COURSES = [
       { n: 'Unit 2', t: 'Biodiversity', ids: ['biodiversity', 'islandbio', 'succession', 'evolution'], note: 'Ecosystem services, island biogeography, tolerance, succession and bottlenecks.' },
       { n: 'Unit 3', t: 'Populations', ids: ['popgrowth', 'wolfmoose', 'predprey', 'humanpop'], note: 'r- and K-selection, survivorship, carrying capacity and human populations.' },
       { n: 'Unit 4', t: 'Earth systems and resources', ids: ['plates', 'plateexplorer', 'soil', 'soillab', 'seasons', 'windsatacama', 'albedo', 'enso', 'ensoexplorer'], note: 'Plate tectonics, soil, solar radiation and seasons, albedo, atmospheric circulation, ocean currents and ENSO. Four tools by Dr. Sandy Robertson sit beside ours.' },
-      { n: 'Unit 5', t: 'Land and water use', ids: ['commons', 'farm', 'gmotrial', 'footprint', 'treecarbon', 'mining', 'cityscore'], note: 'Tragedy of the commons, agriculture (irrigation, fertilizer and pest control), forestry and tree carbon, mining and reclamation, carbon footprints, and urbanization and sustainability indicators.' },
+      { n: 'Unit 5', t: 'Land and water use', ids: ['commons', 'farm', 'gmotrial', 'footprint', 'treecarbon', 'mining', 'mountain', 'cityscore'], note: 'Tragedy of the commons, agriculture (irrigation, fertilizer and pest control), forestry and tree carbon, mining and reclamation, carbon footprints, and urbanization and sustainability indicators.' },
       { n: 'Unit 9', t: 'Global change', ids: ['climate', 'carboncycle'], note: 'Greenhouse effect, climate impacts, stabilization wedges and ocean acidification.' },
       { n: 'Unit 6', t: 'Energy resources and consumption', ids: ['energycalc', 'gridmix', 'evwhatif'], note: 'Energy sources, efficiency calculations and the lightbulb lab.' },
       { n: 'Unit 7', t: 'Atmospheric pollution', ids: ['smog', 'acidrain'], note: 'Denver air quality, smog, thermal inversions and acid rain.' },
@@ -91,7 +91,7 @@ BioLab.TOPIC_ORDER = {
   9: ['dissection', 'homeostasis'],
   10: ['pipette', 'gel', 'plasmid', 'pcr', 'blast', 'transformation'],
   12: ['plates', 'soil', 'seasons', 'albedo', 'enso', 'climate'],
-  13: ['commons', 'farm', 'gmotrial', 'footprint', 'treecarbon', 'mining', 'energycalc', 'gridmix', 'evwhatif', 'cityscore'],
+  13: ['commons', 'farm', 'gmotrial', 'footprint', 'treecarbon', 'mining', 'mountain', 'energycalc', 'gridmix', 'evwhatif', 'cityscore'],
   14: ['smog', 'acidrain', 'eutrophication', 'ld50'],
   11: ['sanger', 'crispr', 'synthbio', 'qpcr', 'epidemic', 'antibiotic', 'molclock']
 };
