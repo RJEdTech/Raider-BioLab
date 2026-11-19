@@ -98,7 +98,7 @@ const VIRUS={
      choices:['4.2 × 10⁸ PFU/mL','4.2 × 10⁶ PFU/mL','4.2 × 10⁷ PFU/mL','42 PFU/mL'],correct:0,
      explain:{honors:'Each plaque started from one phage. Titer = plaques ÷ (volume plated × dilution) = 42 ÷ (0.1 mL × 10⁻⁶) = 4.2 × 10⁸ plaque-forming units per mL.'}},
     {lvl:'ap',q:'A person with HIV starts a single antiviral drug (a reverse transcriptase inhibitor) on day 100. What happens over the next few months?',
-     choices:['The virus disappears for good within weeks','It falls, then rebounds as resistant mutants take over','The drug has no effect on the virus at all'],correct:1,
+     choices:['The virus disappears for good within a few weeks of starting','It falls, then rebounds as resistant mutants take over','The drug has no effect on the virus at all, even at first'],correct:1,
      baseline:{type:'hiv'},change:{drug:'one'},changeText:'One drug started',watch:'hivV',at:100,reveal:220,
      explain:{ap:'HIV reverse transcriptase has no proofreading, so about one mutation is made in every new genome. Among millions of virions, some already carry the single mutation that resists one drug. The drug kills off the rest, and the resistant strain takes over: natural selection inside one patient.'}},
     {lvl:'ap',q:'A different patient starts a three-drug combination on day 100. What happens to the virus?',

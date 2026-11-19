@@ -91,7 +91,7 @@ const NEURON={
      baseline:{stim:'steady',strength:15},change:{ttx:true},changeText:'Tetrodotoxin added',watch:'V',at:30,reveal:90,
      explain:{honors:'With Na⁺ channels plugged, Na⁺ can’t rush in, so the membrane can never swing positive. The stimulus still pushes the voltage up a little, but no action potentials fire. Signals to muscles stop, which is why the toxin paralyzes.'}},
     {lvl:'honors',q:'Two strong pulses arrive 5 ms apart. How many action potentials fire?',
-     choices:['Two, one for each pulse','One; the second is in the refractory period','None, since they come too close'],correct:1,
+     choices:['Two, one for each pulse that arrives','One; the second is in the refractory period','None, since the pulses come too close together'],correct:1,
      baseline:{stim:'pulses',freq:0,strength:15,gap:5},changeAction:'pair',changeText:'Two pulses, 5 ms apart',watch:'V',at:3,reveal:30,
      explain:{honors:'Right after a spike, Na⁺ channels are inactivated and K⁺ channels are still open. The neuron can’t fire again until they reset. That refractory period sets a speed limit on firing and keeps signals moving one way down the axon.',
               ap:'In this squid-axon model at 6.3 °C, a second 15 µA/cm² pulse needs about 12 ms to succeed. Mammalian neurons at 37 °C recover in about 1–2 ms.'}},

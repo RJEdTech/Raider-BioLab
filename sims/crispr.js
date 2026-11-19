@@ -86,7 +86,7 @@ const CR={
     return [
     {lvl:'bio',instant:true,q:`You want Cas9 to cut somewhere between bases ${GAP[0]+2} and ${GAP[1]}. There is no NGG close enough on either strand to put a cut there. Can Cas9 cut there?`,choices:['Yes, the guide RNA can point it anywhere','No, it needs a PAM in the right spot','Only if you add more Cas9'],correct:1,
      explain:'Cas9 only checks DNA next to a PAM (NGG). If no PAM puts the cut where you need it, this Cas9 can’t cut there. Scientists use engineered Cas9 variants that recognize other PAMs to reach those spots.'},
-    {lvl:'bio',q:'Cas9 cuts the gene, and the cell glues the ends back together but loses one letter. What happens to the β-globin protein?',choices:['It is fixed','It is scrambled and cut short','Nothing changes'],correct:1,
+    {lvl:'bio',q:'Cas9 cuts the gene, and the cell glues the ends back together but loses one letter. What happens to the β-globin protein?',choices:['It is fixed and works normally','It is scrambled and cut short','Nothing changes, since one letter is too small to matter'],correct:1,
      baseline:{site:DEFSITE,repair:'nhej',indel:'del1'},changeAction:'cut',changeText:'Cas9 cuts, end-joining repairs',
      explain:{bio:'Losing one letter shifts the reading frame: every three-letter codon after the cut is read wrong, and a stop codon shows up early. The protein is scrambled and short. This is how CRISPR knocks genes out.',
               ap:'A −1 indel shifts the frame at codon 8. Translation hits a premature stop shortly after, so the product is truncated (compare the length readout with 147). In cells, such mRNAs are also destroyed by nonsense-mediated decay.'}},

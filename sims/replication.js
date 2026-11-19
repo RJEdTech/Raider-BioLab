@@ -113,7 +113,7 @@ const REP={
      changeText:'Keep watching the top strand',watch:'frags',
      explain:{bio:'DNA polymerase can only build in one direction. On the top strand that direction points away from the fork, so the new strand is made in short pieces (Okazaki fragments) that are joined afterward.',
               honors:'DNA polymerase adds nucleotides only to a 3′ end (5′→3′ synthesis). On the lagging template that runs away from the fork, so each fragment must start fresh from a new primer near the fork.'}},
-    {lvl:'bio',q:'Ligase is knocked out. What happens to the new top strand?',choices:['Copying stops completely','The pieces are made but stay unconnected','Nothing changes'],correct:1,
+    {lvl:'bio',q:'Ligase is knocked out. What happens to the new top strand?',choices:['Copying stops completely at the fork','The pieces are made but stay unconnected','Nothing changes, since polymerase fills the gaps'],correct:1,
      change:{ligase:false},changeText:'Ligase knocked out',watch:'nicks',
      explain:{bio:'Ligase is the glue. Without it, polymerase still builds every piece, but the pieces are never sealed together, so gaps (nicks) build up in the strand.',
               honors:'Without ligase, the phosphodiester bond between adjacent Okazaki fragments never forms. Fragments accumulate with nicks between them, and the lagging strand stays in pieces.'}},
