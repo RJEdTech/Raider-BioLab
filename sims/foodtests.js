@@ -51,6 +51,7 @@ const SIM={
   id:'foodtests',hash:'foodtests',apUnit:1,order:3,kind:'Virtual lab',tab:'Food tests lab',
   card:'Test foods with Benedict’s, iodine, Biuret and Sudan III, then use the results to identify four mystery samples.',
   title:'Identifying nutrients: the food tests lab',
+  ledeMore:'<p><b>Think of a home COVID test.</b> A chemical changes color only when the thing it looks for is there, and a control line shows the test worked.</p><p>Each food test works the same way: one chemical, one nutrient, one color change.</p>',
   lede:{bio:'Each reagent changes color when one kind of nutrient is present. Test known foods first, then figure out what the unknowns contain.',
         honors:'Build a results table with positive and negative controls, then use it to identify four unknown samples.',
         ap:'Go beyond yes or no. Benedict’s color shows roughly how much reducing sugar is present, and some sugars do not react at all.'},

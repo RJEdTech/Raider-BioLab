@@ -183,6 +183,7 @@ const SIM={
   next:['waterprops','water','macromolecules','phlife','protein'],
   card:'Count an atom’s protons and neutrons, follow a radioactive tracer, build CH₄, NH₃ and H₂O, and see which bonds let salt dissolve while fat stays out.',
   title:'Atoms and bonds in living things',
+  ledeMore:'<p><b>Think of LEGO bricks.</b> Atoms are the bricks, and each kind has a set number of studs for connecting: carbon 4, oxygen 2, hydrogen 1. Bonds are the connections. Sharing makes a strong snap; a pull between charges is a weaker stick.</p><p>Every molecule in your body, from water to DNA, is built this way.</p>',
   lede:{bio:'Six elements, C, H, N, O, P and S, build almost every molecule in a cell. Look inside one atom, then see how atoms share or hand over electrons to make the bonds in water, salt, fats and DNA.',
         honors:'Count valence electrons to predict how many bonds C, N and O make, then use bond polarity and shape to predict which molecules are polar.',
         ap:'Connect bond polarity to hydrophobic and hydrophilic behavior, and see how hydrogen bonds hold water, pair DNA bases and shape protein β-sheets.'},

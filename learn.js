@@ -627,6 +627,8 @@ function splitN(sim,n){for(let i=0;i<n;i++)sim.st.q.push('split');}
 
 BioLab.addLearn({
 macromolecules: {
+  simple: true,
+  intro: { bio: 'You’ll link small molecules into big ones and split them apart again, the way your body builds and digests food.' },
   goals: {
     bio: ['What a monomer and a polymer are, and which foods are made of them', 'Why building a chain gives off water and breaking one uses water', 'How digestion turns bread, eggs and oil into pieces small enough to absorb', 'How this explains fiber, lactose-free milk and the nutrition label'],
     honors: ['What a monomer and a polymer are, and which foods are made of them', 'Why building a chain gives off water and breaking one uses water', 'How digestive enzymes speed up hydrolysis, one bond at a time', 'How this explains fiber, lactose-free milk and the nutrition label'],
@@ -640,7 +642,7 @@ macromolecules: {
   steps: [
     { key: 'mono', title: 'Monomers: the building blocks', fresh: true, speed: 0.3,
       see: 'Each six-sided shape is one <b>glucose</b>, about 1 nm across. Water molecules on the right are about 0.3 nm.',
-      why: 'A building block like glucose is a <b>monomer</b>. Thousands linked make <b>starch</b>, a <b>polymer</b>. Colors are labels; real starch is white cornstarch.',
+      why: 'A building block like glucose is a <b>monomer</b> (“mono” = one, “mer” = part). Thousands linked make starch, a <b>polymer</b> (“poly” = many parts).',
       overlay(sim,ctx,LH,k){foodCard(ctx,k,['powder','bread'],['What starch looks like to you: white powder','Each speck of cornstarch holds millions of chains']);
         tag(ctx,'glucose ≈ 1 nm',372,62,k,{s:12,hi:true});line(ctx,400,74,mPool(5)[0],mPool(5)[1]-18,'#c8102e');tag(ctx,'water ≈ 0.3 nm',640,206,k,{s:12,hi:true});} },
     { key: 'ends', title: 'Where the bonds form', speed: 0.3,
@@ -650,7 +652,7 @@ macromolecules: {
         tag(ctx,'–OH end of glucose 1',a[0]+30,152,k,{s:12,hi:true});line(ctx,a[0]+30,140,a[0]+24,a[1]+10,'#c8102e');tag(ctx,'–H end of glucose 2',b[0]+90,180,k,{s:12,hi:true});line(ctx,b[0]+40,170,b[0]-25,b[1]+8,'#c8102e');} },
     { key: 'join', title: 'Joining makes water', speed: 0.35, run(sim){sim.st.q.push('join');},
       see: 'In slow motion, the –OH and –H come off together as one H₂O and fly into the water box. The glucose are now bonded.',
-      why: 'O + 2 H is a water molecule. Taking it out links the two: <b>dehydration synthesis</b>.',
+      why: 'O + 2 H is a water molecule. Taking it out links the two: <b>dehydration synthesis</b>, “putting together by removing water.”',
       overlay(sim,ctx,LH,k){tag(ctx,'–OH + –H  →  H₂O',300,206,k,{s:13,hi:true});} },
     { key: 'chain', title: 'Every bond gives off one water', fresh: true, speed: 1, run: joinN,
       see: 'All six join. Each new bond sends one water into the box.',
@@ -663,7 +665,7 @@ macromolecules: {
         tag(ctx,'…keeps going for hundreds to thousands more glucose',420,262,k,{s:13,hi:true});foodCard(ctx,k,['rice','bread'],['Rice, bread, pasta, potatoes and corn','are mostly starch, besides their water']);} },
     { key: 'split', title: 'Splitting uses water', set: { startAs: 'chain' }, fresh: true, speed: 0.35, run(sim){splitN(sim,1);},
       see: 'Now the reverse: a water flies to a bond and splits, giving –H to one glucose and –OH to the other. The bond breaks.',
-      why: 'This is <b>hydrolysis</b>: splitting with water. It puts back the exact water that building took out.',
+      why: 'This is <b>hydrolysis</b>: “hydro” = water, “lysis” = splitting. It puts back the exact water that building took out.',
       overlay(sim,ctx,LH,k){tag(ctx,'H₂O goes IN and breaks the bond',300,206,k,{s:13,hi:true});} },
     { key: 'digest', title: 'This is digestion', set: { startAs: 'chain' }, fresh: true, speed: 0.8, run(sim){splitN(sim,5);},
       see: 'The whole chain is cut, one bond and one water at a time, until six glucose float free.',
@@ -675,7 +677,7 @@ macromolecules: {
       overlay(sim,ctx,LH,k){foodCard(ctx,k,['egg','beans'],['Protein you eat: eggs, beans, meat, milk','Cut into amino acids, then rebuilt into your proteins'],{y:126,h:62});} },
     { key: 'fat', title: 'Fats: three tails, not a chain', set: { mono: 'fat' }, fresh: true, speed: 1, run: joinN,
       see: 'A fat: one <b>glycerol</b> (gray bar) joins 3 <b>fatty acid</b> tails, releasing 3 waters.',
-      why: 'Same water-releasing reaction, but a fat is not a polymer: it stops at 3 tails. Oils and butter are these <b>triglycerides</b>.',
+      why: 'Same water-releasing reaction, but a fat stops at 3 tails, so it is not a polymer. Three (“tri”) tails on glycerol: a <b>triglyceride</b>.',
       overlay(sim,ctx,LH,k){foodCard(ctx,k,['oil','butter'],['Fats you eat: oil, butter','One glycerol + 3 fatty acids'],{x:30,y:136,w:330});} },
     { lvl: 'honors', key: 'enzyme', title: 'Enzymes do the cutting', set: { start: 8, startAs: 'chain', enzyme: true }, fresh: true, speed: 0.8,
       see: 'The purple enzyme (amylase) grabs a bond and a water and splits them, again and again.',
@@ -717,6 +719,8 @@ function bigWater(ctx,x,y,s,ang){const O=34*s,Hr=19*s,L=46*s,half=104.5/2*Math.P
 
 BioLab.addLearn({
 water: {
+  simple: true,
+  intro: { bio: 'You’ll heat ice into steam and see why water’s temperature stops rising while it melts and boils.' },
   goals: {
     bio: ['What a water molecule looks like, and why its ends are slightly charged', 'What a hydrogen bond is, and why it makes ice float', 'Why the temperature stops rising while ice melts and while water boils', 'How this explains sweat, steam burns, burst pipes and lake ice'],
     honors: ['What a water molecule looks like, and why its ends are slightly charged', 'What a hydrogen bond is, and why it makes ice float', 'Why water has such a high specific heat, and how ethanol compares', 'How this explains sweat, steam burns, burst pipes and lake ice'],
@@ -760,7 +764,7 @@ water: {
         tag(ctx,'ice: 0.92 g/mL (floats)',A.MX,y0+86,k,{s:12,hi:true});tag(ctx,'liquid water below stays about 4 °C',A.MX,A.MY+8,k,{s:12});tag(ctx,'1.00 g/mL',150,330,k,{s:12});} },
     { key: 'warm', title: 'Water warms up slowly', speed: 0.3, run(sim){wSetT(sim,20);},
       see: 'Liquid water at 20 °C heats up. The card shows energy in and temperature rise.',
-      why: 'Warming 1 g by 1 °C takes 4.18 J, water’s high <b>specific heat</b>. Sand needs only about 0.8 J.',
+      why: 'Warming 1 g by 1 °C takes 4.18 J: water’s <b>specific heat</b> (each substance has its own). Sand needs only about 0.8 J.',
       so: 'That is why beach sand burns.',
       overlay(sim,ctx,LH,k){const c=sim.st.cur;wCard(ctx,k,[['Energy in: '+wE(sim).toFixed(1)+' kJ',700],['Warmed: +'+Math.max(0,c.T-20).toFixed(1)+' °C'],['4.18 J per g per °C']]);} },
     { key: 'boil', title: 'Boiling: stuck at 100 °C', speed: 3, run(sim){wSet(sim,'boil',0);},
@@ -830,6 +834,8 @@ function helix(ctx,x0,y,len,col){ctx.save();ctx.strokeStyle=col||'#b9790f';ctx.l
 
 BioLab.addLearn({
 foodtests: {
+  simple: true,
+  intro: { bio: 'You’ll test foods with four color-changing chemicals and use the results to identify mystery foods.' },
   goals: {
     bio: ['How each of the four reagents finds one kind of nutrient', 'What each color change means, and why Benedict’s needs heat', 'Why the plain-water tube matters (the negative control)', 'How to use a pattern of results to identify an unknown food'],
     honors: ['How each of the four reagents finds one kind of nutrient', 'Why you need both negative and positive controls', 'How to use a pattern of results to identify an unknown food', 'Where the same tests show up at the doctor and in the kitchen'],
@@ -845,7 +851,7 @@ foodtests: {
       why: 'Water has none of the nutrients, so its color is what “no” looks like: the <b>negative control</b>. A result counts only if it differs from water.',
       overlay(sim,ctx,LH,k){fTubeTag(ctx,k,0,'negative control');fCard(ctx,k,'Four reagents, four questions');[['Iodine','starch?','#c8892e'],['Biuret','protein?','#4b7fd8'],['Benedict’s','sugar?','#2f63c9'],['Sudan III','fat?','#d84a4a']].forEach(([n,q,c],i)=>{const x=306+i*120;ctx.fillStyle=c;H.rr(ctx,x,48,18,30,4);ctx.fill();H.txt(ctx,n,x+26,60,{s:12*k,w:700});H.txt(ctx,q,x+26,78,{s:12*k,c:PAL['cv-soft']});});} },
     { key: 'iodine', title: 'Iodine finds starch', set: { reagent: 'iodine' }, speed: 1, run(sim){fAct(sim,'addAll');},
-      see: 'Amber iodine goes in. The starch and potato tubes turn blue-black; the rest stay amber.',
+      see: 'Amber iodine goes in; a test chemical like this is a <b>reagent</b>. The starch and potato tubes turn blue-black; the rest stay amber.',
       why: 'Starch coils into a spring, and iodine packed inside the coil looks blue-black. No coil, no color change.',
       so: 'Bread, rice and pasta would turn dark too.',
       overlay(sim,ctx,LH,k){fCard(ctx,k,'Iodine tucks into the starch coil','Colors are labels. Starch itself is white; iodine packed in the coil looks blue-black.');helix(ctx,300,70,300);
@@ -862,7 +868,7 @@ foodtests: {
         H.txt(ctx,'→ violet',620,74,{s:13*k,w:700,c:'#7b3fb0'});fTubeTag(ctx,k,3,'egg white');fTubeTag(ctx,k,5,'milk');} },
     { key: 'benedict', title: 'Benedict’s: nothing yet', set: { reagent: 'benedict' }, speed: 1, run(sim){fAct(sim,'addAll');},
       see: 'Blue Benedict’s goes into every tube, even glucose and apple juice. Every tube stays blue.',
-      why: 'Benedict’s only reacts when hot. Read it cold and you get a <b>false negative</b>: the sugar is there, but the test says no.',
+      why: 'Benedict’s only reacts when hot. Read it cold and the test says no even though sugar is there: a <b>false negative</b>.',
       overlay(sim,ctx,LH,k){fCard(ctx,k,'Benedict’s needs heat','Cold: the copper stays as blue Cu²⁺ ions, even with plenty of sugar.');fTubeTag(ctx,k,1,'glucose: still blue');} },
     { key: 'heat', title: 'Into the hot water bath', set: { reagent: 'benedict' }, speed: 1, run(sim){fAct(sim,'heat');},
       see: 'The rack goes into an 80 °C bath. Sugary tubes turn green, yellow, orange, then brick red. Water and starch stay blue.',
@@ -918,6 +924,8 @@ const PH_THINGS=[['Lemon juice',2],['Cola',2.5],['Coffee',5],['Milk',6.7],['Pure
 
 BioLab.addLearn({
 phlife: {
+  simple: true,
+  intro: { bio: 'You’ll add acid to plain water and to a buffer, and see how your blood keeps its pH steady.' },
   goals: {
     bio: ['What the pH number counts, and why one step means ten times', 'Why a few drops of acid wreck the pH of pure water', 'How a buffer, like the one in your blood, catches extra H⁺', 'Why enzymes need the right pH, and what that means for teeth, pools and gardens'],
     honors: ['What the pH number counts, and why one step means ten times', 'How a buffer catches extra H⁺, and why blood’s buffer needs your lungs', 'Why blood must stay between pH 7.35 and 7.45', 'Why enzymes need the right pH, and what that means for teeth, pools and gardens'],
@@ -926,11 +934,11 @@ phlife: {
   matters: 'Every enzyme in you is built to work at one pH. Your blood has to stay between 7.35 and 7.45, while your stomach sits near 2. The same chemistry decides whether soda eats your teeth and why Colorado gardeners struggle to grow blueberries.',
   question: 'Five drops of acid go into a cup of pure water, and five more go into blood. Why does the water’s pH crash while the blood’s barely moves?',
   startKey: 'scale', startRun: false,
-  startOverlay(sim,ctx,LH,k){tag(ctx,'pH meter',268,82,k,{s:12,hi:true});tag(ctx,'The pH scale',686,22,k,{s:12,hi:true});tag(ctx,'Where the added H⁺ goes',454,6+12,k,{s:12,hi:true});},
+  startOverlay(sim,ctx,LH,k){tag(ctx,'pH meter',268,82,k,{s:12,hi:true});tag(ctx,'The pH scale',686,22,k,{s:12,hi:true});},
   steps: [
     { key: 'scale', title: 'The pH scale counts H⁺', fresh: true, pause: true, set: { sol: 'water', reag: 'acid' },
       see: 'Lemon juice near 2, water at 7, blood just above 7, bleach near 12.5, on a bar of real indicator colors.',
-      why: 'pH counts H⁺. Lower is more <b>acidic</b>; above 7 is <b>basic</b>. Each step is ten times: pH 5 has 100 times the H⁺ of pH 7.',
+      why: '<b>pH</b> counts H⁺ (“power of hydrogen”). Lower is more <b>acidic</b>; above 7 is <b>basic</b>. Each step is ten times: pH 5 has 100 times the H⁺ of pH 7.',
       overlay(sim,ctx,LH,k){ctx.save();ctx.fillStyle=PAL['cv-bg'];H.rr(ctx,330,10,250,432,10);ctx.fill();ctx.restore();H.txt(ctx,'pH of things you know',342,32,{s:13*k,w:700});
         let prevY=30;PH_THINGS.forEach(([n,p])=>{const yb=phY(p);let y=Math.max(yb,prevY+28);prevY=y;H.txt(ctx,n+'  '+p,342,y+4,{s:12*k,w:600});ctx.save();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(500,y);ctx.lineTo(560,y);ctx.lineTo(598,yb);ctx.stroke();ctx.restore();});} },
     { key: 'water', title: 'Acid into pure water', set: { sol: 'water', reag: 'acid' }, fresh: true, speed: 0.3, run(sim){phDrops(sim,5);},
@@ -943,7 +951,7 @@ phlife: {
       overlay(sim,ctx,LH,k){tag(ctx,'every H⁺ stays free',454,236,k,{s:12,hi:true});} },
     { key: 'buffer', title: 'A buffer catches H⁺', set: { sol: 'cell', reag: 'acid' }, fresh: true, speed: 0.3, run(sim){phDrops(sim,5);},
       see: 'The same 5 drops go into phosphate buffer. The middle panel shows each H⁺ caught. The meter slips only from 7.20 to 7.16.',
-      why: 'A <b>buffer</b> soaks up extra acid or base. HPO₄²⁻ grabs each H⁺, so it can’t float free and the pH barely moves.',
+      why: 'A <b>buffer</b> soaks up extra acid or base, like a car’s shocks soaking up a pothole. HPO₄²⁻ grabs each H⁺, so the pH barely moves.',
       overlay(sim,ctx,LH,k){const p=phM(sim,'ph');phCard(ctx,k,[['pH '+p.toFixed(2),700,15],['buffer caught almost all of it']]);tag(ctx,'HPO₄²⁻ + H⁺ → H₂PO₄⁻',454,236,k,{s:12,hi:true});} },
     { key: 'blood', title: 'Blood’s buffer uses your lungs', set: { sol: 'blood', reag: 'acid', lungs: true }, fresh: true, speed: 0.3, run(sim){phDrops(sim,5);},
       see: 'Blood’s buffer, with breathing on. The same 5 drops barely move the pH from 7.40.',
@@ -952,7 +960,7 @@ phlife: {
       overlay(sim,ctx,LH,k){const p=phM(sim,'ph');phCard(ctx,k,[['pH '+p.toFixed(2),700,15],['lungs carry the CO₂ away']]);} },
     { key: 'sealed', title: 'Too much acid: acidosis', set: { sol: 'blood', reag: 'acid', lungs: false }, fresh: true, speed: 0.3, run(sim){phDrops(sim,30);},
       see: 'Blood buffer in a sealed beaker, 30 drops. CO₂ can’t escape, and the pH falls to about 6.8.',
-      why: 'Blood must stay between 7.35 and 7.45. Below that is <b>acidosis</b>: proteins and enzymes stop working. A buffer can only absorb so much.',
+      why: 'Blood must stay between 7.35 and 7.45. Below that is <b>acidosis</b> (“-osis” = a condition): proteins and enzymes stop working. A buffer can only absorb so much.',
       overlay(sim,ctx,LH,k){const p=phM(sim,'ph');phCard(ctx,k,[['pH '+p.toFixed(2),700,15,p<7.35?'#b3261e':PAL['cv-ink']],[p<7.35?'below 7.35: acidosis':'inside the safe range']]);ctx.save();ctx.strokeStyle='#c8102e';ctx.lineWidth=3;ctx.strokeRect(598,phY(7.35),28,phY(7.45)-phY(7.35));ctx.restore();} },
     { key: 'stomach', title: 'Enzymes need their pH', set: { sol: 'stomach', enz: 'pepsin' }, fresh: true, pause: true,
       see: 'Stomach acid, pH 2. The bottom panel shows pepsin, the stomach’s protein-cutting enzyme, at its best.',
@@ -960,7 +968,7 @@ phlife: {
       overlay(sim,ctx,LH,k){tag(ctx,'pepsin: built for pH 2',454,276,k,{s:12,hi:true});} },
     { key: 'antacid', title: 'Neutralizing acid', set: { sol: 'stomach', reag: 'base', enz: 'pepsin' }, fresh: true, speed: 0.4, run(sim){phDrops(sim,100);},
       see: '100 drops of base go into the stomach acid. The pH jumps toward 7, the indicator turns green, and pepsin nearly stops.',
-      why: 'H⁺ + OH⁻ → H₂O: <b>neutralization</b>. Heartburn antacids do this with weaker bases like calcium carbonate.',
+      why: 'H⁺ + OH⁻ → H₂O: acid and base cancel out, back to neutral. That is <b>neutralization</b>. Antacids do it with weak bases like calcium carbonate.',
       overlay(sim,ctx,LH,k){const p=phM(sim,'ph');phCard(ctx,k,[['pH '+p.toFixed(2),700,15],['H⁺ + OH⁻ → H₂O']]);} },
     { lvl: 'ap', key: 'hh', title: 'Henderson–Hasselbalch', set: { sol: 'blood', lungs: false }, fresh: true, pause: true,
       see: 'Fresh blood buffer. The card reads the buffer pair from the model.',
@@ -991,6 +999,8 @@ function lbArrow(ctx,x1,y1,x2,y2,col){ctx.save();ctx.strokeStyle=col||'#c8102e';
 
 BioLab.addLearn({
 lifebonds: {
+  simple: true,
+  intro: { bio: 'You’ll look inside an atom, then see the three ways atoms hold together to build water, salt, fat and DNA.' },
   goals: {
     bio: ['What is inside an atom, and what makes carbon-14 different from carbon-12', 'Why carbon makes 4 bonds, nitrogen 3 and oxygen 2', 'The three ways atoms bond: even sharing, uneven sharing and handing over', 'Why salt dissolves in water but grease does not, and what soap has to do with it'],
     honors: ['What is inside an atom, and what isotopes are', 'How valence electrons predict the number of bonds', 'How electronegativity makes bonds polar, nonpolar or ionic', 'How hydrogen bonds hold water together and pair DNA bases'],
@@ -1006,22 +1016,22 @@ lifebonds: {
       why: 'Six protons make it carbon. Not to scale: if the atom were a football field, the nucleus would be a grain of sand.',
       overlay(sim,ctx,LH,k,tau){lbRing(ctx,350,236,30,tau);tag(ctx,'nucleus (drawn far too big)',350,186-20,k,{s:12,hi:true});} },
     { key: 'isotope', title: 'Same element, extra neutrons', set: { view: 'atom', el: 'C', iso: '2', hl: 2 }, fresh: true, pause: true,
-      see: 'Carbon-14 has 8 neutrons but still 6 protons. The 16-atom sample shows 4 still radioactive after 2 half-lives.',
-      why: 'Extra neutrons make it unstable. Half decays every 5,700 years, which is how scientists date bones and wood.',
+      see: 'Carbon-14: still 6 protons, but 8 neutrons. The 16-atom sample shows 4 still radioactive after 2 <b>half-lives</b>.',
+      why: 'Same element, more neutrons: an <b>isotope</b> (“iso” = same place on the periodic table). Half of C-14 decays every 5,700 years, which is how bones and wood are dated.',
       overlay(sim,ctx,LH,k){tag(ctx,'2 half-lives = 11,400 years: ¼ left',110,232-90,k,{s:12,hi:true});} },
     { key: 'share1', title: 'Sharing one pair', set: { view: 'build', ctr: 'C', nH: 1 }, fresh: true, pause: true,
       see: 'One hydrogen joins carbon, and they share a pair: one electron from C (yellow) and one from H (blue).',
-      why: 'A shared pair is a <b>covalent bond</b>. Both atoms count it, moving each closer to a full outer shell.',
+      why: 'A shared pair is a <b>covalent bond</b> (“co” = together: both atoms count the pair). Each moves closer to a full outer shell.',
       overlay(sim,ctx,LH,k,tau){lbRing(ctx,334,228,14,tau);tag(ctx,'one shared pair = one bond',334,182,k,{s:12,hi:true});} },
     { key: 'share4', title: 'Carbon makes four bonds', set: { view: 'build', ctr: 'C', nH: 4 }, fresh: true, pause: true,
       see: 'Four hydrogens attached. The side panel counts 8 electrons around carbon: a full shell. This is methane, CH₄.',
-      why: 'Carbon has 4 valence electrons, so it makes 4 bonds, enough for chains and rings: the backbone of life.'},
+      why: 'Carbon has 4 outer electrons, its <b>valence electrons</b>, so it makes 4 bonds: enough for chains and rings, the backbone of life.'},
     { key: 'oxygen', title: 'Oxygen makes two', set: { view: 'build', ctr: 'O', nH: 2 }, fresh: true, pause: true,
       see: 'Oxygen in the center: with 6 outer electrons it needs only 2 hydrogens to reach 8. That is water, with two lone pairs.',
       why: 'Count valence electrons: C makes 4 bonds, N 3, O 2. The lone pairs give water its bent shape.'},
     { key: 'polar', title: 'Uneven sharing: polar', set: { view: 'mol', mol: 'water', wet: false }, fresh: true, pause: true,
       see: 'Red arrows show the shared electrons pulled toward oxygen: oxygen is δ−, each hydrogen δ+.',
-      why: 'Oxygen pulls much harder than hydrogen (3.44 vs 2.20). Uneven sharing is a <b>polar covalent</b> bond.',
+      why: 'Oxygen pulls much harder than hydrogen. Uneven sharing gives the molecule two charged ends, like a magnet’s poles: a <b>polar</b> covalent bond.',
       overlay(sim,ctx,LH,k){lbArrow(ctx,178,248,234,204);lbArrow(ctx,364,248,308,204);tag(ctx,'electrons pulled toward O',271,140,k,{s:12,hi:true});} },
     { key: 'nonpolar', title: 'Even sharing: nonpolar', set: { view: 'mol', mol: 'butane', wet: true }, fresh: true, speed: 0.5,
       see: 'A carbon-hydrogen chain in water. The water gathers around but clings to itself, not the chain.',
@@ -1029,11 +1039,11 @@ lifebonds: {
       overlay(sim,ctx,LH,k){tag(ctx,'water leaves the C–H chain out',275,386,k,{s:12,hi:true});} },
     { key: 'ionic', title: 'Handing over an electron', set: { view: 'mol', mol: 'salt', wet: true }, fresh: true, speed: 0.4,
       see: 'Salt in water: sodium handed its electron to chlorine, making Na⁺ (purple) and Cl⁻ (green). Water pulls the ions apart.',
-      why: 'Opposite charges attract: an <b>ionic bond</b>. Water’s charged ends out-pull the crystal, so salt dissolves.',
+      why: 'Charged atoms are <b>ions</b> (Greek for “going”: they move toward opposite charges). Opposites attract: an <b>ionic bond</b>. Water out-pulls the crystal, so salt dissolves.',
       overlay(sim,ctx,LH,k){tag(ctx,'water’s O ends face Na⁺; H ends face Cl⁻',275,386,k,{s:12,hi:true});} },
     { key: 'hbond', title: 'Hydrogen bonds between molecules', set: { view: 'hb', hb: 'water' }, fresh: true, speed: 0.4,
       see: 'Liquid water, zoomed in. Each dashed line is a hydrogen bond, flickering as it breaks and re-forms.',
-      why: 'A δ+ hydrogen pulls on a δ− oxygen of another molecule. About 20 times weaker than a covalent bond, but there are so many.'},
+      why: 'A δ+ hydrogen pulls on another molecule’s δ− oxygen: a <b>hydrogen bond</b>. About 20 times weaker than a covalent bond, but there are so many.'},
     { key: 'dna', title: 'Hydrogen bonds pair DNA', set: { view: 'hb', hb: 'dna', gc: 4 }, fresh: true, pause: true, run(sim){for(let i=0;i<3;i++)fAct(sim,'unzip');},
       see: 'Two DNA strands, top 3 pairs unzipped. A–T pairs share 2 hydrogen bonds; G–C pairs share 3.',
       why: 'Weak hydrogen bonds let enzymes unzip DNA, while each strand’s covalent backbone stays whole.',
@@ -1070,6 +1080,8 @@ function wpGo(sim,...ids){ids.forEach(id=>fAct(sim,id));}
 
 BioLab.addLearn({
 waterprops: {
+  simple: true,
+  intro: { bio: 'You’ll run a station lab and see how one fact about water, that its molecules stick together, explains each property.' },
   goals: {
     bio: ['Why one water molecule has a slightly negative end and two slightly positive ends', 'How hydrogen bonds explain each station: ice, cohesion, adhesion, surface tension, heat, evaporation, dissolving, the balloon and buffers', 'What to look for at each station when you do the real lab', 'Where each property shows up in your life'],
     honors: ['Why water is polar and how hydrogen bonds form', 'How hydrogen bonds explain each station', 'How to predict what alcohol, soap or oil will do differently', 'Where each property shows up in your life'],
@@ -1081,7 +1093,7 @@ waterprops: {
   steps: [
     { key: 'molecule', title: 'Before you begin: one molecule', set: { station: '0', mol: true }, fresh: true, speed: 0.5, run(sim){sim.st.intro=false;wpGo(sim,'clearN');},
       see: 'One water molecule: shared electron pairs in the O–H bonds, two lone pairs on oxygen. Oxygen is δ−, the hydrogens δ+.',
-      why: 'Oxygen pulls shared electrons harder, so water has charged ends: it is <b>polar</b>. Red and white are just labels.'},
+      why: 'Oxygen pulls shared electrons harder, so water has two charged ends, like a magnet’s poles: it is <b>polar</b>. Red and white are just labels.'},
     { key: 'neighbors', title: 'Hydrogen bonds', set: { station: '0' }, speed: 0.5, run(sim){wpGo(sim,'clearN','neighbor','neighbor','neighbor','neighbor');},
       see: 'Four neighbors join. Each dashed line is a hydrogen bond. The inset compares it with the O–H bond inside.',
       why: 'About 20 times weaker than a covalent bond, but each molecule makes up to 4. Every station today runs on these bonds.'},
@@ -1090,11 +1102,11 @@ waterprops: {
       why: 'Hydrogen bonds lock ice into an open honeycomb about 9% bigger than liquid water, so ice floats and insulates the lake.'},
     { key: 'cohesion', title: 'Station 2: cohesion', set: { station: '2', pennyLiquid: 'water' }, speed: 1, run(sim){wpGo(sim,'dry','auto');},
       see: 'Drops pile onto the penny into a dome far above the rim before it spills.',
-      why: 'Water molecules hydrogen-bond to each other, so the drop holds together: <b>cohesion</b>. Alcohol fits far fewer drops.',
+      why: 'Water molecules hydrogen-bond to each other, so the drop holds together: <b>cohesion</b> (“co” = together, “hesion” = sticking). Alcohol fits far fewer drops.',
       so: 'Cohesion is why raindrops are round and water beads up on a waxed car.' },
     { key: 'adhesion', title: 'Station 3: adhesion', set: { station: '3' }, speed: 1, run(sim){wpGo(sim,'newTowel','hang');},
       see: 'A paper towel touches the water, and the water climbs it against gravity.',
-      why: 'Water sticks to polar cellulose (<b>adhesion</b>), and cohesion drags more along: <b>capillary action</b>.',
+      why: 'Water sticks to the towel: <b>adhesion</b> (“ad” = to). Cohesion drags more along: <b>capillary action</b>, from the Latin for “hair,” for hair-thin tubes.',
       so: 'The same pull helps lift water up plant stems.'},
     { key: 'tension', title: 'Station 4: surface tension', set: { station: '4', clipLiquid: 'water' }, speed: 1, run(sim){wpGo(sim,'removeClip','clip');},
       see: 'A steel paperclip rests on the water, dimpling it without sinking, though steel is about 8 times denser.',
@@ -1102,7 +1114,7 @@ waterprops: {
       so: 'That is how water striders walk on ponds.'},
     { key: 'heat', title: 'Station 5: high specific heat', set: { station: '5' }, speed: 1, run(sim){wpGo(sim,'cool','heat');},
       see: 'Three liquids on identical hot plates. Water warms slowest; alcohol boils first.',
-      why: 'Heat first tugs on hydrogen bonds, so water needs 4.18 J to warm 1 g by 1 °C: a high <b>specific heat</b>.',
+      why: 'Heat first tugs on hydrogen bonds, so water needs 4.18 J to warm 1 g by 1 °C. Each substance has its own amount: its <b>specific heat</b>.',
       so: 'That is why lakes keep nearby weather mild.'},
     { key: 'evap', title: 'Heat of evaporation', set: { station: '9' }, speed: 1, run(sim){wpGo(sim,'dryAll','wet');},
       see: 'Three thermometers before a fan: dry, wet cloth and alcohol cloth. The wet ones cool below room temperature.',
@@ -1110,14 +1122,14 @@ waterprops: {
       so: 'That is how sweat cools you.'},
     { key: 'solvent', title: 'Station 6: the universal solvent', set: { station: '6' }, speed: 1, run(sim){wpGo(sim,'emptyBeaker','salt','oil','stir');},
       see: 'Salt disappears into the water when stirred, but oil stays in its own layer on top.',
-      why: 'Water’s charged ends surround each ion and pull the crystal apart. Nonpolar oil is left out.',
+      why: 'Water’s charged ends surround each ion and pull the crystal apart. It dissolves so much that it’s called the universal <b>solvent</b> (Latin for “loosener”).',
       so: 'That is how blood carries salts and sugars.'},
     { key: 'balloon', title: 'Station 7: polarity you can see', set: { station: '7', streamLiquid: 'water' }, speed: 1, run(sim){wpGo(sim,'rub','closer');},
       see: 'A balloon rubbed on hair bends a thin stream of water toward it. Oil barely moves.',
       why: 'The charged balloon pulls on water’s oppositely charged ends. Oil has no charged ends to pull.'},
     { key: 'buffer', title: 'Station 8: acids, bases and buffers', set: { station: '8' }, speed: 1, run(sim){wpGo(sim,'buffer','acid5');},
       see: 'Five drops of acid go into plain water and into a buffer. The plain water’s pH crashes; the buffer’s barely moves.',
-      why: 'A buffer catches extra H⁺. Blood’s bicarbonate buffer keeps it between pH 7.35 and 7.45.'}
+      why: 'A <b>buffer</b> catches extra H⁺, like a bumper soaking up a hit. Blood’s buffer keeps it between pH 7.35 and 7.45.'}
   ],
   useIt: [
     { do: 'Leave room at the top of a water bottle before you freeze it.',

@@ -34,6 +34,7 @@ const WATER={
   id:'water',hash:'water',apUnit:1,order:1,kind:'Simulation',tab:'Properties of water',
   card:'Heat ice into steam and watch hydrogen bonds hold the temperature still while water melts and boils.',
   title:'Properties of water: hydrogen bonds and the heating curve',
+  ledeMore:'<p><b>Think of a crowd holding hands.</b> Water molecules hold onto each other with hydrogen bonds. To speed them up or pull them apart, heat first has to break those holds, so water heats slowly and takes a lot of energy to boil.</p><p>That is why the ocean keeps coastal weather mild, and why steam burns.</p>',
   lede:{bio:'Heat a beaker of ice and watch two views at once: the thermometer, and the water molecules themselves. Hydrogen bonds explain why ice floats and why water heats up slowly.',
         honors:'Compare water with ethanol. Water’s extra hydrogen bonds give it a higher specific heat, a higher boiling point, and ice that floats.',
         ap:'Measure specific heat and latent heat from the heating curve. Use the energy readouts to calculate the heat of fusion and vaporization.'},

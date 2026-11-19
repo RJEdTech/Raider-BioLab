@@ -587,6 +587,7 @@ phlife:{
 /* lifebonds (added Nov 7) */
 BioLab.addReview({
 lifebonds:{
+  core:['c14','s35','nbonds','polarbond','fatblood','soap','co2','dnahb'],
   apNote:'AP Biology Unit 1 (course framework effective fall 2025) covers how water’s polar covalent bonds lead to hydrogen bonding (Topic 1.1), which elements build each macromolecule (1.2), that lipids are typically nonpolar and hydrophobic (1.5), how hydrogen bonds pair A with T and C with G (1.6), and how hydrogen bonds and hydrophobic and ionic interactions shape proteins (1.7). Electronegativity and bond counting are background chemistry the framework does not list. Carbon-14 decay appears in Topic 7.6 (dating fossils), and DNA denaturing in PCR in Topic 6.8.',
   ap:[{title:'AP Biology Course and Exam Description',url:'https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf',note:'Unit 1, Topics 1.1 to 1.7: the exact list of what the exam covers.'},
       {title:'Past AP Biology free-response questions',url:'https://apcentral.collegeboard.org/courses/ap-biology/exam/past-exam-questions',note:'Free-response questions by year, with scoring guidelines.'}],

@@ -63,7 +63,8 @@ function drawMono(ctx,type,x,y,k,caps,idx,glow){const T=TYPES[type];
 const MACRO={
   id:'macromolecules',hash:'macromolecules',apUnit:1,order:2,kind:'Simulation',tab:'Build a macromolecule',
   card:'Snap monomers into a chain and watch a water molecule leave with every bond, then split it back apart.',
-  title:'Building macromolecules: dehydration synthesis and hydrolysis',
+  title:'Building big molecules: how food is made and digested',
+  ledeMore:'<p><b>Think of a train.</b> Small molecules are the cars, and big molecules are whole trains. Each time two cars are coupled, a water molecule is set free. Uncoupling a car takes a water molecule back.</p><p>Your body does both all day: digesting food splits the trains, and building muscle couples new ones.</p>',
   lede:{bio:'Living things build big molecules by linking small ones. Each link releases a water molecule, and breaking a link takes one back.',
         honors:'Compare how sugars, amino acids and nucleotides form polymers. The bonds differ, but every one forms by dehydration synthesis and breaks by hydrolysis.',
         ap:'Track the molecular bookkeeping: bonds, waters and the polymer’s molar mass, n × M − (n − 1) × 18.02 g/mol.'},

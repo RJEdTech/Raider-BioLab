@@ -160,6 +160,7 @@ const WP={
   id:'waterprops',hash:'waterprops',apUnit:1,order:0,kind:'Virtual lab',tab:'Properties of water stations',next:['water'],
   card:'One tab for each property of water, from Mr. Stearman’s station lab and notes: drops on a penny, a floating paperclip, sweat-like cooling and more, each with a molecule zoom.',
   title:'Properties of water: the station lab',
+  ledeMore:'<p><b>Think of water molecules as tiny magnets.</b> Each has a slightly negative end and two slightly positive ends, so they cling to each other and to anything else with charged ends.</p><p>That one fact explains floating ice, sweat cooling you, and water climbing up a plant.</p>',
   lede:'Pick a property from the tabs above the bench. Each tab runs a mini-experiment from the station lab, and the zoom on the right shows the molecules causing it. Every property comes from the same thing: water is polar, so its molecules stick together with hydrogen bonds.',
   scale:'Left: the lab bench, real size. Right: zoomed in about 100 million times, to single molecules about 0.3 nanometers across.',
   timeless:true,animated:true,trials:true,chChange:1,chReveal:6,controlsTitle:'Lab bench',
