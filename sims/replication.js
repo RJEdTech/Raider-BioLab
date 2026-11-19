@@ -35,6 +35,7 @@ const REP={
   id:'replication',hash:'replication',apUnit:6,order:0,tab:'DNA replication',kind:'Process walkthrough',next:['expression'],
   card:'Watch a replication fork copy DNA: helicase unzips, polymerase builds, and the lagging strand comes together in pieces.',
   title:'DNA replication at the fork',
+  ledeMore:'<p><b>Think of a zipper and a copier.</b> DNA unzips down the middle, and each half is used as a pattern to build a new matching half. The result is two identical DNA molecules, one for each new cell.</p><p>Every time a cell in your body divides, about 6 billion letters get copied, with very few mistakes.</p>',
   lede:{bio:'Before a cell divides, it copies all of its DNA. Watch helicase unzip the double helix and DNA polymerase build two new strands, one smoothly and one in pieces.',
         honors:'Follow every enzyme at the fork: helicase, single-strand binding proteins, primase, DNA polymerase III and I, and ligase. Knock one out and see what breaks.',
         ap:'Explain the leading/lagging asymmetry from 5′→3′ synthesis, quantify replication fidelity with and without proofreading, and test the semiconservative model the way Meselson and Stahl did.'},

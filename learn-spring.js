@@ -18,6 +18,8 @@ const GX=(ctx,k,L)=>card(ctx,k,L,170,374,460);
 
 BioLab.addLearn({
 expression: {
+  simple: true,
+  intro: { bio: 'You’ll follow one gene from DNA to RNA to protein, then see what a one-letter change does.' },
   goals: {
     bio: ['How a gene’s DNA is copied into mRNA (transcription)', 'How a ribosome reads mRNA three bases at a time to build a protein (translation)', 'Why some mutations change nothing and others wreck the protein'],
     honors: ['Codons, the genetic code and the start and stop codons', 'Silent, missense, nonsense and frameshift mutations', 'How one base change causes sickle-cell disease'],
@@ -33,11 +35,11 @@ expression: {
       overlay(sim,ctx,LH,k){GX(ctx,k,[['A 24-base gene',700,13.5],'Starts ATG · ends TAA']);} },
     { key: 'tx', title: 'Transcription: DNA → mRNA', set: { gene: 'demo', pos: 6, base: 'A', introns: false }, speed: 1, run(sim){act(sim,'replay');},
       see: 'RNA polymerase (purple) unzips the DNA and slides along the template strand, adding one matching RNA base at a time.',
-      why: 'A pairs with U (RNA uses U, not T), T with A, G with C. The mRNA matches the coding strand, with U for T: <b>transcription</b>.',
+      why: 'A pairs with U (RNA uses U, not T), T with A, G with C. Copying DNA’s message into RNA, the same language, is <b>transcription</b>, like copying notes.',
       overlay(sim,ctx,LH,k){GX(ctx,k,[['Transcription',700,13.5,'#6b3fa0'],'A→U  T→A  G→C  C→G']);} },
     { key: 'tl', title: 'Translation: three bases, one amino acid', set: { gene: 'demo', pos: 6, base: 'A', introns: false }, speed: 1,
-      see: 'A ribosome reads the mRNA three bases at a time. For each codon, a tRNA brings an amino acid, and the chain grows.',
-      why: 'Each codon means one amino acid: AUG is start (Met), CCG is Pro. 64 codons code 20 amino acids: <b>translation</b>.',
+      see: 'A ribosome reads the mRNA three bases at a time; each triplet is a <b>codon</b>. A <b>tRNA</b> (transfer RNA) brings the matching amino acid, and the chain grows.',
+      why: 'AUG is start (Met), CCG is Pro. 64 codons code 20 amino acids. Turning RNA’s language into protein’s is <b>translation</b>, like changing languages.',
       overlay(sim,ctx,LH,k){GX(ctx,k,[['Translation',700,13.5,GRN],'mRNA: '+String(met(sim,'mrna')||'')]);} },
     { key: 'protein', title: 'Stop: the protein is done', set: { gene: 'demo', pos: 6, base: 'A', introns: false }, speed: 1, overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'skip',0.8);GX(ctx,k,[['Protein: '+String(met(sim,'len'))+' amino acids',700,13.5],String(met(sim,'protein')||'')]);},
       see: 'At the stop codon UAA no tRNA fits. The ribosome lets go of the finished chain Met–Pro–Lys–Phe–Gly–Trp–His.',
@@ -45,15 +47,15 @@ expression: {
     { key: 'silent', title: 'A change that changes nothing', set: { gene: 'demo', pos: 6, base: 'A', introns: false }, fresh: true, pause: true, run(sim){act(sim,'undo');},
       overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'sub',1);actAt(sim,tau,'skip',2.5);GX(ctx,k,[[tau<1?'Base 6: G…':'Base 6: G → A ('+String(met(sim,'mtype'))+')',700,13.5,RED],String(met(sim,'protein')||'')]);},
       see: 'Base 6 changes from G to A: CCG becomes CCA. The protein comes out the same.',
-      why: 'CCA also codes for proline. Most amino acids have several codons, so many changes are <b>silent</b>.'},
+      why: 'CCA also codes for proline. A change in DNA is a <b>mutation</b>; most amino acids have several codons, so many mutations are silent.'},
     { key: 'nonsense', title: 'A change that stops it early', set: { gene: 'demo', pos: 18, base: 'A', introns: false }, fresh: true, pause: true, run(sim){act(sim,'undo');},
       overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'sub',1);actAt(sim,tau,'skip',2.5);GX(ctx,k,[[tau<1?'Base 18: G…':'Base 18: G → A ('+String(met(sim,'mtype'))+')',700,13.5,RED],String(met(sim,'protein')||'')]);},
       see: 'Base 18 changes from G to A: UGG (Trp) becomes UGA, a stop. The protein ends after 5 amino acids.',
-      why: 'One base can turn a codon into “stop.” A cut-short protein usually can’t work, as in some cystic fibrosis.'},
+      why: 'One base turned a codon into “stop”: a <b>nonsense</b> mutation, since the message stops making sense. A cut-short protein usually can’t work, as in some cystic fibrosis.'},
     { key: 'frame', title: 'One extra base scrambles the rest', set: { gene: 'demo', pos: 5, base: 'G', introns: false }, fresh: true, pause: true, run(sim){act(sim,'undo');},
       overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'ins',1);actAt(sim,tau,'skip',2.5);GX(ctx,k,[[tau<1?'Inserting a G…':'G inserted: '+String(met(sim,'mtype')),700,13.5,RED],String(met(sim,'protein')||'')]);},
       see: 'One G is inserted after base 5. Every later codon shifts: 7 amino acids change, and the stop is lost.',
-      why: 'The ribosome reads fixed groups of three, so one extra base changes every later group: a <b>frameshift</b>, usually the most damaging.'},
+      why: 'The ribosome reads fixed groups of three, so one extra base shifts every later group: a <b>frameshift</b>, usually the most damaging mutation.'},
     { key: 'sickle', lvl: 'honors', title: 'One base, one disease', set: { gene: 'hbb', pos: 20, base: 'T', introns: false }, fresh: true, pause: true, run(sim){act(sim,'undo');},
       overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'sub',1);actAt(sim,tau,'skip',2.5);GX(ctx,k,[[tau<1?'β-globin, codon 7: GAG…':'GAG → GTG: '+String(met(sim,'mtype')),700,13.5,RED],String(met(sim,'protein')||'')]);},
       see: 'The start of the β-globin gene. One A becomes T in codon 7: GAG (glutamic acid) becomes GTG (valine).',
@@ -322,6 +324,8 @@ const multi=(sim,tau,id,times)=>times.forEach((t,i)=>{const key='_mt'+id+i;if(ta
 
 BioLab.addLearn({
 beaks: {
+  simple: true,
+  intro: { bio: 'You’ll run a bird beak lab and watch which beaks win when the food on the island changes.' },
   goals: {
     bio: ['Birds with beaks that fit the food survive and have more young', 'The population changes over generations, not the individual birds', 'When the food changes, the winners change'],
     honors: ['Variation, inheritance, selection and time', 'Carrying capacity limits the population', 'Mutation adds new variation'],
@@ -337,11 +341,11 @@ beaks: {
       overlay(sim,ctx,LH,k){BK(ctx,k,[['Mixed food',700,14],beakMix(sim)]);} },
     { key: 'small', title: 'Only small seeds', set: { food: 'small' }, fresh: true, speed: 4,
       see: 'Only small seeds. Within a few generations nearly every bird has tweezers.',
-      why: 'Tweezers pick up tiny seeds fastest; other beaks can’t gather enough. This is <b>natural selection</b>.',
+      why: 'Tweezers pick up tiny seeds fastest; other beaks can’t gather enough. Birds that fit survive and breed more: <b>natural selection</b>, with nature doing the choosing.',
       overlay(sim,ctx,LH,k){BK(ctx,k,[['Small seeds only',700,14],beakMix(sim)]);} },
     { key: 'worms', title: 'Only worms', set: { food: 'worms' }, fresh: true, speed: 4,
       see: 'Change the island to worms, and the chopsticks take over.',
-      why: 'There is no single best beak. “Fittest” depends on the environment.',
+      why: 'There is no single best beak. <b>Fitness</b> means how well you fit your surroundings, not strength, and it changes when the food does.',
       overlay(sim,ctx,LH,k){BK(ctx,k,[['Worms only',700,14],beakMix(sim)]);} },
     { key: 'drought', title: 'Drought', set: { food: 'mixed' }, fresh: true, speed: 4,
       see: 'Mixed food, then a drought leaves only big, hard seeds. Clothespins and binder clips take over.',
@@ -349,7 +353,7 @@ beaks: {
       overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'drought',3);BK(ctx,k,[[sim.p.food==='drought'?'Drought':'Mixed food (drought coming)',700,14],beakMix(sim)]);} },
     { key: 'mut', lvl: 'honors', title: 'Mutation', set: { food: 'small', mut: true }, fresh: true, speed: 4,
       see: 'Small seeds with mutation on. Tweezers dominate, but a different beak shows up now and then.',
-      why: 'Mutation adds new variation each generation; selection removes most of it. Without it, a lost beak type could never return.',
+      why: 'A <b>mutation</b>, a random change in DNA, adds new variation each generation; selection removes most of it. Without it, a lost beak type could never return.',
       overlay(sim,ctx,LH,k){BK(ctx,k,[['Small seeds, with mutation',700,14],beakMix(sim)]);} },
     { key: 'fit', lvl: 'ap', title: 'Relative fitness', set: { food: 'mixed', T: 6 }, fresh: true, speed: 4,
       see: 'Survival now takes 6 food items instead of 4. Fewer birds survive, and the mix shifts faster.',
@@ -369,6 +373,8 @@ beaks: {
   ]
 },
 cladogram: {
+  simple: true,
+  intro: { bio: 'You’ll build a family tree for animals from the traits they share, then read who is most closely related.' },
   goals: {
     bio: ['A cladogram shows which groups share common ancestors', 'Shared derived traits mark each branch point', 'Groups closer on the tree are more closely related'],
     honors: ['Build the tree from traits shared by the most groups', 'Outgroups and nested clades', 'Reading a cladogram correctly'],
@@ -380,14 +386,14 @@ cladogram: {
   steps: [
     { key: 'empty', title: 'Seven animals', set: { set: 'vert', view: 'tree' }, fresh: true, pause: true, run(sim){act(sim,'clear');},
       see: 'Lancelet, lamprey, shark, frog, lizard, mouse and human, with no tree yet.',
-      why: 'We’ll build the tree from traits that appeared once and were passed down: backbone, jaws, lungs, amniotic egg, hair and milk.'},
+      why: 'We’ll build the tree from traits that appeared once and were passed down, called <b>shared derived traits</b>: backbone, jaws, lungs, amniotic egg, hair and milk.'},
     { key: 'build', title: 'Place the traits', set: { set: 'vert', view: 'tree' }, fresh: true, speed: 1, run(sim){act(sim,'clear');},
       see: 'Traits go on one at a time, starting with the most shared: backbone, jaws, lungs, amniotic egg, then hair and milk.',
-      why: 'A trait shared by more groups evolved earlier, so it sits lower. Everything above a mark has the trait; everything below lacks it.',
+      why: 'A trait shared by more groups evolved earlier, so it sits lower. Everything above a mark has the trait. The tree is a <b>cladogram</b> (“clade” = branch).',
       overlay(sim,ctx,LH,k,tau){multi(sim,tau,'next',[1,2.5,4,5.5,7]);} },
     { key: 'read', title: 'Reading the tree', set: { set: 'vert', view: 'tree' }, fresh: true, pause: true, run(sim){act(sim,'clear');for(let i=0;i<5;i++)act(sim,'next');},
       see: 'Lizard and mouse share the amniotic egg; the frog branched off before it.',
-      why: 'So the lizard is closer to the mouse than to the frog. Relatedness comes from the most recent shared branch point, not looks.'},
+      why: 'So the lizard is closer to the mouse than to the frog. Each branch point stands for a <b>common ancestor</b>; the most recent shared one, not looks, shows relatedness.'},
     { key: 'plant', lvl: 'honors', title: 'Land plants', set: { set: 'plant', view: 'tree' }, fresh: true, speed: 1, run(sim){act(sim,'clear');},
       see: 'Now plants: protected embryos, then vascular tissue, seeds and flowers.',
       why: 'Mosses lack vascular tissue, ferns lack seeds, pines lack flowers, so each branches off at its own point.',

@@ -53,7 +53,8 @@ const timeY=a=>78+a/560*330;
 const CLAD={
   id:'cladogram',hash:'cladogram',apUnit:7,order:4,tab:'Build a cladogram',kind:'Learning tool',
   card:'Sort shared traits from oldest to newest and build an evolutionary tree, one branch point at a time.',
-  title:'Build a cladogram from shared derived traits',
+  title:'Build a family tree of animals (a cladogram)',
+  ledeMore:'<p><b>Think of a family tree for animals.</b> Animals that share more inherited traits share a more recent ancestor, the way cousins share grandparents. A cladogram draws that tree from the traits.</p><p>It is how scientists worked out that birds are closer to crocodiles than crocodiles are to lizards.</p>',
   lede:{bio:'Use the trait table to build a family tree for seven animals. The trait shared by the most animals evolved first, so it goes closest to the root.',
         honors:'Build trees for vertebrates and for land plants, and test them with parsimony: the best tree needs the fewest trait changes.',
         ap:'Compare morphological and molecular evidence, and read the finished tree on a real timescale.'},

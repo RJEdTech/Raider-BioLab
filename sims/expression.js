@@ -57,6 +57,7 @@ const EXP={
   id:'expression',hash:'expression',apUnit:6,order:1,tab:'DNA to protein',kind:'Process walkthrough',
   card:'Watch RNA polymerase copy a gene and a ribosome build the protein. Then mutate one base and run it again.',
   title:'From DNA to protein: transcription and translation',
+  ledeMore:'<p><b>Think of a recipe book in a library.</b> The DNA is the book, which never leaves the library (the nucleus). The cell copies one recipe onto a card (mRNA), carries it to the kitchen (a ribosome), and cooks the dish (a protein).</p><p>mRNA vaccines work by handing your cells a recipe card like this.</p>',
   lede:{bio:'Watch a gene being copied into mRNA in the nucleus, then read three bases at a time by a ribosome that strings amino acids into a protein.',
         honors:'Make your own mutations, one base at a time, and see which ones change the protein: silent, missense, nonsense or frameshift. Includes the sickle-cell mutation in hemoglobin.',
         ap:'Add an intron and watch RNA processing (splicing, 5′ cap, poly-A tail) before the mRNA leaves the nucleus.'},

@@ -47,6 +47,7 @@ const EVO={
   id:'evolution',hash:'evolution',apUnit:7,order:1,tab:'Natural selection and drift',kind:'Simulation',
   card:'Rock pocket mice on sand and lava. Owls hunt, survivors breed, and allele frequencies change.',
   title:'Natural selection and genetic drift: rock pocket mice',
+  ledeMore:'<p><b>Think of hide and seek.</b> On dark rock, dark mice hide well from owls and light mice get caught. Over many generations more and more mice are dark, not because any mouse changed, but because more dark ones survived to have babies.</p>',
   lede:{bio:'Rock pocket mice live on light sand and on dark lava rock. Owls catch the mice that stand out. Watch fur color change over many generations.',
         honors:'Run five populations side by side. Compare natural selection, random genetic drift in small populations, and migration between populations.',
         ap:'Track allele and genotype frequencies against Hardy–Weinberg expectations, and test how dominance, mutation and population size change the outcome.'},

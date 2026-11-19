@@ -65,6 +65,7 @@ const BEAK={
   id:'beaks',hash:'beaks',apUnit:7,order:3,tab:'Bird beak lab',kind:'Virtual lab',prereq:['evolution'],
   card:'Birds with tweezer, spoon and clothespin beaks compete for food on an island. Change the food and watch natural selection work.',
   title:'The bird beak lab: natural selection on an island',
+  ledeMore:'<p><b>Think of tools for a job.</b> A bird’s beak is its tool for picking up food. When the food changes, birds with the right tool eat better, survive, and have more chicks with that same tool.</p><p>That is natural selection. It is also why antibiotics stop working when the germs that survive them multiply.</p>',
   lede:{bio:'Each bird’s beak is a tool. Birds that gather enough food survive and pass their beak type to their chicks. Change the island’s food and watch which beaks take over.',
         honors:'Turn on mutation, change carrying capacity, and see how competition for each food keeps several beak types alive on a mixed island.',
         ap:'Measure survival for each beak type, calculate relative fitness, and connect frequency-dependent competition to the coexistence of specialists.'},
