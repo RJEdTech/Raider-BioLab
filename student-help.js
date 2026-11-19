@@ -3,8 +3,9 @@
       question as it appears, until the student turns it off. Nothing leaves the device.
    2. Easier reading: more space between lines, letters and words; shorter lines; no all-caps headings; no italics.
       Meant for dyslexic readers and anyone who finds dense text hard. Saved per browser.
-   3. "This confused me": one click counts an event in the site's GoatCounter (path only: site, tool, level, step).
-      No names, no text, nothing about the student. It tells us which steps to fix first.
+   3. "This confused me": one click counts an event in the site's GoatCounter (path only: site, tool, level, step), then
+      offers five one-tap reasons (too much reading, couldn't see the change, words, too fast, the question), sent as
+      .../why-<reason>. No names, no free text, nothing about the student. It tells us which steps to fix first, and how.
    Stand-alone: it only watches the page, so no tool or engine needs changes. Same file on every Raider Labs site;
    SH_SEL below lists each engine's panel selectors. */
 (function(){
@@ -54,10 +55,17 @@ function where(el){const site=(location.pathname.split('/').filter(Boolean)[0]||
   else{const cur=el.querySelector('.rv-dot.cur, [aria-current="true"]');const q=el.querySelector('.rv-q, .q');step='q'+(cur?cur.textContent.trim():'')+'-'+slug(q&&q.textContent);}
   return ['confused',site,tool,lvl,step].filter(Boolean).join('/');}
 const counted=new Set();
+function send(path,title){(function go(n){const g=window.goatcounter;if(g&&typeof g.count==='function'){try{g.count({path,title,event:true});}catch(e){}}else if(n<40)setTimeout(()=>go(n+1),250);})(0);}
+/* One tap says why (Nov 18, Jason: fix things from what students tell us). Still anonymous: only the reason's short code is sent. */
+const WHY=[['reading','Too much to read'],['see','Couldn’t see what changed'],['words','Words I don’t know'],['fast','Went too fast'],['question','The question was confusing']];
 function countConfused(el,b){const path=where(el);if(counted.has(path)){b.textContent='Thanks, noted';return;}counted.add(path);
-  (function send(n){const g=window.goatcounter;if(g&&typeof g.count==='function'){try{g.count({path,title:'Confusing step',event:true});}catch(e){}}else if(n<40)setTimeout(()=>send(n+1),250);})(0);
-  b.textContent='Thanks, noted';b.disabled=true;b.setAttribute('aria-live','polite');
-  const tip=document.createElement('span');tip.className='sh-tip';tip.textContent=CAN_SPEAK&&!on?'Try 🔊 Read aloud, go Back a step, or ask your teacher.':'Go Back a step, or ask your teacher.';b.after(tip);}
+  send(path,'Confusing step');
+  b.textContent='Thanks. What was it?';b.disabled=true;b.setAttribute('aria-live','polite');
+  const box=document.createElement('span');box.className='sh-why';box.setAttribute('role','group');box.setAttribute('aria-label','What confused you?');
+  WHY.forEach(([k,l])=>{const c=document.createElement('button');c.type='button';c.className='btn sh-chip';c.textContent=l;
+    c.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();send(path+'/why-'+k,'Confusing: '+l);box.innerHTML='';const t=document.createElement('span');t.className='sh-tip';
+      t.textContent=k==='reading'?(CAN_SPEAK&&!on?'Thanks. Try 🔊 Read aloud or Aa Easier reading.':'Thanks. Try Aa Easier reading.'):k==='fast'?'Thanks. Use the Speed menu to slow it down, or go Back.':k==='words'?'Thanks. Key terms are in the Vocabulary list below the tool.':k==='see'?'Thanks. Slow the Speed, or press Back to watch it again.':'Thanks. Go Back a step, or ask your teacher.';box.appendChild(t);b.textContent='Thanks, noted';});box.appendChild(c);});
+  b.after(box);}
 /* ---------- buttons ---------- */
 function labelRA(b){b.textContent=on?'🔊 Read aloud: on':'🔊 Read aloud';b.setAttribute('aria-pressed',String(on));b.title=on?'Stop reading aloud':'Read this out loud, and keep reading each new step';}
 function labelER(b){b.textContent=easy?'Aa Easier reading: on':'Aa Easier reading';b.setAttribute('aria-pressed',String(easy));b.title='More space between lines and letters, shorter lines, no all-caps headings';}
@@ -84,7 +92,7 @@ const T='.tourbar,.panel.review,.panel.predict,.donecard,.gutbox';
 const st=document.createElement('style');st.textContent=
 `.sh-tools{display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:auto;align-items:center}.donecard>.sh-tools,.gutbox>.sh-tools{display:flex;justify-content:flex-end;margin:0 0 8px}
 .sh-btn{font-size:13.5px;padding:4px 10px;line-height:1.3}.sh-btn[aria-pressed="true"]{background:var(--rj,#c8102e);color:#fff;border-color:var(--rj,#c8102e)}.sh-cf[disabled]{opacity:.8;cursor:default}
-.sh-tip{font-size:13px;color:var(--muted,#666)}
+.sh-tip{font-size:13px;color:var(--muted,#666)}.sh-why{display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-top:4px}.sh-chip{font-size:12.5px;padding:3px 9px;border-radius:999px}
 html.sh-easy :is(${T}) :is(p,li,.tb-x,.rv-q,.q,.choice,.verdict,.help){font-size:18px!important;line-height:1.75!important;letter-spacing:.035em!important;word-spacing:.14em!important;text-align:left!important;max-width:62ch}
 html.sh-easy :is(${T}) :is(.ln-k,.p-head h3,.tb-n){text-transform:none!important;letter-spacing:.02em!important;font-size:15px!important}
 html.sh-easy :is(${T}) :is(em,i){font-style:normal!important;font-weight:600}

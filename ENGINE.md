@@ -132,7 +132,7 @@ Her Plate Boundary Explorer, ENSO Explorer and Soil Investigation Lab showed wha
 `student-help.js` (loaded after `BioLab.start()`, same file on every Raider Labs site) adds three buttons to every Learn it step, Test yourself prediction, review question, gut check and end card:
 - **🔊 Read aloud:** reads the current text with the browser's own voice (Web Speech API; nothing leaves the device), then each new step or question, until turned off. It prefers Edge's Natural voices and says symbols as words (°C, µmol/min, H⁺, CO₂, Km).
 - **Aa Easier reading:** a reading view for dyslexic readers and anyone who finds dense text hard. It adds space between lines, letters and words, makes lines shorter, removes all-caps headings and drops italics. Only text panels change; the canvas is unchanged.
-- **😕 This confused me:** one click counts a GoatCounter event, `confused/<site>/<tool>/<level>/<step>`. It sends no names and no text. To see which steps students flag most, check the Events list in the rjedtech.goatcounter.com dashboard.
+- **😕 This confused me:** one click counts a GoatCounter event, `confused/<site>/<tool>/<level>/<step>`. Then five one-tap reasons send `…/why-reading|see|words|fast|question` (too much to read, couldn't see what changed, words I don't know, went too fast, the question was confusing). It sends no names and no free text. To see which steps students flag most, check the Events list in the rjedtech.goatcounter.com dashboard.
 - Both settings are saved per browser (`raider-labs-readaloud`, `raider-labs-easyread`). The file only watches the page, so no tool needs changes. Panel selectors are in `SH_SEL` at the top of the file.
 
 ## Writing Learn it steps (Nov 18, 2026, from Honors Bio student feedback on Enzymes)
