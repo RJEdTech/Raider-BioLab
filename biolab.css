@@ -625,3 +625,12 @@ p.fq-type{margin:0 0 6px}
 .ext-wrap{margin:10px 0 16px}.ext-by{margin:0 0 10px;font-size:15px;padding:8px 12px;border-left:4px solid var(--rj);background:var(--card2)}
 .ext-intro{margin:0 0 10px}.ext-frame{display:block;width:100%;border:1px solid var(--line);border-radius:10px;background:#fff}
 .ext-open{margin:6px 0 0;font-size:14px;color:var(--muted)}.card-by{display:block;font-size:13px;color:var(--rj-ink);font-weight:600;margin-top:4px}
+
+/* Simple Learn it (pilot: Enzymes, Nov 18 2026): one job per mode. Extras wait behind a click. */
+.ln-simple .rl-plan,.ln-simple .lede-lv{display:none}
+.ln-intro{font-size:1.05em;margin:4px 0 8px}
+details.ln-more{margin:10px 0 0;border-top:1px solid var(--line,#ddd);padding-top:8px}
+details.ln-more>summary{cursor:pointer;font-weight:700;color:var(--rj,#c8102e);list-style:revert}
+details.ln-more>p{margin:6px 0 0}
+details.ln-use-d{margin:0}
+details.ln-use-d>summary{font-size:1.05em;padding:4px 0}

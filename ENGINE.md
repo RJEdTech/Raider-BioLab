@@ -150,3 +150,15 @@ Loaded after the sims and before the review and learn files. Inside an overlay, 
 
 ### Zoom in busy scenes
 When a scene has many parts (e.g. glycolysis "Inside the cell"), add a `zoom` seg control and draw through a camera rectangle (16:9, eased) so students can look at one part up close. Scale text by `Math.max(1,k/zoom)` inside the zoomed view so phone text doesn't double up. Skip the zoom in guided mode so Learn it overlays still line up. Labels on moving tokens: use dots, not words, and let the pop-up tags carry the words.
+
+## Simple Learn it (Nov 18, 2026; pilot: Enzymes)
+Jason: "It needs to provide good teaching without trying to do practical plus guess plus myth plus more and more." The aim of a lesson is that students **see it** (the model shows the change), **think about it** (why it happens), and **tell a useful story about it**, connecting those parts of the brain. One job per mode:
+- **Learn it teaches.** One idea per step, about 40 words, the result shown on the picture. No guess boxes, myths or practical asides inside the steps.
+- **Test yourself checks** exactly what Learn it taught (about 8 core questions); everything else is optional "More practice".
+- **Everything else waits behind a click** ("🤔 How is this useful in my life?") or comes after the lesson.
+
+How to switch a tool to it (opt-in, one tool at a time):
+- In its learn entry: `simple: true` and `intro: {bio, honors, …}` (one sentence that replaces goals / why it matters / question on the first screen).
+- Its step `so:` lines become the "How is this useful in my life?" click, so keep only real everyday uses there; move test tips into the teaching or cut them.
+- In its review entry: `core: [ids]`, one question per Learn it idea. The rest stay as More practice.
+- Engine effects for simple tools: no level lede or "You will be able to…" at the top; the Learn it end card shows the big idea + Test yourself + Learn it again, with Use it / Try it at home folded into one closed block; Test yourself results skip Myth / Think again.
