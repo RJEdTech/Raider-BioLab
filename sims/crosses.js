@@ -568,6 +568,7 @@ const CROSS={
   id:'crosses',hash:'crosses',apUnit:5,order:1,tab:'Genetic crosses',kind:'Simulation',
   card:'Breed pea plants and fruit flies. Watch gametes meet, then test the Punnett square against real counts.',
   title:'Genetic crosses: Punnett squares meet real offspring',
+  ledeMore:'<p><b>Think of flipping two coins.</b> Each parent passes on one of their two versions of a gene, by chance, like a coin flip. A Punnett square lists every way the two flips can come out.</p><p>That is why brothers and sisters can look so different, and why a trait can skip a generation.</p>',
   lede:{bio:'Pick two parent pea plants, breed them, and watch each offspring form from one allele from each parent. Then compare the counts with the Punnett square.',
         honors:'Go beyond one gene: two genes at once, incomplete dominance in snapdragons, and an X-linked trait in fruit flies.',
         ap:'Test your counts with chi-square, and measure recombination between linked genes.'},

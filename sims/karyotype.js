@@ -60,6 +60,7 @@ const KARYO={
   id:'karyotype',hash:'karyotype',apUnit:5,order:3,tab:'Karyotype detective',kind:'Learning tool',
   card:'Sort a real-looking chromosome spread into pairs, count them, and diagnose the patient.',
   title:'Karyotype detective: count and pair the chromosomes',
+  ledeMore:'<p><b>Think of sorting socks.</b> A karyotype takes all 46 chromosomes from one cell and pairs them up by size, shape and stripes, like matching socks after laundry. Then a missing or extra one is easy to spot.</p><p>Doctors use this to diagnose conditions like Down syndrome, sometimes before a baby is born.</p>',
   lede:{bio:'A karyotype is a picture of a person’s chromosomes arranged in pairs. Sort them by size and shape, count them, and find out whether anything is missing or extra.',
         honors:'Seven possible patients, including trisomies and sex-chromosome conditions. Use size, centromere position and banding to pair the chromosomes, then diagnose.',
         ap:'Connect each karyotype to the meiotic error that could produce it, and to whether it happened in meiosis I or II.'},

@@ -159,6 +159,7 @@ const PED={
   id:'pedigree',hash:'pedigree',apUnit:5,order:2,tab:'Pedigree detective',kind:'Learning tool',
   card:'Read a family tree like a geneticist. Find the clue that reveals how a trait is inherited.',
   title:'Pedigree detective: how is this trait inherited?',
+  ledeMore:'<p><b>Think of a family tree with a pattern.</b> A pedigree marks who in a family has a trait. The pattern of who has it tells you how it is passed down.</p><p>Genetic counselors use this to tell families their chances of passing on a condition.</p>',
   lede:{bio:'Each new family hides one inheritance pattern. Read the symbols, find the clue, and decide whether the trait is dominant or recessive.',
         honors:'Now the trait could also be X-linked recessive. Use who is affected, and which parent they got it from, to crack the case.',
         ap:'Five possible patterns, including X-linked dominant and mitochondrial. Work out genotypes and carrier probabilities from the shading.'},

@@ -2130,6 +2130,8 @@ const kyCh=(sim,n)=>sim.st.chs.filter(c=>c.n===n);
 
 BioLab.addLearn({
 crosses: {
+  simple: true,
+  intro: { bio: 'You’ll see how each parent passes on one version of a gene, and use a Punnett square to predict their children.' },
   goals: {
     bio: ['Genes come in versions called alleles, and you inherit one from each parent', 'Why a hidden (recessive) trait can skip a generation', 'How a Punnett square predicts offspring, and why real counts wander', 'How one test cross reveals a hidden allele'],
     honors: ['Genotype vs. phenotype, dominant vs. recessive', 'Monohybrid, dihybrid (9:3:3:1) and test crosses', 'Incomplete dominance and X-linked traits', 'Why small samples stray from the expected ratio'],
@@ -2140,16 +2142,16 @@ crosses: {
   startOverlay(sim,ctx,LH,k){tag(ctx,'Two parent plants',178,22,k,{s:12,hi:true});tag(ctx,'Every child the parents could have',560,300,k,{s:12,hi:true});line(ctx,452,300,330,300);},
   steps: [
     { key: 'alleles', title: 'Two copies of every gene', fresh: true, pause: true, focus: [10,8,334,132],
-      see: 'Both parents are purple pea plants, Pp: each has two alleles of the flower-color gene, one P and one p.',
-      why: { bio: 'One P is enough for purple, so P is <b>dominant</b>. White (p) is <b>recessive</b>: it shows only with two.', honors: '<b>Genotype</b> is the allele pair (Pp); <b>phenotype</b> is what you see (purple).' },
+      see: 'Both parents are purple pea plants, Pp. Each has two versions of the flower-color gene, called <b>alleles</b> (Greek for “other”): one P and one p.',
+      why: 'The pair is the <b>genotype</b> (Pp); what you see is the <b>phenotype</b> (“pheno” = show): purple. Two different alleles make it <b>heterozygous</b> (“hetero” = different).',
       overlay(sim,ctx,LH,k){crR(ctx,k,[['Genotype: Pp (the alleles)',{s:14,w:800}],['Phenotype: purple (what you see)'],['One P is enough: P is dominant, p recessive',{c:CE_BLUE}]],LH);} },
     { key: 'gametes', title: 'Each gamete gets one allele', fresh: true, pause: true, focus: [[24,150,46,288],[24,150,312,34]],
       see: 'The circles on the edges are gametes, pollen and eggs. Each holds just one allele.',
       why: 'Meiosis splits the pair, so half the gametes carry P and half p: Mendel’s law of segregation.',
       overlay(sim,ctx,LH,k){crR(ctx,k,[['Pp parent → gametes',{s:14,w:800}],['½ carry P, ½ carry p'],['Which one a child gets is a coin flip',{c:CE_BLUE}]],LH);} },
     { key: 'square', title: 'The Punnett square', fresh: true, pause: true, focus: [70,184,266,254],
-      see: 'Each box pairs one gamete from each parent: 1 PP, 2 Pp, 1 pp.',
-      why: 'Three of four boxes have a P, so expect 3 purple : 1 white. Two purple parents can have a white child.',
+      see: 'Each box of the <b>Punnett square</b> (named for Reginald Punnett) pairs one gamete from each parent: 1 PP, 2 Pp, 1 pp.',
+      why: '3 of 4 boxes have a P: 3 purple : 1 white. P is <b>dominant</b>; p is <b>recessive</b> (it “recedes,” hiding behind P). Purple parents can have a white child.',
       overlay(sim,ctx,LH,k){crR(ctx,k,[['Expected children',{s:14,w:800}],['PP ¼   Pp ½   pp ¼'],['Purple ¾ : white ¼, a 3 : 1 ratio',{w:800,c:CE_GREEN}]],LH);} },
     { key: 'one', title: 'One child at a time', fresh: true, speed: 0.12, run(sim){dvAct(sim,'breed20');}, focus: [[24,150,312,288],[352,8,440,434]],
       see: 'Slowed down: one gamete from each parent meets, and the new plant appears on the right.',
@@ -2202,6 +2204,8 @@ crosses: {
   ]
 },
 bloodtype: {
+  simple: true,
+  intro: { bio: 'You’ll test blood samples with three serums, read the clumps, and decide who can safely give blood to whom.' },
   goals: {
     bio: ['What blood types are: proteins (antigens) on red blood cells', 'How antibodies make cells clump, and how a lab reads that to find a type', 'Why the wrong blood type in a transfusion is dangerous'],
     honors: ['A, B and Rh antigens and their antibodies', 'Multiple alleles and codominance: Iᴬ, Iᴮ and i', 'Using blood types to test a family relationship'],
@@ -2214,10 +2218,10 @@ bloodtype: {
     { key: 'antiA', title: 'Add anti-A serum', fresh: true, speed: 1, run: btSet, focus: [[248,202,96,96],[578,124,212,212]],
       overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.2,'a',s=>btAdd(s,['A']));if(tau<1.2)gnRing(ctx,btWell.A[0],btWell.A[1],44,tau);btC(ctx,k,[[tau<1.2?'Watch the anti-A well…':'Anti-A: '+btR(sim,'A'),{s:14,w:800}],['Anti-A antibodies stick to A antigens',{s:12}]],LH);},
       see: 'Patient 1’s blood plus anti-A serum in the left well. The smooth red drop turns grainy: the cells clump.',
-      why: 'Anti-A antibodies grab only the A antigen. These cells carry A antigens, so the antibodies stick.'},
+      why: 'Anti-A <b>antibodies</b> grab only the A <b>antigen</b> (short for “antibody generator”), a marker on the cell. These cells carry A, so the antibodies stick.'},
     { key: 'bridges', title: 'What the clumps are', fresh: true, speed: 1, run(sim){btSet(sim);btAdd(sim,['A']);}, focus: [578,124,212,212],
       see: 'In the close-up, Y-shaped antibodies (blue) each hold two cells at once.',
-      why: 'Two arms bridge two cells. Millions of bridges make visible clumps: <b>agglutination</b>.',
+      why: 'Two arms bridge two cells. Millions of bridges make visible clumps: <b>agglutination</b> (Latin for “gluing together”).',
       overlay(sim,ctx,LH,k){btC(ctx,k,[['One antibody, two arms, two cells',{s:14,w:800}],['Millions of bridges → visible clumps']],LH);} },
     { key: 'antiB', title: 'Add anti-B serum', fresh: true, speed: 1, run(sim){btSet(sim);btAdd(sim,['A']);}, focus: [[348,202,96,96],[578,124,212,212]],
       overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.2,'b',s=>btAdd(s,['B']));if(tau<1.2)gnRing(ctx,btWell.B[0],btWell.B[1],44,tau);btC(ctx,k,[[tau<1.2?'Watch the anti-B well…':'Anti-B: '+btR(sim,'B'),{s:14,w:800}],['No B antigens, nothing to grab',{s:12}]],LH);},
@@ -2226,7 +2230,7 @@ bloodtype: {
     { key: 'antiRh', title: 'Add anti-Rh serum', fresh: true, speed: 1, run(sim){btSet(sim);btAdd(sim,['A','B']);}, focus: [[448,202,96,96],[578,124,212,212]],
       overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.2,'r',s=>btAdd(s,['Rh']));if(tau<1.2)gnRing(ctx,btWell.Rh[0],btWell.Rh[1],44,tau);const t=btType(sim);btC(ctx,k,[[tau<1.2?'Watch the anti-Rh well…':'Anti-Rh: '+btR(sim,'Rh'),{s:14,w:800}],[t?'A antigens, no B, Rh present → type '+t:'Reading the wells…',{w:800,c:CE_GREEN}]],LH);},
       see: 'Anti-Rh in the right well clumps too. Together: A antigens, no B, Rh present.',
-      why: 'Blood type names the antigens: A, B, AB or O, plus Rh + or −. Patient 1 is <b>A positive</b>.'},
+      why: 'Blood type names the antigens: A, B, AB or O, plus Rh + or − (Rh is named for the rhesus monkeys it was found in). Patient 1 is A positive.'},
     { key: 'O', title: 'A patient with no antigens', set: { patient: 2 }, fresh: true, speed: 1, cause: { from: { patient: 1 }, delay: 1, dur: 0.6, label: 'Patient' }, run: btSet,
       overlay(sim,ctx,LH,k,tau){atT(sim,tau,2.2,'a',s=>btAdd(s,['A']));atT(sim,tau,3,'b',s=>btAdd(s,['B']));atT(sim,tau,3.8,'r',s=>btAdd(s,['Rh']));const t=btType(sim);
         btC(ctx,k,[['Patient 2',{s:14,w:800}],['Anti-A: '+btR(sim,'A')+' · Anti-B: '+btR(sim,'B')+' · Anti-Rh: '+btR(sim,'Rh'),{s:12}],[t?'No antigens at all → type '+t:'Testing…',{w:800,c:CE_GREEN}]],LH);},
@@ -2236,7 +2240,7 @@ bloodtype: {
       overlay(sim,ctx,LH,k,tau){atT(sim,tau,2.2,'a',s=>btAdd(s,['A']));atT(sim,tau,3,'b',s=>btAdd(s,['B']));atT(sim,tau,3.8,'r',s=>btAdd(s,['Rh']));const t=btType(sim);
         btC(ctx,k,[['Patient 3',{s:14,w:800}],['Anti-A: '+btR(sim,'A')+' · Anti-B: '+btR(sim,'B')+' · Anti-Rh: '+btR(sim,'Rh'),{s:12}],[t?'A and B antigens, Rh present → type '+t:'Testing…',{w:800,c:CE_GREEN}]],LH);},
       see: 'Patient 3: all three wells clump.',
-      why: 'A, B and Rh antigens: <b>AB positive</b>. Both A and B show: <b>codominance</b>.'},
+      why: 'A, B and Rh antigens: AB positive. Both A and B show equally: <b>codominance</b> (“co” = together).'},
     { key: 'transfuse', title: 'Who can give blood to whom', fresh: true, speed: 1, run(sim){btSet(sim);btAdd(sim,['A','B','Rh']);},
       see: 'Patient 1 (A+) needs blood. The card shows which donors are safe.',
       why: 'Plasma holds antibodies against the antigens you lack: type A has anti-B, which would clump B or AB cells. O-negative goes to anyone.',
@@ -2265,6 +2269,8 @@ bloodtype: {
   ]
 },
 karyotype: {
+  simple: true,
+  intro: { bio: 'You’ll pair up a person’s chromosomes like matching socks, then spot an extra one and name the condition it causes.' },
   goals: {
     bio: ['What chromosomes look like in a dividing cell', 'How doctors match the pairs: size, centromere and bands', 'How a karyotype shows an extra or missing chromosome, like trisomy 21'],
     honors: ['Building a karyogram: size, centromere position, banding', 'Autosomes vs. sex chromosomes', 'Trisomies and sex-chromosome conditions from nondisjunction'],
@@ -2285,15 +2291,15 @@ karyotype: {
     { key: 'centro', title: 'Clue 2: the centromere', fresh: true, pause: true, run(sim){kyCase(sim,'T21','M');},
       overlay(sim,ctx,LH,k,tau){['1','4','14'].forEach(n=>{const c=kyCh(sim,n)[0];if(c)gnRing(ctx,c.x,c.y,34,tau);});kyC(ctx,k,[['Where is the pinch?',{s:14,w:800}],['Middle: 1 · Off-center: 4 · Near the end: 14']],300);},
       see: 'The circled chromosomes are a 1, a 4 and a 14. Look where each is pinched.',
-      why: 'The pinch is the <b>centromere</b>: middle on 1, off-center on 4, near the end on 14. Partners share the same position.'},
+      why: 'The pinch is the <b>centromere</b> (“center part”): middle on 1, off-center on 4, near the end on 14. Partners share the same position.'},
     { key: 'bands', title: 'Clue 3: banding', fresh: true, pause: true, run(sim){kyCase(sim,'T21','M');},
       overlay(sim,ctx,LH,k,tau){kyCh(sim,'2').forEach(c=>gnRing(ctx,c.x,c.y,36,tau));kyC(ctx,k,[['Same bands = partners',{s:14,w:800}],['The two 2s match band for band']],300);},
       see: 'Both circled chromosomes are chromosome 2. Compare their stripes.',
       why: 'Partners carry the same genes in the same order, so their bands match exactly. Bands settle close calls.'},
     { key: 'arrange', title: 'Arrange the pairs', fresh: true, speed: 1, run(sim){kyCase(sim,'T21','M');},
       overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.5,'auto',s=>dvAct(s,'auto'));kyC(ctx,k,[[tau<1.5?'Watch them move…':'The karyogram',{s:14,w:800}],['Pairs 1–22, then the sex chromosomes']],tau<1.5?300:60);},
-      see: 'Each chromosome slides into its spot in the karyogram, matched by size, centromere and bands.',
-      why: '22 pairs of <b>autosomes</b> come first, then the <b>sex chromosomes</b>. Now anything extra or missing stands out.'},
+      see: 'Each chromosome slides into its spot, matched by size, centromere and bands. The finished picture is a <b>karyotype</b> (“karyo” = nucleus).',
+      why: '22 pairs of <b>autosomes</b> (the non-sex chromosomes) come first, then the sex chromosomes. Now anything extra or missing stands out.'},
     { key: 'sex', title: 'The sex chromosomes', fresh: true, speed: 1, run(sim){kyCase(sim,'T21','M');sim.st.chs.forEach(c=>c.slot=c.n);},
       overlay(sim,ctx,LH,k,tau){kyCh(sim,'X').concat(kyCh(sim,'Y')).forEach(c=>gnRing(ctx,c.x,c.y,36,tau));kyC(ctx,k,[['X and Y: a male',{s:14,w:800}],['XX is usually female; XY male']],60);},
       see: 'This patient has one X and one small Y.',
@@ -2301,7 +2307,7 @@ karyotype: {
     { key: 'count', title: 'Count and diagnose', fresh: true, speed: 1, run(sim){kyCase(sim,'T21','M');sim.st.chs.forEach(c=>c.slot=c.n);},
       overlay(sim,ctx,LH,k,tau){kyCh(sim,'21').forEach(c=>gnRing(ctx,c.x,c.y,30,tau));kyC(ctx,k,[['Total: '+sim.st.chs.length+' chromosomes',{s:14,w:800}],['Three copies of 21: trisomy 21',{w:800,c:CE_RED}],['Karyotype: 47,XY,+21 (Down syndrome)',{s:12}]],60);},
       see: 'Count them: 47, not 46. Chromosome 21 has three copies.',
-      why: 'An extra 21 causes Down syndrome, usually from <b>nondisjunction</b>: a pair fails to separate in meiosis.',
+      why: 'An extra 21 causes Down syndrome, usually from <b>nondisjunction</b> (“not coming apart”): a pair fails to separate in meiosis.',
       so: 'About 1 in 700 US babies has Down syndrome; many adults with it work and live into their 60s.'},
     { key: 'kli', lvl: 'honors', title: 'An extra sex chromosome', fresh: true, speed: 1, run(sim){kyCase(sim,'KLI','M');sim.st.chs.forEach(c=>c.slot=c.n);},
       overlay(sim,ctx,LH,k,tau){kyCh(sim,'X').concat(kyCh(sim,'Y')).forEach(c=>gnRing(ctx,c.x,c.y,34,tau));kyC(ctx,k,[['47,XXY',{s:14,w:800}],['Klinefelter syndrome',{w:800,c:CE_RED}],['Two X chromosomes plus a Y',{s:12}]],60);},
@@ -2346,6 +2352,8 @@ const pdArrow=(ctx,a,b,col)=>{ctx.save();ctx.strokeStyle=col||'#c8102e';ctx.fill
 
 BioLab.addLearn({
 pedigree: {
+  simple: true,
+  intro: { bio: 'You’ll read a family tree and use its pattern to tell whether a trait is dominant, recessive or carried on the X.' },
   goals: {
     bio: ['How to read a pedigree: symbols, lines and generations', 'The clue that a trait is recessive: it skips a generation', 'The clue that a trait is dominant', 'What a carrier is'],
     honors: ['Reading pedigrees and naming people (II-3)', 'Telling autosomal dominant from autosomal recessive', 'X-linked recessive: why it is mostly males', 'Finding carriers from the pattern'],
@@ -2358,7 +2366,7 @@ pedigree: {
     { key: 'symbols', title: 'Reading the symbols', fresh: true, pause: true, run(sim){pdFam(sim,'AR');},
       overlay(sim,ctx,LH,k,tau){const P=sim.fam.P;pdRingP(ctx,P[0],tau);pdRingP(ctx,P[1],tau);pdC(ctx,k,[['■ male   ● female',{s:14,w:800}],['Shaded: has the trait'],['Line between two people: a couple'],['Lines down: their children']]);},
       see: 'A three-generation family. The circled grandparents (I-1, I-2) are joined by a line; their children hang below.',
-      why: 'Squares are males, circles females. Shaded means the trait. II-3 is the third person in generation II.'},
+      why: 'Squares are males, circles females; shaded has the trait. II-3 is the third person in generation II. This chart is a <b>pedigree</b> (French for “crane’s foot,” for its branching lines).'},
     { key: 'down', title: 'Follow the trait down', fresh: true, speed: 1, run(sim){pdFam(sim,'AR');},
       overlay(sim,ctx,LH,k,tau){const f=sim.fam,P=f.P,ph=Math.floor(tau/1.8)%3,g=ph+1;P.filter(p=>p.gen===g).forEach(p=>pdRingP(ctx,p,tau,p.aff?'#c8102e':'#1f5fbf'));
         const n=P.filter(p=>p.gen===g&&p.aff).length,t=P.filter(p=>p.gen===g).length;pdC(ctx,k,[['Generation '+['I','II','III'][ph],{s:14,w:800}],[n+' of '+t+' have the trait',{w:800,c:n?CE_RED:CE_BLUE}],['Watch where it shows up, and where it skips',{s:12}]]);},
@@ -2377,7 +2385,7 @@ pedigree: {
     { key: 'carriers', lvl: 'honors', title: 'Finding the carriers', fresh: true, speed: 1, run(sim){pdFam(sim,'AR');},
       overlay(sim,ctx,LH,k,tau){atT(sim,tau,1.2,'rev',s=>{s.fam.revealed=true;s.infoDirty=true;});const f=sim.fam;pdC(ctx,k,[[tau<1.2?'Watch for half-shaded symbols…':'Half-shaded: must be a carrier',{s:14,w:800}],['One recessive allele, no trait'],['Every affected child’s parents',{s:12}]]);},
       see: 'Back to the first family. Half-shaded symbols appear: people who must be carriers.',
-      why: 'Parents of every affected child carry one recessive allele. These are <b>obligate carriers</b>.'},
+      why: 'Parents of every affected child must hide one recessive allele. They carry it without showing it, so they are <b>carriers</b>.'},
     { key: 'xr', lvl: 'honors', title: 'X-linked recessive', fresh: true, speed: 1, run(sim){pdFam(sim,'XR');},
       overlay(sim,ctx,LH,k,tau){const f=sim.fam,P=f.P;P.filter(p=>p.aff).forEach(p=>{pdRingP(ctx,p,tau);if(p.mother!=null&&tau>1.2){pdArrow(ctx,P[p.mother],p,'#1f5fbf');pdRingP(ctx,P[p.mother],tau,'#1f5fbf');}});
         pdC(ctx,k,[['Only males have it',{s:14,w:800,c:CE_RED}],[tau>1.2?'Sons get it from their mothers':'Where did each son get it?',{w:800,c:CE_BLUE}],['Like color blindness and hemophilia',{s:12}]]);},

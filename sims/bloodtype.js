@@ -56,6 +56,7 @@ const BLOOD={
   id:'bloodtype',hash:'bloodtype',apUnit:5,order:4,tab:'Blood typing lab',kind:'Virtual lab',
   card:'Drop antibody serums on blood samples, watch for clumping, and work out each patient’s blood type.',
   title:'Blood typing lab: ABO and Rh',
+  ledeMore:'<p><b>Think of name tags.</b> Your red blood cells wear tags: A, B, both or none. Your immune system knows your own tags and attacks cells wearing tags it doesn’t know.</p><p>That is why hospitals must match blood before a transfusion, and why O-negative is the emergency type.</p>',
   lede:{bio:'Each serum has antibodies that grab one kind of marker (antigen) on red blood cells. If the marker is there, the blood clumps. Test each patient and work out their blood type.',
         honors:'Blood type shows codominance (Iᴬ and Iᴮ) and multiple alleles. Use blood types to decide whether a child could belong to a family.',
         ap:'Use Hardy–Weinberg to estimate ABO allele frequencies from a population sample.'},
