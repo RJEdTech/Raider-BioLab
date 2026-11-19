@@ -294,6 +294,7 @@ cellexplorer:{
     lab:{set:{cell:'animal',part:'membrane'},look:'Read about the cell membrane, then open the Membrane transport tool to see molecules cross it.'}}
   ]},
 transport:{
+  core:['osmdir','hyper','rbcpure','plasmo','bilayer','atp','plant','carrier'],
   apNote:'Membrane transport, tonicity and water potential are AP Biology Unit 2 topics.',
   ap:[{title:'AP Biology equations and formulas sheet',url:'https://apcentral.collegeboard.org/media/pdf/ap-biology-equations-and-formulas-sheet.pdf',note:'Has Ψ = Ψp + Ψs and Ψs = −iCRT, with R = 0.0831 L·bar/mol·K.'},
       {title:'All released AP Biology exam questions',url:'https://apcentral.collegeboard.org/courses/ap-biology/exam/past-exam-questions',note:'Free-response questions by year, with scoring guidelines.'}],

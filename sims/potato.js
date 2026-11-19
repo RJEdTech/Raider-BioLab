@@ -24,9 +24,10 @@ const sel=sim=>sim.st.cores[clamp((sim.p.bal|0)-1,0,5)];
 const SIM={
   id:'potato',hash:'potato',apUnit:2,order:5,kind:'Virtual lab',tab:'Potato osmosis lab',
   card:'Soak potato cores in sugar solutions for a day, weigh them, and find the concentration where they neither gain nor lose water.',
-  title:'Potato osmosis lab: finding the isotonic point',
+  title:'Potato osmosis lab: gaining and losing water',
+  ledeMore:'<p><b>Think of a raisin and a grape.</b> Drop a raisin in water and it plumps up as water moves in. Cover a grape in sugar and it shrivels as water moves out. Water moves toward wherever more is dissolved.</p><p>Somewhere between plain water and very sweet water is a strength where a potato core stays the same. Finding it tells you how much is dissolved inside potato cells.</p>',
   prereq:['transport'],
-  lede:{bio:'Potato cores soak in sugar solutions of different strengths. Water moves in or out by osmosis, so the cores gain or lose mass.',
+  lede:{bio:'Potato cores soak in sugar water of different strengths. Water moves into or out of the cores, so they gain or lose mass. You weigh them to find out which.',
         honors:'Measure percent mass change across a range of sucrose solutions, graph it, and find the isotonic concentration where the line crosses zero.',
         ap:'Use the isotonic point to calculate the water potential of potato cells with ψs = −iCRT, and test how temperature and NaCl change the result.'},
   scale:'Real lab scale: potato cores about 3 cm long and 1 cm wide, each weighing about 2 g, soaking in 50 mL beakers.',
