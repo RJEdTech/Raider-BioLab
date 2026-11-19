@@ -246,6 +246,7 @@ const SIM={
   id:'expdesign',hash:'expdesign',apUnit:0,order:1,tab:'Experiment designer',kind:'Virtual lab',
   card:'Design a bacterial growth experiment: pick one variable to change, keep the rest the same, run replicate plates and graph the results.',
   title:'Experiment designer: the bacterial growth lab',
+  ledeMore:'<p><b>Think of testing which phone charger is fastest.</b> To be fair, you would use the same phone, the same starting battery and the same time. Change only the charger. If you also changed the phone, you couldn’t tell which made the difference.</p><p>Every science lab, and every ad claim worth trusting, depends on a fair test like this.</p>',
   lede:{bio:'Choose one thing to change, keep everything else the same, and count the bacterial colonies that grow. That is a fair test.',
         honors:'Design a controlled experiment, pick the right graph for your data, and watch a broth culture move through the phases of growth.',
         ap:'Run replicate plates, then use means, standard deviation and ±2 SE error bars to decide whether a difference is real or just chance.'},

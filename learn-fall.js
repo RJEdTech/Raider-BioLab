@@ -130,7 +130,7 @@ L.neuron={
 /* ---------- pillbug ---------- */
 const pbCard=(ctx,k,LH,rows)=>card(ctx,k,492,10,300,rows);
 const pbDone=sim=>ffwd(sim,0.01,s=>s.st.tk>=10.001,3000);
-L.pillbug={
+L.pillbug={simple:true,intro:{bio:'You’ll watch pill bugs wander between two sides of a chamber and find out how they end up where they do.'},
   goals:{
     bio:['How a choice chamber tests one variable at a time','Why pill bugs collect in damp, dark places','How counting every 30 seconds turns behavior into data','Why a crowd shows where animals stop, not where they aimed'],
     honors:['How kinesis differs from taxis','How speed data tells them apart','How temperature changes the choice'],
@@ -174,7 +174,7 @@ L.pillbug={
      overlay(sim,ctx,LH,k){pbCard(ctx,k,LH,[['Left: '+F(sim,'left',0)+' · Right: '+F(sim,'right',0),{w:700}]]);}},
     {key:'taxis',lvl:'honors',title:'Kinesis, not taxis',fresh:true,speed:0.6,
      see:'Back to wet against dry. Compare the speed on each side.',
-     why:'<b>Taxis</b> is steering toward something. <b>Kinesis</b> is changing speed with conditions. These bugs never steer; the speed difference alone sorts them.',
+     why:'<b>Taxis</b> (Greek for “arranging”) is steering toward something. <b>Kinesis</b> (Greek for “movement”) is changing speed with conditions. These bugs never steer; speed alone sorts them.',
      overlay(sim,ctx,LH,k){pbCard(ctx,k,LH,[[FL(sim,'vR',1),{w:700,c:RED}],[FL(sim,'vL',1),{w:700,c:BLUE}]]);}},
     {key:'temp',lvl:'honors',title:'Warm or cool?',set:{Rm:'wet',LT:15,RT:30},fresh:true,speed:2.5,
      see:'Both sides wet and dark. The left is 15 °C, the right 30 °C.',
@@ -421,7 +421,7 @@ function edStats(sim){const s=sim.st;if(!s.plates)return [];return s.plates.map(
 const edDone=sim=>ffwd(sim,0.05,s=>s.st.h>=s.st.end-1e-9,4000);
 const edCard=(ctx,k,LH,rows)=>card(ctx,k,614,LH-10,180,rows,{up:true});
 const edMeans=sim=>edStats(sim).map((x,i)=>(sim.st.vals[i])+(sim.p.iv==='temp'?' °C':'')+': '+Math.round(x.m));
-L.expdesign={
+L.expdesign={simple:true,intro:{bio:'You’ll design a fair test with bacteria: change one thing, keep the rest the same, and read what the results can tell you.'},
   goals:{
     bio:['What independent and dependent variables are','Why every experiment needs a control group','Why one plate is never enough: replicates','Why everything else must stay the same'],
     honors:['How bacteria grow: lag, log, stationary and death phases','When a bar graph or a line graph fits the data'],
@@ -430,19 +430,19 @@ L.expdesign={
   steps:[
     {key:'q',title:'One question, two variables',pause:true,focus:[0,0,612,76],
      see:'Four temperatures, three agar plates each. The header names what changes: temperature. What gets counted: colonies.',
-     why:'What you change on purpose is the <b>independent variable</b>. What you measure, the colonies on each plate, is the <b>dependent variable</b>.',
+     why:'What you change on purpose is the <b>independent variable</b> (it doesn’t depend on anything). What you measure, the colonies, is the <b>dependent variable</b>: it depends on what you changed.',
      overlay(sim,ctx,LH,k,tau){ring(ctx,k,[4,4,604,64],tau);}},
     {key:'ctrl',title:'The control group',pause:true,focus:TF('expdesign','The control group'),
      see:'The 37 °C column is marked control: body temperature, the normal condition for E. coli.',
-     why:'The control shows what happens without your change, so every other column has something to compare against.',
+     why:'The <b>control group</b> shows what happens without your change, so every other column has something to compare against.',
      overlay(sim,ctx,LH,k,tau){const L4=sim.st.vals.length,cw=585/L4,i=Math.max(0,sim.st.vals.indexOf(37));ring(ctx,k,[20+cw*i,36,cw,390],tau);}},
     {key:'reps',title:'Three plates per level',pause:true,focus:[20,74,585,345],
      see:'Each column holds three plates set up the same way.',
-     why:'One plate can be a fluke, like one missed free throw. Several <b>replicates</b> show what is typical.',
+     why:'One plate can be a fluke, like one missed free throw. Repeating the setup, <b>replicates</b>, shows what is typical.',
      overlay(sim,ctx,LH,k,tau){ring(ctx,k,[20,74,585,345],tau);}},
     {key:'const',title:'Keep everything else the same',pause:true,focus:[612,34,182,180],
      see:'The card on the right lists what stays the same for every plate: sugar, antibiotic, UV and the 24-hour count.',
-     why:'These are the <b>constants</b>. Change two things at once and you can’t tell which one caused the result.',
+     why:'These stay constant, so they are the <b>constants</b>. Change two things at once and you can’t tell which one caused the result.',
      overlay(sim,ctx,LH,k,tau){ring(ctx,k,[612,30,184,180],tau);}},
     {key:'grow',title:'Incubation: colonies appear',speed:0.6,run:tour('expdesign','Incubation'),
      see:'The plates incubate for 24 hours. Colonies pop up first at 30 and 37 °C, and grow bigger there.',

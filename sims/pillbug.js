@@ -19,6 +19,7 @@ const SIM={
   id:'pillbug',hash:'pillbug',apUnit:0,order:2,tab:'Pill bug choice chamber',kind:'Virtual lab',
   card:'Give pill bugs a choice between wet and dry or light and dark, count them every 30 seconds, then test your counts with chi-square.',
   title:'Pill bug choice chamber: animal behavior',
+  ledeMore:'<p><b>Think of walking through a crowded hallway.</b> You speed up where it is cramped and slow down where there is room to stand. Without planning it, you end up in the open spaces.</p><p>Pill bugs do the same with dry and damp ground, and that simple rule keeps them alive.</p>',
   lede:{bio:'Pill bugs can wander anywhere in the chamber. Give the two sides different conditions and count where the bugs end up.',
         honors:'Add temperature to the choices and measure how fast the bugs move on each side, to tell kinesis from taxis.',
         ap:'AP Lab 11: test your counts against a 50:50 null hypothesis with chi-square, and decide whether the preference is real.'},
