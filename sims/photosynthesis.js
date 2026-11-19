@@ -155,9 +155,10 @@ const LAB_LD={id:'leafdisk',title:'Photosynthesis Lab Analysis: Spinach Leaf Dis
     {id:'q7',n:'7',q:'<p>Real-world application: how does what you learned apply to aquatic plants, to greenhouses, or to plants growing in low light?</p>'}],
   conclusion:{prompt:'<p>Write a conclusion of 1 to 2 paragraphs. Discuss the relationship between light intensity and the rate of photosynthesis, the role of CO₂ availability, whether your hypothesis was supported, and any unexpected findings.</p>'}};
 const PHOTO={
-  id:'photo',apUnit:3,order:2,kind:'Simulation',card:'The Elodea bubble lab. Move the lamp, change CO₂ and light color, count bubbles.',hash:'photosynthesis',tab:'Photosynthesis',
-  title:'Photosynthesis: the Elodea bubble lab',
-  lede:{bio:'Pondweed gives off oxygen bubbles as it photosynthesizes. Move the lamp, change the CO₂ and temperature, and count the bubbles.',
+  id:'photo',apUnit:3,order:2,kind:'Simulation',card:'Count the oxygen bubbles a pondweed gives off as it makes food from light.',hash:'photosynthesis',tab:'Photosynthesis',
+  title:'Photosynthesis: counting pondweed bubbles',
+  ledeMore:'<p><b>Think of a solar-powered kitchen.</b> A leaf takes in carbon dioxide from the air and water from the roots, and uses light energy to cook them into sugar, its food. Oxygen is the leftover. Underwater, it comes out as bubbles you can count.</p><p>Almost every bite of food you eat, and every breath of oxygen, traces back to this.</p>',
+  lede:{bio:'Plants use light to make their own food, and they give off oxygen as they do. Count the oxygen bubbles from a pondweed (Elodea) as the lamp moves.',
         honors:'Test which colors of light drive photosynthesis, and find the limiting factor: light, CO₂ or temperature.',
         ap:'A dissolved-O₂ probe shows gross and net O₂. Find the light compensation point, where photosynthesis exactly balances respiration.'},
   timeScale:0.25,dtMax:0.005,prewarm:1.5,sampleDt:0.02,window:6,unit:'min',chChange:1,chReveal:3.6,

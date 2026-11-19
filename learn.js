@@ -1369,6 +1369,9 @@ function ceElodea(ctx,cx,cy,R,k,t){ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,0,
 
 BioLab.addLearn({
 photo: {
+  simple: true,
+  intro: { bio: 'You’ll see how a plant uses light to make its own food, and why a lamp’s distance changes how fast it works.',
+           honors: 'You’ll see how a plant uses light to make its own food, what limits how fast it works, and which colors of light it uses.' },
   goals: {
     bio: ['What a plant takes in and gives off when it photosynthesizes', 'Why moving the light twice as far away cuts the bubbles by more than half', 'Why a plant can be making oxygen and still add none to the water', 'How light, CO₂ and temperature each set a limit'],
     honors: ['What a plant takes in and gives off when it photosynthesizes', 'Why light falls off with the square of distance', 'Gross vs. net oxygen: photosynthesis minus the plant’s own respiration', 'Why temperature and light color change the rate'],
@@ -1382,11 +1385,11 @@ photo: {
   steps: [
     { key: 'setup', title: 'Light in, oxygen out', set: { dist: 15 }, fresh: true, speed: 1,
       see: 'Elodea in baking-soda water, 15 cm from a lamp. Bubbles rise from the leaves. The card shows what goes in and what comes out.',
-      why: 'Light turns CO₂ and water into sugar. Oxygen is left over and escapes as bubbles.',
+      why: 'Light turns CO₂ and water into sugar: <b>photosynthesis</b>, “putting together with light.” Leftover oxygen escapes as bubbles.',
       overlay(sim,ctx,LH,k){ceCard(ctx,k,20,62,390,[['Photosynthesis',{s:15,w:800}],['In:  light + CO₂ (from baking soda) + water',{c:CE_BLUE}],['Out:  sugar (stays in the plant) + O₂ (the bubbles)',{c:CE_GREEN}],['6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂',{s:12,w:700}]]);} },
     { key: 'cells', title: 'Inside a leaf: chloroplasts', set: { dist: 15 }, speed: 1,
-      see: 'A close-up of an Elodea leaf (see the 20 µm scale bar). Each cell is packed with green chloroplasts.',
-      why: 'Their <b>chlorophyll</b> absorbs light. That energy splits water, which is where the oxygen comes from.',
+      see: 'A close-up of an Elodea leaf (see the 20 µm scale bar). Each cell is packed with green <b>chloroplasts</b> (“green bodies”), where photosynthesis happens.',
+      why: 'Their green pigment, <b>chlorophyll</b> (Greek for “green leaf”), absorbs light. That energy splits water, which is where the oxygen comes from.',
       overlay(sim,ctx,LH,k,tau){ceElodea(ctx,230,250,130,k,tau);line(ctx,360,250,590,250,'#c8102e');tag(ctx,'Leaf cells: the green dots are chloroplasts',230,92,k,{s:12,hi:true});} },
     { key: 'count', title: 'Counting bubbles measures the rate', set: { dist: 15 }, speed: 1,
       see: 'The card counts bubbles. At 15 cm: about 20 a minute.',
@@ -1394,17 +1397,17 @@ photo: {
       overlay(sim,ctx,LH,k){const b=phM(sim,'bubbles'),l=phM(sim,'light');ceCard(ctx,k,20,62,330,[['Lamp 15 cm away',{s:14,w:800}],['Light at the plant: '+Math.round(l)+'%'],['Bubbles per minute: '+Math.round(b),{w:800,c:CE_GREEN}]]);tag(ctx,'count these',700,150,k,{s:12,hi:true});line(ctx,700,165,618,200,'#c8102e');} },
     { key: 'far', cause: { from: { dist: 15 } }, title: 'Twice as far, a quarter of the light', set: { dist: 30 }, fresh: true, speed: 1,
       see: 'The lamp moves back to 30 cm. Light at the plant drops from 44% to 11%, and bubbles slow to about 8 a minute.',
-      why: 'Twice as far spreads the light over 4 times the area: the <b>inverse-square</b> rule.',
+      why: 'Twice as far spreads light over 4 times the area: the <b>inverse-square rule</b> (2× the distance, 1/2² = 1/4 the light).',
       overlay(sim,ctx,LH,k){const b=phM(sim,'bubbles'),l=phM(sim,'light');const h=ceCard(ctx,k,20,62,330,[['Lamp 30 cm away (twice as far)',{s:14,w:800}],['Light at the plant: '+Math.round(l)+'% (was 44%)'],['Bubbles per minute: '+Math.round(b),{w:800,c:CE_GREEN}],['Same light, spread over 4× the area:',{s:12}]]);
         const y0=62+h+10,s=28;ctx.save();ctx.fillStyle='#ffd966';ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.fillRect(40,y0,s,s);ctx.strokeRect(40,y0,s,s);H.txt(ctx,'15 cm',54,y0+s+15,{s:11*k,a:'center'});
         ctx.globalAlpha=0.45;for(let i=0;i<2;i++)for(let j=0;j<2;j++){ctx.fillRect(140+i*s,y0+j*s,s,s);}ctx.globalAlpha=1;for(let i=0;i<2;i++)for(let j=0;j<2;j++)ctx.strokeRect(140+i*s,y0+j*s,s,s);H.txt(ctx,'30 cm: ¼ each',168,y0+2*s+15,{s:11*k,a:'center'});ctx.restore();} },
     { key: 'farthest', cause: { from: { dist: 30 } }, title: 'Too far: making = using', set: { dist: 60 }, fresh: true, speed: 1,
       see: 'At 60 cm the bubbles stop. The bars show the plant still makes oxygen, but its own respiration uses just as much.',
-      why: 'Bubbles appear only when photosynthesis makes <b>more</b> oxygen than respiration uses.',
+      why: 'The plant’s cells also use oxygen for <b>respiration</b>, to get energy. Bubbles appear only when photosynthesis makes more oxygen than respiration uses.',
       overlay(sim,ctx,LH,k){const g=phM(sim,'gross'),r=phM(sim,'resp');const h=ceCard(ctx,k,20,62,380,[['Lamp 60 cm away',{s:14,w:800}],['O₂ made by photosynthesis vs. used by respiration',{s:12}]],{extra:52});ceBars(ctx,k,32,62+h-52*Math.min(k,1.3),356,[['Made',g,CE_GREEN,g.toFixed(1)],['Used',r,CE_RED,r.toFixed(1)]],30);} },
     { key: 'lgraph', title: 'Put it on a graph', speed: 0.5,
       see: 'Left: your lab’s graph, bubbles per minute vs lamp distance, with the three settings you just saw. Right: the same data as rate vs light.',
-      why: 'More light, faster photosynthesis, until the curve levels off. Then something else, like CO₂, is the limit.',
+      why: 'More light, faster photosynthesis, until the curve levels off. Then something else, like CO₂, is the <b>limiting factor</b>: whatever runs short sets the pace.',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH,1);const kk=Math.min(k,1.2),p=tau%12;
         /* from sims/photosynthesis.js at 25 °C and the default baking soda: gross = 38.6 × I/(I + 25), respiration = 4, I = 100 × (10/d)² */
         const net=I=>38.6*I/(I+25)-4,bub=d=>Math.max(0,net(100*Math.pow(10/d,2))),G='#1b7a3a';
@@ -1418,7 +1421,7 @@ photo: {
           if(p>=8.5){ezTagA(ctx,'Levels off: CO₂ now limits',B.x1,B.y1-(net(100)/30)*(B.y1-B.y0)+34,k,{s:12.5,hi:true},'r');ezTagA(ctx,'Steep: light limits',B.x0+50,B.y1-36,k,{s:12.5},'l');}}} },
     { key: 'noco2', cause: { from: { co2: 0.5 } }, title: 'Bright light, no CO₂', set: { dist: 15, co2: 0 }, fresh: true, speed: 1,
       see: 'Back at 15 cm, but no baking soda. The bubbles stop.',
-      why: 'No CO₂, no sugar, so the light energy backs up. A plant needs light <b>and</b> CO₂; whichever runs short sets the limit.',
+      why: 'No CO₂, no sugar, so the light energy backs up. Here CO₂ is the limiting factor, even with plenty of light.',
       overlay(sim,ctx,LH,k){const g=phM(sim,'gross'),r=phM(sim,'resp');const h=ceCard(ctx,k,20,62,380,[['15 cm, but no CO₂',{s:14,w:800}],['Light 44%, same as the start',{s:12}]],{extra:52});ceBars(ctx,k,32,62+h-52*Math.min(k,1.3),356,[['Made',g,CE_GREEN,g.toFixed(1)],['Used',r,CE_RED,r.toFixed(1)]],30);} },
     { key: 'hot', cause: { from: { temp: 25 } }, lvl: 'honors', title: 'Temperature: warm helps, hot hurts', set: { dist: 15, temp: 45 }, fresh: true, speed: 1,
       see: 'At 45 °C, photosynthesis falls, respiration climbs, and the bubbles stop.',
@@ -1469,6 +1472,8 @@ const f1=v=>(Math.round(v*10)/10).toFixed(1);
 
 BioLab.addLearn({
 chloroplast: {
+  simple: true,
+  intro: { bio: 'You’ll go inside a leaf cell and see the two stages that turn light, water and carbon dioxide into sugar.' },
   goals: {
     bio: ['Where in a leaf photosynthesis happens, and how small it is', 'How light splits water and releases the oxygen you breathe', 'How the light-powered half charges up ATP and NADPH, and the Calvin cycle spends them to make sugar', 'Why a leaf needs light and CO₂ at the same time'],
     honors: ['How light splits water and powers the electron transport chain', 'How the H⁺ gradient runs ATP synthase', 'How the Calvin cycle spends ATP and NADPH to fix CO₂', 'Why light color, temperature and CO₂ each change the rate'],
@@ -1480,31 +1485,31 @@ chloroplast: {
   startOverlay(sim,ctx,LH,k){ceChloroInset(ctx,k);tag(ctx,'Stroma (inside the chloroplast)',225,165,k,{s:12,hi:true});tag(ctx,'Thylakoid space',200,430,k,{s:12,hi:true});},
   steps: [
     { key: 'where', title: 'A slice of a chloroplast', set: {}, fresh: true, speed: 0.5, focus: [0,190,800,130],
-      see: 'The inset is a whole chloroplast, about 5 µm long. The red box is the slice drawn here: one thylakoid membrane, 7 nm thick.',
-      why: 'Light is caught in this membrane. Sugar is built above it, in the <b>stroma</b>.',
+      see: 'The inset is a whole chloroplast, about 5 µm long. The red box is the slice drawn here: a <b>thylakoid</b> membrane (Greek for “sac-like”), 7 nm thick.',
+      why: 'Light is caught in this membrane. Sugar is built in the fluid above it, the <b>stroma</b> (Greek for “bed”).',
       overlay(sim,ctx,LH,k){ceChloroInset(ctx,k);} },
     { key: 'water', title: 'Light splits water: the oxygen you breathe', speed: 0.3, focus: [40,186,110,174],
-      see: 'Light hits photosystem II. A small blue O₂ appears under it as water is split.',
+      see: 'Light hits a cluster of chlorophyll called <b>photosystem II</b> (numbered in the order they were discovered, not the order they work). A small blue O₂ appears as water is split.',
       why: 'Light knocks electrons out of chlorophyll, and splitting water replaces them. Every O₂ a plant releases comes from water.',
       overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['2 H₂O → O₂ + 4 H⁺ + 4 e⁻',{s:14,w:800}],['O₂ released now: '+f1(phM(sim,'o2')),{w:800,c:CE_GREEN}]]);} },
     { key: 'pump', title: 'Electrons pump H⁺', speed: 0.3, focus: [150,200,210,150],
-      see: 'Yellow electrons hop from PSII to PQ to b6f, and pink H⁺ are pushed into the space below. The H⁺ gradient climbs.',
+      see: { bio: 'Yellow electrons hop along a chain of proteins, and pink H⁺ are pushed into the space below. The H⁺ <b>gradient</b> (high on one side, low on the other) climbs.', honors: 'Yellow electrons hop from PSII to PQ to b6f, and pink H⁺ are pushed into the space below. The H⁺ <b>gradient</b> (high on one side, low on the other) climbs.' },
       why: 'Each hop releases a little energy, which pumps H⁺, like charging a battery.',
       overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['Electron energy → pumping H⁺',{s:14,w:800}],['H⁺ gradient: '+Math.round(phM(sim,'hg'))+'%',{w:800,c:'#b0306a'}]]);} },
     { key: 'psi', title: 'Photosystem I makes NADPH', speed: 0.3, focus: [355,155,200,165],
-      see: 'Light hits photosystem I and re-energizes the electrons. The purple NADPH bar fills.',
-      why: 'NADPH carries high-energy electrons. The Calvin cycle needs them to build sugar.',
+      see: 'Light hits <b>photosystem I</b> and re-energizes the electrons. The purple <b>NADPH</b> bar fills: NADPH is a carrier loaded with energetic electrons (NADP⁺ is the empty one).',
+      why: 'The Calvin cycle needs NADPH to build sugar. It is the plant’s cousin of NADH, with an extra P for phosphate.',
       overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['Light again at PSI → NADPH',{s:14,w:800}],['NADPH supply: '+Math.round(phM(sim,'nadph'))+'%',{w:800,c:'#6a3fb5'}]]);} },
     { key: 'atp', title: 'ATP synthase: H⁺ flows back, ATP is made', speed: 0.3, focus: [600,155,80,180],
-      see: 'H⁺ flow back up through ATP synthase, and the green ATP bar fills.',
+      see: 'H⁺ flow back up through a spinning protein, <b>ATP synthase</b> (“synthase” means maker), and the green ATP bar fills.',
       why: 'ATP synthase is the only way through. The flow turns it like a water wheel, adding phosphate to ADP.',
       overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['H⁺ flow → ATP',{s:14,w:800}],['ATP supply: '+Math.round(phM(sim,'atp'))+'%',{w:800,c:CE_GREEN}]]);} },
     { key: 'calvin', title: 'The Calvin cycle spends them to make sugar', speed: 0.5, focus: [[440,20,140,140],[600,20,200,160]],
-      see: 'In the stroma the Calvin cycle turns. CO₂ goes in, the ATP and NADPH bars drop, and the sugar count climbs.',
-      why: 'The enzyme <b>rubisco</b> grabs CO₂. ATP and NADPH supply the energy and electrons to turn it into sugar.',
+      see: 'In the stroma a loop of reactions turns: the <b>Calvin cycle</b>, named for Melvin Calvin, who worked it out. CO₂ goes in, ATP and NADPH drop, sugar climbs.',
+      why: 'An enzyme, <b>rubisco</b>, grabs CO₂, and ATP and NADPH power turning it into sugar. Rubisco may be Earth’s most common protein.',
       overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['CO₂ + ATP + NADPH → sugar (G3P)',{s:14,w:800}],['CO₂ fixed: '+f1(phM(sim,'fix'))+'    Sugar made: '+f1(phM(sim,'g3p')),{w:800,c:CE_GREEN}]]);} },
     { key: 'summary', title: 'The whole picture: two stages', speed: 0.5,
-      see: 'Both stages side by side. Light and water go in; ATP and NADPH carry the energy to the Calvin cycle, which turns CO₂ into sugar.',
+      see: 'Both stages side by side. The <b>light reactions</b> use light and water to charge ATP and NADPH. The Calvin cycle spends them to turn CO₂ into sugar.',
       why: 'The O₂ comes from water. Spent ADP and NADP⁺ go back to be recharged.',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH,1);const kk=Math.min(k,1.2),p=tau%12,G='#1b7a3a',L={x:70,y:130,w:250,h:170},C={x:480,y:130,w:250,h:170};
         const box=(b,t1,t2,col)=>{ctx.save();H.rr(ctx,b.x,b.y,b.w,b.h,14);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=col;ctx.stroke();ctx.restore();H.txt(ctx,t1,b.x+b.w/2,b.y+b.h/2-12,{s:17*kk,w:700,a:'center',b:'middle'});H.txt(ctx,t2,b.x+b.w/2,b.y+b.h/2+16,{s:13*kk,a:'center',b:'middle',c:PAL['cv-soft']});};
@@ -1521,7 +1526,7 @@ chloroplast: {
         arr(C.x+C.w/2,C.y+C.h+4,C.x+C.w/2,C.y+C.h+64,'Sugar (G3P → glucose)',G,6.4,C.x+C.w/2,C.y+C.h+80);} },
     { key: 'dark', cause: { from: { light: 80 } }, title: 'Turn off the light', set: { light: 0 }, speed: 0.8,
       see: 'Light goes to 0%. The O₂ count falls to 0, the H⁺ gradient drains, and the Calvin cycle slows.',
-      why: 'The Calvin cycle needs no light itself, but it runs out of the ATP and NADPH that light makes.',
+      why: 'The Calvin cycle needs no light itself (it is also called the light-independent reactions), but it runs out of the ATP and NADPH that light makes.',
       overlay(sim,ctx,LH,k){CLC(sim,ctx,k,[['Light 0%',{s:14,w:800}],['O₂ released: '+f1(phM(sim,'o2'))+'    H⁺ gradient: '+Math.round(phM(sim,'hg'))+'%',{w:800}],['Sugar made: '+f1(phM(sim,'g3p')),{w:800,c:CE_GREEN}]]);} },
     { key: 'noco2', cause: { from: { co2: 0.6 } }, title: 'Bright light, no CO₂', set: { co2: 0 }, fresh: true, speed: 3,
       see: 'Bright light, no CO₂. The ATP and NADPH bars fill up, then O₂ falls toward 0.',
@@ -1719,7 +1724,7 @@ resp: {
 
 /* Why questions (Test yourself, part 2) for the cell-energy tools. */
 BioLab.addReview({
-photo:{questions:[
+photo:{core:['o2from','quarter','stops','co2need','labgraph','photoeq','greenleaf','hot45'],questions:[
   {id:'o2from',kind:'test',lvl:'bio',q:'The bubbles from Elodea are mostly oxygen. Where does that oxygen come from?',choices:['From the baking soda dissolved in the water','From the CO₂ the plant takes in from the water','From water molecules split using light energy','From the lamp’s light turning into a gas'],correct:2,
     steps:['Chlorophyll absorbs light, and the energy is used to split water.','Splitting water releases O₂, H⁺ and electrons.','The CO₂’s carbon and oxygen end up in the sugar, not in the bubbles.']},
   {id:'quarter',kind:'test',lvl:'bio',q:'The lamp moves from 15 cm to 30 cm away. Why do the bubbles drop by more than half?',choices:['At twice the distance light covers 4× the area: ¼ as much','The lamp gets dimmer when it is moved farther away','The water cools down, slowing every reaction in the leaf','The plant runs out of CO₂ once the bubbles slow down'],correct:0,

@@ -13,13 +13,14 @@ const W={x:690,y:96,r:58};
 
 const SIM={
   id:'chloroplast',hash:'chloroplast',apUnit:3,order:5,kind:'Simulation',tab:'Light reactions and Calvin cycle',
-  card:'Shine light on a thylakoid membrane, watch water split and ATP and NADPH build up, then see the Calvin cycle turn CO₂ into sugar.',
-  title:'Inside the chloroplast: light reactions and the Calvin cycle',
+  card:'Go inside a leaf cell and watch light, water and carbon dioxide become sugar, in two stages.',
+  title:'Inside a chloroplast: how light becomes sugar',
+  ledeMore:'<p><b>Think of a solar charger and a factory.</b> The first stage works like a solar panel: light charges up two kinds of “batteries” (ATP and NADPH). The second stage is a factory that spends those batteries to build sugar from carbon dioxide.</p><p>No light, no charged batteries. No carbon dioxide, nothing to build with. The plant needs both.</p>',
   prereq:['photosynthesis'],next:['respiration'],
-  lede:{bio:'Light energy splits water and charges up two energy carriers, ATP and NADPH. The Calvin cycle spends them to build sugar from CO₂.',
+  lede:{bio:'Inside a leaf cell, light energy is caught and used to turn carbon dioxide into sugar, in two stages. Watch both.',
         honors:'Follow electrons from photosystem II to NADP⁺, watch the H⁺ gradient drive ATP synthase, and see how the light reactions and the Calvin cycle depend on each other.',
         ap:'Test the coupling between the light reactions and carbon fixation with darkness, CO₂ starvation and the herbicide DCMU, and account for the ATP and NADPH each CO₂ costs.'},
-  scale:'Inside one chloroplast (about 5 µm long): a slice of thylakoid membrane about 100 nanometers wide, with the stroma above it and the thylakoid space below.',
+  scale:'Zoomed in on a slice of one chloroplast’s inner membrane, about 100 nanometers wide, roughly 1/800 the width of a human hair.',
   timeScale:1,dtMax:0.01,prewarm:60,sampleDt:0.1,window:40,unit:'s',chChange:4,chReveal:18,
   controls:[
     {id:'light',label:'Light intensity',type:'range',min:0,max:100,step:1,def:80,unit:'%',lvl:'bio'},
@@ -83,7 +84,7 @@ const SIM={
     v.rot+=s.Rs*0.02*vdt;ctx.fillStyle='#8e1023';rr(ctx,616,232,48,60,10);ctx.fill();
     for(let i=0;i<6;i++){const a=v.rot+i*Math.PI/3,c=Math.cos(a);if(c<0)continue;ctx.fillStyle=c>.5?'#e0455f':'#b5122d';rr(ctx,640+18*Math.sin(a)-4,236,8,52,4);ctx.fill();}
     ctx.fillStyle='#8e1023';ctx.fillRect(636,206,8,28);[[624,196],[640,190],[656,196]].forEach((q,i)=>{ctx.fillStyle=i===1?'#e0455f':'#b5122d';ctx.beginPath();ctx.arc(q[0],q[1],12,0,6.29);ctx.fill();});
-    txt(ctx,'ATP synthase',640,170,{s:11.5*k,w:600,a:'center'});
+    txt(ctx,'ATP synthase',640,312,{s:11.5*k,w:600,a:'center'});  /* below the membrane: above it collided with the Calvin labels */
     // water splitting
     txt(ctx,'2 H₂O → O₂ + 4 H⁺',96,342,{s:12*k,w:600,a:'center'});
     if(p.dcmu){ctx.strokeStyle='#d32f2f';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(150,246);ctx.lineTo(176,278);ctx.moveTo(176,246);ctx.lineTo(150,278);ctx.stroke();pill(ctx,'DCMU',163,214,'#d32f2f','#fff',12*k);}
@@ -109,7 +110,7 @@ const SIM={
     v.h.forEach(h=>{h.y+=h.vy*vdt;ctx.fillStyle=PAL['cv-h'];ctx.beginPath();ctx.arc(h.x,h.y,4,0,6.29);ctx.fill();});
     v.h=v.h.filter(h=>h.vy>0?h.y<h.end:h.y>h.end);
     v.o2.forEach(o=>{o.life-=vdt;o.x-=30*vdt;o.y+=10*vdt;ctx.globalAlpha=clamp(o.life,0,1);txt(ctx,'O₂',o.x,o.y,{s:12*k,w:700,c:PAL['s2']});});
-    v.tok.forEach(o=>{o.life-=vdt;o.x+=(o.tx-o.x)*Math.min(1,vdt*2);o.y+=(o.ty-o.y)*Math.min(1,vdt*2);ctx.globalAlpha=clamp(o.life,0,1);txt(ctx,o.l,o.x,o.y,{s:10.5*k,w:700,c:o.c,a:'center'});});
+    v.tok.forEach(o=>{o.life-=vdt;o.x+=(o.tx-o.x)*Math.min(1,vdt*2);o.y+=(o.ty-o.y)*Math.min(1,vdt*2);ctx.globalAlpha=clamp(o.life,0,1);ctx.fillStyle=o.c;ctx.beginPath();ctx.arc(o.x,o.y,5,0,6.29);ctx.fill();});  /* dots in the bar colors; words on moving tokens piled up (Nov 18) */
     v.co2.forEach(o=>{o.life-=vdt;o.x+=((W.x+W.r)-o.x)*Math.min(1,vdt*1.8);ctx.globalAlpha=clamp(o.life,0,1);txt(ctx,'CO₂',o.x,o.y,{s:11*k,w:700,c:PAL['cv-soft'],a:'center'});});
     v.sug.forEach(o=>{o.life-=vdt;o.x+=20*vdt;o.y-=26*vdt;ctx.globalAlpha=clamp(o.life,0,1);ctx.fillStyle=PAL['s4'];ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3;i?ctx.lineTo(o.x+Math.cos(a)*7,o.y+Math.sin(a)*7):ctx.moveTo(o.x+7,o.y);}ctx.closePath();ctx.fill();});
     ctx.globalAlpha=1;['h','o2','tok','co2','sug','e'].forEach(kk=>{v[kk]=v[kk].filter(o=>o.life===undefined||o.life>0);if(v[kk].length>150)v[kk].splice(0,v[kk].length-150);});
