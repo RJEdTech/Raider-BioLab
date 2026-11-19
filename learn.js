@@ -100,14 +100,14 @@ enz: {
   steps: [
     { key: 'fold', title: 'What an enzyme is', speed: 0.25,
       see: 'One long chain of amino acids folds into one exact shape.',
-      why: 'The fold leaves a groove: the <b>active site</b>. Each green blob from here on is one enzyme, amylase. (Green is just a label. Molecules have no color.)',
+      why: 'The fold leaves a groove where the action happens, so it is called the <b>active site</b>. Each green blob is one enzyme, amylase. (Green is just a label.)',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH);const p=tau%11,u=p<0.8?1:p<4.3?1-ease((p-0.8)/3.5):0,cx=280,cy=230,R=118;
         art(sim).protein(ctx,cx,cy,R,0,0.5,2,u,sim.vt,{beads:true,outline:true});scaleBar(ctx,40,430,R*2/5,'1 nm',k);
         if(u>0.35)tag(ctx,'One long chain of amino acids',400,48,k);
         else if(u>0.02)tag(ctx,'Folding…',400,48,k);
         else{tag(ctx,'Folded into one exact shape',cx,402,k);line(ctx,cx+R*0.95+18,cy,cx+R*0.62,cy);tag(ctx,'Active site: the groove',cx+R+130,cy,k,{hi:true});}} },
     { key: 'fit', title: 'Lock and key: one job each', speed: 0.25,
-      see: 'A fat molecule bumps the groove and bounces off. Starch, the <b>substrate</b>, slides right in.',
+      see: 'A fat molecule bumps the groove and bounces off. Starch slides right in. The molecule an enzyme works on is its <b>substrate</b>.',
       why: 'Only the right shape fits, so each enzyme does one job. Amylase breaks down starch, not fat.',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH);const p=tau%10,cx=270,cy=235,R=118,mouth=cx+R*0.98;
         art(sim).protein(ctx,cx,cy,R,0,0.5,2,0,sim.vt,{outline:true});scaleBar(ctx,40,430,R*2/5,'1 nm',k);
@@ -118,7 +118,7 @@ enz: {
         else{const f=ease((p-4.4)/2.4),seat=cx+R*0.44;art(sim).starch(ctx,lerp(790,seat,f),cy,3,11,0,PAL['cv-sub']);
           if(f>=1)tag(ctx,'✓  Starch fits the groove',600,300,k,{c:'#1b7a3a',hi:true});}} },
     { key: 'cut', title: 'The cut: substrate in, products out', speed: 0.25,
-      see: 'Starch slides in, one bond snaps, and two small sugars, the <b>products</b>, float away.',
+      see: 'Starch slides in, one bond snaps, and two small sugars float away. What a reaction produces are its <b>products</b>.',
       why: 'The enzyme comes out unchanged and grabs the next starch. It is not used up.',
       so: 'That is why a cracker tastes sweet if you chew it long enough.',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH);const p=tau%9,cx=200,cy=225,R=112,A=art(sim),r=11,x0=cx+R*0.40;
@@ -130,7 +130,7 @@ enz: {
         else{A.starch(ctx,470,120,2,r,-0.4,PAL['cv-prod']);A.starch(ctx,500,330,2,r,0.4,PAL['cv-prod']);}
         ['1  Starch slides in','2  The bond strains','3  It snaps in two','4  Enzyme unchanged'].forEach((s,i)=>tag(ctx,s,650,120+i*58,k,{s:14,hi:i===ph,alpha:i===ph?1:0.55}));} },
     { key: 'ea', title: 'Why it is faster: a lower hill', speed: 0.25,
-      see: 'A reaction must first climb an energy hill: the <b>activation energy</b>. Gray: no enzyme, and the starch rolls back. Green: with amylase, the hill is lower.',
+      see: 'A reaction first has to climb an energy hill to get started, or “activated”: the <b>activation energy</b>. Gray: no enzyme, and the starch rolls back. Green: with amylase, the hill is lower.',
       why: 'The enzyme holds the starch so the bond strains. Same start, same end. Only the path is easier.',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH,0.97);const kk=Math.min(k,1.25),p=tau%11,B={x0:110,x1:740,y0:70,y1:385},yR=262,yP=322;
         const sm=x=>x<=0?0:x>=1?1:x*x*(3-2*x),base=x=>lerp(yR,yP,sm((x-0.3)/0.4)),E=(x,h)=>base(x)-h*Math.exp(-Math.pow((x-0.5)/0.11,2)),X=x=>B.x0+x*(B.x1-B.x0),HT=200,HL=100;
@@ -164,11 +164,11 @@ enz: {
       overlay(sim,ctx,LH,k){ezMeter(ctx,sim,k);tag(ctx,'Still folded ✓',700,400,k,{c:'#1b7a3a'});} },
     { key: 'hot', cause: { from: { temp: 37 } }, title: 'Too hot: broken for good', set: { temp: 70 }, speed: 0.25,
       see: 'Heated to 70 °C, as hot as fresh coffee. Each blob unfolds, and the rate falls to zero.',
-      why: 'Heat breaks the bonds that hold the fold. No fold, no groove. This is <b>denaturing</b>, and cooling does not fix it.',
+      why: 'Heat breaks the bonds that hold the fold. No fold, no groove. It has lost its natural shape, so we say it is <b>denatured</b>. Cooling does not fix it.',
       overlay(sim,ctx,LH,k){ezMeter(ctx,sim,k);const uf=sim.vis.uf||[0],it=uf.reduce((x,y)=>x+y,0)/uf.length<0.97?1:0;tag(ctx,it?'Unfolding: the groove is gone':'All unfolded. Cooling will not refold them.',400,400,k,{hi:true});} },
     { key: 'tgraph', title: 'The temperature graph', speed: 0.25,
       see: 'The dot draws amylase’s rate from 0 to 100 °C. Right: one amylase at that temperature.',
-      why: { bio: 'The rate climbs, peaks at the <b>optimum</b> (near body temperature), then crashes as the enzyme unfolds.',
+      why: { bio: 'The rate climbs, peaks at the best temperature, the <b>optimum</b> (Latin for “best”), near body temperature, then crashes as the enzyme unfolds.',
              ap: 'The rate climbs, peaks at the <b>optimum</b> (near body temperature), then crashes as the enzyme unfolds. Dashed: a hot-spring enzyme, optimum far higher.' },
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH,0.97);const kk=Math.min(k,1.25),hon=H.atLeast('ap'),per=hon?17:14,p=tau%per,B={x0:100,x1:540,y0:80,y1:360},xr=[0,100],X=T=>B.x0+T/100*(B.x1-B.x0),Y=r=>B.y1-r*(B.y1-B.y0),G='#1b7a3a',AMB='#b26b00';
         ezAxes(ctx,B,k,{xr,xt:[[0,'0'],[20,'20'],[40,'40'],[60,'60'],[80,'80'],[100,'100']],yt:[[0,'0'],[0.5,'50'],[1,'100']],xl:'Temperature (°C)',yl:'Rate (% of top speed)'});
@@ -186,8 +186,8 @@ enz: {
           tag(ctx,'Denatured',X(58),Y(0.12),k,{s:12.5,c:'#b3261e'});
           if(hon){const Tq=p<11?100*clamp((p-8)/3,0,1):100;ezCurve(ctx,B,xr,ezTaqT,Tq,AMB,[8,6]);if(p>=11)tag(ctx,'Hot-spring bacteria',X(76),Y(1)-22,k,{s:12.5,c:AMB});}}} },
     { key: 'acid', cause: { from: { ph: 7 } }, title: 'Strong acid', set: { ph: 2 }, fresh: true, speed: 0.5,
-      see: 'Now as acidic as your stomach: <b>pH</b> 2 (lower pH means more acid). Acid’s H⁺ ions cancel the groove’s charges, and the starch slips out.',
-      why: 'The groove grips starch with electric charges. Change them and the grip fails. Amylase works best near pH 7.',
+      see: 'Now as acidic as your stomach: <b>pH</b> 2. pH counts H⁺ ions (it stands for “power of hydrogen”); lower means more acid. The H⁺ ions cancel the groove’s charges, and the starch slips out.',
+      why: 'The groove grips starch with electric charges. Change them and the grip fails.',
       overlay(sim,ctx,LH,k,tau){ezMeter(ctx,sim,k,{x:14,w:300});const bx=452,by=40,bw=336,bh=250,p=tau%9;ctx.save();H.rr(ctx,bx,by,bw,bh,10);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#c8102e';ctx.stroke();ctx.clip();
         const R=150,cx=bx+bw*0.5-R*0.72,cy=by+bh*0.5,f=p<2.6?0:ease((p-2.6)/2.2),a=lerp(0.5,0.14,f);art(sim).protein(ctx,cx,cy,R,0,a,2,0,sim.vt,{outline:true});
         const spots=[[0.68,-1],[0.48,0],[0.68,1]].map(([rr,s])=>{const an=s*a*0.75,r=R*rr;return [cx+Math.cos(an)*r,cy+Math.sin(an)*r];});
@@ -209,8 +209,8 @@ enz: {
         art(sim).protein(ctx,612,150,28,0,0.5,2,0,sim.vt,{outline:true});H.txt(ctx,'Mouth: pH 7',652,138,{s:14*Math.min(k,1.15),w:700,b:'middle'});H.txt(ctx,'amylase works',652,162,{s:13*Math.min(k,1.15),b:'middle',c:G});
         if(p>=4){art(sim).protein(ctx,612,270,28,0,0.5,5,0,sim.vt,{outline:true});H.txt(ctx,'Stomach: pH 2',652,258,{s:14*Math.min(k,1.15),w:700,b:'middle'});H.txt(ctx,'pepsin works',652,282,{s:13*Math.min(k,1.15),b:'middle',c:PU});}} },
     { lvl: 'honors', key: 'block', title: 'A blocker in the lock', set: { inhC: 5 }, fresh: true, speed: 0.5,
-      see: 'Red triangles, a <b>competitive inhibitor</b>, fit the groove too. Some grooves hold a triangle instead of starch, so the rate drops.',
-      why: 'While a triangle sits in the active site, starch can’t get in. The two take turns.',
+      see: 'Red triangles fit the groove too, so they compete with starch for it. They hold the reaction back, so they are a <b>competitive inhibitor</b> (inhibit means “hold back”).',
+      why: 'While a triangle sits in the active site, starch can’t get in, so the rate drops.',
       overlay(sim,ctx,LH,k){ezMeter(ctx,sim,k);tag(ctx,'Red triangle in a groove = a blocked enzyme',400,400,k,{hi:true});} },
     { lvl: 'honors', key: 'flood', title: 'More substrate wins it back', set: { inhC: 5, sub: 50 }, speed: 0.5,
       see: 'Same inhibitor, but five times as much starch. The tube fills with blue, and the rate bar climbs back up.',
@@ -1582,24 +1582,24 @@ glycolysis: {
       why: 'Spending energy first sounds odd, but the phosphates make glucose unstable enough to split.',
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['Investment: −2 ATP',{s:15,w:800,c:CE_RED}],['Phosphates make glucose ready to split.',{s:12}]]);} },
     { key: 'payoff', title: 'Split and payoff', speed: 0.25, focus: [30,170,320,175],
-      see: 'The 6-carbon sugar splits into two 3-carbon halves, each ending as a molecule called <b>pyruvate</b>. +4 ATP and +2 NADH appear.',
-      why: 'Spend 2, make 4: this first stage, <b>glycolysis</b>, nets 2 ATP. NADH is a carrier that holds energy for later.',
+      see: 'The sugar splits into two 3-carbon pieces called <b>pyruvate</b>. +4 ATP appear, and 2 <b>NADH</b>, an energy carrier that is now “full” (NAD⁺ is empty).',
+      why: 'Spend 2, make 4: a gain of 2 ATP. This stage is <b>glycolysis</b>, Greek for “sugar splitting.”',
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['Glycolysis: −2 + 4 = +2 ATP',{s:15,w:800,c:CE_GREEN}],['+2 NADH. Leaves 2 pyruvate (3 carbons each).',{s:12}]]);} },
     { key: 'pyruvate', title: 'Into the mitochondrion: 2 carbons leave', speed: 0.25, focus: [360,215,170,110],
-      see: 'With oxygen, each pyruvate enters the mitochondrion and loses one carbon as CO₂. The CO₂ count goes up by 2.',
-      why: 'That CO₂ is carbon from your food. You breathe it out.',
+      see: 'With oxygen, each pyruvate enters the mitochondrion and loses one carbon as CO₂.',
+      why: 'Pyruvate is the fork in the road: with oxygen it makes about 30 more ATP; without, it is fermented. (Name: “fire grape,” first made by heating grape acid.)',
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['2 of the 6 carbons → CO₂',{s:15,w:800}],['+2 NADH',{s:12}]]);} },
     { key: 'krebs', title: 'The Krebs cycle: the last 4 carbons leave', speed: 0.25, focus: [505,90,195,205],
-      see: 'A loop of reactions, the <b>Krebs cycle</b>, strips off the last 4 carbons as CO₂. All 6 carbons are now CO₂.',
-      why: 'Their energy is loaded onto carriers (NADH and another one, FADH₂), plus 2 ATP. The mass of food you burn leaves through your lungs.',
+      see: 'A loop of reactions strips off the last 4 carbons as CO₂. It is the <b>Krebs cycle</b>: it ends where it began, and Hans Krebs worked it out.',
+      why: 'All 6 carbons are now CO₂, which you breathe out. Their energy goes onto carriers (NADH, FADH₂), plus 2 ATP.',
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['4 more carbons → CO₂ (all 6 gone)',{s:14,w:800}],['+2 ATP, +6 NADH, +2 FADH₂',{s:12}]]);} },
     { key: 'etc', title: 'Electron transport makes most of the ATP', speed: 0.25, focus: [400,300,370,115],
-      see: 'The carriers hand their electrons to a row of proteins, the <b>electron transport chain</b>. Oxygen catches them at the end to make water, and about 28 ATP are made.',
-      why: 'This big payoff needs oxygen. Total: 2 + 2 + 28 = about 32 ATP per glucose.',
+      see: 'The carriers pass electrons down a row of proteins, like a bucket brigade: the <b>electron transport chain</b>. Oxygen catches them at the end, making water and about 28 ATP.',
+      why: 'This needs oxygen, so it is <b>aerobic</b> (“with air”). Total: 2 + 2 + 28 = about 32 ATP per glucose.',
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['2 + 2 + 28 ≈ 32 ATP per glucose',{s:15,w:800,c:CE_GREEN}],['O₂ + electrons + H⁺ → water',{s:12}]]);} },
     { key: 'noo2', cause: { from: { o2: true } }, title: 'No oxygen: only 2 ATP', set: { o2: false }, fresh: true, speed: 0.4, focus: [30,240,330,190],
-      see: 'Oxygen off. The mitochondrion goes dark, and the bar reads 2 ATP per glucose. Yeast turn pyruvate into alcohol (ethanol) and CO₂.',
-      why: 'With no oxygen the chain stops. Only glycolysis runs, kept going by a backup process called <b>fermentation</b>.',
+      see: 'Oxygen off. The mitochondrion goes dark: 2 ATP per glucose. Yeast turn pyruvate into alcohol and CO₂.',
+      why: 'No oxygen (<b>anaerobic</b>, “without air”) stops the chain. Only glycolysis runs, kept going by <b>fermentation</b>, Latin for “boiling,” for its bubbles.',
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['No O₂: '+phM(sim,'atpPer')+' ATP per glucose',{s:15,w:800,c:CE_RED}],['32 ÷ 2 = 16 times less. A cell must burn',{s:12}],['sugar about 16 times faster to keep up.',{s:12}]]);} },
     { key: 'tally', title: 'Add it up: the ATP scoreboard', speed: 0.25,
       see: 'A bar graph of ATP from one glucose. With oxygen: 2 + 2 + about 28 = about 32. Without oxygen: just 2.',
@@ -1665,8 +1665,8 @@ resp: {
       why: 'Its folds pack more ATP-making machines into each mitochondrion.',
       overlay(sim,ctx,LH,k){ceMitoInset(ctx,k);} },
     { key: 'arrive', title: 'Electrons arrive from your food', speed: 0.1, focus: [60,150,110,215],
-      see: 'NADH, the energy carrier made when sugar is broken down, drops off its electrons (yellow dots) at the first pump, complex I, and leaves as NAD⁺.',
-      why: 'Earlier stages loaded the energy from glucose onto NADH. Here it is delivered.',
+      see: 'NADH, the “full” energy carrier from breaking down sugar, drops off its electrons (yellow dots) at the first pump, complex I. It leaves empty, as NAD⁺.',
+      why: 'Earlier stages loaded the energy from sugar onto NADH. Here it is delivered.',
       overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['NADH → NAD⁺ + 2 electrons',{s:14,w:800}],['Electrons from your food enter the chain.',{s:12}]]);} },
     { key: 'pumps', title: 'Electrons power the pumps', speed: 0.1, focus: [60,110,460,170],
       see: 'Electrons hop from pump to pump. At each one, tiny charged particles, pink <b>H⁺ ions</b>, are pushed up above the membrane.',
@@ -1677,11 +1677,11 @@ resp: {
       why: 'Oxygen is the last stop. Without it the chain jams. This is why you breathe.',
       overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['O₂ + 4 e⁻ + 4 H⁺ → 2 H₂O',{s:14,w:800}],['O₂ used: '+f1(phM(sim,'o2use'))+' per second',{w:800,c:CE_BLUE}]]);} },
     { key: 'gradient', title: 'H⁺ piles up above the membrane', speed: 0.4, focus: [0,0,800,170],
-      see: 'The space above the membrane fills with pink H⁺, far more than below.',
+      see: 'The space above the membrane fills with pink H⁺, far more than below. High on one side and low on the other, like a slope, is called a <b>gradient</b>.',
       why: 'Crowded H⁺ store energy, like water behind a dam. The only way back down is one gate.',
       overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['Like water behind a dam',{s:14,w:800}],['H⁺ gradient: '+Math.round(phM(sim,'grad'))+'%',{w:800,c:'#b0306a'}]]);} },
     { key: 'synthase', title: 'ATP synthase spins', speed: 0.25, focus: [605,110,130,270],
-      see: 'H⁺ rush back down through a spinning protein, <b>ATP synthase</b>. Its head turns, and green ATP pops out.',
+      see: 'H⁺ rush back down through a spinning protein that makes ATP: <b>ATP synthase</b> (“synthase” means maker). Its head turns, and green ATP pops out.',
       why: 'The flow turns ATP synthase like a turbine. About 4 H⁺ make one ATP.',
       overlay(sim,ctx,LH,k){RSC(sim,ctx,k,[['H⁺ flow → ATP (≈4 H⁺ each)',{s:14,w:800}],['ATP made: '+f1(phM(sim,'atp'))+' per second',{w:800,c:CE_GREEN}]]);} },
     { key: 'fuel', cause: { from: { fuel: 40 } }, title: 'More fuel: more ATP and more oxygen', set: { fuel: 100 }, fresh: true, speed: 0.4,
