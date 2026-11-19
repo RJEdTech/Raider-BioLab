@@ -1458,11 +1458,11 @@ function ceChloroInset(ctx,k){const x=18,y=18,w=300,h=128;ctx.save();H.rr(ctx,x,
   for(let g=0;g<5;g++){const gx=cx-44+g*22,gy=cy+(g%2?6:-6);for(let d=0;d<5;d++){ctx.fillStyle='#2f7a2f';H.rr(ctx,gx-8,gy-12+d*5,16,4,2);ctx.fill();}}
   ctx.strokeStyle='#c8102e';ctx.lineWidth=2;ctx.strokeRect(cx+22-10,cy-18,20,8);ctx.restore();
   scaleBar(ctx,cx-66,y+h-8,132/5*1,'1 µm',k);H.txt(ctx,'Chloroplast ≈ 5 µm',x+168,y+30,{s:11*k,w:700});H.txt(ctx,'Grana: stacks of',x+168,y+50,{s:11*k});H.txt(ctx,'thylakoids',x+168,y+64,{s:11*k});H.txt(ctx,'Red box: this slice,',x+168,y+86,{s:11*k,c:'#c8102e',w:700});H.txt(ctx,'membrane ≈ 7 nm thick',x+168,y+100,{s:11*k,c:'#c8102e'});}
-function ceMitoInset(ctx,k){const x=188,y=8,w=340,h=104;ctx.save();H.rr(ctx,x,y,w,h,9);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle='#c8102e';ctx.stroke();
+function ceMitoInset(ctx,k){const sz=11*k,gap=Math.max(18,sz*1.45);ctx.font='700 '+sz+'px '+H.FONT;const tw=Math.max(ctx.measureText('Mitochondrion ≈ 1–2 µm').width,ctx.measureText('membrane ≈ 7 nm thick').width*0.95);const x=188,y=8,w=Math.max(340,170+tw),h=Math.max(104,gap*4+18);ctx.save();H.rr(ctx,x,y,w,h,9);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle='#c8102e';ctx.stroke();
   const cx=x+80,cy=y+52;ctx.beginPath();ctx.ellipse(cx,cy,64,30,0,0,6.29);ctx.fillStyle='#f6dcc6';ctx.fill();ctx.strokeStyle='#a0522d';ctx.lineWidth=2;ctx.stroke();
   ctx.beginPath();ctx.moveTo(cx-54,cy);for(let i=0;i<=10;i++){const xx=cx-54+i*10.8;ctx.lineTo(xx,cy+(i%2?-18:18));}ctx.strokeStyle='#c97b4a';ctx.lineWidth=2;ctx.stroke();
   ctx.strokeStyle='#c8102e';ctx.lineWidth=2;ctx.strokeRect(cx-4,cy-24,12,10);ctx.restore();
-  H.txt(ctx,'Mitochondrion ≈ 1–2 µm',x+156,y+26,{s:11*k,w:700});H.txt(ctx,'Folded inner membrane',x+156,y+44,{s:11*k});H.txt(ctx,'Red box: this slice,',x+156,y+66,{s:11*k,c:'#c8102e',w:700});H.txt(ctx,'membrane ≈ 7 nm thick',x+156,y+82,{s:11*k,c:'#c8102e'});}
+  const ty=y+(h-gap*4)/2+sz*0.85;H.txt(ctx,'Mitochondrion ≈ 1–2 µm',x+156,ty,{s:sz,w:700});H.txt(ctx,'Folded inner membrane',x+156,ty+gap,{s:sz});H.txt(ctx,'Red box: this slice,',x+156,ty+gap*2,{s:sz,c:'#c8102e',w:700});H.txt(ctx,'membrane ≈ 7 nm thick',x+156,ty+gap*3,{s:sz,c:'#c8102e'});}
 const CLC=(sim,ctx,k,L,o)=>ceCard(ctx,k,330,300,455,L,o);
 const RSC=(sim,ctx,k,L,o)=>ceCard(ctx,k,190,6,440,L,o);
 const GLC=(sim,ctx,k,L,o)=>ceCard(ctx,k,12,350,336,L,o);
@@ -1653,7 +1653,7 @@ resp: {
   matters: 'This membrane is why you breathe. Every breath brings in the oxygen that catches electrons here, and every breath out carries away the CO₂ from your food. It also explains carbon monoxide danger and altitude sickness.',
   question: 'Sprinting up the stairs, your muscle cells burn fuel faster and you start breathing hard. Raise the fuel supply from 40% to 100%. What happens to the ATP made and the oxygen used each second?',
   startKey: 'where', startRun: true, startSpeed: 0.25,
-  startOverlay(sim,ctx,LH,k){ceMitoInset(ctx,k);tag(ctx,'Matrix (inside the mitochondrion)',220,425,k,{s:12,hi:true});},
+  startOverlay(sim,ctx,LH,k){ceMitoInset(ctx,k);{const sz=12*k;ctx.font='700 '+sz+'px '+H.FONT;const x0=12+ctx.measureText('MATRIX').width+8;ctx.font='600 '+sz+'px '+H.FONT;const w=ctx.measureText('Matrix (inside the mitochondrion)').width+sz*1.1,h=sz*1.9;if(k>1.15){ctx.fillStyle=PAL['cv-matrix'];ctx.fillRect(0,398,x0+w+8,52);H.txt(ctx,'MATRIX',12,442,{s:sz,w:700,c:PAL['cv-soft']});}tag(ctx,'Matrix (inside the mitochondrion)',Math.min(x0+w/2,796-w/2),446-h/2,k,{s:12,hi:true});}},
   steps: [
     { key: 'where', title: 'The power plant’s inner membrane', set: {}, fresh: true, speed: 0.25, focus: [0,150,800,110],
       see: 'The inset is a whole mitochondrion, 1–2 µm long. The red box is the slice drawn here: the inner membrane, about 7 nm thick.',

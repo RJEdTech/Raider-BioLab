@@ -581,15 +581,15 @@ const RESP={
     ctx.fillStyle='#8e1023';ctx.fillRect(645,244,10,46);
     ctx.strokeStyle='#8e1023';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(684,236);ctx.quadraticCurveTo(700,270,690,300);ctx.stroke();
     [[624,322,'#b5122d'],[650,326,'#e0455f'],[676,322,'#b5122d'],[637,302,'#e0455f'],[663,302,'#b5122d']].forEach(c=>{ctx.fillStyle=c[2];ctx.beginPath();ctx.arc(c[0],c[1],17,0,6.29);ctx.fill();});
-    txt(ctx,'ATP synthase',704,326,{s:13*k,w:700});
+    if(k>1.3)txt(ctx,'ATP synthase',794,440,{s:13*k,w:700,a:'right'});else txt(ctx,'ATP synthase',k>1.05?794:704,326,{s:13*k,w:700,a:k>1.05?'right':'left'});
     // entry / exit labels
     if(p.carrier==='NADH'||!hon)txt(ctx,hon?'NADH → NAD⁺':'Electrons from food',115,350,{s:12.5*k,w:600,a:'center'});
     if(hon&&p.carrier==='FADH2')txt(ctx,'FADH₂ → FAD',212,322,{s:12.5*k,w:600,a:'center'});
     txt(ctx,hon?'O₂ + H⁺ → H₂O':'Oxygen catches electrons',470,352,{s:12.5*k,w:600,a:'center'});
     if(ap){pill(ctx,p.carrier==='NADH'?'4 H⁺':'0 H⁺',111,120,PAL['card'],PAL['cv-ink'],11*k);pill(ctx,'4 H⁺',331,120,PAL['card'],PAL['cv-ink'],11*k);pill(ctx,'2 H⁺',470,120,PAL['card'],PAL['cv-ink'],11*k);pill(ctx,'≈4 H⁺ per ATP',650,120,PAL['card'],PAL['cv-ink'],11*k);}
     // fuel & oxygen tokens in the matrix
-    const nf=Math.round(p.fuel/100*5);for(let i=0;i<nf;i++)txt(ctx,(hon&&p.carrier==='FADH2')?'FADH₂':'NADH',40+i*38+(i%2)*6,392+(i%2)*22,{s:12*k,w:600,c:PAL['cv-soft']});
-    const no=Math.round(p.o2/100*6);for(let i=0;i<no;i++)txt(ctx,'O₂',400+i*32,392+(i%2)*22,{s:13*k,w:700,c:PAL['cv-soft']});
+    const nf=Math.round(p.fuel/100*5);for(let i=0;i<nf;i++)txt(ctx,(hon&&p.carrier==='FADH2')?'FADH₂':'NADH',40+Math.floor(i/2)*48*k+(i%2)*24*k,392+(i%2)*22,{s:12*k,w:600,c:PAL['cv-soft']});
+    const no=Math.round(p.o2/100*6);for(let i=0;i<no;i++)txt(ctx,'O₂',400+Math.floor(i/2)*44*k+(i%2)*22*k,392+(i%2)*22,{s:13*k,w:700,c:PAL['cv-soft']});
     // blockers
     if(p.cn){ctx.strokeStyle='#d32f2f';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(446,166);ctx.lineTo(496,264);ctx.moveTo(496,166);ctx.lineTo(446,264);ctx.stroke();pill(ctx,'Cyanide',470,92,'#d32f2f','#fff',12*k);}
     if(p.oligo){ctx.strokeStyle='#e08a00';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(620,180);ctx.lineTo(680,240);ctx.moveTo(680,180);ctx.lineTo(620,240);ctx.stroke();pill(ctx,'Oligomycin',650,92,'#b86e00','#fff',12*k);}
@@ -601,7 +601,7 @@ const RESP={
     v.pAcc+=s.P*0.05*vdt;while(v.pAcc>=1){v.pAcc--;let r=R()*tw,x=pumps[0][0];for(const q of pumps){if(r<q[1]){x=q[0];break;}r-=q[1];}v.p.push({x:x+R()*18-9,y:262,vy:-120,end:60+R()*80,c:'h'});}
     v.sAcc+=s.Rs*0.05*vdt;while(v.sAcc>=1){v.sAcc--;v.p.push({x:650+R()*10-5,y:140,vy:120,end:300,c:'h'});}
     if(p.dnp){v.lAcc+=(s.Rl-5*s.G)*0.05*vdt;while(v.lAcc>=1){v.lAcc--;const x=R()<.5?520+R()*70:710+R()*80;v.p.push({x,y:150,vy:120,end:280,c:'l'});}}
-    v.aAcc+=(s.Rs/4)*0.32*vdt;while(v.aAcc>=1){v.aAcc--;v.atp.push({x:650,y:345,vx:R()*80-40,vy:20+R()*40,life:1.6});}
+    v.aAcc+=(s.Rs/4)*0.32*vdt;while(v.aAcc>=1){v.aAcc--;v.atp.push({x:650,y:345,vx:R()*140-70,vy:18+R()*30,life:1.6});}
     v.wAcc+=(s.Je/2)*0.3*vdt;while(v.wAcc>=1){v.wAcc--;v.w.push({x:470,y:300,vx:R()*30-15,vy:22,life:1.4});}
     // electrons
     for(const e of v.e){e.d+=230*vdt;const q=e.path.at(e.d);ctx.fillStyle=PAL['cv-e'];ctx.strokeStyle=PAL['cv-estroke'];ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(q[0],q[1],4.6,0,6.29);ctx.fill();ctx.stroke();}
@@ -609,13 +609,13 @@ const RESP={
     // moving H+
     for(const h of v.p){h.y+=h.vy*vdt;ctx.fillStyle=PAL['cv-h'];ctx.beginPath();ctx.arc(h.x,h.y,4.4,0,6.29);ctx.fill();if(h.c==='l'){ctx.strokeStyle=PAL['cv-dnp'];ctx.lineWidth=2;ctx.stroke();}}
     v.p=v.p.filter(h=>h.vy<0?h.y>h.end:h.y<h.end);
-    for(const a of v.atp){a.x+=a.vx*vdt;a.y+=a.vy*vdt;a.life-=vdt;ctx.globalAlpha=clamp(a.life/1.6,0,1);txt(ctx,'ATP',a.x,a.y,{s:13*k,w:800,c:PAL['cv-atp'],a:'center'});}
+    for(const a of v.atp){a.x+=a.vx*vdt;a.y+=a.vy*vdt;a.life-=vdt;ctx.globalAlpha=clamp(a.life/1.6,0,1);ctx.fillStyle=PAL['cv-atp'];ctx.beginPath();ctx.arc(a.x,a.y,11,0,6.29);ctx.fill();txt(ctx,'ATP',a.x,a.y+.5,{s:8.5,w:800,c:'#fff',a:'center',b:'middle'});}
     for(const a of v.w){a.x+=a.vx*vdt;a.y+=a.vy*vdt;a.life-=vdt;ctx.globalAlpha=clamp(a.life/1.4,0,1)*.8;txt(ctx,'H₂O',a.x,a.y,{s:11.5*k,w:600,c:PAL['cv-sub'],a:'center'});}
     ctx.globalAlpha=1;v.atp=v.atp.filter(a=>a.life>0);v.w=v.w.filter(a=>a.life>0);
     if(v.e.length>200)v.e.splice(0,v.e.length-200);if(v.p.length>300)v.p.splice(0,v.p.length-300);
     // legend
-    const ly=438;ctx.fillStyle=PAL['cv-e'];ctx.beginPath();ctx.arc(600,ly-4,4.6,0,6.29);ctx.fill();txt(ctx,'electron',610,ly,{s:12*k,c:PAL['cv-soft']});
-    ctx.fillStyle=PAL['cv-h'];ctx.beginPath();ctx.arc(690,ly-4,4.4,0,6.29);ctx.fill();txt(ctx,'H⁺ ion',700,ly,{s:12*k,c:PAL['cv-soft']});
+    const ly=k>1.3?22:438;ctx.font=(12*k)+'px system-ui,Arial,sans-serif';const lw1=ctx.measureText('electron').width,lw2=ctx.measureText('H⁺ ion').width,lx=k>1.3?792-(lw1+lw2+44):600;ctx.fillStyle=PAL['cv-e'];ctx.beginPath();ctx.arc(lx,ly-4,4.6,0,6.29);ctx.fill();txt(ctx,'electron',lx+10,ly,{s:12*k,c:PAL['cv-soft']});
+    const lx2=Math.max(690,lx+lw1+24)*(k>1.3?0:1)+(k>1.3?lx+lw1+24:0);ctx.fillStyle=PAL['cv-h'];ctx.beginPath();ctx.arc(lx2,ly-4,4.4,0,6.29);ctx.fill();txt(ctx,'H⁺ ion',lx2+10,ly,{s:12*k,c:PAL['cv-soft']});
   }
 };
 Object.assign(RESP,{

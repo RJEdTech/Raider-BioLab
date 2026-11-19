@@ -8,7 +8,7 @@ const CC=['#d1495b','#e39b2d','#4f9a6a','#00798c','#30638e','#8e5572']; // one c
 const SPAWN=4;
 const GLY=[[1.5,{atp:-2,tag:'−2 ATP',x:95,y:172}],[3.5,{atp:4,nadh:2,tag:'+4 ATP, +2 NADH',x:95,y:297}]];
 const AER=[[6.0,{co2:2,nadh:2,tag:'+2 CO₂, +2 NADH',x:440,y:262,co2c:[2,5]}],[8.5,{co2:2,nadh:2,tag:'+2 CO₂, +2 NADH',x:690,y:120,co2c:[0,3]}],
-  [9.5,{co2:2,nadh:2,atp:2,tag:'+2 CO₂, +2 NADH, +2 ATP',x:690,y:250,co2c:[1,4]}],[10.2,{fadh:2,nadh:2,tag:'+2 FADH₂, +2 NADH',x:520,y:306}],
+  [9.5,{co2:2,nadh:2,atp:2,tag:'+2 CO₂, +2 NADH, +2 ATP',x:690,y:250,co2c:[1,4]}],[10.2,{fadh:2,nadh:2,tag:'+2 FADH₂, +2 NADH',x:495,y:298}],
   [12.0,{atp:28,ox:28,o2:6,tag:'+28 ATP',x:735,y:345}]];
 const FER={yeast:[[6.0,{co2:2,nadhUsed:2,eth:2,tag:'+2 CO₂, 2 ethanol',x:205,y:372,co2c:[2,5]}]],muscle:[[6.0,{nadhUsed:2,lac:2,tag:'2 lactate',x:205,y:372}]]};
 const END={aer:12.6,yeast:7.2,muscle:7.2};
@@ -38,6 +38,7 @@ const SIM={
   controls:[
     {id:'mode',label:'View',type:'seg',def:'cell',lvl:'honors',options:[{v:'cell',l:'Inside the cell'},{v:'balloon',l:'Yeast balloon lab'}],noTrial:true,
      onChange(sim){hideTiles(sim);sim.gMetric=sim.p.mode==='balloon'?'balloons':'atp';if(sim.ui&&sim.ui.gm&&[...sim.ui.gm.options].some(o=>o.value===sim.gMetric))sim.ui.gm.value=sim.gMetric;}},
+    {id:'zoom',label:'Zoom',type:'seg',def:'all',lvl:'bio',options:[{v:'all',l:'Whole cell'},{v:'krebs',l:'Krebs cycle'},{v:'etc',l:'Electron transport'}],noTrial:true,help:'Get a closer look at one part of the mitochondrion.'},
     {id:'o2',label:'Oxygen available',type:'toggle',def:true,lvl:'bio',help:'Without O₂ the electron transport chain stops.'},
     {id:'ferm',label:'Fermenting cell',type:'seg',def:'yeast',lvl:'honors',options:[{v:'yeast',l:'Yeast'},{v:'muscle',l:'Muscle'}],help:'What happens to pyruvate when there is no oxygen.'},
     {id:'temp',label:'Yeast lab temperature',type:'range',min:5,max:55,step:1,def:30,unit:' °C',lvl:'honors',help:'Used in the yeast balloon lab.'}
@@ -78,17 +79,18 @@ const SIM={
   initVis(sim){sim.vis.tok=[];sim.vis.co2=[];sim.vis.tags=[];sim.vis.seen=new WeakMap();sim.vis.bub=[[],[],[],[],[]];},
   draw(sim,ctx,vdt,k,t){const s=sim.st,p=sim.p,v=sim.vis,hon=atLeast('honors'),ap=atLeast('ap');if(!v.tok)SIM.initVis(sim);
     if(p.mode==='balloon'&&hon){drawBalloons(sim,ctx,vdt,k,t);return;}
+    // zoom: a camera rectangle (16:9) that eases toward the chosen part of the cell
+    const ZR={all:[0,0,800],krebs:[330,20,460],etc:[350,195,440]},zt=(sim.mode!=='guided'&&ZR[p.zoom])||ZR.all;
+    const now=performance.now(),rdt=Math.min(.1,(now-(v.camT||now))/1000);v.camT=now;
+    if(!v.cam)v.cam=zt.slice();for(let i=0;i<3;i++)v.cam[i]+=(zt[i]-v.cam[i])*Math.min(1,rdt*5);
+    if(Math.abs(v.cam[2]-zt[2])<.5)v.cam=zt.slice();
+    const zs=800/v.cam[2],k0=k;k=Math.max(1,k/zs);ctx.fillStyle=PAL['cv-bg2'];ctx.fillRect(0,0,800,450);ctx.save();ctx.scale(zs,zs);ctx.translate(-v.cam[0],-v.cam[1]);
     // background: cytoplasm and mitochondrion
-    ctx.fillStyle=PAL['cv-bg2'];ctx.fillRect(0,0,800,450);
+    ctx.fillStyle=PAL['cv-bg2'];ctx.fillRect(-400,-400,1600,1250);
     ctx.fillStyle=PAL['cv-matrix'];ctx.strokeStyle=PAL['cv-head'];ctx.lineWidth=7;rr(ctx,352,50,438,388,90);ctx.fill();ctx.stroke();
     ctx.strokeStyle=PAL['cv-head'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(380,368);
     for(let x=380;x<=770;x+=30){ctx.lineTo(x+8,368);ctx.lineTo(x+8,330);ctx.arc(x+15,330,7,Math.PI,0);ctx.lineTo(x+22,368);}ctx.stroke();
-    txt(ctx,'CYTOPLASM',14,440,{s:12*k,w:700,c:PAL['cv-soft']});txt(ctx,'MITOCHONDRION',402,82,{s:12*k,w:700,c:PAL['cv-soft']});
-    // ledger strip
-    ctx.fillStyle=PAL['card'];rr(ctx,8,6,784,30,8);ctx.fill();
-    const pg=perGlucose(p);
-    txt(ctx,'Per glucose: '+pg.atp+' ATP · '+pg.nadh+' NADH'+(hon&&k<1.3?' · '+pg.fadh+' FADH₂':'')+' · '+pg.co2+' CO₂'+(p.o2?'':(p.ferm==='muscle'&&hon?' · 2 lactate':' · 2 ethanol')),18,26,{s:14*k,w:700});
-    if(k<1.3)txt(ctx,'Total so far: '+s.atp+' ATP, '+s.co2+' CO₂',782,26,{s:12.5*k,c:PAL['cv-soft'],a:'right'});
+    txt(ctx,'CYTOPLASM',14,58,{s:12*k,w:700,c:PAL['cv-soft']});txt(ctx,'MITOCHONDRION',402,82,{s:12*k,w:700,c:PAL['cv-soft']});
     // glycolysis lane labels
     const steps=(hon&&k<1.3)?[['Glucose (6 carbons)',80],['Uses 2 ATP',140],['Splits into two 3-carbon sugars',200],['Makes 4 ATP and 2 NADH',265],['2 pyruvate (3 carbons each)',325]]
                    :[['Glucose',80],['Uses 2 ATP',140],['Splits in half',200],['Makes 4 ATP',265],['2 pyruvate',325]];
@@ -99,12 +101,11 @@ const SIM={
     const W=WHEEL;ctx.strokeStyle=PAL['s4'];ctx.lineWidth=10;ctx.globalAlpha=.35;ctx.beginPath();ctx.arc(W.x,W.y,W.r,0,6.29);ctx.stroke();ctx.globalAlpha=1;
     ctx.fillStyle=PAL['s4'];for(let a=0;a<4;a++){const ang=t*0.6+a*Math.PI/2;ctx.beginPath();ctx.moveTo(W.x+Math.cos(ang)*(W.r+9),W.y+Math.sin(ang)*(W.r+9));ctx.lineTo(W.x+Math.cos(ang+0.12)*(W.r),W.y+Math.sin(ang+0.12)*(W.r));ctx.lineTo(W.x+Math.cos(ang)*(W.r-9),W.y+Math.sin(ang)*(W.r-9));ctx.fill();}
     txt(ctx,'Krebs',W.x,W.y-4,{s:15*k,w:700,a:'center'});txt(ctx,'cycle',W.x,W.y+14,{s:15*k,w:700,a:'center'});
-    if(hon){txt(ctx,'citrate (6C)',W.x+W.r+12,W.y-40,{s:11.5*k,c:PAL['cv-soft']});txt(ctx,'oxaloacetate (4C)',W.x+10,W.y+W.r+18,{s:11.5*k,c:PAL['cv-soft'],a:'center'});}
-    txt(ctx,hon?'Pyruvate oxidation':'Pyruvate → acetyl',440,232,{s:12.5*k,w:600,a:'center'});
+    if(hon&&k<1.3){txt(ctx,'citrate (6C)',W.x+W.r+12,W.y-40,{s:11.5*k,c:PAL['cv-soft']});txt(ctx,'oxaloacetate (4C)',W.x+10,W.y+W.r+18,{s:11.5*k,c:PAL['cv-soft'],a:'center'});}
     // electron transport band
     [[430,'#3f6fb0'],[480,'#2a8276'],[530,'#7a4fa6']].forEach(q=>{ctx.fillStyle=q[1];rr(ctx,q[0]-14,342,28,38,6);ctx.fill();});
     ctx.fillStyle='#b5122d';rr(ctx,722,338,26,44,6);ctx.fill();ctx.beginPath();ctx.arc(735,330,14,0,6.29);ctx.fill();
-    txt(ctx,'Electron transport chain',480,402,{s:12*k,w:600,a:'center'});txt(ctx,'ATP synthase',735,402,{s:12*k,w:600,a:'center'});
+    txt(ctx,'Electron transport chain',480,402,{s:12*k,w:600,a:'center'});txt(ctx,'ATP synthase',k>1.1?788:735,402,{s:12*k,w:600,a:k>1.1?'right':'center'});
     if(!p.o2){ctx.fillStyle='rgba(20,20,26,.35)';rr(ctx,352,50,438,388,90);ctx.fill();pill(ctx,'No O₂: the mitochondrion stalls',570,300,'#b3261e','#fff',13*k);}
     else{txt(ctx,'O₂',640,312,{s:13*k,w:700,c:PAL['s2']});txt(ctx,'+ e⁻ → H₂O',662,312,{s:11.5*k,c:PAL['cv-soft']});}
     // fermentation station
@@ -120,17 +121,25 @@ const SIM={
       if(g.path&&g.path!=='aer'&&age>6.2){txt(ctx,g.path==='muscle'?'lactate':'ethanol',pos[0]?pos[0].x:200,(pos[0]?pos[0].y:390)+22,{s:11.5*k,w:600,c:PAL['s5'],a:'center'});}
       // pop tags + tokens for events this glucose just crossed
       const evs=GLY.concat(g.path==='aer'?AER:g.path?FER[g.path]:[]);
-      evs.forEach(e=>{const key=e[0];if(age>=key&&age-key<vdt+1e-6&&vdt>0){const d=e[1];v.tags.push({x:d.x,y:d.y,s:d.tag,life:2.2});
+      evs.forEach(e=>{const key=e[0];if(age>=key&&age-key<vdt+1e-6&&vdt>0){const d=e[1],jx=(v.slot=((v.slot||0)+1)%3)*16;v.tags.push({x:d.x,y:d.y,s:d.tag,life:2.2});
         (d.co2c||[]).forEach(ci=>{const q=pos[ci]||{x:d.x,y:d.y};v.co2.push({x:q.x,y:q.y,c:CC[ci],life:3});});
-        if(d.nadh>0)for(let i=0;i<d.nadh;i++)v.tok.push({x:d.x,y:d.y,tx:430+i*12,ty:350,c:PAL['s5'],l:'NADH',life:2});
-        if(d.fadh>0)for(let i=0;i<d.fadh;i++)v.tok.push({x:d.x,y:d.y,tx:480,ty:350,c:PAL['s6'],l:'FADH₂',life:2});
-        if(d.ox)for(let i=0;i<10;i++)v.tok.push({x:735,y:325,tx:735+(Math.random()-.5)*160,ty:250+Math.random()*60,c:PAL['cv-atp'],l:'ATP',life:1.6});}});});
+        if(d.nadh>0)for(let i=0;i<d.nadh;i++)v.tok.push({x:d.x,y:d.y,tx:404+jx+i*12,ty:330,c:PAL['s5'],l:'',life:2});
+        if(d.fadh>0)for(let i=0;i<d.fadh;i++)v.tok.push({x:d.x,y:d.y,tx:474+jx+i*12,ty:330,c:PAL['s6'],l:'',life:2});
+        if(d.ox)for(let i=0;i<10;i++)v.tok.push({x:735,y:325,tx:690+(i%5)*18,ty:262+Math.floor(i/5)*18,c:PAL['cv-atp'],l:'',life:1.6});}});});
     // floating tokens, CO2, tags
-    v.tok.forEach(o=>{o.life-=vdt;o.x+=(o.tx-o.x)*Math.min(1,vdt*2.2);o.y+=(o.ty-o.y)*Math.min(1,vdt*2.2);ctx.globalAlpha=clamp(o.life/1.6,0,1);txt(ctx,o.l,o.x,o.y,{s:11*k,w:700,c:o.c,a:'center'});});
+    v.tok.forEach(o=>{o.life-=vdt;o.x+=(o.tx-o.x)*Math.min(1,vdt*2.2);o.y+=(o.ty-o.y)*Math.min(1,vdt*2.2);ctx.globalAlpha=clamp(o.life/1.6,0,1);ctx.fillStyle=o.c;ctx.beginPath();ctx.arc(o.x,o.y,5,0,6.29);ctx.fill();if(o.l)txt(ctx,o.l,o.x,o.y-10,{s:11*k,w:700,c:o.c,a:'center'});});
     v.co2.forEach(o=>{o.life-=vdt;o.y-=26*vdt;o.x+=18*vdt;ctx.globalAlpha=clamp(o.life/1.5,0,1);ctx.fillStyle=o.c;ctx.beginPath();ctx.arc(o.x,o.y,6,0,6.29);ctx.fill();ctx.fillStyle='#d8dde3';ctx.beginPath();ctx.arc(o.x-9,o.y,4.5,0,6.29);ctx.arc(o.x+9,o.y,4.5,0,6.29);ctx.fill();txt(ctx,'CO₂',o.x,o.y-12,{s:10.5*k,w:700,c:PAL['cv-soft'],a:'center'});});
-    v.tags.forEach(o=>{o.life-=vdt;o.y-=8*vdt;ctx.globalAlpha=clamp(o.life,0,1);pill(ctx,o.s,o.x,o.y,PAL['card'],PAL['cv-ink'],11.5*k);});
+    v.tags.forEach(o=>{o.life-=vdt;o.y-=8*vdt;ctx.globalAlpha=clamp(o.life,0,1);ctx.font='700 '+(11.5*k)+'px "Segoe UI",system-ui,Arial,sans-serif';const hw=ctx.measureText(o.s).width/2+11.5*k*.6;pill(ctx,o.s,clamp(o.x,hw+4,796-hw),o.y,PAL['card'],PAL['cv-ink'],11.5*k);});
+    ctx.globalAlpha=1;if(!v.tags.some(o=>o.x===440&&o.life>0))pill(ctx,hon?'Pyruvate oxidation':'Pyruvate → acetyl',440,234,PAL['card'],PAL['cv-ink'],11.5*k);
     ctx.globalAlpha=1;v.tok=v.tok.filter(o=>o.life>0);v.co2=v.co2.filter(o=>o.life>0);v.tags=v.tags.filter(o=>o.life>0);
     if(v.tok.length>120)v.tok.splice(0,v.tok.length-120);if(v.tags.length>12)v.tags.splice(0,v.tags.length-12);
+    ctx.restore();
+    if(k0>1.15&&p.zoom==='all'&&sim.mode!=='guided'){ctx.font='700 '+(11.5*k0)+'px system-ui,Arial,sans-serif';pill(ctx,'Tip: use Zoom for a closer look',ctx.measureText('Tip: use Zoom for a closer look').width/2+11.5*k0*.6+8,430,PAL['card'],PAL['cv-ink'],11.5*k0);}
+    // ledger strip
+    ctx.fillStyle=PAL['card'];rr(ctx,8,6,784,30,8);ctx.fill();
+    const pg=perGlucose(p);
+    k=k0;txt(ctx,'Per glucose: '+pg.atp+' ATP · '+pg.nadh+' NADH'+(hon&&k<1.3?' · '+pg.fadh+' FADH₂':'')+' · '+pg.co2+' CO₂'+(p.o2?'':(p.ferm==='muscle'&&hon?' · 2 lactate':' · 2 ethanol')),18,26,{s:14*k,w:700});
+    if(k<1.3)txt(ctx,'Total so far: '+s.atp+' ATP, '+s.co2+' CO₂',782,26,{s:12.5*k,c:PAL['cv-soft'],a:'right'});
   },
   narrate(sim){const s=sim.st,p=sim.p,hon=atLeast('honors');
     if(p.mode==='balloon'&&hon){const y=s.y;return '<b>Yeast ferment sugar and release CO₂</b>, which inflates the balloons. Glucose: '+y.glu.V.toFixed(0)+' mL, sucrose: '+y.suc.V.toFixed(0)+' mL, lactose: '+y.lac.V.toFixed(0)+' mL, lactose + lactase: '+y.lacz.V.toFixed(0)+' mL, water only: '+y.none.V.toFixed(0)+' mL at '+p.temp+' °C.';}
@@ -186,7 +195,7 @@ function apply(s,e){if(e.atp)s.atp+=e.atp;if(e.nadh>0)s.nadh+=e.nadh;if(e.fadh)s
 function ease(x){x=clamp(x,0,1);return x*x*(3-2*x);}
 function carbonPos(g,age){const out=[];const ring=(cx,cy)=>{for(let i=0;i<6;i++){const a=i*Math.PI/3-Math.PI/2;out[i]={x:cx+Math.cos(a)*15,y:cy+Math.sin(a)*15,a:1};}};
   const chain=(i0,cx,cy)=>{for(let j=0;j<3;j++)out[i0+j]={x:cx+(j-1)*13,y:cy,a:1};};
-  if(age<1){ring(95,lerp(10,80,ease(age)));return out;}
+  if(age<1){ring(95,lerp(46,80,ease(age)));return out;}
   if(age<2){ring(95,lerp(80,140,ease(age-1)));return out;}
   if(age<3){const f=ease(age-2);chain(0,lerp(95,60,f),lerp(140,200,f));chain(3,lerp(95,130,f),lerp(140,200,f));return out;}
   if(age<4){const f=ease(age-3);chain(0,60,lerp(200,265,f));chain(3,130,lerp(200,265,f));return out;}

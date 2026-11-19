@@ -147,3 +147,6 @@ Students called the enzyme walkthrough "helpful but confusing… a little overwh
 
 ### Graph kit for Learn it overlays (`learn-graph-kit.js`, Nov 18, 2026)
 Loaded after the sims and before the review and learn files. Inside an overlay, `const K=BioLab.lg;` gives `K.dim(ctx,LH)` (an opaque cover), `K.axes(ctx,B,k,{xr,xt,yt,xl,yl})`, `K.curve(ctx,B,xr,fn,to,col,dash)` (fn returns 0..1), `K.dot`, `K.bars`, `K.tag` and `K.tagA(…,'l'|'r')` (edge-anchored labels that stay on the canvas at phone size), plus `K.X`, `K.Y`, `K.ease` and `K.lerp`. Build each curve from the sim's own formulas, and say so in a comment.
+
+### Zoom in busy scenes
+When a scene has many parts (e.g. glycolysis "Inside the cell"), add a `zoom` seg control and draw through a camera rectangle (16:9, eased) so students can look at one part up close. Scale text by `Math.max(1,k/zoom)` inside the zoomed view so phone text doesn't double up. Skip the zoom in guided mode so Learn it overlays still line up. Labels on moving tokens: use dots, not words, and let the pop-up tags carry the words.
