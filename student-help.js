@@ -1,6 +1,8 @@
 /* Student help (Nov 18, 2026): three small helpers on every Learn it step, prediction, review question and end card.
    1. Read aloud: reads the current text with the browser's own voice (Web Speech API), then each new step or
       question as it appears, until the student turns it off. Nothing leaves the device.
+      Only a natural-sounding voice is used (Edge's "Online (Natural)" voices, Apple Premium/Enhanced). If the browser has none,
+      the button opens a short how-to for Edge's own Read aloud and Immersive Reader instead (Nov 18: Wayne found the robotic voices off-putting).
    2. Easier reading: more space between lines, letters and words; shorter lines; no all-caps headings; no italics.
       Meant for dyslexic readers and anyone who finds dense text hard. Saved per browser.
    3. "This confused me": one click counts an event in the site's GoatCounter (path only: site, tool, level, step), then
@@ -21,7 +23,8 @@ const SH_SEL=[
   ['guide','.gutbox',null]];
 /* ---------- 1. Read aloud ---------- */
 function pickVoice(){if(!CAN_SPEAK)return;const vs=SS.getVoices()||[];const en=vs.filter(v=>/^en(-|_)?US/i.test(v.lang));const pool=en.length?en:vs.filter(v=>/^en/i.test(v.lang));
-  voice=pool.find(v=>/natural|online|neural/i.test(v.name))||pool.find(v=>v.default)||pool[0]||null;}
+  voice=pool.find(GOOD)||null;}   /* only a natural-sounding voice; never fall back to a robotic one */
+function GOOD(v){return !!v&&/natural|online|neural|premium|enhanced/i.test(v.name);}
 if(CAN_SPEAK){pickVoice();if(SS.addEventListener)SS.addEventListener('voiceschanged',pickVoice);}
 /* Say symbols the way a teacher would. */
 function speakable(s){return s.replace(/\s+/g,' ')
@@ -31,7 +34,7 @@ function speakable(s){return s.replace(/\s+/g,' ')
   .replace(/NADH/g,'N A D H').replace(/NAD⁺/g,'N A D plus').replace(/FADH₂/g,'F A D H 2').replace(/NADPH/g,'N A D P H').replace(/\bATP\b/g,'A T P').replace(/\bADP\b/g,'A D P').replace(/\bDNA\b/g,'D N A').replace(/\bRNA\b/g,'R N A').replace(/mRNA/g,'messenger R N A')
   .replace(/\bKm\b/g,'K m').replace(/\bVmax\b/g,'V max').replace(/ψ/g,'water potential').replace(/Δ/g,'change in ').replace(/→/g,' to ').replace(/←/g,' ').replace(/(\d)\s*×/g,'$1 times').replace(/×/g,' times ').replace(/≈/g,'about ').replace(/±/g,'plus or minus ').replace(/≤/g,' at most ').replace(/≥/g,' at least ')
   .replace(/[₀-₉]/g,c=>String('₀₁₂₃₄₅₆₇₈₉'.indexOf(c))).replace(/[⁰¹²³⁴-⁹]/g,c=>' to the '+'⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)).replace(/[✓✗✕▲😕🔊]/g,'').replace(/\s+/g,' ').trim();}
-function say(text){if(!CAN_SPEAK)return;SS.cancel();if(!text)return;const parts=speakable(text).match(/[^.!?]+[.!?]*/g)||[text];
+function say(text){if(!CAN_SPEAK||!voice)return;SS.cancel();if(!text)return;const parts=speakable(text).match(/[^.!?]+[.!?]*/g)||[text];
   parts.forEach(p=>{const u=new SpeechSynthesisUtterance(p.trim());if(voice)u.voice=voice;u.lang=(voice&&voice.lang)||'en-US';u.rate=0.95;SS.speak(u);});}
 const vis=el=>!!(el&&el.offsetParent&&!el.closest('[hidden]'));
 const clean=el=>{if(!el)return '';const c=el.cloneNode(true);c.querySelectorAll('.sh-tools,svg,script,style,.rv-dots,.count').forEach(x=>x.remove());
@@ -66,12 +69,21 @@ function countConfused(el,b){const path=where(el);if(counted.has(path)){b.textCo
     c.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();send(path+'/why-'+k,'Confusing: '+l);box.innerHTML='';const t=document.createElement('span');t.className='sh-tip';
       t.textContent=k==='reading'?(CAN_SPEAK&&!on?'Thanks. Try 🔊 Read aloud or Aa Easier reading.':'Thanks. Try Aa Easier reading.'):k==='fast'?'Thanks. Use the Speed menu to slow it down, or go Back.':k==='words'?'Thanks. Key terms are in the Vocabulary list below the tool.':k==='see'?'Thanks. Slow the Speed, or press Back to watch it again.':'Thanks. Go Back a step, or ask your teacher.';box.appendChild(t);b.textContent='Thanks, noted';});box.appendChild(c);});
   b.after(box);}
-/* If this browser has no natural-sounding voice, say once where to find one (Edge has them built in). */
-function voiceTip(b){if(voice&&/natural|online|neural/i.test(voice.name))return;if(get('raider-labs-voicetip'))return;put('raider-labs-voicetip',true);
-  const t=document.createElement('span');t.className='sh-tip';t.textContent=/Edg\//.test(navigator.userAgent)?'Sounds robotic? Turn on your internet connection: Edge’s natural voices are online.':'Sounds robotic? Open this page in Microsoft Edge for a more natural voice.';
-  b.parentNode.appendChild(t);setTimeout(()=>t.remove(),12000);}
+/* No natural voice in this browser: show students how to use Microsoft Edge's own Read aloud instead.
+   Photos go in img/read-aloud-1.png … -4.png on each site; a missing photo is simply left out. */
+const HOW=[['Open this page in Microsoft Edge','Edge has natural-sounding voices built in. Copy the link from the address bar and paste it into Edge.'],
+ ['Select the words you want to hear','Drag across the step text, then right-click it and choose <b>Read aloud selection</b>. To hear the whole page, press <b>Ctrl + Shift + U</b>.'],
+ ['Pick a natural voice','In the Read aloud bar at the top, click <b>Voice options</b>. Choose a voice with <b>Natural</b> in its name, and set the speed you like.'],
+ ['Want fewer distractions? Use Immersive Reader','Select the text, right-click, and choose <b>Open in Immersive Reader</b>. You can turn on line focus, split words into syllables, and have it read to you.']];
+function showHow(){let d=document.getElementById('sh-how');if(!d){d=document.createElement('dialog');d.id='sh-how';d.setAttribute('aria-labelledby','sh-how-h');
+  const edge=/Edg\//.test(navigator.userAgent),steps=HOW.map((h,i)=>[h,i]).filter(q=>!(edge&&q[1]===0));
+  d.innerHTML='<h2 id="sh-how-h">Hear it read aloud in Microsoft Edge</h2><p>'+(edge?'Edge’s natural voices haven’t loaded yet. Wait a few seconds and try the button again, or use Edge’s own Read aloud:':'This browser doesn’t have a natural-sounding voice, so use Edge’s Read aloud.')+'</p><ol>'+
+   steps.map(([h,i])=>'<li><b>'+h[0]+'</b><br>'+h[1]+'<img src="img/read-aloud-'+(i+1)+'.png" alt="" loading="lazy" onerror="this.remove()"></li>').join('')+
+   '</ol><button type="button" class="btn">Got it</button>';
+  d.querySelector('button').addEventListener('click',()=>d.close());d.addEventListener('click',e=>{if(e.target===d)d.close();});document.body.appendChild(d);}
+  if(d.showModal)d.showModal();else d.setAttribute('open','');}
 /* ---------- buttons ---------- */
-function labelRA(b){b.textContent=on?'🔊 Read aloud: on':'🔊 Read aloud';b.setAttribute('aria-pressed',String(on));b.title=on?'Stop reading aloud':'Read this out loud, and keep reading each new step';}
+function labelRA(b){on=on&&!!voice;b.textContent=on?'🔊 Read aloud: on':'🔊 Read aloud';b.setAttribute('aria-pressed',String(on));b.title=on?'Stop reading aloud':'Read this out loud, and keep reading each new step';}
 function labelER(b){b.textContent=easy?'Aa Easier reading: on':'Aa Easier reading';b.setAttribute('aria-pressed',String(easy));b.title='More space between lines and letters, shorter lines, no all-caps headings';}
 function sync(){document.querySelectorAll('.sh-ra').forEach(labelRA);document.querySelectorAll('.sh-er').forEach(labelER);document.documentElement.classList.toggle('sh-easy',easy);}
 function mk(cls,fn){const b=document.createElement('button');b.type='button';b.className='btn sh-btn '+cls;b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();fn(b);});return b;}
@@ -79,7 +91,7 @@ function ensureButtons(){SH_SEL.forEach(([kind,sel,head])=>{document.querySelect
   let box=host.querySelector(':scope > .sh-tools');
   if(box&&kind==='tour'&&box.dataset.sig!==stepSig(el)){box.remove();box=null;}   /* fresh "confused" button for each step */
   if(box)return;box=document.createElement('span');box.className='sh-tools';if(kind==='tour')box.dataset.sig=stepSig(el);
-  if(CAN_SPEAK)box.appendChild(mk('sh-ra',b=>{on=!on;put(KEY_RA,on);sync();if(on){lastSig='';tick(true);voiceTip(b);}else SS.cancel();}));
+  box.appendChild(mk('sh-ra',()=>{if(CAN_SPEAK)pickVoice();if(!voice){on=false;put(KEY_RA,false);sync();showHow();return;}on=!on;put(KEY_RA,on);sync();if(on){lastSig='';tick(true);}else SS.cancel();}));
   box.appendChild(mk('sh-er',()=>{easy=!easy;put(KEY_ER,easy);sync();}));
   if(kind==='tour'||kind==='review'||kind==='guide'){const c=mk('sh-cf',b=>countConfused(el,b));c.textContent='😕 This confused me';c.title='Tell us this part was confusing (counted anonymously)';box.appendChild(c);}
   if(head)host.appendChild(box);else host.insertBefore(box,host.firstChild);});});sync();}
@@ -96,7 +108,7 @@ const T='.tourbar,.panel.review,.panel.predict,.donecard,.gutbox';
 const st=document.createElement('style');st.textContent=
 `.sh-tools{display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:auto;align-items:center}.donecard>.sh-tools,.gutbox>.sh-tools{display:flex;justify-content:flex-end;margin:0 0 8px}
 .sh-btn{font-size:13.5px;padding:4px 10px;line-height:1.3}.sh-btn[aria-pressed="true"]{background:var(--rj,#c8102e);color:#fff;border-color:var(--rj,#c8102e)}.sh-cf[disabled]{opacity:.8;cursor:default}
-.sh-tip{font-size:13px;color:var(--muted,#666)}.sh-why{display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-top:4px}.sh-chip{font-size:12.5px;padding:3px 9px;border-radius:999px}
+.sh-tip{font-size:13px;color:var(--muted,#666)}#sh-how{max-width:min(560px,92vw);border:0;border-radius:14px;padding:22px 24px;line-height:1.55;font-size:16px}#sh-how::backdrop{background:rgba(0,0,0,.45)}#sh-how h2{margin:0 0 6px;font-size:20px}#sh-how ol{padding-left:22px;margin:12px 0 16px}#sh-how li{margin:0 0 12px}#sh-how img{display:block;max-width:100%;margin-top:8px;border:1px solid #ccd;border-radius:8px}.sh-why{display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-top:4px}.sh-chip{font-size:12.5px;padding:3px 9px;border-radius:999px}
 html.sh-easy :is(${T}) :is(p,li,.tb-x,.rv-q,.q,.choice,.verdict,.help){font-size:18px!important;line-height:1.75!important;letter-spacing:.035em!important;word-spacing:.14em!important;text-align:left!important;max-width:62ch}
 html.sh-easy :is(${T}) :is(.ln-k,.p-head h3,.tb-n){text-transform:none!important;letter-spacing:.02em!important;font-size:15px!important}
 html.sh-easy :is(${T}) :is(em,i){font-style:normal!important;font-weight:600}
