@@ -3,7 +3,7 @@
 const {clamp,rr,atLeast,PAL,FONT,RM}=BioLab.h;
 const M=window.MTN;
 /* Land for sale: Paul Stearman's "Mountain Scenario" game, rebuilt for nine real places.
-   Rules and numbers come from his handout (thousands of dollars, or his original CFA francs). Added here: rules the computer
+   Rules and numbers come from his handout (in thousands of dollars). Added here: rules the computer
    enforces, an automatic ledger, a rare animal that needs habitat, real spill chances, habitat breaks and corridors,
    a People layer (jobs, worker safety, the town's water), a 20-year future, a class board, and real cases for each land. */
 const fk=v=>M.fmtK(v),fk2=v=>M.fmtK2(v);
@@ -116,11 +116,11 @@ function peopleLine(g,L){const unsafe=M.townUnsafe(g);return `<span><b>Jobs</b> 
 function ledgerHTML(sim){const s=sim.st,g=G(sim),L=LD(sim),rows=ledgerRows(g),self=!!sim.p.selfmath,pv=M.parkValue(g),nw=g.done?g.end.net:g.cash+pv-M.R.loan;
   let h=`<div class="mt-sum"><span><b>Cash</b> ${fk(g.cash)}</span><span><b>${cap(pkName(L))} value</b> ${g.park?fk(pv):'none yet'}</span><span><b>Loan to repay</b> ${fk(M.R.loan)}</span><span><b>Net worth</b> ${fk(nw)}</span></div><div class="mt-sum mt-people">${peopleLine(g,L)}</div>`;
   h+=`<div class="mt-scroll"><table class="mt-tbl"><thead><tr><th>Action</th><th class="n">Benefit</th><th class="n">Cost</th><th class="n">Net gain</th><th class="n">Total</th></tr></thead><tbody><tr><td>Start: bank loan</td><td class="n">–</td><td class="n">–</td><td class="n">–</td><td class="n">${fk2(M.R.loan)}</td></tr>`;
-  rows.forEach((r,i)=>{const m=s.math[i]||{};let tot;if(!self||m.ok||m.shown)tot=fk2(r.tot)+(m.ok?' ✓':'');else tot=`<input class="mt-in" data-mi="${i}" inputmode="numeric" aria-label="Total after row ${i+1}${M.currency==='cfa'?'':', in thousands'}" value="${esc(m.v||'')}" placeholder="?">${m.bad?' <span class="mt-bad">✗</span>':''}`;
+  rows.forEach((r,i)=>{const m=s.math[i]||{};let tot;if(!self||m.ok||m.shown)tot=fk2(r.tot)+(m.ok?' ✓':'');else tot=`<input class="mt-in" data-mi="${i}" inputmode="numeric" aria-label="Total after row ${i+1}, in thousands" value="${esc(m.v||'')}" placeholder="?">${m.bad?' <span class="mt-bad">✗</span>':''}`;
     h+=`<tr><td>${esc(r.a)}</td><td class="n">${r.b?fk2(r.b):'–'}</td><td class="n">${r.c?fk2(r.c):'–'}</td><td class="n">${(r.net<0?'−':'')+fk2(Math.abs(r.net))}</td><td class="n">${tot}</td></tr>`;});
   h+='</tbody></table></div>';
   if(!rows.length)h+='<p class="help">Every action you take adds a row here, just like the table in Paul Stearman’s original handout. Pick a tool and tap the land.</p>';
-  if(self&&rows.length)h+=`<div class="row"><button type="button" class="btn" data-mcheck>Check my totals</button><span class="help">Type each running total${M.currency==='cfa'?'':' in thousands (for example, 4150)'}. Every row: total before + benefit − cost.</span></div>`;
+  if(self&&rows.length)h+=`<div class="row"><button type="button" class="btn" data-mcheck>Check my totals</button><span class="help">Type each running total in thousands (for example, 4150). Every row: total before + benefit − cost.</span></div>`;
   return h;}
 function rulesHTML(sim){const R=M.R,L=LD(sim),S=L.sp,pk=pkName(L);return `<p><b>${L.icon} ${L.name}</b>, ${L.place}. ${L.blurb}</p><ul class="mt-rules">
 <li><b>Start:</b> a ${fk(R.loan)} bank loan. You cannot borrow more. At the end you pay it back, so you need to make more than you spend.</li>
@@ -133,7 +133,7 @@ ${L.blowout?`<li><b>Blowout:</b> every ${L.res.one} you ${L.res.verb.toLowerCase
 <li><b>Corridor:</b> ${fk(R.corridor)} to connect habitat across a break: ${L.barrier?L.barrier.name+', ':''}an open pit, or 3+ cleared spots in a row.</li>
 <li><b>Each ${S.lynx.one}</b> needs at least ${M.TREES_PER_LYNX} ${S.tree.many} in its connected habitat${L.topNeedsClean?', and clean water nearby':''}, or it leaves or dies.</li>
 <li><b>People:</b> each ${L.res.one} creates jobs, and so does a ${pk}. Without full safety (+${fk(M.safetyCost(L))} per ${L.res.one}${L.safetyHow?': '+L.safetyHow:''}) workers can get hurt${L.injury>=0.2?', and here that happens often':''}. ${L.town.people}${L.town.setback?' Sites inside the 2,000-foot setback line are close to homes.':''}${L.aquifer?' Digging and selling well water lower the groundwater, and below '+L.aquifer.dry+'% the wells go dry.':''}</li></ul>
-<p class="help">Based on Paul Stearman’s “Mountain Scenario” game, which he first taught in Africa using CFA francs. Every land keeps his rules and numbers.</p>`;}
+<p class="help">Based on Paul Stearman’s “Mountain Scenario” game from his teaching in Africa. Every land keeps his rules and numbers.</p>`;}
 function landsHTML(sim){const cur=G(sim).land;return '<p>Every land uses the same rules and numbers, so the class can compare. Each place has its own species, resource, people and real story.</p><div class="mt-lands">'+M.ORDER.map(k=>{const L=M.LANDS[k];
   return `<button type="button" class="mt-land${k===cur?' on':''}" data-mland="${k}" aria-pressed="${k===cur}"><span class="mt-li" aria-hidden="true">${L.icon}</span><b>${L.name}</b><small>${L.place}</small><span>${L.blurb}</span></button>`;}).join('')+'</div><p class="help">Changing the land starts a new plan.</p>';}
 function chartSVG(series,key,label,col,fmt){const W=520,H=170,L=58,B=26,T=12,Rt=10;const ys=series.map(p=>p[key]);let lo=Math.min(0,...ys),hi=Math.max(...ys,1);if(hi===lo)hi=lo+1;
@@ -222,7 +222,7 @@ function hoverInfo(sim){const s=sim.st,g=G(sim),L=LD(sim),T=s.hov;if(!T||g.done)
   if(t==='move'&&T.k==='s'){const S=L.SLOTS[T.i],k=g.slots[T.i].o;if(s.pick==null)return k?{x:S.x,y:S.y,lines:['Pick up: '+L.sp[k].one]}:null;return {x:S.x,y:S.y,lines:[k?'Taken':'Put it here: −'+fk(R.move[g.slots[s.pick].o])]};}
   if(t==='corridor'&&T.k==='c'){const p=M.corrPt(g,T.c);return {x:p.x,y:p.y,lines:['Corridor: −'+fk(R.corridor)]};}
   return null;}
-function draw(sim,ctx,vdt,k,t){const s=sim.st,C=colors(),st=shown(sim),L=LD(sim);s.clock=t;M.setCurrency(sim.p.money);
+function draw(sim,ctx,vdt,k,t){const s=sim.st,C=colors(),st=shown(sim),L=LD(sim);s.clock=t;
   const ghost=!st.park&&!s.F?{a:Math.min(sim.p.parkA,sim.p.parkB)/100,b:Math.max(sim.p.parkA,sim.p.parkB)/100}:null;
   let pickPos=null;if(s.pick!=null&&s.mouse)pickPos={x:s.mouse.x,y:s.mouse.y+14};
   M.drawScene(ctx,st,C,{k,pick:s.F?null:s.pick,pickPos,ghostPark:ghost,t});
@@ -263,7 +263,7 @@ const SIM={id:'mountain',hash:'mountain',apUnit:13,order:6.5,tab:'Land for sale'
   lede:{bio:'You borrowed $2 million to buy land. Pick a real place, then make money to pay back the bank, and decide what is left for the animals and the people who live there.',
         honors:'Balance profit, species, workers and clean water on one piece of land. Then see how habitat breaks, corridors and yearly income change the long-term result.',
         ap:'Weigh one-time income against yearly income, and expected losses against the cost of prevention, then test your plan against 100 random futures on any land.'},
-  scale:'Each picture is a whole population: a herd, a family or a stand of plants. Money is in thousands of dollars ($500K = $500,000), or Paul’s original CFA francs.',
+  scale:'Each picture is a whole population: a herd, a family or a stand of plants. Money is in thousands of dollars ($500K = $500,000).',
   aspect:16/9,timeless:true,animated:true,graph:false,controlsTitle:'Your tools',
   controls:[
     {id:'land',label:'Land',type:'select',def:URLLAND||'colorado',lvl:'bio',options:LANDOPTS,help:'Changing the land starts a new plan.',onChange(sim){setLand(sim,sim.p.land);}},
@@ -272,7 +272,6 @@ const SIM={id:'mountain',hash:'mountain',apUnit:13,order:6.5,tab:'Land for sale'
     {id:'parkB',label:'Park gate 2',type:'range',min:0,max:100,step:1,def:100,unit:'%',lvl:'bio'},
     {id:'safety',label:'Worker safety when you dig or drill',type:'seg',def:'standard',lvl:'bio',options:[{v:'standard',l:'Standard'},{v:'safe',l:'Full safety (+$100K)'}],help:'Full safety costs more per site but makes injuries (and, offshore, blowouts) rare.'},
     {id:'target',label:'Or pick a spot (keyboard)',type:'select',def:'s0',lvl:'bio',options:targetsFor(M.LANDS[URLLAND||'colorado']),help:'Then press “Use the tool here”.',onChange(sim){sim.st.hov=fromTargetValue(sim,sim.p.target);sim.st.msg=describe(sim,sim.st.hov);}},
-    {id:'money',label:'Money',type:'seg',def:'usd',lvl:'bio',options:[{v:'usd',l:'Dollars'},{v:'cfa',l:'Paul’s CFA francs'}],help:'Paul’s original game used CFA francs with these same numbers.',onChange(sim){M.setCurrency(sim.p.money);sim.infoDirty=true;}},
     {id:'selfmath',label:'I’ll do the math',type:'toggle',def:false,lvl:'bio',help:'Type each running total in the ledger yourself, like Paul’s paper table.'},
     {id:'visitPct',label:'Visitors each year',type:'range',min:0,max:30,step:1,def:5,unit:'% of park value',lvl:'honors',help:'An assumption for the 20-year future.'},
     {id:'hunt',label:'Yearly harvests',type:'toggle',def:true,lvl:'honors',help:'Small harvests each year from what you left standing: licenses, nuts, fish, coffee or water.'},
@@ -288,7 +287,7 @@ const SIM={id:'mountain',hash:'mountain',apUnit:13,order:6.5,tab:'Land for sale'
     {id:'ff',label:'Play the next 20 years',lvl:'bio',primary:true,run(sim){startFuture(sim,false);},enabled:sim=>G(sim).done&&!sim.st.ffRun&&!(sim.st.F&&sim.st.F.year>=20)},
     {id:'again',label:'Try a different future',lvl:'bio',run(sim){startFuture(sim,true);},enabled:sim=>!!(sim.st.F&&sim.st.F.year>=20)},
     {id:'many',label:'Run 100 futures',lvl:'honors',run:runMany,enabled:sim=>G(sim).done}],
-  init(sim){const key=M.LANDS[sim.p.land]?sim.p.land:'colorado';M.setCurrency(sim.p.money);
+  init(sim){const key=M.LANDS[sim.p.land]?sim.p.land:'colorado';
     return {g:M.newState(key),undo:[],fx:[],pick:null,hov:null,sel:null,msg:'',tab:'lands',math:{},name:'',note:'',code:'',F:null,ffRun:false,ffAcc:0,many:null,seed:(Math.random()*1e9)>>>0,rs:0,clock:0,mouse:null};},
   step(sim,dt){const s=sim.st,L=LD(sim);if(!s.ffRun||!s.F)return;s.ffAcc+=dt;const per=RM?0.25:0.85;
     while(s.ffAcc>=per&&s.F.year<20){s.ffAcc-=per;const ev=M.yearTick(s.F,opts(sim),s.F.rng);
@@ -350,7 +349,7 @@ const SIM={id:'mountain',hash:'mountain',apUnit:13,order:6.5,tab:'Land for sale'
     {lvl:'honors',t:'Fossil groundwater',d:'Groundwater stored long ago that is not refilled today. Once it is pumped out, it is gone.'},
     {lvl:'ap',t:'Expected value',d:'The average result of a risky choice: the sum of each outcome times its probability.'},
     {lvl:'ap',t:'Monte Carlo simulation',d:'Running a model many times with random draws to see the range of possible outcomes.'}],
-  about:`<p><b>Where this comes from.</b> Paul Stearman built the original “Mountain Scenario” for his biology students when he taught in Africa. Students edited a drawing of a mountain, kept a cost table by hand and shared results on a class slide. Every land here keeps his rules and numbers (in thousands of dollars, or his original CFA francs).</p>
+  about:`<p><b>Where this comes from.</b> Paul Stearman built the original “Mountain Scenario” for his biology students when he taught in Africa. Students edited a drawing of a mountain, kept a cost table by hand and shared results on a class slide. Every land here keeps his rules and numbers (in thousands of dollars).</p>
 <p><b>The lands.</b> ${M.ORDER.map(k=>M.LANDS[k].name).join(', ')}. Each has a plant or habitat patch, a hunted animal, a rare protected animal that needs the plants, a resource under the ground, two water bodies, a town, and real cases with sources.</p>
 <p><b>What the computer adds.</b> Rules are enforced and the ledger is automatic (or checked). Spill chances are real random draws. Rare animals need at least ${M.TREES_PER_LYNX} plant patches in their connected habitat (and, for giant otters, clean water). Natural barriers, open pits and 3+ cleared spots in a row split habitat, and corridors reconnect them. The People layer counts jobs (30 per site, 15 for a park, a few for harvests), workers hurt (each land has its own injury chance per site, cut by 85% with full safety for $100K more), whether the town’s water is safe, sites close to homes (Denver’s edge) and groundwater (Sahara). The 20-year future adds visitors (a share of the protected area’s value each year), yearly harvests from what was left standing, animals spreading into open ground next to a herd, lone rare-animal families vanishing (8% a year), old sites near unprotected water leaking (10% a year), polluted water clearing after 4 quiet years, and on some lands droughts or marine heat waves.</p>
 <p><b>What is simplified.</b> All money values and rates are illustrative, not real prices or measured risks. Real mines and wells need permits and reclamation bonds, and laws protect the rare species, so destroying one would be illegal. Real people are not a single number: the same plan can help one family and hurt another. Future dollars are not discounted.</p>`};

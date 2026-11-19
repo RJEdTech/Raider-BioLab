@@ -1,6 +1,6 @@
 /* Land for sale: shared model for sims/mountain.js and mountainboard.html.
    Based on Paul Stearman's "Mountain Scenario" land-use game (harvest, mine, park, corridor, a bank loan).
-   Every land uses his rules and numbers (thousands of dollars, or his original CFA francs).
+   Every land uses his rules and numbers (thousands of dollars).
    Roles are the same on every land: 'tree' = the plant or habitat patch, 'deer' = the hunted animal,
    'lynx' = the protected rare animal that needs the plant. Lands only change names, shapes, art and extras.
    All money values and rates are illustrative. Land definitions after Colorado live in lands.js. */
