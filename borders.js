@@ -45,7 +45,7 @@ cladogram: {
   church: 'The Church teaches that honest, careful research never truly conflicts with faith, because the world and faith come from the same God (Vatican II, <i>Gaudium et Spes</i> 36). Sorting living things is a human task, not a revealed one: in Genesis 2 the man gives the animals their names. Faith and reason work together, “like two wings” (John Paul II, <i>Fides et Ratio</i>, 1998).',
   faith: { items: [
     { who: 'St. Albert the Great', when: 'Dominican friar, 1200s; patron saint of scientists', says: 'He described plants and animals from his own observation and taught that natural science asks what nature can do by its own causes, not how God might work a miracle.' },
-    { who: 'St. Nicolas Steno', when: 'anatomist and Catholic bishop, 1669', says: 'He showed that fossils are the remains of living things and that rock layers are laid down in order, oldest at the bottom. That is how we read the past from the present. John Paul II beatified him in 1988.' }
+    { who: 'Bl. Nicolas Steno', when: 'anatomist and Catholic bishop, 1669', says: 'He showed that fossils are the remains of living things and that rock layers are laid down in order, oldest at the bottom. That is how we read the past from the present. John Paul II beatified him in 1988.' }
   ] },
   views: [
     { who: 'Aristotle', when: '4th century BC', says: 'Living things have natures, or essences, that make them the kind of thing they are. Kinds are real, and we discover them rather than invent them.' },
