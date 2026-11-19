@@ -13,6 +13,10 @@ evolution: {
   ],
   stops: 'Science can show how chance variation and the environment shape a population, and it can measure the odds. Whether chance rules out purpose is not something a count of mice can settle. It is a question about what chance means, which is philosophy.',
   church: 'The Church teaches that God works in and through real natural causes, giving creatures “the dignity of acting on their own” (Catechism nos. 306–308), and that evolution and faith need not conflict (Pius XII, <i>Humani Generis</i>, 1950; John Paul II, 1996). Each human soul is created directly by God (<i>Humani Generis</i> 36). Benedict XVI, 2005: “We are not some casual and meaningless product of evolution.” Genetics itself began with a Catholic friar: Gregor Mendel, an Augustinian, found the laws of heredity with pea plants in his monastery garden in the 1860s.',
+  faith: { items: [
+    { who: 'St. Augustine', when: 'early 400s', says: 'Reading Genesis, he taught that God made the world with “seed-like reasons” (<i>rationes seminales</i>) built in, so new kinds of living things could unfold over time from what God first made.' },
+    { who: 'Pope Francis', when: '2014', says: '“Evolution in nature is not inconsistent with the notion of creation, because evolution requires the creation of beings that evolve.”' }
+  ] },
   views: [
     { who: 'Charles Darwin', when: 'late in life', says: 'He moved from faith toward doubt, wrote that he had never been an atheist, and said “agnostic” described him best. He did not think his science settled the question.' },
     { who: 'Asa Gray', when: 'botanist, 1860', says: 'Darwin’s friend and a devout Christian. He argued that natural selection fits with design: God could work through variation and selection as through any natural law.' },
@@ -39,6 +43,10 @@ cladogram: {
   ],
   stops: 'Science finds the branching: who shares an ancestor with whom. But the ranks (species, genus, phylum) and where one species ends and the next begins are partly human choices. Biologists still use several different definitions of “species.”',
   church: 'The Church teaches that honest, careful research never truly conflicts with faith, because the world and faith come from the same God (Vatican II, <i>Gaudium et Spes</i> 36). Sorting living things is a human task, not a revealed one: in Genesis 2 the man gives the animals their names. Faith and reason work together, “like two wings” (John Paul II, <i>Fides et Ratio</i>, 1998).',
+  faith: { items: [
+    { who: 'St. Albert the Great', when: 'Dominican friar, 1200s; patron saint of scientists', says: 'He described plants and animals from his own observation and taught that natural science asks what nature can do by its own causes, not how God might work a miracle.' },
+    { who: 'St. Nicolas Steno', when: 'anatomist and Catholic bishop, 1669', says: 'He showed that fossils are the remains of living things and that rock layers are laid down in order, oldest at the bottom. That is how we read the past from the present. John Paul II beatified him in 1988.' }
+  ] },
   views: [
     { who: 'Aristotle', when: '4th century BC', says: 'Living things have natures, or essences, that make them the kind of thing they are. Kinds are real, and we discover them rather than invent them.' },
     { who: 'Carl Linnaeus', when: '1735', says: 'He grouped living things into nested ranks to show an order he believed God built into creation. Species, for him, were fixed and real.' },
@@ -62,6 +70,10 @@ division: {
   ],
   stops: 'Biology can track every chromosome into the two new cells. Whether either new cell is the same individual as the first is not a question a microscope can answer. It is a question about what makes something the same thing over time.',
   church: 'The Church teaches that each human being is one being, body and soul together: the soul is the “form” of the body, so we are not a spirit riding in a machine (Catechism nos. 362–365). That is part of why a person stays the same person while many of their cells are replaced over the years. The puzzle about the cells themselves is left to biology and philosophy.',
+  faith: { items: [
+    { who: 'Theodor Schwann', when: '1839', says: 'A devout Catholic who taught at Catholic universities in Belgium, he co-founded cell theory: every living thing is made of cells.' },
+    { who: 'Fr. Jean-Baptiste Carnoy', when: 'priest and biologist, 1884', says: 'A Belgian priest at the University of Louvain, he wrote one of the first textbooks of cell biology and studied how chromosomes move when cells divide. Labs still use “Carnoy’s solution” to preserve cells.' }
+  ] },
   views: [
     { who: 'Plutarch’s Ship of Theseus', when: '1st century', says: 'If every plank of a ship is replaced, is it the same ship? A cell that splits is the puzzle in living form: two ships from one.' },
     { who: 'Aristotle and Aquinas', says: 'What makes a living thing itself is its form, its organizing life, not its particular matter. When a single cell divides, one life becomes two new ones.' },
@@ -89,6 +101,10 @@ hominids: {
   ],
   stops: 'Science can measure braincases, date fossils, and trace tools, fire and art. What makes a being a person, able to reason, love and choose, is not something a ruler on a skull can measure. That question belongs to philosophy and theology.',
   church: 'The Church teaches that the human body may have come from earlier living things, but each human soul is created directly by God (Pius XII, <i>Humani Generis</i> 36, 1950; Catechism nos. 362–366). John Paul II (1996) called the step to a spiritual soul an “ontological leap”: a difference in kind that observation alone cannot detect. One of the scientists who studied the <i>Homo erectus</i> fossils at Zhoukoudian, China, was a Jesuit priest, Pierre Teilhard de Chardin.',
+  faith: { items: [
+    { who: 'Fr. Henri Breuil', when: 'priest and prehistorian, 1900s–1950s', says: 'He copied and studied the Ice Age cave paintings of Altamira and Lascaux. Art, like burial of the dead, is one of the strongest signs of a mind that leaves no bone.' },
+    { who: 'Fr. Pierre Teilhard de Chardin', when: 'Jesuit, honest history', lvl: 'honors', says: 'In 1962 the Vatican warned that his writings contain ambiguities; in 2009 Benedict XVI praised his vision of the whole cosmos becoming a “living host.” The Church can learn from a thinker without endorsing all he wrote.' }
+  ] },
   views: [
     { who: 'Charles Darwin', when: '<i>The Descent of Man</i>, 1871', says: 'The gap between human and animal minds is great, but it is one of degree, not of kind. Our reason grew out of powers other animals share.' },
     { who: 'Thomas Aquinas', when: '13th century', says: 'Plants and animals have souls too: a soul is what makes a body alive. The human soul can also understand and choose freely. Still, a human is one person, body and soul together.' },

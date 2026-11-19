@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Where science meets philosophy · Raider BioLab</title>
+<meta name="description" content="Border questions from Raider Labs tools, where science meets philosophy and the Catholic tradition, plus a class tally for teachers.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="biolab.css?v=202611171400">
+<style>
+.nw{max-width:820px;margin:0 auto}
+.nw h1{font-size:32px;margin:0;line-height:1.2}
+.nw .lede{font-size:18px;color:var(--muted);margin:6px 0 12px}
+.nw .back{display:inline-block;margin:0 0 14px;font-weight:600}
+.nw a{color:var(--rj-ink)}
+.bq-toc{display:flex;flex-wrap:wrap;gap:6px 16px;margin:6px 0 10px;padding:0;list-style:none}.bq-toc a{font-weight:600}.bq-toc small{color:var(--muted);font-weight:400}
+.bq-site{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:30px 0 10px;border-bottom:1px solid var(--line);padding-bottom:6px;scroll-margin-top:12px}
+.bq-card{background:var(--card);border:1px solid var(--line);border-left:5px solid #6b4fa0;border-radius:12px;padding:14px 18px;margin:0 0 16px;scroll-margin-top:12px}
+.bq-tool{margin:0;font-size:14px;font-weight:700}.bq-q{font-size:21px;line-height:1.3;margin:4px 0 8px}
+.bq-who{font-size:15px;color:var(--muted);margin:0 0 8px}
+.bq-more summary{cursor:pointer;font-weight:600;color:var(--rj-ink)}
+.bq-more p,.bq-more li{font-size:15.5px;line-height:1.5}.bq-more ul{padding-left:20px}
+.bq-church{background:var(--card2);border-radius:8px;padding:8px 12px}
+.bq-faith{border:1px solid var(--line);border-left:3px solid #b8860b;border-radius:8px;padding:8px 12px;margin:8px 0}.bq-faith p{margin:0 0 6px}
+.bq-open{margin:10px 0 0}
+.bq-tally{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:30px 0 10px;scroll-margin-top:12px}
+.bq-tally h2{font-size:22px;margin:0 0 6px}
+.bq-steps li{margin:6px 0;font-size:16px;line-height:1.5}.bq-steps figure{margin:8px 0}.bq-steps img{max-width:100%;border:1px solid var(--line);border-radius:8px}
+.bq-l{display:block;font-weight:700;margin:12px 0 4px}
+#bq-paste{width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:8px;border:1px solid var(--line);border-radius:8px;background:transparent;color:inherit}
+.bq-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.bq-msg{color:var(--muted);font-size:15px}
+.bq-res{border-top:1px solid var(--line);padding-top:10px;margin-top:14px}.bq-res h3{font-size:18px;margin:0 0 2px}.bq-n{color:var(--muted);margin:0 0 8px}
+.bq-bar{display:grid;grid-template-columns:minmax(120px,220px) 1fr 80px;gap:8px;align-items:center;margin:4px 0;font-size:15px}
+.bq-track{height:14px;background:var(--card2);border-radius:7px;overflow:hidden}.bq-fill{display:block;height:100%;background:#6b4fa0;border-radius:7px}
+.bq-bn{text-align:right;color:var(--muted)}
+.bq-why{margin:0 0 6px 8px;font-size:15px}.bq-why summary{cursor:pointer;color:var(--rj-ink)}
+.nw-foot{margin:30px 0 10px;color:var(--muted);font-size:14px;text-align:center}
+@media print{.bq-tally,.back,nav.labs,.bq-open{display:none}.bq-more[open] summary{display:none}.bq-card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header class="rj-masthead">
+  <div class="hl">
+    <img class="rj-mark" src="data:image/png;base64,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" alt="RJ">
+    <div>
+      <h1>Raider BioLab</h1>
+      <p class="tagline">Biology · AP Bio · AP Environmental Science · Genetic Engineering</p>
+    </div>
+  </div>
+</header>
+<main class="wrap"><div class="nw">
+<a class="back" href="index.html">&larr; Raider BioLab home</a>
+<nav class="labs" aria-label="Raider Labs"><span class="labs-l">Raider Labs</span><a href="https://rjedtech.github.io/Raider-BioLab/" aria-current="page">BioLab <small>Biology</small></a><a href="https://rjedtech.github.io/Raider-ChemLab/">ChemLab <small>Chemistry</small></a><a href="https://rjedtech.github.io/Raider-PhysLab/">PhysLab <small>Physics</small></a><a href="https://rjedtech.github.io/Raider-ForensicsLab/">ForensicsLab <small>Forensic Science</small></a><a href="https://rjedtech.github.io/Raider-AnatomyLab/">AnatomyLab <small>Anatomy &amp; Physiology</small></a><a href="https://rjedtech.github.io/Raider-SportsMedLab/">SportsMedLab <small>Sports Medicine</small></a><a href="https://rjedtech.github.io/Raider-MathLab/">MathLab <small>Mathematics</small></a><a href="https://rjedtech.github.io/Raider-HealthLab/">HealthLab <small>Health</small></a><a href="https://rjedtech.github.io/Raider-AILab/">AILab <small>Artificial Intelligence</small></a><a href="https://rjedtech.github.io/Raider-FinanceLab/">FinanceLab <small>Personal Finance</small></a></nav>
+<h1>Where science meets philosophy</h1>
+<p class="lede">Some Raider Labs tools end with a border question: the place where the science stops and philosophy and faith begin. Each card shows what the science found, what it has to assume, where it stops, what the Church teaches, voices from the Catholic tradition, and thinkers who answer the open question differently.</p>
+<p>Students pick the thinker closest to their own view and write one sentence. There is no answer key: the goal is to see the border clearly and think on both sides of it. Every card is in the tool itself, below the simulation in Full lab and at the end of Learn it.</p>
+<ul class="bq-toc" id="bq-toc"></ul>
+<div id="bq-list"><noscript><p>This page needs JavaScript turned on.</p></noscript></div>
+<section class="bq-tally" id="tally">
+<h2>See how your class answered</h2>
+<p>Gather your students’ answers and count them here. The counting happens on this page, in your browser: nothing is uploaded or saved, and no names are kept.</p>
+<ol class="bq-steps">
+<li><b>Assign the tool.</b> In Canvas, make a Discussion (or a text-entry Assignment) and paste the tool’s link from this page. Ask students to finish the border card at the end.</li>
+<li><b>Students copy their answer.</b> At the bottom of the card they pick a thinker, write one sentence, and press <b>Copy my answer</b>. Then they paste it as their post.
+<figure><img src="img/border-copy.png" alt="The Your call section of a border card: thinker buttons, a one-sentence box and the Copy my answer button." loading="lazy"></figure></li>
+<li><b>Copy the posts.</b> Open the Discussion, press <b>Ctrl+A</b> to select the whole page, then <b>Ctrl+C</b> to copy. (With an Assignment, copy each submission from SpeedGrader.)</li>
+<li><b>Paste and count.</b> Paste into the box below and press <b>Count the answers</b>. Extra text from the page, like names and dates, is ignored.</li>
+</ol>
+<label class="bq-l" for="bq-paste">Paste students’ answers here</label>
+<textarea id="bq-paste" rows="8" placeholder="Is time something real, or just what clocks do?&#10;Closest to my view: Henri Bergson&#10;Why: ..."></textarea>
+<div class="bq-row"><button type="button" class="btn primary" id="bq-count">Count the answers</button><button type="button" class="btn" id="bq-clear">Clear</button><button type="button" class="btn" id="bq-sample">Try it with a sample</button><span id="bq-msg" class="bq-msg" aria-live="polite"></span></div>
+<div id="bq-out"></div>
+</section>
+<p class="nw-foot">RJ Ed Tech · Raider Labs · Where science meets philosophy</p>
+</div></main>
+<script>
+(function(){
+'use strict';
+var NAMES={"BioLab": {"transport": "Membrane transport and osmosis", "energy": "Energy flow and food webs", "lifebonds": "Atoms and bonds", "foodtests": "Food tests lab", "karyotype": "Karyotype detective", "beaks": "Bird beak lab", "acidrain": "Acid rain", "cellcycle": "Cell cycle and cancer", "glycolysis": "Glycolysis, Krebs cycle and fermentation", "niche": "Niche partitioning", "signaling": "Cell signaling", "division": "Mitosis and meiosis", "succession": "Ecological succession", "soil": "Soil lab", "predprey": "Predators and prey", "chloroplast": "Light reactions and Calvin cycle", "crispr": "CRISPR gene editing", "sav": "Cell size and diffusion", "antibiotic": "Antibiotic resistance", "transformation": "Bacterial transformation (pGLO)", "sanger": "DNA sequencing (Sanger)", "synthbio": "Synthetic biology: gene circuits", "energycalc": "Lightbulb energy lab", "humanpop": "Human population", "pillbug": "Pill bug choice chamber", "phlife": "Acids, bases and buffers", "footprint": "Carbon footprint", "plasmid": "Plasmid maps and restriction digests", "microscope": "Virtual microscope", "protein": "Protein folding", "replication": "DNA replication", "qpcr": "qPCR and gene expression", "smog": "Denver smog and thermal inversions", "macromolecules": "Build a macromolecule", "molclock": "Molecular clock", "seasons": "Seasons and atmospheric circulation", "expdesign": "Experiment designer", "crosses": "Genetic crosses", "wolfmoose": "Wolf, Moose, Grass", "plates": "Plate tectonics", "roottip": "Onion root tip mitosis lab", "virus": "Viruses: lytic and lysogenic", "ld50": "Dose–response and LD50 lab", "cladogram": "Build a cladogram", "blast": "Sequence search (BLAST)", "gel": "Gel electrophoresis", "gridmix": "Power grid energy mix", "mining": "Mining: ore, cost and reclamation", "potato": "Potato osmosis lab", "waterprops": "Properties of water stations", "pcr": "PCR and primer design", "bloodtype": "Blood typing lab", "cityscore": "Score the city: GDP vs. well-being", "transpiration": "Transpiration", "carboncycle": "Carbon cycle", "albedo": "Albedo and surface temperature", "homeostasis": "Homeostasis", "eutrophication": "Eutrophication and dead zones", "treecarbon": "Tree carbon storage", "gmotrial": "GMO field trial", "commons": "Tragedy of the commons", "expression": "DNA to protein", "water": "Properties of water", "epidemic": "Epidemics and herd immunity", "farm": "Irrigation, fertilizer and pests", "productivity": "Primary productivity lab", "popgrowth": "Population growth", "hardyweinberg": "Hardy–Weinberg trainer", "hominids": "Hominid skulls", "cellexplorer": "Cell explorer", "plateexplorer": "Plate Boundary Explorer", "soillab": "Soil Investigation Lab", "windsatacama": "Why the Amazon is wet and the Atacama is dry", "ensoexplorer": "ENSO Explorer", "pedigree": "Pedigree detective", "climate": "Climate change and stabilization wedges", "biodiversity": "Biodiversity sampling", "evolution": "Natural selection and drift", "neuron": "Neurons and action potentials", "biomes": "Biome explorer", "islandbio": "Island biogeography", "wpotential": "Water potential", "lacoperon": "Lac operon", "enso": "Ocean currents and El Niño", "dissection": "Fetal pig dissection", "pipette": "Micropipettes and dilutions", "whogetscare": "Who gets extra care?", "evwhatif": "What if every car were electric?"}, "PhysLab": {"buoyancy": "Buoyancy and pressure", "power": "Work and power", "gravity": "Gravity and orbits", "twobody": "Pushing and pulling at an angle", "springs": "Masses and springs", "fluidflow": "Fluid flow and Bernoulli", "circuit": "Circuit builder", "forces": "Forces and motion", "refraction": "Bending light", "freefall": "Free fall and bouncing", "oximeter": "Inside the pulse oximeter", "skatepark": "Energy skate park", "quaketower": "Earthquake tower", "doubleslit": "The double slit, one at a time", "induction": "Electromagnetic induction", "shotspotter": "Locating a sound by timing", "efield": "Electric fields and potential", "capacitor": "Capacitors and RC circuits", "coulomb": "Coulomb’s law", "motion1d": "Motion in one dimension", "chaos": "Chaos and the double pendulum", "botdrive": "Program a robot", "torque": "Torque and balance", "incline": "Inclined plane", "atwood": "Pulleys and connected objects", "pendulum": "Pendulum lab", "friction": "Friction lab", "linearize": "Graphing and linearizing data", "color": "Light, color and perception", "relativity": "Special relativity", "elevator": "Elevators and apparent weight", "collisions": "Collisions lab", "rotation": "Rotational motion and angular momentum", "workenergy": "Work into energy", "impulse": "Impulse and the egg drop", "photoelectric": "The photoelectric effect", "sound": "Sound waves and Doppler", "gears": "Gears and the racing robot", "waves": "Waves on a string", "magnetism": "Magnets and electromagnets", "lenses": "Mirrors and lenses", "rocket": "Rocket science"}, "ChemLab": {"balance": "Balancing equations", "dissolve": "Dissolving and electrolytes", "avgmass": "Average atomic mass", "gaslaws": "Gas laws", "bondtypes": "Properties of solids", "states": "States of matter", "rxntypes": "Types of reactions", "hydrate": "Hydrate lab", "measure": "Measurement and sig figs", "naming": "Naming compounds", "beerslaw": "Beer’s law and spectrophotometry", "lewis": "Lewis structures", "equilibrium": "Chemical equilibrium", "percentcomp": "Percent composition and empirical formulas", "atombuilder": "Build an atom", "airbag": "Stoichiometry air bags", "ph": "pH and acid strength", "separation": "Separating mixtures", "galvanic": "Galvanic cells", "pes": "Photoelectron spectroscopy", "nuclear": "Nuclear decay", "spectra": "Emission spectra and flame tests", "ratelaw": "Rate laws", "density": "Density lab", "imf": "Intermolecular forces", "enthalpy": "Bond energy and Hess’s law", "models": "Atomic models and gold foil", "molarity": "Molarity and dilution", "titration": "Titration lab", "buffers": "Buffers", "light": "Light and photons", "activity": "Activity series", "ionic": "Ionic bonding", "trends": "Periodic trends", "halflife": "Half-life", "molesteps": "Mole math, step by step", "vsepr": "Molecule shapes", "solcurve": "Solubility curves", "precip": "Precipitation reactions", "labbench": "Lab equipment and safety", "units": "Dimensional analysis", "ptable": "Periodic table", "mole": "The mole", "calorimetry": "Calorimetry lab", "stoich": "Stoichiometry and limiting reactants", "kmt": "Kinetic molecular theory", "phasediagram": "Phase diagrams", "rates": "Reaction rates", "gasstoich": "Gas stoichiometry lab", "colligative": "Colligative properties", "polarity": "Bond and molecule polarity", "gibbs": "Entropy and free energy", "orbitals": "Orbital shapes", "coldpack": "Cold packs and hot packs", "ksp": "Solubility and Ksp", "goldenpenny": "The golden penny", "econfig": "Electron configurations", "buildmol": "Build a molecule", "classify": "Classifying matter"}};
+var SITES=[{lab:'BioLab',dir:'Raider-BioLab',sub:'Biology'},{lab:'PhysLab',dir:'Raider-PhysLab',sub:'Physics'},{lab:'ChemLab',dir:'Raider-ChemLab',sub:'Chemistry'}];
+var HOME='https://rjedtech.github.io/';
+var CARDS=[];
+function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
+function pick(v){if(v&&typeof v==='object'&&!Array.isArray(v))return v.honors||v.bio||v.ap||Object.keys(v).map(function(k){return v[k];})[0];return v;}
+function plain(s){var d=document.createElement('div');d.innerHTML=String(pick(s)||'');return (d.textContent||'').replace(/\s+/g,' ').trim();}
+function load(i){if(i>=SITES.length){render();return;}var S=SITES[i],got={};
+  window.BioLab={addBorder:function(o){for(var k in o)got[k]=o[k];}};
+  var sc=document.createElement('script');sc.src='../'+S.dir+'/borders.js?v='+Date.now().toString().slice(0,7);
+  sc.onload=function(){Object.keys(got).forEach(function(id){CARDS.push({site:S,id:id,c:got[id]});});load(i+1);};
+  sc.onerror=function(){load(i+1);};document.head.appendChild(sc);}
+function render(){var toc=document.getElementById('bq-toc'),list=document.getElementById('bq-list');list.innerHTML='';
+  SITES.forEach(function(S){var mine=CARDS.filter(function(x){return x.site===S;});if(!mine.length)return;
+    var li=el('li');var a=el('a','',S.lab+' <small>'+S.sub+', '+mine.length+'</small>');a.href='#'+S.lab.toLowerCase();li.appendChild(a);toc.appendChild(li);
+    var h=el('h2','bq-site',S.lab+' · '+S.sub);h.id=S.lab.toLowerCase();list.appendChild(h);
+    mine.forEach(function(x){var c=x.c,url=HOME+S.dir+'/index.html?mode=lab#'+x.id,name=(NAMES[S.lab]||{})[x.id]||x.id;
+      var a=el('article','bq-card');a.id=S.lab.toLowerCase()+'-'+x.id;
+      a.appendChild(el('p','bq-tool','<a href="'+url+'">'+name+'</a>'));
+      a.appendChild(el('h3','bq-q',pick(c.q)));
+      var who=(c.views||[]).map(function(v){return v.who;}).join(' · ');
+      a.appendChild(el('p','bq-who','<b>Views to choose from:</b> '+who));
+      var d=el('details','bq-more');d.appendChild(el('summary','','Read the whole card'));
+      if(c.saw)d.appendChild(el('p','','<b>What students saw:</b> '+pick(c.saw)));
+      if(c.assumes&&c.assumes.length){d.appendChild(el('p','','<b>What science has to assume:</b>'));var ul=el('ul');c.assumes.forEach(function(s){ul.appendChild(el('li','',pick(typeof s==='string'?s:s.t)));});d.appendChild(ul);}
+      if(c.stops)d.appendChild(el('p','','<b>Where the science stops:</b> '+pick(c.stops)));
+      if(c.church)d.appendChild(el('p','bq-church','<b>What the Church teaches:</b> '+pick(c.church)));
+      if(c.faith&&c.faith.items){var f=el('div','bq-faith');f.appendChild(el('p','','<b>From the Catholic tradition</b>'));c.faith.items.forEach(function(it){f.appendChild(el('p','','<b>'+it.who+'</b>'+(it.when?' ('+pick(it.when)+')':'')+': '+pick(it.says)));});
+        if(c.faith.link)f.appendChild(el('p','','<a href="'+HOME+S.dir+'/'+c.faith.link.href+'">'+pick(c.faith.link.label)+'</a>'));d.appendChild(f);}
+      if(c.views&&c.views.length){d.appendChild(el('p','','<b>Your call: the views</b>'));var ul2=el('ul');c.views.forEach(function(v){ul2.appendChild(el('li','','<b>'+v.who+'</b>'+(v.when?' ('+pick(v.when)+')':'')+': '+pick(v.says)));});d.appendChild(ul2);}
+      a.appendChild(d);
+      a.appendChild(el('p','bq-open','<a class="btn" href="'+url+'">Open the tool</a>'));
+      list.appendChild(a);});});
+  var li=el('li');var t=el('a','','See how your class answered');t.href='#tally';li.appendChild(t);toc.appendChild(li);
+  if(location.hash){var g=document.getElementById(location.hash.slice(1));if(g)g.scrollIntoView();}}
+/* ---- class tally: parse "question / Closest to my view: X / Why: Y" blocks ---- */
+function count(text){var qs=CARDS.map(function(x){return {x:x,q:plain(x.c.q)};}).filter(function(o){return o.q;}),res={},re=/Closest to my view:\s*([^\n\r]+)[\s\S]*?(?:Why:\s*([^\n\r]*))?(?=\n\s*\n|Closest to my view:|$)/g,m,n=0,unk=0;
+  var t=text.replace(/\r/g,'');
+  while((m=re.exec(t))){var before=t.slice(0,m.index),best=null,bi=-1;
+    qs.forEach(function(o){var i=before.lastIndexOf(o.q);if(i>bi){bi=i;best=o;}});
+    var who=m[1].trim(),why=(m[2]||'').trim();
+    var key=best?best.x.site.lab+'/'+best.x.id:'?';if(!best)unk++;
+    if(!res[key])res[key]={o:best,picks:{},n:0};var R=res[key];R.n++;n++;
+    if(!R.picks[who])R.picks[who]={n:0,why:[]};R.picks[who].n++;if(why)R.picks[who].why.push(why);}
+  return {res:res,n:n,unk:unk};}
+function show(){var out=document.getElementById('bq-out'),msg=document.getElementById('bq-msg'),r=count(document.getElementById('bq-paste').value);out.innerHTML='';
+  if(!r.n){msg.textContent='No answers found. Each answer needs a line that starts “Closest to my view:”.';return;}
+  msg.textContent=r.n+' answer'+(r.n===1?'':'s')+' counted.';
+  Object.keys(r.res).forEach(function(k){var R=r.res[k],c=R.o?R.o.x.c:null,box=el('section','bq-res');
+    box.appendChild(el('h3','',c?pick(c.q):'Answers with no matching question'));
+    box.appendChild(el('p','bq-n',R.n+' student'+(R.n===1?'':'s')));
+    var order=(c?(c.views||[]).map(function(v){return v.who;}):[]);Object.keys(R.picks).forEach(function(w){if(order.indexOf(w)<0)order.push(w);});
+    order.forEach(function(w){var p=R.picks[w]||{n:0,why:[]},pct=R.n?Math.round(100*p.n/R.n):0;
+      var row=el('div','bq-bar');row.appendChild(el('span','bq-bw',w));var tr=el('span','bq-track');var fill=el('span','bq-fill');fill.style.width=pct+'%';tr.appendChild(fill);row.appendChild(tr);row.appendChild(el('span','bq-bn',p.n+' ('+pct+'%)'));box.appendChild(row);
+      if(p.why.length){var d=el('details','bq-why');d.appendChild(el('summary','','Their reasons ('+p.why.length+')'));var ul=el('ul');p.why.forEach(function(s){var li=el('li');li.textContent=s;ul.appendChild(li);});d.appendChild(ul);box.appendChild(d);}});
+    out.appendChild(box);});}
+var SAMPLE='Is time something real, or just what clocks do?\nClosest to my view: Henri Bergson\nWhy: Time is what I live through, not just numbers on my phone.\n\nIs time something real, or just what clocks do?\nClosest to my view: Albert Einstein\nWhy: Two clocks really did disagree, so the flow must be in us.\n\nIs time something real, or just what clocks do?\nClosest to my view: Augustine\nWhy: I know what time is until I try to explain it, just like he says.\n\nIs time something real, or just what clocks do?\nClosest to my view: Henri Bergson\nWhy: A clock measures time but does not feel it.';
+document.getElementById('bq-count').onclick=show;
+document.getElementById('bq-clear').onclick=function(){document.getElementById('bq-paste').value='';document.getElementById('bq-out').innerHTML='';document.getElementById('bq-msg').textContent='';};
+document.getElementById('bq-sample').onclick=function(){document.getElementById('bq-paste').value=SAMPLE;show();};
+load(0);
+})();
+</script>
+<!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents.
+     Each tool (#id) counts as its own page; anything after = or @ in the address is never sent.
+     A visit through the school's Securly filter (?scrlybrkr in the address) adds ?sd = school device; nothing else about the visitor is sent. -->
+<script>
+window.goatcounter={no_onload:true};
+(function(){var last=null,tries=0;
+function route(){var h=(location.hash||'').slice(1).split(/[=@?&]/)[0].replace(/[^A-Za-z0-9_-]/g,'').slice(0,40);return location.pathname.replace(/index\.html$/,'')+(h?'#'+h:'')+(/scrlybrkr/.test(location.search)?'?sd':'');}
+function go(){var p=route();if(p===last)return;var g=window.goatcounter;if(!g||typeof g.count!=='function'){if(tries++<40)setTimeout(go,250);return;}last=p;try{g.count({path:p});}catch(e){}}
+window.addEventListener('hashchange',go);if(document.readyState==='complete')go();else window.addEventListener('load',go);})();
+</script>
+<script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

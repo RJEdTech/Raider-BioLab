@@ -710,7 +710,7 @@ document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.targ
 {const f=vlGo;vlGo=function(sim){f.apply(this,arguments);const v=sim.ui&&sim.ui.vstep,V=sim.vlab;if(!v||v.hidden||!V||!V.data)return;
   pace(sim,v.querySelector('[data-vs=next]'),'vs:'+(V.lab&&V.lab.id)+':'+(V.data.step||0),v.querySelector('.vs-x')||v,'Read the step');};}
 /* ---------- Border question + How exact (Nov 17, 2026) ----------
-   BioLab.addBorder({toolId:{q, saw, assumes:[...], stops, church?, views:[{who,when?,says}], margin:{lead?, rows:[{what,value,range,how,enough}], note?}}})
+   BioLab.addBorder({toolId:{q, saw, assumes:[...], stops, church?, faith?:{items:[{who,when?,says,lvl?}], link?:{href,label}}, views:[{who,when?,says}], margin:{lead?, rows:[{what,value,range,how,enough}], note?}}})
    Shown below the stage in Full lab and at the end of Learn it. The student picks the view closest to theirs and writes one sentence; saved per browser. */
 function bdKey(sim){return 'raider-border-'+sim.def.id;}
 function bdLoad(sim){try{return JSON.parse(localStorage.getItem(bdKey(sim))||'{}')||{};}catch(e){return {};}}
@@ -725,9 +725,10 @@ function bdEnsure(sim){const B=BORDER[sim.def.id],ui=sim.ui;if(!B||!ui||!ui.stag
     (as.length?`<div class="bd-cell"><p class="ln-k">What science has to assume</p><ul>${as.map(a=>`<li>${L(a)}</li>`).join('')}</ul></div>`:'')+
     (B.stops?`<div class="bd-cell"><p class="ln-k">Where the science stops</p><p>${L(B.stops)}</p></div>`:'')+`</div>`+
     (B.church?`<p class="bd-church"><b>What the Church teaches:</b> ${L(B.church)}</p>`:'')+
+    (B.faith?`<div class="bd-faith"><p class="ln-k">From the Catholic tradition</p>${(B.faith.items||[]).filter(f=>atLeast(f.lvl)).map(f=>`<p><b>${esc(f.who)}</b>${f.when?` <span class="bd-when">(${L(f.when)})</span>`:''}: ${L(f.says)}</p>`).join('')}${B.faith.link?`<p class="bd-flink"><a href="${esc(B.faith.link.href)}">${L(B.faith.link.label)}</a></p>`:''}</div>`:'')+
     (vw.length?`<p class="ln-k">Your call</p><p class="bd-ask">${L(B.ask||'Which answer comes closest to yours? Pick one, then write one sentence saying why.')}</p><div class="bd-views" role="radiogroup">${vw.map((v,i)=>`<button type="button" class="bd-view" role="radio" aria-checked="${saved.pick===i?'true':'false'}" data-bd-pick="${i}"><b>${esc(v.who)}</b>${v.when?` <span class="bd-when">(${L(v.when)})</span>`:''}<span class="bd-says">${L(v.says)}</span></button>`).join('')}</div>
       <label class="bd-lab" for="${sim.def.id}-bd-why">One sentence: why that one?</label><textarea id="${sim.def.id}-bd-why" class="bd-why" rows="2"></textarea>
-      <div class="row"><button type="button" class="btn" data-bd="copy">Copy my answer</button><span class="bd-msg" aria-live="polite"></span></div><p class="bd-note">There is no answer key. Bring your sentence to class.</p>`:'');}
+      <div class="row"><button type="button" class="btn" data-bd="copy">Copy my answer</button><span class="bd-msg" aria-live="polite"></span></div><p class="bd-note">There is no answer key. Bring your sentence to class. <a href="borders.html">Every border question, and a class tally for teachers</a></p>`:'');}
   if(M&&M.rows&&M.rows.length){h+=`<h3 class="ln-uh">How exact does it need to be?</h3><p class="bd-lead">${L(M.lead||'Every measured number comes with a range. The real question is whether the range is small enough for the job.')}</p><div class="bd-tw"><table class="bd-t"><thead><tr><th>Number</th><th>Range</th><th>How we know</th><th>Exact enough for</th></tr></thead><tbody>${M.rows.filter(r=>atLeast(r.lvl)).map(r=>`<tr><td><b>${L(r.what)}</b><br>${L(r.value)}</td><td>${L(r.range)}</td><td>${L(r.how)}</td><td>${L(r.enough)}</td></tr>`).join('')}</tbody></table></div>${M.note?`<p class="bd-lead">${L(M.note)}</p>`:''}`;}
   box.innerHTML=h;
   const ta=box.querySelector('.bd-why'),msg=box.querySelector('.bd-msg');if(ta)ta.value=saved.why||'';

@@ -607,6 +607,8 @@ p.fq-type{margin:0 0 6px}
 .bd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px;margin-bottom:10px}
 .bd-cell{padding:10px 12px;border:1px solid var(--line,#ddd);border-radius:8px}.bd-cell p,.bd-cell ul{margin:0;font-size:14px;line-height:1.45}.bd-cell ul{padding-left:18px}.bd-cell .ln-k{margin-bottom:4px}
 .bd-church{margin:0 0 10px;padding:8px 12px;border-radius:8px;background:var(--card2,rgba(0,0,0,.04));font-size:14px;line-height:1.45}
+.bd-faith{margin:0 0 10px;padding:8px 12px;border-radius:8px;border:1px solid var(--line,#ddd);border-left:3px solid #b8860b;font-size:14px;line-height:1.45}
+.bd-faith p{margin:0 0 6px}.bd-faith p:last-child{margin-bottom:0}.bd-faith .ln-k{margin-bottom:4px}
 .bd-ask{margin:0 0 8px;font-size:14px}
 .bd-views{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:8px;margin-bottom:10px}
 .bd-view{text-align:left;padding:10px 12px;border:1px solid var(--line,#ccc);border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:14px;line-height:1.4;cursor:pointer}
