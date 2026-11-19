@@ -313,16 +313,27 @@ function tiText(sim,box){const d=sim.def,o=[],nm=(box.querySelector('.ti-name')|
     L.forEach((x,i)=>{const a=A[x.id]||{};const mk=a.done?(a.ok?'✓':'✗'):'–';o.push(`  ${mk} ${i+1}. ${rlCut(rlTx(x.q),150)}`);
       if(a.done){const my=x.num?(a.val||''):(a.pick!==undefined&&x.choices?rlTx(x.choices[a.pick]):'');if(my)o.push(`      My answer: ${rlCut(my,120)}${x.num&&x.num.unit?' '+x.num.unit:''}`);}});}}
   const ms=myScore(d);if(ms.did)o.push(`Myth or fact: ${ms.got} of ${ms.did} right`);
+  if(typeof BORDER!=='undefined'&&BORDER[d.id]&&typeof bdLoad==='function'){const B=BORDER[d.id],bo=bdLoad(sim),bv=(B.views||[])[bo.pick];
+    if(bv||bo.why)o.push('',`Where science meets philosophy: ${rlTx(lvText(B.q))}`,`  Closest to my view: ${bv?bv.who:'(none picked)'}`,`  Why: ${(bo.why||'').trim()||'(write one sentence)'}`);}
+  if(d.frq&&typeof fqList==='function'){const FS=fqLoad(d.id),FQ=(FS&&FS.q)||{};fqList(d).forEach(f=>{const Q=FQ[f.id];if(!Q||!Q.p)return;
+    const had=f.parts.filter(p=>{const a=Q.p[p.label];return a&&((a.t||'').trim()||a.n);});if(!had.length)return;const sc=fqScore(f,Q);
+    o.push('',`Free response: ${rlTx(f.title)} (self-scored ${sc.got} of ${sc.tot} points, ${sc.done} of ${sc.n} parts checked)`);
+    had.forEach(p=>{const a=Q.p[p.label];o.push(`  ${fqPl(p)} ${a.n?`My final number: ${a.n}${p.num&&p.num.unit?' '+p.num.unit:''}. `:''}${(a.t||'').trim()}`);});});}
   o.push('',`One thing I learned: ${ln.trim()||'(write one)'}`,`One question I still have: ${qs.trim()||'(write one)'}`);return o.join('\n');}
+/* Copy for Canvas (Nov 19, 2026): one wording everywhere a student copies work for Canvas.
+   Success: the Ctrl+V instruction. Clipboard blocked: the text is shown in a box, already selected, so Ctrl+C is the only step. */
+const CV_OK='Copied! In Canvas, click the answer box and press Ctrl+V (Cmd+V on a Mac).',CV_FB='It’s in the box below and already selected: press Ctrl+C (Cmd+C on a Mac), then paste it into Canvas.';
+function cvCopy(t,out,say,hideOnOk){const fb=()=>{if(out){out.value=t;out.hidden=false;out.focus();out.select();}say(CV_FB);};
+  try{navigator.clipboard.writeText(t).then(()=>{if(out&&hideOnOk)out.hidden=true;say(CV_OK);},fb);}catch(e){fb();}}
 function tiBind(sim,root){const box=root&&root.querySelector('[data-ti-box]');if(!box)return;const d=sim.def,out=box.querySelector('.ti-out'),msg=box.querySelector('.ti-msg');
   const keep=()=>{store.set('raider-labs-name',box.querySelector('.ti-name').value);store.set(tiKey(d.id),JSON.stringify({l:box.querySelector('.ti-learn').value,q:box.querySelector('.ti-q').value}));};
   box.querySelectorAll('input,textarea:not(.ti-out)').forEach(x=>x.addEventListener('input',keep));
   const show=()=>{out.value=tiText(sim,box);out.hidden=false;return out.value;};
   box.querySelector('[data-ti=show]').addEventListener('click',()=>{show();out.focus();});
-  box.querySelector('[data-ti=copy]').addEventListener('click',()=>{const t=show();const fb=()=>{out.focus();out.select();msg.textContent='Selected. Press Ctrl+C (⌘C on a Mac) to copy.';};
-    try{navigator.clipboard.writeText(t).then(()=>{msg.textContent='Copied. Paste it into your Canvas submission.';},fb);}catch(e){fb();}});}
+  box.querySelector('[data-ti=copy]').addEventListener('click',()=>{const t=show();cvCopy(t,out,m=>{msg.textContent=m;});});}
 (function(){const css=`.modebar .mm{font-weight:400;opacity:.8;font-size:.9em}
 .rl-plan{margin:8px 0 0;font-size:15px}.rl-plan summary{cursor:pointer;font-weight:700;color:var(--rj-ink,inherit)}.rl-plan ul{margin:6px 0 0 1.2em;padding:0}
+.fq-copy{margin:14px 0 6px;padding:10px 14px;border:1px solid var(--line,#ccc);border-radius:10px}.fq-copy .help{margin:0 0 6px}.fq-out{width:100%;max-width:none;font-family:ui-monospace,Consolas,monospace;font-size:13px;margin-top:8px}.fq-cmsg{align-self:center;font-size:14px}
 .ti{margin:18px 0 6px;padding:14px 16px;border:2px solid var(--rj,#C11430);border-radius:10px;background:var(--card,transparent)}.ti-h{margin:0 0 4px}
 .ti-f{display:grid;gap:10px;margin:10px 0}.ti-f label{display:grid;gap:4px;font-weight:600;font-size:15px}.ti-f .vl-in,.ti-out{width:100%;max-width:none}
 .ti-out{font-family:ui-monospace,Consolas,monospace;font-size:13px;margin-top:10px}.ti-msg{font-size:14px;color:var(--muted)}
@@ -527,7 +538,7 @@ function vlRender(sim){const V=sim.vlab,L=V.lab,u=sim.ui,sid=sim.def.id,labs=vlL
   if(L.calcs&&L.calcs.length)h+=S('calcs','Calculations',`<div class="vl-calc">${L.calcs.map(c=>{const k='k:'+c.id;return `<div class="vl-ck"><label class="vl-f" for="${fid(k)}"><span class="vl-l">${c.label}</span>${c.input==='text'?`<textarea class="vl-in vl-ta" id="${fid(k)}" data-k="${k}" rows="2">${val(k)}</textarea>`:`<span class="vl-cin"><input class="vl-in vl-num" type="text" inputmode="decimal" id="${fid(k)}" data-k="${k}" value="${val(k)}" autocomplete="off">${c.unit?`<span class="vl-u">${c.unit}</span>`:''}</span>`}</label>${note(k)}</div>`;}).join('')}</div>`);
   if(L.questions&&L.questions.length)h+=S('questions','Questions',L.questions.map((q,i)=>`<div class="vl-q"><div class="vl-qh"><span class="vl-qn">${esc(q.n!==undefined?q.n:i+1)}</span><div class="vl-qt">${q.q}</div></div>${q.fields?`<div class="vl-qf">${q.fields.map(f=>line('q:'+q.id+':'+f.id,f.label)).join('')}</div>`:area('q:'+q.id,'',4,'Your answer to question '+(q.n!==undefined?q.n:i+1))}</div>`).join(''));
   if(L.conclusion){const C=L.conclusion;h+=S('conclusion','Conclusion',`<div class="vl-prompt">${C.prompt||''}</div>`+(C.cer?`<div class="vl-cer">${area('cer:claim','Claim <small>One sentence that answers the question.</small>',2)}${area('cer:evidence','Evidence <small>Your own data that supports the claim.</small>',3)}${area('cer:reasoning','Reasoning <small>'+(C.reasonHint||'The science that explains why the evidence supports the claim.')+'</small>',4)}</div>`:area('concl','',5,'Your conclusion')));}
-  h+=S('export','Turn it in',`<p class="vl-help">Build a clean report of everything above, then upload it to the Canvas assignment. For a PDF, choose <b>Save as PDF</b> as the printer.</p><div class="row vl-exp"><button type="button" class="btn primary" data-vl="pdf">Save as PDF</button><button type="button" class="btn" data-vl="doc">Download Word file</button><button type="button" class="btn" data-vl="txt">Copy as text</button><span class="toast vl-toast" hidden></span></div><div class="vl-fallback"></div>`);
+  h+=S('export','Turn it in',`<p class="vl-help">Build a clean report of everything above, then upload it to the Canvas assignment. For a PDF, choose <b>Save as PDF</b> as the printer.</p><div class="row vl-exp"><button type="button" class="btn primary" data-vl="pdf">Save as PDF</button><button type="button" class="btn" data-vl="doc">Download Word file</button><button type="button" class="btn" data-vl="txt">Copy for Canvas</button><span class="toast vl-toast" hidden></span></div><div class="vl-fallback"></div>`);
   u.nb.innerHTML=h;vlBind(sim);V.notes={};
   vlRecheck(sim);vlProcMark(sim);requestAnimationFrame(()=>vlGraph(sim));}
 function vlBind(sim){const nb=sim.ui.nb;if(nb._bound)return;nb._bound=true;
@@ -670,13 +681,13 @@ function vlOverlay(sim,html){let o=document.querySelector('.vl-overlay');if(o)o.
 function vlWordDoc(sim,png){return vlReportHTML(sim,png,true).replace(/<table class="who"/g,'<table width="100%" class="who"').replace(/<table class="data kv/g,'<table width="100%" border="1" cellspacing="0" cellpadding="5" class="data kv').replace(/<table class="data/g,'<table border="1" cellspacing="0" cellpadding="5" class="data').replace(/[^\x00-\x7f]/gu,c=>'&#'+c.codePointAt(0)+';');}
 function vlExportDoc(sim){const V=sim.vlab;if(!V)return;vlSave(sim);const doc=vlWordDoc(sim,vlPng(V));
   try{const blob=new Blob([doc],{type:'application/msword'}),url=URL.createObjectURL(blob),a=el('a',{href:url,download:vlFileName(sim)+'.doc'});a.style.display='none';document.body.appendChild(a);a.click();
-    setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},4000);vlToast(sim,'Word file saved to your downloads. If nothing downloaded, use Copy as text.');}
+    setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},4000);vlToast(sim,'Word file saved to your downloads. If nothing downloaded, use Copy for Canvas.');}
   catch(e){vlToast(sim,'This page cannot download files here. Use Save as PDF or Copy as text.');}
   return doc;}
 function vlExportTxt(sim){const V=sim.vlab;if(!V)return;const t=vlReportText(sim);
-  const fb=()=>{const box=sim.ui.nb.querySelector('.vl-fallback');if(!box)return;const id=sim.def.id+'-vl-text';box.innerHTML=`<label class="vl-l" for="${id}">Your report as text. It is selected: press Ctrl+C (or ⌘C on a Mac) to copy it.</label><textarea class="vl-in vl-ta" id="${id}" rows="10" readonly></textarea>`;
+  const fb=()=>{const box=sim.ui.nb.querySelector('.vl-fallback');if(!box)return;const id=sim.def.id+'-vl-text';box.innerHTML=`<label class="vl-l" for="${id}">Your report, already selected: press Ctrl+C (Cmd+C on a Mac), then paste it into Canvas.</label><textarea class="vl-in vl-ta" id="${id}" rows="10" readonly></textarea>`;
     const ta=box.querySelector('textarea');ta.value=t;ta.focus();ta.select();vlToast(sim,'Selected. Press Ctrl+C to copy');};
-  try{navigator.clipboard.writeText(t).then(()=>vlToast(sim,'Copied. Paste it into your Canvas submission.'),fb);}catch(e){fb();}return t;}
+  try{navigator.clipboard.writeText(t).then(()=>vlToast(sim,CV_OK),fb);}catch(e){fb();}return t;}
 BL.openLab=openLab;BL.vlab={save:vlSave,report:sim=>sim.vlab?{html:vlReportHTML(sim,vlPng(sim.vlab),false),text:vlReportText(sim),png:vlPngs(sim.vlab)[0]||'',pngs:vlPngs(sim.vlab)}:null,overlay:sim=>sim.vlab?vlOverlay(sim,vlReportHTML(sim,vlPng(sim.vlab),false)):null,
   word:sim=>sim.vlab?vlWordDoc(sim,vlPng(sim.vlab)):null,check:vlCheck,go:vlGo,num:vlNum};
 
@@ -737,10 +748,7 @@ function bdEnsure(sim){const B=BORDER[sim.def.id],ui=sim.ui;if(!B||!ui||!ui.stag
   if(ta)ta.oninput=st;
   const cp=box.querySelector('[data-bd=copy]');if(cp)cp.onclick=()=>{const o=bdLoad(sim),v=vw[o.pick];const plain=s=>String(s||'').replace(/<[^>]+>/g,'');
     const t=`${plain(L(B.q))}\nClosest to my view: ${v?v.who:'(none picked)'}\nWhy: ${(ta&&ta.value)||''}\n(${document.title.split(' · ').reverse().join(': ')})`;
-    const out=box.querySelector('.bd-out');if(out){out.value=t;}
-    const done=ok=>{if(msg)msg.textContent=ok?'Copied! In Canvas, click the answer box and press Ctrl+V (Cmd+V on a Mac).':'Your answer is in the box below: it’s selected, so press Ctrl+C, then paste it into Canvas.';
-      if(out){out.hidden=ok;if(!ok){out.focus();out.select();}}};
-    try{navigator.clipboard.writeText(t).then(()=>done(true),()=>done(false));}catch(e){done(false);}};}
+    cvCopy(t,box.querySelector('.bd-out'),m=>{if(msg)msg.textContent=m;},true);};}
 /* ---------- "Embed this tool in Canvas" panel ---------- */
 function embedUrl(sim,o){let base=location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');const q=new URLSearchParams();q.set('embed','1');if(o.mode)q.set('mode',o.mode);if(o.mode==='vlab'&&o.lab)q.set('lab',o.lab);if(o.level)q.set('level',o.level);return base+'?'+q.toString()+'#'+sim.def.hash;}
 function buildEmbed(sim){const box=sim.ui.sec.querySelector('.embed-b');if(!box||EMBED){const d=sim.ui.sec.querySelector('.embed-box');if(d&&EMBED)d.hidden=true;return;}const d=sim.def,id=d.id;
@@ -1045,6 +1053,12 @@ function fqPartHtml(sim,f,p,Q){const id=sim.def.id+'-'+f.id+'-'+String(p.label).
       ${p.mistakes&&p.mistakes.length?`<div class="fq-mis"><p class="fq-mh">Common ways to lose points</p><ul>${p.mistakes.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}
       <div class="row"><button type="button" class="btn" data-fq-redo="${esc(p.label)}">Try this part again</button></div></div>`;}
   return h+'</li>';}
+function fqText(sim,f,Q){const d=sim.def,site=(typeof LAB_NAME!=='undefined'&&LAB_NAME)||'Raider Labs',nm=store.get('raider-labs-name')||'',sc=fqScore(f,Q);
+  const o=[`${site}: ${rlTx(d.title)}`,`Free response: ${rlTx(f.title)}`,`Name: ${nm.trim()||'(add your name)'}`,`Date: ${new Date().toLocaleString()}`,''];
+  f.parts.forEach(p=>{const a=(Q.p&&Q.p[p.label])||{};o.push(`${fqPl(p)} ${rlTx(p.q)}`);
+    if(a.n)o.push(`My final number: ${a.n}${p.num&&p.num.unit?' '+p.num.unit:''}`);
+    o.push(`My answer: ${(a.t||'').trim()||(p.kind==='sketch'?'(sketch on paper)':'(blank)')}`);if(a.c)o.push(`I scored myself: ${fqPS(Q,p)} of ${fqPP(p)}`);o.push('');});
+  o.push(`Self-score so far: ${sc.got} of ${sc.tot} points (${sc.done} of ${sc.n} parts checked)`);return o.join('\n');}
 function fqSumHtml(f,Q){const sc=fqScore(f,Q);if(sc.done<sc.n)return '';const nx=f._next;
   return `<div class="fq-sum"><h4 tabindex="-1">Your score: ${sc.got} of ${sc.tot} points</h4><table class="fq-st"><thead><tr><th scope="col">Part</th><th scope="col">Points</th></tr></thead><tbody>${f.parts.map(p=>`<tr><th scope="row">${fqPl(p)}</th><td>${fqPS(Q,p)} of ${fqPP(p)}</td></tr>`).join('')}</tbody><tfoot><tr><th scope="row">Total</th><td>${sc.got} of ${sc.tot}</td></tr></tfoot></table>
     <p class="help">${sc.got===sc.tot?'Full credit. Try the next one under the timer.':'Go back to any part you missed, read the model answer, and press Try this part again to rewrite it.'}</p>
@@ -1067,6 +1081,9 @@ function renderFRQ(sim,focus){const box=sim.ui.frq,d=sim.def;if(!box||!d.frq)ret
     <ol class="fq-parts">${f.parts.map(p=>fqPartHtml(sim,f,p,Q)).join('')}</ol>
     ${f.lab?`<div class="fq-lab"><p>Check your thinking in the simulation once you have written your answers.</p><button type="button" class="btn" data-fq="lab">See it in the lab</button></div>`:''}
     ${fqSumHtml(f,Q)}
+    <div class="fq-copy"><p class="help">Teacher assigned this question? Copy your answers and paste them into Canvas. They are kept only until you close this tab.</p>
+      <div class="row"><button type="button" class="btn primary" data-fq="copy">Copy for Canvas</button><span class="fq-cmsg" role="status"></span></div>
+      <textarea class="vl-in fq-out" rows="10" readonly hidden aria-label="Your answers, ready to paste into Canvas"></textarea></div>
     <div class="row fq-foot"><button type="button" class="btn" data-fq="clear">Clear my answers to this question</button></div>`;
   const part=lb=>f.parts.find(p=>String(p.label)===lb),ans=lb=>(Q.p[lb]=Q.p[lb]||{});
   const upd=()=>{const s=fqScore(f,Q),b=box.querySelector('.fq-score');if(b)b.innerHTML=`<b>${s.got} of ${s.tot} points</b> so far <span>(${s.done} of ${s.n} parts checked)</span>`;
@@ -1087,6 +1104,8 @@ function renderFRQ(sim,focus){const box=sim.ui.frq,d=sim.def;if(!box||!d.frq)ret
   const act=(k,fn)=>{const b=box.querySelector(`[data-fq=${k}]`);if(b)b.addEventListener('click',fn);};
   act('list',()=>{S.cur=null;save();renderFRQ(sim,true);});
   act('lab',()=>fqOpenLab(sim,f));
+  act('copy',()=>{box.querySelectorAll('[data-fq-t]').forEach(t=>{ans(t.dataset.fqT).t=t.value;});box.querySelectorAll('[data-fq-n]').forEach(t=>{ans(t.dataset.fqN).n=t.value;});save();
+    const m=box.querySelector('.fq-cmsg');cvCopy(fqText(sim,f,Q),box.querySelector('.fq-out'),x=>{if(m)m.textContent=x;},true);});
   const clr=box.querySelector('[data-fq=clear]');if(clr)clr.addEventListener('click',()=>{if(!clr._arm){clr._arm=true;clr.textContent='Press again to clear every answer to this question';clearTimeout(clr._h);clr._h=setTimeout(()=>{clr._arm=false;clr.textContent='Clear my answers to this question';},5000);return;}
     delete S.q[f.id];save();if(sim.fqT&&sim.fqT.id===f.id)sim.fqT=null;renderFRQ(sim,'title');});
   const bindNext=()=>{const b=box.querySelector('[data-fq=next]');if(b&&!b._on){b._on=true;b.addEventListener('click',()=>fqGo(sim,f));}};bindNext();
