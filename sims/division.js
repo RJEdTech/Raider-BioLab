@@ -67,7 +67,8 @@ function run100(sim){const st=sim.st,n=st.n,nd=sim.p.nd&&atLeast('ap'),xo=sim.p.
 const DIV={
   id:'division',hash:'division',apUnit:4,order:3,tab:'Mitosis and meiosis',kind:'Process walkthrough',
   card:'Step through cell division one phase at a time. Compare two identical cells with four unique gametes.',
-  title:'Mitosis and meiosis, step by step',
+  title:'Mitosis and meiosis: how cells divide',
+  ledeMore:'<p><b>Think of a photocopier and a deck of cards.</b> Mitosis is the photocopier: one cell makes two exact copies, to grow or heal. Meiosis is shuffling and dealing: it makes egg and sperm cells with half the cards each, all different.</p><p>That shuffle is why you and your brothers or sisters look related but not identical.</p>',
   lede:{bio:'Mitosis copies a cell exactly, for growth and repair. Meiosis makes egg and sperm cells with half the chromosomes, each one different. Step through both and compare.',
         honors:'Follow every chromatid. Mitosis separates sister chromatids to make two identical diploid cells. Meiosis separates homologous pairs, then sisters, to make four haploid cells, with crossing over adding new combinations.',
         ap:'Track ploidy and DNA content through each phase, see where independent assortment and crossing over create variation, and watch nondisjunction produce aneuploid gametes.'},

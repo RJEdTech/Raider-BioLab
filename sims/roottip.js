@@ -66,6 +66,7 @@ const ROOT={
   id:'roottip',hash:'roottip',apUnit:4,order:4,tab:'Onion root tip mitosis lab',kind:'Virtual lab',
   card:'Label dividing cells in a real-looking root tip squash, then calculate how long each phase of mitosis lasts.',
   title:'Onion root tip mitosis lab',
+  ledeMore:'<p><b>Think of a photo of a school hallway.</b> Snap one picture between classes and count who is walking, who is at a locker and who is talking. If most people are at lockers, that is where they spend most of their time.</p><p>A root tip slide is that photo for cells: the stage most cells are in is the stage that takes the longest.</p>',
   lede:{bio:'Look at stained cells from the tip of an onion root. Decide which phase each cell is in, count them, and use your counts to figure out how long each phase lasts.',
         honors:'Compare different zones of the root. Where are cells dividing fastest, and how do you know from the mitotic index?',
         ap:'Treat a root with colchicine, a drug that stops spindle fibers. Use a chi-square test to decide whether it changes the distribution of phases.'},

@@ -359,7 +359,7 @@ ADD.signaling=[
 const MS_FOV=[[40,4500],[100,1800],[400,450],[1000,180]];   /* total magnification → field of view (µm), from the model's objectives */
 const msCard=(ctx,k,LH,rows,top)=>top?card(ctx,k,560,8,232,rows):card(ctx,k,560,LH-8,232,rows,{up:true});
 const msAuto=a=>sim=>{sim.st.auto=a;};
-L.microscope={
+L.microscope={simple:true,intro:{bio:'You’ll learn to use a microscope step by step, then use it to measure how big a real cell is.'},
   goals:{
     bio:['The parts of a light microscope and what each does','How to focus safely, starting on low power','Why higher power shows a smaller, darker view','How to measure a cell from the field of view'],
     honors:['What parfocal lenses and working distance mean','How to spot signs of life in living cells'],
@@ -380,14 +380,14 @@ L.microscope={
      overlay(sim,ctx,LH,k){msCard(ctx,k,LH,[['Slide moved: '+Math.round(sim.p.sx)+' µm',{w:700}]]);}},
     {key:'high',title:'Switch to 40×',set:{coarse:50,sx:-400,obj:40},speed:1,run:msAuto(null),focus:[50,20,410,410],
      see:'The nosepiece turns to 40×. The image stays nearly in focus, but the circle now shows only 450 µm across.',
-     why:'Ten times the magnification shows one-tenth the width. Each cell looks bigger, but you see far fewer of them.',
+     why:'This circle is the <b>field of view</b>. Ten times the magnification shows one-tenth the width: each cell looks bigger, but you see far fewer.',
      overlay(sim,ctx,LH,k){msCard(ctx,k,LH,[[FL(sim,'mag',0),{w:700}],[FL(sim,'fov',0),{w:800,c:RED}]]);}},
     {key:'fine',title:'Fine focus only',set:{coarse:50,sx:-400,obj:40,fine:0},speed:1,run:msAuto([{id:'fine',to:10,rate:3}]),focus:[[50,20,410,410],[738,328,44,44]],
      see:'At 40× only the small fine-focus knob turns, a tiny bit at a time.',
      why:'One coarse click moves the stage more than 10 times the depth of focus. At high power the lens sits so close it could crack the slide.',
      overlay(sim,ctx,LH,k){msCard(ctx,k,LH,[[FL(sim,'focus'),{w:800}]]);}},
     {key:'light',title:'Add light',set:{coarse:50,sx:-400,obj:40,fine:10,light:30},speed:1,run:msAuto([{id:'light',to:90,rate:20}]),focus:[[50,20,410,410],[640,370,60,40]],
-     see:'The view is dim at 40×. The diaphragm opens and the image brightens.',
+     see:'The view is dim at 40×. The <b>diaphragm</b>, an opening under the stage that works like the pupil of your eye, opens, and the image brightens.',
      why:'A high-power lens gathers light from a smaller patch of slide, so less reaches your eye. Opening the diaphragm makes up for it.',
      overlay(sim,ctx,LH,k){msCard(ctx,k,LH,[[FL(sim,'bright',0),{w:800}]],true);}},
     {key:'graph',title:'Magnification against field of view',set:{coarse:50,sx:-400,obj:40,fine:10,light:90},pause:true,
@@ -403,7 +403,7 @@ L.microscope={
      overlay(sim,ctx,LH,k){const n=M(sim,'across');msCard(ctx,k,LH,[[FL(sim,'fov',0),{w:700}],[FL(sim,'across',1)],['One cell ≈ '+(450/n).toFixed(0)+' µm across',{w:800,c:GREEN}]]);}},
     {key:'elodea',lvl:'honors',title:'Signs of life',speed:1,run:tour('microscope','Look for signs of life'),focus:[50,20,410,410],
      see:'A living Elodea leaf at 400×. Green chloroplasts circle around the edge of each cell.',
-     why:'This movement, cytoplasmic streaming, happens only in living cells. The cell wall keeps each box-shaped cell rigid.',
+     why:'This movement, <b>cytoplasmic streaming</b> (the cell’s fluid flowing), happens only in living cells. The cell wall keeps each box-shaped cell rigid.',
      overlay(sim,ctx,LH,k){msCard(ctx,k,LH,[[FL(sim,'wd',2),{w:700}],['At 4× it is 17 mm',{s:12}]]);}},
     {key:'oil',lvl:'ap',title:'Oil immersion and resolution',speed:1,run:tour('microscope','Oil immersion'),focus:[50,20,410,410],
      see:'A blood smear at 1000× with a drop of immersion oil. White blood cells show their lobed nuclei.',
@@ -486,7 +486,7 @@ const CE_LAB={animal:[['Nucleus',238,214],['Rough ER',330,262],['Golgi',432,132]
   bacterium:[['Nucleoid (DNA)',316,226],['Cell wall',334,302],['Capsule',334,140],['Flagellum',650,190],['Ribosomes',420,250]]};
 const ceLabels=(sim,ctx,k)=>(CE_LAB[sim.p.cell]||[]).forEach(([t,x,y])=>BioLab.lg.tag(ctx,t,x,y,Math.min(k,1.3),{s:11.5,w:700}));
 const CE_TABLE=[['Cell membrane',1,1,1],['Ribosomes',1,1,1],['DNA',1,1,1],['Nucleus',1,1,0],['Mitochondria',1,1,0],['ER and Golgi',1,1,0],['Cell wall',0,1,1],['Chloroplasts',0,1,0],['Big central vacuole',0,1,0]];
-L.cellexplorer={
+L.cellexplorer={simple:true,intro:{bio:'You’ll tour a cell’s parts by following one protein, insulin, from its gene to outside the cell, then compare plant cells and bacteria.'},
   goals:{
     bio:['The jobs of the main parts of a cell','How a protein travels from its gene to outside the cell','How plant cells and bacteria differ from animal cells'],
     honors:['How motor proteins and ATP move vesicles','Why prokaryotes lack a nucleus and other membrane-bound parts'],
@@ -506,20 +506,20 @@ L.cellexplorer={
      why:'Ribosomes, the protein builders, are outside the nucleus, so the instructions have to travel to them.',
      overlay(sim,ctx,LH,k){ceCard(ctx,k,LH,[['1. Gene → mRNA'],['2. Out through a nuclear pore',{w:800,c:RED}]]);}},
     {key:'ribo',title:'A ribosome builds the protein',speed:0.4,run:tour('cellexplorer','A ribosome builds the protein'),focus:[300,120,100,110],
-     see:'A ribosome on the rough ER reads the mRNA and links amino acids in order. The chain threads into the ER.',
-     why:'Inside the ER the chain folds into its working shape. Proteins headed out of the cell are made here.',
+     see:'A <b>ribosome</b>, the protein builder, reads the mRNA and links amino acids. It sits on the <b>rough ER</b>, a maze of membranes (“network inside”) studded with ribosomes.',
+     why:'Inside the ER the chain folds into its working shape.',
      overlay(sim,ctx,LH,k){ceCard(ctx,k,LH,[['2. Out through a nuclear pore'],['3. Ribosome on rough ER builds it',{w:800,c:RED}]]);}},
     {key:'ves',title:'Packed into a vesicle',speed:0.5,run:tour('cellexplorer','Packed into a vesicle'),focus:[330,115,160,85],
      see:'A bubble of ER membrane pinches off with the protein inside.',
-     why:'This <b>vesicle</b> carries the protein to the Golgi without letting it loose in the cell.',
+     why:'This <b>vesicle</b> (Latin for “little bubble”) carries the protein to the Golgi without letting it loose in the cell.',
      overlay(sim,ctx,LH,k){ceCard(ctx,k,LH,[['3. Ribosome on rough ER builds it'],['4. Vesicle to the Golgi',{w:800,c:RED}]]);}},
     {key:'golgi',title:'The Golgi finishes and ships it',speed:0.5,run:tour('cellexplorer','The Golgi finishes'),focus:[380,95,110,105],
      see:'The protein passes through the Golgi stack and leaves in a new vesicle from the far side.',
-     why:'The Golgi adds finishing touches, like sugar tags, and sorts proteins by where they are going, like a post office.',
+     why:'The <b>Golgi</b> (named for Camillo Golgi, who first saw it) adds finishing touches and sorts proteins by where they are going, like a post office.',
      overlay(sim,ctx,LH,k){ceCard(ctx,k,LH,[['4. Vesicle to the Golgi'],['5. Golgi finishes and ships it',{w:800,c:RED}]]);}},
     {key:'out',title:'Out of the cell',speed:0.5,run:tour('cellexplorer','Out of the cell'),focus:[455,80,150,115],
      see:'The vesicle fuses with the cell membrane, and the insulin spills outside.',
-     why:'This is <b>exocytosis</b>. Outside the cell, insulin travels in the blood and tells other cells to take in sugar.',
+     why:'Leaving this way is <b>exocytosis</b> (“exo” = out, “cyto” = cell). Outside, insulin travels in the blood and tells other cells to take in sugar.',
      overlay(sim,ctx,LH,k){ceCard(ctx,k,LH,[['5. Golgi finishes and ships it'],['6. Vesicle fuses: out of the cell',{w:800,c:RED}]]);}},
     {key:'hook',title:'Your question: the whole route',pause:true,
      see:'The whole trip, in order, on the card.',
@@ -531,7 +531,7 @@ L.cellexplorer={
      overlay(sim,ctx,LH,k){ceLabels(sim,ctx,k);ceCard(ctx,k,LH,[['New: cell wall, central vacuole, chloroplasts',{w:800,c:GREEN}]]);}},
     {key:'bact',title:'A bacterium: no nucleus',set:{cell:'bacterium'},pause:true,
      see:'A bacterium, drawn far bigger than scale. Its DNA lies loose in the nucleoid. It has ribosomes, a wall and a flagellum.',
-     why:'It is a <b>prokaryote</b>: no nucleus and no membrane-bound parts. Animal and plant cells are <b>eukaryotes</b>.',
+     why:'It is a <b>prokaryote</b> (Greek for “before a nucleus”): no nucleus and no membrane-bound parts. Animal and plant cells are <b>eukaryotes</b> (“true nucleus”).',
      overlay(sim,ctx,LH,k){ceLabels(sim,ctx,k);ceCard(ctx,k,LH,[['No nucleus, no mitochondria, no ER or Golgi',{w:800,c:RED}]]);}},
     {key:'table',title:'Side by side',set:{cell:'bacterium'},pause:true,
      see:'A table of which parts each kind of cell has.',

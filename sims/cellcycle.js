@@ -13,7 +13,8 @@ function dur(ph,c){const b=DUR[ph]*(ph==='G1'&&c.hits>=2?0.6:1);return b*(0.85+M
 const CC={
   id:'cellcycle',hash:'cellcycle',apUnit:4,order:2,tab:'Cell cycle and cancer',kind:'Simulation',
   card:'Grow a tissue cell by cell. Break the checkpoints and watch a tumor form.',
-  title:'The cell cycle, checkpoints and cancer',
+  title:'How cells divide, and how cancer breaks the rules',
+  ledeMore:'<p><b>Think of a car with a gas pedal and brakes.</b> Signals from your body press the gas and tell a cell to divide. Built-in checks act as brakes: stop if there’s no room, stop if the DNA is damaged.</p><p>Cancer is a car with a stuck gas pedal and broken brakes. That is why it usually takes several mistakes, and why protecting your DNA, like wearing sunscreen, helps.</p>',
   lede:{bio:'Every cell here grows, copies its DNA and divides. Normal cells only divide when they get a growth signal and have room. Break those rules and you get cancer.',
         honors:'Cells cycle through G1, S, G2 and M. Checkpoints control the cycle: growth factors, contact inhibition and the p53 protein, which stops cells with damaged DNA.',
         ap:'Cancer as a multi-hit process. Mutations accumulate when p53 fails. Oncogenes such as stuck-on Ras, and losing contact inhibition, each remove one brake on division.'},

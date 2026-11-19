@@ -239,7 +239,8 @@ function currentQ(sim){const l=quizList(sim).filter(c=>atLeast(c.lvl));return l[
 const CE={
   id:'cellexplorer',hash:'cellexplorer',apUnit:2,order:1,kind:'Learning tool',tab:'Cell explorer',
   card:'Click your way around animal, plant and bacterial cells, then quiz yourself on the parts.',
-  title:'Cell explorer',
+  title:'Inside a cell: the parts and their jobs',
+  ledeMore:'<p><b>Think of a cell as a tiny factory.</b> The nucleus is the office that keeps the plans (DNA). Ribosomes are the workers that build products (proteins). The ER and Golgi are the assembly line and shipping dock, and mitochondria are the power plant.</p><p>Every part of your body, from muscle to brain, is built and run by factories like this.</p>',
   lede:{bio:'Click any structure to learn its job, then test yourself. Compare an animal cell, a plant cell and a bacterium.',
         honors:'Explore the structure of each organelle and how they work together, like the endomembrane system that builds and ships proteins.',
         ap:'Compare prokaryotes and eukaryotes, follow the evidence for endosymbiosis, and trace a secreted protein through the endomembrane system.'},

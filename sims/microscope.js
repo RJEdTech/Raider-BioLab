@@ -356,7 +356,8 @@ const OSM_ACTIONS=[
 const MIC={
   id:'microscope',hash:'microscope',apUnit:2,order:2,kind:'Lab skills',tab:'Virtual microscope',
   card:'Focus, change objectives and measure real cells: onion, cheek, Elodea and blood.',
-  title:'Virtual microscope',
+  title:'Using a microscope: focus, zoom and measure cells',
+  ledeMore:'<p><b>Think of zooming in on a phone map.</b> You start zoomed out to find the right street, then zoom in. The more you zoom, the bigger things look, but the less of the map you see. A microscope works the same way.</p><p>Most cells are too small to see with your eye. A microscope is how anyone first found out you are made of them.</p>',
   lede:{bio:'Practice using a compound light microscope: find the specimen on low power, focus, switch to high power, and measure how big cells really are.',
         honors:'Use the field of view to estimate cell size, see why the image is flipped, and learn why you use only fine focus at high power.',
         ap:'Magnification is not resolution. Compare objectives by numerical aperture and resolution limit, and use oil immersion at 100×.'},
