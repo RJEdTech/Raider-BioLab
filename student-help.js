@@ -66,6 +66,10 @@ function countConfused(el,b){const path=where(el);if(counted.has(path)){b.textCo
     c.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();send(path+'/why-'+k,'Confusing: '+l);box.innerHTML='';const t=document.createElement('span');t.className='sh-tip';
       t.textContent=k==='reading'?(CAN_SPEAK&&!on?'Thanks. Try 🔊 Read aloud or Aa Easier reading.':'Thanks. Try Aa Easier reading.'):k==='fast'?'Thanks. Use the Speed menu to slow it down, or go Back.':k==='words'?'Thanks. Key terms are in the Vocabulary list below the tool.':k==='see'?'Thanks. Slow the Speed, or press Back to watch it again.':'Thanks. Go Back a step, or ask your teacher.';box.appendChild(t);b.textContent='Thanks, noted';});box.appendChild(c);});
   b.after(box);}
+/* If this browser has no natural-sounding voice, say once where to find one (Edge has them built in). */
+function voiceTip(b){if(voice&&/natural|online|neural/i.test(voice.name))return;if(get('raider-labs-voicetip'))return;put('raider-labs-voicetip',true);
+  const t=document.createElement('span');t.className='sh-tip';t.textContent=/Edg\//.test(navigator.userAgent)?'Sounds robotic? Turn on your internet connection: Edge’s natural voices are online.':'Sounds robotic? Open this page in Microsoft Edge for a more natural voice.';
+  b.parentNode.appendChild(t);setTimeout(()=>t.remove(),12000);}
 /* ---------- buttons ---------- */
 function labelRA(b){b.textContent=on?'🔊 Read aloud: on':'🔊 Read aloud';b.setAttribute('aria-pressed',String(on));b.title=on?'Stop reading aloud':'Read this out loud, and keep reading each new step';}
 function labelER(b){b.textContent=easy?'Aa Easier reading: on':'Aa Easier reading';b.setAttribute('aria-pressed',String(easy));b.title='More space between lines and letters, shorter lines, no all-caps headings';}
@@ -75,7 +79,7 @@ function ensureButtons(){SH_SEL.forEach(([kind,sel,head])=>{document.querySelect
   let box=host.querySelector(':scope > .sh-tools');
   if(box&&kind==='tour'&&box.dataset.sig!==stepSig(el)){box.remove();box=null;}   /* fresh "confused" button for each step */
   if(box)return;box=document.createElement('span');box.className='sh-tools';if(kind==='tour')box.dataset.sig=stepSig(el);
-  if(CAN_SPEAK)box.appendChild(mk('sh-ra',()=>{on=!on;put(KEY_RA,on);sync();if(on){lastSig='';tick(true);}else SS.cancel();}));
+  if(CAN_SPEAK)box.appendChild(mk('sh-ra',b=>{on=!on;put(KEY_RA,on);sync();if(on){lastSig='';tick(true);voiceTip(b);}else SS.cancel();}));
   box.appendChild(mk('sh-er',()=>{easy=!easy;put(KEY_ER,easy);sync();}));
   if(kind==='tour'||kind==='review'||kind==='guide'){const c=mk('sh-cf',b=>countConfused(el,b));c.textContent='😕 This confused me';c.title='Tell us this part was confusing (counted anonymously)';box.appendChild(c);}
   if(head)host.appendChild(box);else host.insertBefore(box,host.firstChild);});});sync();}
