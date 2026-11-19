@@ -96,8 +96,8 @@ enz: {
     tag(ctx,'Sugar (product)',PR[0],PR[1],k,{c:PAL['cv-prod']});},
   steps: [
     { key: 'fold', title: 'What an enzyme is', speed: 0.25,
-      see: 'One long chain of amino acids folds up into one exact shape.',
-      why: 'The fold leaves a groove: the <b>active site</b>. Every green blob from here on is one folded enzyme, amylase. (The green is only a label. Molecules are too small to have a color.)',
+      see: 'One long chain of amino acids folds into one exact shape.',
+      why: 'The fold leaves a groove: the <b>active site</b>. Each green blob from here on is one enzyme, amylase. (Green is just a label. Molecules have no color.)',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH);const p=tau%11,u=p<0.8?1:p<4.3?1-ease((p-0.8)/3.5):0,cx=280,cy=230,R=118;
         art(sim).protein(ctx,cx,cy,R,0,0.5,2,u,sim.vt,{beads:true,outline:true});scaleBar(ctx,40,430,R*2/5,'1 nm',k);
         if(u>0.35)tag(ctx,'One long chain of amino acids',400,48,k);
@@ -115,9 +115,9 @@ enz: {
         else{const f=ease((p-4.4)/2.4),seat=cx+R*0.44;art(sim).starch(ctx,lerp(790,seat,f),cy,3,11,0,PAL['cv-sub']);
           if(f>=1)tag(ctx,'✓  Starch fits the groove',600,300,k,{c:'#1b7a3a',hi:true});}} },
     { key: 'cut', title: 'The cut: substrate in, products out', speed: 0.25,
-      see: 'Starch slides in, one bond strains and snaps, and two small sugars, the <b>products</b>, float away.',
-      why: 'The enzyme comes out unchanged and grabs the next starch. One enzyme works over and over.',
-      so: 'That is why a cracker starts to taste sweet if you chew it long enough.',
+      see: 'Starch slides in, one bond snaps, and two small sugars, the <b>products</b>, float away.',
+      why: 'The enzyme comes out unchanged and grabs the next starch. It is not used up.',
+      so: 'That is why a cracker tastes sweet if you chew it long enough.',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH);const p=tau%9,cx=200,cy=225,R=112,A=art(sim),r=11,x0=cx+R*0.40;
         const ph=p<1.8?0:p<3.2?1:p<5?2:3;let a=0.5;if(ph===1)a=0.5-0.1*ease((p-1.8)/0.6);else if(ph===2)a=0.4+0.1*ease((p-3.2)/0.8);
         A.protein(ctx,cx,cy,R,0,a,2,0,sim.vt,{outline:true});scaleBar(ctx,40,430,R*2/5,'1 nm',k);
@@ -127,9 +127,8 @@ enz: {
         else{A.starch(ctx,470,120,2,r,-0.4,PAL['cv-prod']);A.starch(ctx,500,330,2,r,0.4,PAL['cv-prod']);}
         ['1  Starch slides in','2  The bond strains','3  It snaps in two','4  Enzyme unchanged'].forEach((s,i)=>tag(ctx,s,650,120+i*58,k,{s:14,hi:i===ph,alpha:i===ph?1:0.55}));} },
     { key: 'ea', title: 'Why it is faster: a lower hill', speed: 0.25,
-      see: 'Every reaction has an energy hill to climb first: the <b>activation energy</b>. Without the enzyme, the starch rolls back. With it, the hill is lower and the starch gets over.',
-      why: 'By holding the starch so the bond strains, the enzyme lowers the hill. The start and the end stay the same: same starch, same sugars. Only the path is easier.',
-      so: 'Enzymes speed up reactions. They do not change what is made, and they are not used up.',
+      see: 'A reaction must first climb an energy hill: the <b>activation energy</b>. Gray: no enzyme, and the starch rolls back. Green: with amylase, the hill is lower.',
+      why: 'The enzyme holds the starch so the bond strains. Same start, same end. Only the path is easier.',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH,0.97);const kk=Math.min(k,1.25),p=tau%11,B={x0:110,x1:740,y0:70,y1:385},yR=262,yP=322;
         const sm=x=>x<=0?0:x>=1?1:x*x*(3-2*x),base=x=>lerp(yR,yP,sm((x-0.3)/0.4)),E=(x,h)=>base(x)-h*Math.exp(-Math.pow((x-0.5)/0.11,2)),X=x=>B.x0+x*(B.x1-B.x0),HT=200,HL=100;
         ctx.save();ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(B.x0,B.y0-8);ctx.lineTo(B.x0,B.y1);ctx.lineTo(B.x1+8,B.y1);ctx.stroke();ctx.restore();
@@ -152,24 +151,23 @@ enz: {
         else{h=HL;bx=0.9;msg='Same start, same end: only the hill is lower';col=PAL['cv-prod'];hi=true;}
         ezDot(ctx,X(bx),E(bx,h)-11,col,10);tag(ctx,msg,400,40,k,{hi});} },
     { key: 'bumps', title: 'Measure it: the reaction rate', speed: 0.5,
-      see: 'Back to the tube. Each gold ring is one starch cut. The red bar shows the <b>reaction rate</b>: how fast product is made.',
-      why: 'Starch only gets cut when it happens to land in a groove. Anything that changes how often that works changes the rate.',
+      see: 'Back to the tube. Each gold ring is one starch cut. The red bar is the <b>reaction rate</b>.',
+      why: 'Rate means how fast product is made. Starch is cut only when it lands in a groove, so anything that changes how often that happens changes the rate.',
       overlay(sim,ctx,LH,k){sim.lnRate37=(sim.st&&sim.st.v)||sim.lnRate37;ezMeter(ctx,sim,k);} },
     { key: 'cold', cause: { from: { temp: 37 } }, title: 'Cold: slower, not broken', set: { temp: 10 }, fresh: true, speed: 0.5,
-      see: 'Cooled to 10 °C, like an ice-cold drink. Fewer gold rings, and the rate bar drops to about a sixth.',
-      why: 'Cold molecules move slower, so fewer landings have the energy to make the cut. The enzymes stay folded, so warming them brings the rate right back.',
-      so: 'That is why the fridge keeps food fresh longer.',
+      see: 'Cooled to 10 °C. Fewer gold rings, and the rate drops to about a sixth.',
+      why: 'Cold molecules move slower, so fewer landings make the cut. The enzyme stays folded, so warming it brings the rate back.',
+      so: 'That is why the fridge keeps food fresh.',
       overlay(sim,ctx,LH,k){ezMeter(ctx,sim,k);tag(ctx,'Still folded ✓',700,400,k,{c:'#1b7a3a'});} },
     { key: 'hot', cause: { from: { temp: 37 } }, title: 'Too hot: broken for good', set: { temp: 70 }, speed: 0.25,
-      see: 'Heated to 70 °C, about as hot as fresh coffee. Each blob unfolds into a loose chain, and the rate bar falls to zero.',
-      why: 'Heat breaks the weak bonds that hold the fold. No fold, no groove. This is <b>denaturing</b>, and cooling it again does not fix it.',
-      so: 'That is why cooking and canning stop the enzymes in food.',
+      see: 'Heated to 70 °C, as hot as fresh coffee. Each blob unfolds, and the rate falls to zero.',
+      why: 'Heat breaks the bonds that hold the fold. No fold, no groove. This is <b>denaturing</b>, and cooling does not fix it.',
       overlay(sim,ctx,LH,k){ezMeter(ctx,sim,k);const uf=sim.vis.uf||[0],it=uf.reduce((x,y)=>x+y,0)/uf.length<0.97?1:0;tag(ctx,it?'Unfolding: the groove is gone':'All unfolded. Cooling will not refold them.',400,400,k,{hi:true});} },
     { key: 'tgraph', title: 'The temperature graph', speed: 0.25,
-      see: 'The dot slides from 0 °C to 100 °C and draws amylase’s rate. On the right: one amylase at that temperature.',
-      why: { bio: 'The rate climbs as molecules speed up, peaks at the <b>optimum</b> (near body temperature), then crashes as the enzyme unfolds.',
-             honors: 'The rate climbs as molecules speed up, peaks at the <b>optimum</b> (near body temperature), then crashes as the enzyme unfolds. The dashed curve is an enzyme from bacteria in hot springs: same shape, much higher optimum.' },
-      so: 'On a test, the left side of the hill means “cold: slow but fine” and the cliff on the right means “denatured.”',
+      see: 'The dot draws amylase’s rate from 0 to 100 °C. Right: one amylase at that temperature.',
+      why: { bio: 'The rate climbs, peaks at the <b>optimum</b> (near body temperature), then crashes as the enzyme unfolds.',
+             honors: 'The rate climbs, peaks at the <b>optimum</b> (near body temperature), then crashes as the enzyme unfolds. Dashed: a hot-spring enzyme, optimum far higher.' },
+      so: 'Test tip: left side = cold, slow but fine. Right-side cliff = denatured.',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH,0.97);const kk=Math.min(k,1.25),hon=H.atLeast('honors'),per=hon?17:14,p=tau%per,B={x0:100,x1:540,y0:80,y1:360},xr=[0,100],X=T=>B.x0+T/100*(B.x1-B.x0),Y=r=>B.y1-r*(B.y1-B.y0),G='#1b7a3a',AMB='#b26b00';
         ezAxes(ctx,B,k,{xr,xt:[[0,'0'],[20,'20'],[40,'40'],[60,'60'],[80,'80'],[100,'100']],yt:[[0,'0'],[0.5,'50'],[1,'100']],xl:'Temperature (°C)',yl:'Rate (% of top speed)'});
         ezTagA(ctx,'Rate vs temperature',790,40,k,{},'r');
@@ -186,9 +184,8 @@ enz: {
           tag(ctx,'Denatured',X(58),Y(0.12),k,{s:12.5,c:'#b3261e'});
           if(hon){const Tq=p<11?100*clamp((p-8)/3,0,1):100;ezCurve(ctx,B,xr,ezTaqT,Tq,AMB,[8,6]);if(p>=11)tag(ctx,'Hot-spring bacteria',X(76),Y(1)-22,k,{s:12.5,c:AMB});}}} },
     { key: 'acid', cause: { from: { ph: 7 } }, title: 'Strong acid', set: { ph: 2 }, fresh: true, speed: 0.5,
-      see: 'Back at 37 °C, but at pH 2, as acidic as your stomach. In the close-up, H⁺ ions cancel the groove’s charges and the starch slips out.',
-      why: 'The groove grips starch partly with electric charges. Acid changes those charges, so the groove changes shape. Amylase works best near pH 7.',
-      so: 'That is why saliva stops digesting starch once food reaches your stomach.',
+      see: 'Back to 37 °C, but at pH 2, like your stomach. Close-up: H⁺ ions cancel the groove’s charges. The starch slips out.',
+      why: 'The groove grips starch with electric charges. Acid changes them, so the groove changes shape. Amylase works best near pH 7.',
       overlay(sim,ctx,LH,k,tau){ezMeter(ctx,sim,k,{x:14,w:300});const bx=452,by=40,bw=336,bh=250,p=tau%9;ctx.save();H.rr(ctx,bx,by,bw,bh,10);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#c8102e';ctx.stroke();ctx.clip();
         const R=150,cx=bx+bw*0.5-R*0.72,cy=by+bh*0.5,f=p<2.6?0:ease((p-2.6)/2.2),a=lerp(0.5,0.14,f);art(sim).protein(ctx,cx,cy,R,0,a,2,0,sim.vt,{outline:true});
         const spots=[[0.68,-1],[0.48,0],[0.68,1]].map(([rr,s])=>{const an=s*a*0.75,r=R*rr;return [cx+Math.cos(an)*r,cy+Math.sin(an)*r];});
@@ -198,9 +195,9 @@ enz: {
         const sx=lerp(cx+R*0.62,bx+bw+30,ease((p-4.2)/1.6));if(sx<bx+bw+10)art(sim).starch(ctx,sx,cy,1,14,0,PAL['cv-sub']);
         tag(ctx,'Close-up of one groove',bx+bw/2,by+22,k,{s:12});tag(ctx,f<0.5?'pH 7: charges grip the starch':'pH 2: H⁺ cancels the charges',bx+bw/2,by+bh-22,k,{s:14,hi:true});ctx.restore();} },
     { key: 'pgraph', title: 'The pH graph', speed: 0.25,
-      see: 'Amylase’s curve peaks near pH 7. Then <b>pepsin</b>, an enzyme from your stomach, draws a curve that peaks near pH 2.',
-      why: 'Each enzyme’s best pH matches the place it works. Far from that pH, the charges in its groove are wrong, so the rate drops.',
-      so: 'Same rule as temperature: every enzyme has an optimum, and it depends on the enzyme.',
+      see: 'Amylase’s curve peaks near pH 7. Then <b>pepsin</b>, a stomach enzyme, draws one that peaks near pH 2.',
+      why: 'Each enzyme’s best pH matches where it works. Far from it, the groove’s charges are wrong and the rate drops.',
+      so: 'Like temperature: every enzyme has its own optimum.',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH,0.97);const kk=Math.min(k,1.25),p=tau%12,B={x0:100,x1:540,y0:80,y1:360},xr=[0,14],X=v=>B.x0+v/14*(B.x1-B.x0),Y=r=>B.y1-r*(B.y1-B.y0),G='#1b7a3a',PU=PAL['s5']||'#7b3fb0';
         ezAxes(ctx,B,k,{xr,xt:[[0,'0'],[2,'2'],[4,'4'],[6,'6'],[7,'7'],[8,'8'],[10,'10'],[12,'12'],[14,'14']],yt:[[0,'0'],[0.5,'50'],[1,'100']],xl:'pH  (acid ←   → base)',yl:'Rate (% of top speed)'});
         ezTagA(ctx,'Rate vs pH',790,40,k,{},'r');
@@ -211,8 +208,8 @@ enz: {
         art(sim).protein(ctx,612,150,28,0,0.5,2,0,sim.vt,{outline:true});H.txt(ctx,'Mouth: pH 7',652,138,{s:14*Math.min(k,1.15),w:700,b:'middle'});H.txt(ctx,'amylase works',652,162,{s:13*Math.min(k,1.15),b:'middle',c:G});
         if(p>=4){art(sim).protein(ctx,612,270,28,0,0.5,5,0,sim.vt,{outline:true});H.txt(ctx,'Stomach: pH 2',652,258,{s:14*Math.min(k,1.15),w:700,b:'middle'});H.txt(ctx,'pepsin works',652,282,{s:13*Math.min(k,1.15),b:'middle',c:PU});}} },
     { lvl: 'honors', key: 'block', title: 'A blocker in the lock', set: { inhC: 5 }, fresh: true, speed: 0.5,
-      see: 'A <b>competitive inhibitor</b> is added: the red triangles. They fit the groove too, so some grooves hold a triangle instead of starch. The rate bar drops.',
-      why: 'While an inhibitor sits in the active site, starch can’t get in. It comes and goes, taking turns with the starch.',
+      see: 'Red triangles, a <b>competitive inhibitor</b>, fit the groove too. Some grooves hold a triangle instead of starch, so the rate drops.',
+      why: 'While a triangle sits in the active site, starch can’t get in. The two take turns.',
       overlay(sim,ctx,LH,k){ezMeter(ctx,sim,k);tag(ctx,'Red triangle in a groove = a blocked enzyme',400,400,k,{hi:true});} },
     { lvl: 'honors', key: 'flood', title: 'More substrate wins it back', set: { inhC: 5, sub: 50 }, speed: 0.5,
       see: 'Same inhibitor, but five times as much starch. The tube fills with blue, and the rate bar climbs back up.',
