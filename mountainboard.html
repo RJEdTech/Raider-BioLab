@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Class board · Mountain for sale · Raider BioLab</title>
+<title>Class board · Land for sale · Raider BioLab</title>
 <meta name="description" content="Every group's mountain plan side by side, from students' class board codes.">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -47,9 +47,9 @@
   </div>
 </header>
 <main class="wrap"><div class="cb">
-<a class="back" href="index.html#mountain">← Mountain for sale</a>
-<h1>Class board: Mountain for sale</h1>
-<p class="lede">Paste the codes your groups made in the Share tab. Every plan shows up side by side: the map, the money, and what is still alive. This replaces the shared slide from Paul Stearman’s original game. Nothing leaves this page: the codes are read in your browser.</p>
+<a class="back" href="index.html#mountain">← Land for sale</a>
+<h1>Class board: Land for sale</h1>
+<p class="lede">Paste the codes your groups made in the Share tab. Every plan shows up side by side, from any land: the map, the money, what is still alive, and what happened to the people. This replaces the shared slide from Paul Stearman’s original game. Nothing leaves this page: the codes are read in your browser.</p>
 <section class="cb-box">
 <h2>Paste the codes</h2>
 <p class="help">Copy everything from the Canvas discussion or the submissions and paste it here. Extra text is fine: the board finds every code that starts with MTN1.</p>
@@ -67,12 +67,15 @@
 <div class="cb-cards" id="cards"></div>
 <h2>Questions for the class</h2>
 <ul class="help-list"><li>Which plan made the most money at the end of the plan? Which one after 20 years? Why are they different?</li>
-<li>Which plans kept every lynx family? What did they do that others did not?</li>
+<li>Which plans kept every rare animal? What did they do that others did not?</li>
+<li>Which plans hurt the fewest workers, and kept the town’s water safe? What did that cost?</li>
+<li>If groups played different lands, what lesson was the same everywhere, and what was different?</li>
 <li>Did any group get unlucky with a spill? Was protecting the water worth its cost for them?</li>
-<li>Is there a plan that is not beaten on both money and lynx by any other plan? (Marked <b>Best of both</b>.)</li></ul>
+<li>Is there a plan that is not beaten on both money and rare animals by any other plan? (Marked <b>Best of both</b>.)</li></ul>
 </section>
 </div></main>
-<script src="mountain-model.js?v=202611192400"></script>
+<script src="mountain-model.js?v=202611200100"></script>
+<script src="lands.js?v=202611200100"></script>
 <script>
 (function(){'use strict';const M=window.MTN,$=id=>document.getElementById(id);let rows=[],sortK='net',sortD=-1;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -82,26 +85,26 @@ function read(){const t=$('codes').value;const codes=t.match(/MTN1\.[A-Za-z0-9_-
   codes.forEach(c=>{if(seen.has(c))return;seen.add(c);const d=M.decode(c);if(!d||!d.st.end){bad++;return;}const st=d.st,e=st.end,f=d.extra||{};
     rows.push({name:d.name||'(no name)',st,net:e.net,cash:e.cash,park:e.park,lynx:e.lynx,deer:e.deer,tree:e.tree,gold:(st.harv||{}).gold||0,
       water:(st.polluted.res>0)+(st.polluted.creek>0),prot:(st.protect.res?1:0)+(st.protect.creek?1:0),corr:st.corr.length,spills:st.spills||0,
-      y:f.y||0,m20:f.y?f.m:null,l20:f.y?f.l:null,note:f.tx||'',fair:null});});
+      land:M.land(st).name,jobs:st.jobs||0,hurt:st.hurt||0,y:f.y||0,m20:f.y?f.m:null,l20:f.y?f.l:null,unsafe:f.y?f.w:null,note:f.tx||'',fair:null});});
   $('count').textContent=rows.length+' plan'+(rows.length===1?'':'s')+' read'+(bad?', '+bad+' code'+(bad>1?'s':'')+' could not be read (a plan must be finished to make a code)':'')+'.';
   $('fair-t').textContent='';render();}
-const COLS=[['name','Group'],['net','End of plan'],['m20','20 years (their run)'],['fairAvg','Fair test: average'],['fairLynx','Fair test: lynx survive'],['lynx','Lynx'],['deer','Deer'],['tree','Spruce'],['gold','Gold mined'],['park','Park value'],['prot','Water protected'],['water','Water polluted'],['corr','Corridors']];
-function val(r,k){if(k==='fairAvg')return r.fair?r.fair.avg:null;if(k==='fairLynx')return r.fair?r.fair.lynxAny:null;return r[k];}
-function cell(r,k){const v=val(r,k);if(v==null)return '–';if(k==='name')return esc(v);if(['net','m20','fairAvg','park'].includes(k))return M.fmtK(v);if(k==='fairLynx')return Math.round(v*100)+'%';return String(v);}
+const COLS=[['name','Group'],['land','Land'],['net','End of plan'],['m20','20 years (their run)'],['fairAvg','Fair test: average'],['fairLynx','Fair test: rare animal survives'],['fairUnsafe','Fair test: unsafe-water years'],['lynx','Rare animals'],['deer','Hunted animals'],['tree','Plant patches'],['gold','Sites dug'],['jobs','Jobs'],['hurt','Workers hurt'],['park','Park value'],['prot','Water protected'],['corr','Corridors']];
+function val(r,k){if(k==='fairAvg')return r.fair?r.fair.avg:null;if(k==='fairLynx')return r.fair?r.fair.lynxAny:null;if(k==='fairUnsafe')return r.fair?Math.round(r.fair.unsafeAvg*10)/10:null;return r[k];}
+function cell(r,k){const v=val(r,k);if(v==null)return '–';if(k==='name'||k==='land')return esc(v);if(['net','m20','fairAvg','park'].includes(k))return M.fmtK(v);if(k==='fairLynx')return Math.round(v*100)+'%';return String(v);}
 function pareto(){const key=r=>[r.fair?r.fair.avg:(r.m20!=null?r.m20:r.net),r.fair?r.fair.lynxAvg:(r.l20!=null?r.l20:r.lynx)];
   return rows.filter(a=>!rows.some(b=>b!==a&&key(b)[0]>=key(a)[0]&&key(b)[1]>=key(a)[1]&&(key(b)[0]>key(a)[0]||key(b)[1]>key(a)[1])));}
 function render(){$('out').hidden=!rows.length;if(!rows.length)return;
   const L=rows.slice().sort((a,b)=>{const x=val(a,sortK),y=val(b,sortK);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return -1;return (typeof x==='string'?x.localeCompare(y):x-y)*sortD;});
-  const top={};COLS.forEach(([k])=>{if(k==='name')return;const vs=rows.map(r=>val(r,k)).filter(v=>v!=null);if(vs.length)top[k]=['water'].includes(k)?Math.min(...vs):Math.max(...vs);});
-  $('tbl').innerHTML='<thead><tr>'+COLS.map(([k,l])=>`<th data-k="${k}" class="${k==='name'?'':'n'}">${l}${sortK===k?(sortD<0?' ▼':' ▲'):''}</th>`).join('')+'</tr></thead><tbody>'+
-    L.map(r=>'<tr>'+COLS.map(([k])=>`<td class="${k==='name'?'':'n'}${k!=='name'&&val(r,k)!=null&&val(r,k)===top[k]&&rows.length>1?' top':''}">${cell(r,k)}</td>`).join('')+'</tr>').join('')+'</tbody>';
-  $('tbl').querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(sortK===k)sortD=-sortD;else{sortK=k;sortD=k==='name'?1:-1;}render();});
-  const P=pareto();$('best').innerHTML=rows.length>1?'<p><b>Best of both</b> (no other plan beats it on money and lynx at once): '+P.map(r=>`<span class="best">${esc(r.name)}</span>`).join('')+'</p>':'';
+  const top={};COLS.forEach(([k])=>{if(k==='name'||k==='land')return;const vs=rows.map(r=>val(r,k)).filter(v=>v!=null);if(vs.length)top[k]=['hurt','fairUnsafe'].includes(k)?Math.min(...vs):Math.max(...vs);});
+  $('tbl').innerHTML='<thead><tr>'+COLS.map(([k,l])=>`<th data-k="${k}" class="${k==='name'||k==='land'?'':'n'}">${l}${sortK===k?(sortD<0?' ▼':' ▲'):''}</th>`).join('')+'</tr></thead><tbody>'+
+    L.map(r=>'<tr>'+COLS.map(([k])=>`<td class="${k==='name'||k==='land'?'':'n'}${k!=='name'&&k!=='land'&&val(r,k)!=null&&val(r,k)===top[k]&&rows.length>1?' top':''}">${cell(r,k)}</td>`).join('')+'</tr>').join('')+'</tbody>';
+  $('tbl').querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(sortK===k)sortD=-sortD;else{sortK=k;sortD=k==='name'||k==='land'||k==='hurt'||k==='fairUnsafe'?1:-1;}render();});
+  const P=pareto();$('best').innerHTML=rows.length>1?'<p><b>Best of both</b> (no other plan beats it on money and rare animals at once): '+P.map(r=>`<span class="best">${esc(r.name)}</span>`).join('')+'</p>':'';
   const C=colors();$('cards').innerHTML=L.map((r,i)=>`<div class="cb-card"><canvas width="800" height="450" data-i="${rows.indexOf(r)}" role="img" aria-label="Map of ${esc(r.name)}’s mountain"></canvas><h3>${esc(r.name)}</h3>
-<p>End of plan: <b>${M.fmtK(r.net)}</b>${r.m20!=null?' · after '+r.y+' years: <b>'+M.fmtK(r.m20)+'</b>':''}</p><p>Left: ${r.lynx} lynx, ${r.deer} deer, ${r.tree} spruce · ${r.gold} gold vein${r.gold===1?'':'s'} mined${r.water?' · <b>'+r.water+' water body polluted</b>':''}</p>${r.note?`<p class="note">${esc(r.note)}</p>`:''}</div>`).join('');
+<p>End of plan: <b>${M.fmtK(r.net)}</b>${r.m20!=null?' · after '+r.y+' years: <b>'+M.fmtK(r.m20)+'</b>':''}</p><p class="help">${esc(r.land)}</p><p>Left: ${r.lynx} ${esc(M.land(r.st).sp.lynx.many)}, ${r.deer} ${esc(M.land(r.st).sp.deer.many)}, ${r.tree} ${esc(M.land(r.st).sp.tree.many)} · ${r.gold} site${r.gold===1?'':'s'} dug · ${r.jobs} jobs · ${r.hurt} worker${r.hurt===1?'':'s'} hurt${r.water?' · <b>'+r.water+' water body polluted</b>':''}</p>${r.note?`<p class="note">${esc(r.note)}</p>`:''}</div>`).join('');
   $('cards').querySelectorAll('canvas').forEach(cv=>{const r=rows[+cv.dataset.i],ctx=cv.getContext('2d');M.drawScene(ctx,r.st,C,{k:1.4,labels:true});});}
 $('read').onclick=read;$('clear').onclick=()=>{$('codes').value='';rows=[];$('count').textContent='';render();};
-$('fair').onclick=()=>{rows.forEach(r=>{r.fair=M.manyFutures(r.st,M.DEFAULTS,100);});$('fair-t').textContent='Done: 100 futures per plan, with the standard rules (park visitors 5% of park value a year, hunting licenses on, old mines near unprotected water leak 10% a year).';sortK='fairAvg';sortD=-1;render();};
+$('fair').onclick=()=>{rows.forEach(r=>{r.fair=M.manyFutures(r.st,M.DEFAULTS,100);});$('fair-t').textContent='Done: 100 futures per plan, with the standard rules (park visitors 5% of park value a year, yearly harvests on, old sites near unprotected water leak 10% a year).';sortK='fairAvg';sortD=-1;render();};
 $('csv').onclick=()=>{const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';const lines=[COLS.map(c=>q(c[1])).concat([q('Paragraph')]).join(',')];
   rows.forEach(r=>lines.push(COLS.map(([k])=>{const v=val(r,k);return q(v==null?'':k==='fairLynx'?Math.round(v*100)+'%':['net','m20','fairAvg','park'].includes(k)?Math.round(v*1000):v);}).concat([q(r.note)]).join(',')));
   const t=lines.join('\n'),done=()=>{$('csv-t').hidden=false;setTimeout(()=>$('csv-t').hidden=true,1500);};try{navigator.clipboard.writeText(t).then(done);}catch(e){}};
