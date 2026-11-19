@@ -279,9 +279,10 @@ const LAB_HZ={id:'catalase-honors',title:'Enzyme Lab: The Effects of pH on Catal
   conclusion:{prompt:'<p>Write a claim–evidence–reasoning conclusion: how does pH affect catalase activity? Use your foam volumes and rates as evidence.</p>',cer:true}};
 
 const ENZYME={
-  id:'enz',apUnit:3,order:3,kind:'Simulation',card:'Temperature, pH, substrate and inhibitors. Find the optimum, then break the enzyme.',hash:'enzymes',tab:'Enzyme activity',
-  title:'Enzyme activity: temperature, pH and inhibitors',
-  lede:{bio:'Enzymes speed up reactions when substrate fits their active site. Change the temperature, pH and amount of substrate, and watch the reaction rate.',
+  id:'enz',apUnit:3,order:3,kind:'Simulation',card:'How heat, cold and acid change the tiny helpers that digest your food.',hash:'enzymes',tab:'Enzyme activity',
+  title:'Enzymes: how heat, cold and acid change them',
+  ledeMore:'<p><b>Think of a lock and a key.</b> Each enzyme has a pocket shaped to fit one kind of molecule, the way a lock fits one key. When the right molecule fits, the enzyme cuts it apart, then grabs the next one.</p><p>Your saliva has an enzyme like this. It turns the starch in a cracker into sugar, which is why a cracker starts to taste sweet if you chew it long enough.</p>',
+  lede:{bio:'Enzymes are tiny helpers in your body that speed up chemical reactions, like breaking down the food you eat. Watch what heat, cold and acid do to them.',
         honors:'Compare enzymes from different environments, and see how heat, pH and a competitive inhibitor change the active site and the reaction rate.',
         ap:'Michaelis–Menten kinetics. Read Vmax and Km under any conditions, and tell competitive from noncompetitive inhibition from your own rate data.'},
   timeScale:0.1,dtMax:0.005,prewarm:3,sampleDt:0.01,window:3,unit:'min',chChange:0.4,chReveal:1.3,
@@ -420,7 +421,7 @@ const ENZYME={
 };
 Object.assign(ENZYME,{
   art:{protein:drawProtein,starch:drawStarch,chain:chainC,pos:ENZPOS},
-  scale:'Molecular view, drawn to scale: each enzyme is about 5 nanometers across, and each sugar ring in the starch about half a nanometer. One drop of saliva holds trillions of amylase molecules. Molecules are far too small to have a color, so the colors here are labels.',
+  scale:'Zoomed in millions of times and drawn to scale (one enzyme is about 5 nanometers across). Real molecules are too small to have a color, so the colors are labels.',
   narrate(sim){if(sim.st.B&&sim.vlab)return benchNarrate(sim);
     const p=sim.p,s=sim.st,e=ENZ[p.enzyme],hon=atLeast('honors'),nm=hon?e.name:'Amylase',occ=Math.round(100*p.sub/(s.km+p.sub));
     if(s.D>0.5)return '<b>Most of the enzyme is permanently damaged by heat (denatured).</b> Its shape is gone, so cooling it down won’t bring it back. Press Reset for fresh enzyme.';

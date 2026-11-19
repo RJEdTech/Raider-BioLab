@@ -634,3 +634,5 @@ details.ln-more>summary{cursor:pointer;font-weight:700;color:var(--rj,#c8102e);l
 details.ln-more>p{margin:6px 0 0}
 details.ln-use-d{margin:0}
 details.ln-use-d>summary{font-size:1.05em;padding:4px 0}
+details.lede-more{max-width:62ch;margin:6px 0 10px;border-top:0;padding-top:0}
+details.lede-more>p{margin:6px 0}

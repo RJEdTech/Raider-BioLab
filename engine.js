@@ -810,7 +810,7 @@ function setLede(el,t){el.textContent='';if(!t||typeof t==='string'){el.textCont
   el.appendChild(document.createTextNode(t.bio));const s=document.createElement('span');s.className='lede-lv';
   const b=document.createElement('b');b.textContent=LEDE_LV[top]+': ';s.appendChild(b);s.appendChild(document.createTextNode(t[top]));el.appendChild(s);}
 function applyLevel(sim){const ui=sim.ui,d=sim.def;setTimeout(()=>{rlPaint(sim);myPaint(sim);},0);
-  setLede(ui.lede,d.lede);if(ui.uses){const P=d.practical,u=P&&P.uses?(Array.isArray(P.uses)?P.uses:lvText(P.uses)):null;const hk=P&&P.hook?lvText(P.hook):'';ui.uses.hidden=!(hk||(u&&u.length));ui.uses.innerHTML=(hk?'<p class="ru-q">'+hk+'</p>':'')+(u&&u.length?'<details class="ru-d"><summary>Where this shows up</summary><ul>'+u.map(x=>'<li>'+x+'</li>').join('')+'</ul></details>':'');}if(ui.scale)ui.scale.textContent=lvText(d.scale);
+  setLede(ui.lede,d.lede);if(d.ledeMore&&ui.lede&&!ui.ledeMore){const x=el('details',{class:'ln-more lede-more'});x.innerHTML='<summary>🤔 What does this mean?</summary>'+d.ledeMore;ui.lede.after(x);ui.ledeMore=x;}if(ui.uses){const P=d.practical,u=P&&P.uses?(Array.isArray(P.uses)?P.uses:lvText(P.uses)):null;const hk=P&&P.hook?lvText(P.hook):'';ui.uses.hidden=!(hk||(u&&u.length));ui.uses.innerHTML=(hk?'<p class="ru-q">'+hk+'</p>':'')+(u&&u.length?'<details class="ru-d"><summary>Where this shows up</summary><ul>'+u.map(x=>'<li>'+x+'</li>').join('')+'</ul></details>':'');}if(ui.scale)ui.scale.textContent=lvText(d.scale);
   if(ui.lab)ui.lab.innerHTML='<p class="lab-h">Investigation</p>'+lvText(d.lab);
   if(sim.tour&&sim.tour.on)tourExit(sim,'level');
   if(sim.mode==='review')renderReview(sim);
