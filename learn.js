@@ -1560,6 +1560,9 @@ chloroplast: {
 },
 
 glycolysis: {
+  simple: true,
+  intro: { bio: 'You’ll follow one sugar molecule as your cells break it down, and see why oxygen matters so much.',
+           honors: 'You’ll follow one sugar molecule as your cells break it down, see why oxygen matters so much, and see what yeast and muscle do without it.' },
   goals: {
     bio: ['How your cells take one glucose apart, and where its 6 carbons go', 'Why oxygen lets a cell make about 32 ATP instead of 2', 'What fermentation is, and why yeast and sprinting muscles use it'],
     honors: ['The three stages: glycolysis, the Krebs cycle and electron transport, and where each happens', 'Where NADH and FADH₂ come from, and why they matter', 'Yeast vs. muscle fermentation, and why fermentation recycles NAD⁺'],
@@ -1644,6 +1647,9 @@ glycolysis: {
 },
 
 resp: {
+  simple: true,
+  intro: { bio: 'You’ll see how your cells turn the energy in food into energy they can use, and why that takes oxygen.',
+           honors: 'You’ll see how your cells turn the energy in food into energy they can use, why that takes oxygen, and why one energy carrier gives less than the other.' },
   goals: {
     bio: ['Where most of your ATP is made, and how small that place is', 'How electrons from food power pumps that pile up H⁺', 'Why you need oxygen: it catches the electrons at the end', 'Why more effort means more breathing'],
     honors: ['The path of electrons through complexes I to IV', 'How the H⁺ gradient drives ATP synthase', 'Why FADH₂ yields less ATP than NADH'],
@@ -1770,7 +1776,7 @@ chloroplast:{questions:[
     choices:['Each one’s products are the other’s reactants','Both make oxygen from glucose and water','Both happen only in plant cells, in daylight','Respiration makes the light that photosynthesis uses'],correct:0,
     steps:['Photosynthesis turns CO₂ and water into glucose and O₂.','Respiration turns glucose and O₂ back into CO₂ and water, releasing energy as ATP.','Plants do both. Animals do only respiration.']}
   ]},
-glycolysis:{questions:[
+glycolysis:{core:['carbons','invest','stagemost','o2why','bread','wherestage','nadplus','lactose'],questions:[
   {id:'carbons',kind:'test',lvl:'bio',q:'With oxygen, where do all 6 carbon atoms of a glucose end up?',choices:['In ATP','As CO₂ that you breathe out','As water','They stay in the mitochondrion'],correct:1,
     steps:['2 carbons leave as CO₂ when pyruvate enters the mitochondrion.','The other 4 leave as CO₂ in the Krebs cycle.','You breathe that CO₂ out, which is where most of the mass of burned food goes.']},
   {id:'o2why',kind:'test',lvl:'bio',q:'Why does a cell get about 32 ATP per glucose with oxygen but only 2 without it?',choices:['Oxygen accepts electrons at the end of the chain; without it only glycolysis runs','Oxygen is itself a fuel, and burning it is what releases most of the 32 ATP','Glucose can’t get into cells without oxygen, so only a little is used','Without oxygen the cell still makes 32 ATP, it just takes much longer'],correct:0,

@@ -26,13 +26,14 @@ function perGlucose(p){const aer=p.o2;return {atp:aer?32:2,nadh:aer?10:2,fadh:ae
 
 const SIM={
   id:'glycolysis',hash:'glycolysis',apUnit:3,order:4,kind:'Process walkthrough',tab:'Glycolysis, Krebs cycle and fermentation',
-  card:'Follow the six carbons of one glucose through glycolysis and the Krebs cycle, then take away oxygen and watch fermentation take over.',
-  title:'Glycolysis, the Krebs cycle and fermentation',
+  card:'Follow one sugar molecule as your cells break it down for energy, with oxygen and without it.',
+  title:'How your cells get energy from sugar',
+  ledeMore:'<p><b>Think of energy as money.</b> Your cells can’t spend sugar directly. They break it down and turn its energy into small “coins” called ATP, which every part of the cell can spend.</p><p>With oxygen, one sugar molecule turns into about 32 coins. Without oxygen, only 2. That is why you breathe harder when you run.</p>',
   next:['respiration'],
-  lede:{bio:'Follow one glucose molecule as your cells break it apart for energy. With oxygen, it makes about 32 ATP. Without oxygen, only 2.',
+  lede:{bio:'Follow one sugar molecule (glucose) as your cells break it apart for energy. With oxygen, a cell gets about 16 times as much energy from it as without.',
         honors:'Track each carbon from glucose to CO₂, count the ATP, NADH and FADH₂ at every stage, and compare aerobic respiration with fermentation in yeast and muscle.',
         ap:'Account for every ATP: substrate-level phosphorylation in glycolysis and the Krebs cycle, oxidative phosphorylation from NADH and FADH₂, and why fermentation exists at all.'},
-  scale:'Inside one cell: the cytoplasm on the left, one mitochondrion (about 2 µm long) on the right. A real cell runs millions of glucose molecules through this at once.',
+  scale:'Inside one cell: the cytoplasm (the cell’s fluid) on the left, one mitochondrion (the cell’s power plant) on the right. A real cell breaks down millions of sugar molecules at once.',
   timeScale:1,dtMax:0.02,prewarm:13,sampleDt:0.1,window:40,unit:'s',chChange:3,chReveal:10,
   clock(sim){return sim.p.mode==='balloon'&&atLeast('honors')?'Yeast lab: '+sim.t.toFixed(1)+' min':'t = '+sim.t.toFixed(1)+' s';},
   controls:[

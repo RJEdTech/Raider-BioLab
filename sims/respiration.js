@@ -473,9 +473,10 @@ const VLAB_ACTIONS=[
   {id:'gs-out',label:'Take the sensor out and air it',vlab:true,enabled:s=>{const B=gsB(s),b=B&&s.vlab.bench;return !!b&&b.sensor!=='air';},
    run(s){const B=gsB(s),b=B&&s.vlab.bench;if(!b||b.sensor==='air')return;b.sensor='air';b.phase='idle';b.airT=0;B.hold=false;BioLab.play(s);}}];
 const RESP={
-  id:'resp',apUnit:3,order:1,kind:'Simulation',card:'Electron transport and ATP synthase. Starve it of oxygen, poison it, or uncouple it.',hash:'respiration',tab:'Cellular respiration',
-  title:'Cellular respiration in the inner mitochondrial membrane',
-  lede:{bio:'Electrons from your food power protein pumps that push H⁺ ions across the membrane. The H⁺ ions rush back through ATP synthase, which spins and makes ATP.',
+  id:'resp',apUnit:3,order:1,kind:'Simulation',card:'How your cells use the oxygen you breathe to make the energy they run on.',hash:'respiration',tab:'Cellular respiration',
+  title:'How your cells use oxygen to make energy',
+  ledeMore:'<p><b>Think of a dam.</b> Energy from your food pumps tiny charged particles uphill, like water behind a dam. When they rush back down, they spin a turbine that makes energy your cells can use.</p><p>Oxygen sits at the very end and clears away the used-up electrons. With no oxygen, the whole power plant stops. That is why you can’t hold your breath for long.</p>',
+  lede:{bio:'Inside each mitochondrion, the food you eat and the oxygen you breathe work together to make the energy your cells run on. Watch how it happens.',
         honors:'NADH and FADH₂ hand electrons to the electron transport chain. Complexes I, III and IV use that energy to pump H⁺ into the intermembrane space, and the gradient drives ATP synthase.',
         ap:'Chemiosmosis, measured. Track the proton-motive force and P/O ratio, and use inhibitors and an uncoupler to separate electron transport from ATP synthesis.'},
   timeScale:1,dtMax:0.01,prewarm:20,sampleDt:0.1,window:30,unit:'s',chChange:4,chReveal:12,
