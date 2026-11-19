@@ -617,6 +617,7 @@ p.fq-type{margin:0 0 6px}
 .bd-lab{display:block;font-size:14px;font-weight:700;margin:4px 0}
 .bd-why{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:8px;border:1px solid var(--line,#ccc);border-radius:8px;background:transparent;color:inherit}
 .bd-msg{font-size:13px;color:var(--muted,#555);align-self:center}
+.bd-out{width:100%;box-sizing:border-box;margin:6px 0 0;font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line,#ccc);border-radius:8px;background:transparent;color:inherit}
 .bd-note{margin:8px 0 14px;font-size:13px;color:var(--muted,#555)}
 .bd-lead{margin:0 0 8px;font-size:14px;line-height:1.45}
 .bd-tw{overflow-x:auto}.bd-t{width:100%;table-layout:fixed;border-collapse:collapse;font-size:13.5px;line-height:1.4}.bd-t th,.bd-t td{white-space:normal;overflow-wrap:anywhere;text-align:left;vertical-align:top;padding:6px 8px;border-bottom:1px solid var(--line,#ddd)}.bd-t th{font-size:12.5px;color:var(--muted,#555)}
