@@ -5,9 +5,11 @@
       the button opens a short how-to for Edge's own Read aloud and Immersive Reader instead (Nov 18: Wayne found the robotic voices off-putting).
    2. Easier reading: more space between lines, letters and words; shorter lines; no all-caps headings; no italics.
       Meant for dyslexic readers and anyone who finds dense text hard. Saved per browser.
-   3. "This confused me": one click counts an event in the site's GoatCounter (path only: site, tool, level, step), then
-      offers five one-tap reasons (too much reading, couldn't see the change, words, too fast, the question), sent as
-      .../why-<reason>. No names, no free text, nothing about the student. It tells us which steps to fix first, and how.
+   3. "This confused me" (v2, Nov 19: helps first). It opens a short panel: what it's asking and how to start (written
+      help for the step from the site's help-text.js when there is some, otherwise a general tip), Show this step again,
+      Back a step, Go to Learn it and Read it to me. Only then: "Still confused? Tell us what kind", five one-tap reasons.
+      Opening counts once in GoatCounter (path only: site, tool, level, step); a reason adds .../why-<reason>.
+      No names, no free text, nothing about the student. It tells us which steps to fix first, and how.
    Stand-alone: it only watches the page, so no tool or engine needs changes. Same file on every Raider Labs site;
    SH_SEL below lists each engine's panel selectors. */
 (function(){
@@ -37,7 +39,7 @@ function speakable(s){return s.replace(/\s+/g,' ')
 function say(text){if(!CAN_SPEAK||!voice)return;SS.cancel();if(!text)return;const parts=speakable(text).match(/[^.!?]+[.!?]*/g)||[text];
   parts.forEach(p=>{const u=new SpeechSynthesisUtterance(p.trim());if(voice)u.voice=voice;u.lang=(voice&&voice.lang)||'en-US';u.rate=0.95;SS.speak(u);});}
 const vis=el=>!!(el&&el.offsetParent&&!el.closest('[hidden]'));
-const clean=el=>{if(!el)return '';const c=el.cloneNode(true);c.querySelectorAll('.sh-tools,svg,script,style,.rv-dots,.count').forEach(x=>x.remove());
+const clean=el=>{if(!el)return '';const c=el.cloneNode(true);c.querySelectorAll('.sh-help,.sh-tools,svg,script,style,.rv-dots,.count').forEach(x=>x.remove());
   /* the clone has no layout, so mark where each block ends; that gives the voice a pause between a heading and its text */
   c.querySelectorAll('p,li,h2,h3,h4,h5,div,ul,ol,button,br').forEach(x=>x.append(document.createTextNode('. ')));
   return (c.textContent||'').replace(/\s+/g,' ').replace(/([.!?:])\s*\.(\s*\.)*/g,'$1').replace(/(\.\s*){2,}/g,'. ').replace(/^\.\s*/,'').trim();};
@@ -61,14 +63,49 @@ const counted=new Set();
 function send(path,title){(function go(n){const g=window.goatcounter;if(g&&typeof g.count==='function'){try{g.count({path,title,event:true});}catch(e){}}else if(n<40)setTimeout(()=>go(n+1),250);})(0);}
 /* One tap says why (Nov 18, Jason: fix things from what students tell us). Still anonymous: only the reason's short code is sent. */
 const WHY=[['reading','Too much to read'],['see','Couldn’t see what changed'],['words','Words I don’t know'],['fast','Went too fast'],['question','The question was confusing']];
-function countConfused(el,b){const path=where(el);if(counted.has(path)){b.textContent='Thanks, noted';return;}counted.add(path);
-  send(path,'Confusing step');
-  b.textContent='Thanks. What was it?';b.disabled=true;b.setAttribute('aria-live','polite');
-  const box=document.createElement('span');box.className='sh-why';box.setAttribute('role','group');box.setAttribute('aria-label','What confused you?');
-  WHY.forEach(([k,l])=>{const c=document.createElement('button');c.type='button';c.className='btn sh-chip';c.textContent=l;
-    c.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();send(path+'/why-'+k,'Confusing: '+l);box.innerHTML='';const t=document.createElement('span');t.className='sh-tip';
-      t.textContent=k==='reading'?(CAN_SPEAK&&!on?'Thanks. Try 🔊 Read aloud or Aa Easier reading.':'Thanks. Try Aa Easier reading.'):k==='fast'?'Thanks. Use the Speed menu to slow it down, or go Back.':k==='words'?'Thanks. Key terms are in the Vocabulary list below the tool.':k==='see'?'Thanks. Slow the Speed, or press Back to watch it again.':'Thanks. Go Back a step, or ask your teacher.';box.appendChild(t);b.textContent='Thanks, noted';});box.appendChild(c);});
-  b.after(box);}
+const TIP={reading:'Thanks. Try 🔊 Read aloud or Aa Easier reading.',see:'Thanks. Press Show this step again and watch only the part that moves.',words:'Thanks. Key terms are in the Vocabulary list below the tool.',fast:'Thanks. Use the Speed menu to slow it down, or go Back.',question:'Thanks. That helps us rewrite it. Ask your teacher, too.'};
+/* The site's engine (window.BioLab, ChemLab, PhysLab...) knows the tool and the Learn it step key. */
+const ENG=()=>['BioLab','ChemLab','PhysLab','ForensicsLab','AnatomyLab','SportsMedLab','MathLab','FinanceLab','HealthLab','CivicsLab','AILab'].map(n=>window[n]).find(g=>g&&g.sims);
+const toolId=()=>(location.hash||'#home').slice(1).split(/[@?&=]/)[0]||'home';
+function curSim(){const g=ENG(),t=toolId();if(!g||!g.sims)return null;return g.sims[t]||Object.values(g.sims).find(x=>x&&x.def&&(x.def.hash===t||x.def.id===t))||null;}
+function stepKey(){const sim=curSim();return (sim&&sim.lnKey)||'';}
+const lvlNow=()=>{const lb=document.querySelector('#lvl [aria-pressed="true"], [data-l][aria-pressed="true"]');return lb?(lb.dataset.l||slug(lb.textContent)):'';};
+/* Written help, from the site's help-text.js: RL_HELP[tool][stepKey] = {ask, another, start}.
+   Any of them may be {bio|chem|honors|ap: text}: the student's level is used, else the nearest lower one. */
+const ORDER=['bio','chem','honors','ap'];
+function pickLv(v){if(!v||typeof v==='string')return v||'';const lv=lvlNow();const want=Math.max(0,ORDER.indexOf(lv));let out='';ORDER.forEach((l,i)=>{if(v[l]&&i<=want)out=v[l];});return out||v.bio||v.chem||v.honors||v.ap||'';}
+function written(kind){if(kind!=='tour')return null;const H=window.RL_HELP&&window.RL_HELP[toolId()],k=stepKey();if(!H||!k||!H[k])return null;const h=H[k];return {ask:pickLv(h.ask),another:pickLv(h.another),start:pickLv(h.start)};}
+const GENERIC={
+  tour:{ask:'Each step shows <b>one change</b>. Find the part of the picture that moves or is highlighted, then read the first sentence again.',start:'Press <b>Show this step again</b> and watch only that part. Then say in your own words what changed, and why.'},
+  review:{ask:'Find the one question in the sentence. What is it asking you to pick?',start:'Cover the choices. Say your own answer first, then find the choice that matches it. Cross out any you know are wrong.'},
+  predict:{ask:'It asks what you think will happen <b>before</b> you run it. A guess is fine: being wrong is how the run teaches you.',start:'Pick the choice that seems most likely, then run it and compare.'},
+  guide:{ask:'Read it one line at a time. What is the one thing it asks you to find?',start:'Write down the numbers it gives you, then try just the first step.'}};
+function replayStep(el){const back=el.querySelector('[data-tour=back]'),next=el.querySelector('[data-tour=next]');if(!back||!next)return;
+  const again=sel=>setTimeout(()=>{const x=document.querySelector('.tourbar:not([hidden]) '+sel);x&&x.click();},60);
+  if(!back.disabled){back.click();again('[data-tour=next]');}else{next.click();again('[data-tour=back]');}
+  /* keep the help open after the replay */
+  setTimeout(()=>{const tb=document.querySelector('.tourbar:not([hidden])');if(tb&&!tb.querySelector('.sh-help')){const c=tb.querySelector('.sh-cf');c&&c.click();}},450);}
+const learnBtn=()=>[...document.querySelectorAll('.modebar button')].find(b=>/learn it/i.test(b.textContent)&&b.offsetParent&&b.getAttribute('aria-pressed')!=='true');
+function helpHTML(kind,el){const w=written(kind)||{},g=GENERIC[kind]||GENERIC.tour;const ask=w.ask||g.ask,another=w.another||'',start=w.start||g.start;
+  const back=el.querySelector('[data-tour=back]');
+  const acts=(kind==='tour'?'<button type="button" class="btn sh-a" data-sha="again">🔁 Show this step again</button>'+(back&&!back.disabled?'<button type="button" class="btn sh-a" data-sha="back">← Back a step</button>':''):'')+
+    ((kind==='review'||kind==='predict')&&learnBtn()?'<button type="button" class="btn sh-a" data-sha="learn">📘 Go to Learn it</button>':'')+'<button type="button" class="btn sh-a" data-sha="say">🔊 Read it to me</button>';
+  return `<b>Let’s try it another way.</b>${ask?`<p><b>What it’s asking:</b> ${ask}</p>`:''}${another?`<div><b>Another way to see it:</b> ${another}</div>`:''}${start?`<p><b>How to start:</b> ${start}</p>`:''}<div class="sh-acts">${acts}</div>
+    <div class="sh-whybox"><span>Still confused? Tell us what kind (anonymous):</span>${WHY.map(([k,l])=>`<button type="button" class="btn sh-chip" data-shw="${k}">${l}</button>`).join('')}</div>`;}
+function toggleHelp(el,b,kind){let pn=el.querySelector('.sh-help');
+  if(pn){pn.remove();b.textContent='😕 This confused me';b.setAttribute('aria-expanded','false');return;}
+  const path=where(el);if(!counted.has(path)){counted.add(path);send(path,'Confusing step');}
+  pn=document.createElement('div');pn.className='sh-help';pn.setAttribute('role','region');pn.setAttribute('aria-label','Help with this part');pn.dataset.path=path;pn.innerHTML=helpHTML(kind,el);
+  const anchor=kind==='tour'?el.querySelector('.tb-x'):kind==='review'?el.querySelector('.rv-head'):kind==='predict'?el.querySelector('.p-head'):null;
+  if(anchor)anchor.after(pn);else{const t=el.querySelector(':scope > .sh-tools');if(t)t.after(pn);else el.prepend(pn);}
+  b.textContent='😕 Close help';b.setAttribute('aria-expanded','true');
+  pn.addEventListener('click',e=>{e.stopPropagation();const r=e.target.closest('[data-shw]');
+    if(r){const k=r.dataset.shw;send(pn.dataset.path+'/why-'+k,'Confusing: '+k);const wb=pn.querySelector('.sh-whybox');wb.innerHTML='';const t=document.createElement('span');t.className='sh-tip';t.textContent=TIP[k];wb.appendChild(t);return;}
+    const a=e.target.closest('[data-sha]');if(!a)return;const k=a.dataset.sha;
+    if(k==='again')replayStep(el);else if(k==='back'){const bk=el.querySelector('[data-tour=back]');bk&&bk.click();}
+    else if(k==='learn'){const l=learnBtn();l&&l.click();}
+    else if(k==='say'){if(CAN_SPEAK)pickVoice();if(!voice){showHow();return;}say(regionText(kind,el));}});
+  pn.scrollIntoView({block:'nearest'});if(on)say(clean(pn).replace(/Still confused\?.*$/,''));}
 /* No natural voice in this browser: show students how to use Microsoft Edge's own Read aloud instead.
    Photos go in img/read-aloud-1.png … -4.png on each site; a missing photo is simply left out. */
 const HOW=[['Open this page in Microsoft Edge','Edge has natural-sounding voices built in. Copy the link from the address bar and paste it into Edge.'],
@@ -89,11 +126,11 @@ function sync(){document.querySelectorAll('.sh-ra').forEach(labelRA);document.qu
 function mk(cls,fn){const b=document.createElement('button');b.type='button';b.className='btn sh-btn '+cls;b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();fn(b);});return b;}
 function ensureButtons(){SH_SEL.forEach(([kind,sel,head])=>{document.querySelectorAll(sel).forEach(el=>{const host=head?el.querySelector(head):el;if(!host)return;
   let box=host.querySelector(':scope > .sh-tools');
-  if(box&&kind==='tour'&&box.dataset.sig!==stepSig(el)){box.remove();box=null;}   /* fresh "confused" button for each step */
+  if(box&&kind==='tour'&&box.dataset.sig!==stepSig(el)){box.remove();box=null;const old=el.querySelector('.sh-help');if(old)old.remove();}   /* fresh "confused" button, help closed, for each step */
   if(box)return;box=document.createElement('span');box.className='sh-tools';if(kind==='tour')box.dataset.sig=stepSig(el);
   box.appendChild(mk('sh-ra',()=>{if(CAN_SPEAK)pickVoice();if(!voice){on=false;put(KEY_RA,false);sync();showHow();return;}on=!on;put(KEY_RA,on);sync();if(on){lastSig='';tick(true);}else SS.cancel();}));
   box.appendChild(mk('sh-er',()=>{easy=!easy;put(KEY_ER,easy);sync();}));
-  if(kind==='tour'||kind==='review'||kind==='guide'){const c=mk('sh-cf',b=>countConfused(el,b));c.textContent='😕 This confused me';c.title='Tell us this part was confusing (counted anonymously)';box.appendChild(c);}
+  if(kind==='tour'||kind==='review'||kind==='guide'||kind==='predict'){const c=mk('sh-cf',b=>toggleHelp(el,b,kind));c.textContent='😕 This confused me';c.title='Get help with this part (and tell us, anonymously, that it was confusing)';c.setAttribute('aria-expanded','false');box.appendChild(c);}
   if(head)host.appendChild(box);else host.insertBefore(box,host.firstChild);});});sync();}
 const stepSig=el=>{const n=el.querySelector('.tb-n'),t=el.querySelector('.tb-t');return (n?n.textContent:'')+'|'+(t?t.textContent:'')+'|'+location.hash;};
 /* The panel the student is looking at now. */
@@ -108,7 +145,10 @@ const T='.tourbar,.panel.review,.panel.predict,.donecard,.gutbox';
 const st=document.createElement('style');st.textContent=
 `.sh-tools{display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:auto;align-items:center}.donecard>.sh-tools,.gutbox>.sh-tools{display:flex;justify-content:flex-end;margin:0 0 8px}
 .sh-btn{font-size:13.5px;padding:4px 10px;line-height:1.3}.sh-btn[aria-pressed="true"]{background:var(--rj,#c8102e);color:#fff;border-color:var(--rj,#c8102e)}.sh-cf[disabled]{opacity:.8;cursor:default}
-.sh-tip{font-size:13px;color:var(--muted,#666)}#sh-how{max-width:min(560px,92vw);border:0;border-radius:14px;padding:22px 24px;line-height:1.55;font-size:16px}#sh-how::backdrop{background:rgba(0,0,0,.45)}#sh-how h2{margin:0 0 6px;font-size:20px}#sh-how ol{padding-left:22px;margin:12px 0 16px}#sh-how li{margin:0 0 12px}#sh-how img{display:block;max-width:100%;margin-top:8px;border:1px solid #ccd;border-radius:8px}.sh-why{display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-top:4px}.sh-chip{font-size:12.5px;padding:3px 9px;border-radius:999px}
+.sh-tip{font-size:13px;color:var(--muted,#666)}
+.sh-help{margin:8px 0;border:1.5px solid var(--rj,#c8102e);background:#fff8f2;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.5;text-align:left;color:var(--ink,#1a1a1a)}.sh-help p{margin:0}
+.sh-acts{display:flex;flex-wrap:wrap;gap:6px}.sh-a{font-size:13.5px;padding:4px 10px}
+.sh-whybox{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:1px dashed #d9c4b3;padding-top:6px;font-size:13.5px}#sh-how{max-width:min(560px,92vw);border:0;border-radius:14px;padding:22px 24px;line-height:1.55;font-size:16px}#sh-how::backdrop{background:rgba(0,0,0,.45)}#sh-how h2{margin:0 0 6px;font-size:20px}#sh-how ol{padding-left:22px;margin:12px 0 16px}#sh-how li{margin:0 0 12px}#sh-how img{display:block;max-width:100%;margin-top:8px;border:1px solid #ccd;border-radius:8px}.sh-why{display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-top:4px}.sh-chip{font-size:12.5px;padding:3px 9px;border-radius:999px}
 html.sh-easy :is(${T}) :is(p,li,.tb-x,.rv-q,.q,.choice,.verdict,.help){font-size:18px!important;line-height:1.75!important;letter-spacing:.035em!important;word-spacing:.14em!important;text-align:left!important;max-width:62ch}
 html.sh-easy :is(${T}) :is(.ln-k,.p-head h3,.tb-n){text-transform:none!important;letter-spacing:.02em!important;font-size:15px!important}
 html.sh-easy :is(${T}) :is(em,i){font-style:normal!important;font-weight:600}
