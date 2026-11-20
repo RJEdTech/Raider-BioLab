@@ -83,7 +83,7 @@ function stepCU(cu,dt){cu.t+=dt;cu.flash=Math.max(0,cu.flash-dt*2.2);const c=cu.
     else if(c.st==='slide'){c.p+=dt/.45;if(c.p>=1){c.st='hold';c.p=0;}}
     else if(c.st==='out'){c.p+=dt/1.2;if(c.p>=1){cu.chain=null;cu.wait=0;}}}
   else if(cu.auto){cu.wait+=dt;if(cu.wait>.5){cu.wait=0;cuSend(cu);}}
-  for(const m of cu.malt){m.a+=dt;if(m.dock){const tx=1010,ty=300,k=Math.min(1,dt*1.6);m.x+=(tx-m.x)*k;m.y+=(ty-m.y)*k;if(!m.done&&Math.abs(m.x-tx)<6){m.done=true;cu.sweet++;m.a=3.2;cu.sflash=1;}}else{m.x+=m.vx*dt;m.y+=m.vy*dt;m.vy+=6*dt;}}
+  for(const m of cu.malt){m.a+=dt;if(m.dock){const [tx,ty]=pocket(cu),k=Math.min(1,dt*1.6);m.x+=(tx-m.x)*k;m.y+=(ty-m.y)*k;if(!m.done&&Math.abs(m.x-tx)<6){m.done=true;cu.sweet++;m.a=3.2;cu.sflash=1;}}else{m.x+=m.vx*dt;m.y+=m.vy*dt;m.vy+=6*dt;}}
   cu.malt=cu.malt.filter(m=>m.a<4.4);cu.sflash=Math.max(0,(cu.sflash||0)-dt*1.6);}
 function chainPts(cu){const c=cu.chain,sp=SP*cu.sc,pts=[];if(!c)return pts;
   let lead=cu.cx+sp*1.5;                                  // two units sit past the cutting spot
@@ -100,11 +100,24 @@ function drawCU(ctx,cu,o){o=o||{};const r=HR*cu.sc;
   if(cu.flash>0){ctx.globalAlpha=cu.flash;ring(ctx,cu.cx,cu.cy,20*cu.sc*(1.4-cu.flash*.4),0,C.gold);ctx.globalAlpha=1;}
   for(const m of cu.malt){const a=m.a<.25?m.a/.25:m.a>3.6?Math.max(0,(4.4-m.a)/.8):1;ctx.globalAlpha=a;const d=SP*cu.sc/2;sugars(ctx,[[m.x-d,m.y],[m.x+d,m.y]],r,{halo:true});ctx.globalAlpha=1;}
 }
-function sensor(ctx,cu,t){ // a sweet sensor on the tongue: a pocket only small sugars fit
-  ctx.fillStyle='#f3b9bf';ctx.strokeStyle='#b0566a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(1210,150);ctx.lineTo(1080,150);ctx.quadraticCurveTo(1052,150,1052,190);ctx.lineTo(1052,262);ctx.lineTo(968,262);ctx.lineTo(968,338);ctx.lineTo(1052,338);ctx.lineTo(1052,410);ctx.quadraticCurveTo(1052,450,1080,450);ctx.lineTo(1210,450);ctx.closePath();ctx.fill();ctx.stroke();
-  txt(ctx,'sweet sensor',1128,206,{s:17,w:700,a:'center',c:'#7a2f42'});txt(ctx,'on your tongue',1128,227,{s:15,a:'center',c:'#7a2f42'});
-  txt(ctx,'Only small',1128,376,{s:15,a:'center',c:'#7a2f42'});txt(ctx,'sugars fit.',1128,396,{s:15,a:'center',c:'#7a2f42'});
-  if(cu.sflash>0){ctx.globalAlpha=cu.sflash;pill(ctx,'sweet!',1010,236,{bg:C.prod,c:'#fff',bd:null,s:22,w:700});ctx.globalAlpha=1;}}
+/* The sweet sensor: the human sweet taste receptor (PDB 9UTB), two proteins paired, standing in the membrane of a taste cell.
+   Drawn at the same pixels-per-ångström as the amylase beside it. Its own origin is the middle of the membrane. */
+const SW={x:1010,y:470};
+function pocket(cu){const s=PX*cu.sc,q=Story.mol.DATA.SWT.pts[0];return [SW.x+q[1]*s,SW.y+q[2]*s];}
+function sensor(ctx,cu,t){const s=PX*cu.sc,M=Story.mol,m=M.DATA.SWT,y0=SW.y+m.mem[0]*s,y1=SW.y+m.mem[1]*s,[px,py]=pocket(cu),x0=640;
+  ctx.fillStyle='#fbeeea';ctx.fillRect(x0,y1,W-x0,H-y1);ctx.fillStyle='#f6ead4';ctx.fillRect(x0,y0,W-x0,y1-y0);                     // inside the taste cell, and its membrane (about 4 nm thick, to scale)
+  ctx.strokeStyle='#d9c08a';ctx.lineWidth=2.4;ctx.beginPath();const sp=8*s,hr=3.2*s,tl=13*s;
+  for(let x=x0+sp/2;x<W;x+=sp){ctx.moveTo(x-hr*.4,y0+hr*2);ctx.lineTo(x-hr*.4,y0+hr*2+tl);ctx.moveTo(x+hr*.4,y0+hr*2);ctx.lineTo(x+hr*.4,y0+hr*2+tl);ctx.moveTo(x-hr*.4,y1-hr*2);ctx.lineTo(x-hr*.4,y1-hr*2-tl);ctx.moveTo(x+hr*.4,y1-hr*2);ctx.lineTo(x+hr*.4,y1-hr*2-tl);}ctx.stroke();
+  for(let x=x0+sp/2;x<W;x+=sp){dot(ctx,x,y0+hr,hr,'#e9c46a','#b89238',1);dot(ctx,x,y1-hr,hr,'#e9c46a','#b89238',1);}
+  const g=ctx.createLinearGradient(x0,0,x0+90,0);g.addColorStop(0,C.sol);g.addColorStop(1,'rgba(231,242,249,0)');ctx.fillStyle=g;ctx.fillRect(x0,y0-2,92,H-y0+2);
+  M.draw(ctx,'SWT',SW.x,SW.y,s);
+  pill(ctx,'surface of a taste cell',x0+176,(y0+y1)/2,{bg:'#fffaf0',c:'#6b5320',bd:'#b89238',s:15.5,w:700});txt(ctx,'inside the taste cell',x0+96,y1+34,{s:15,c:'#7a4a44'});
+  txt(ctx,'sweet sensor',SW.x-92,312,{s:17,w:700,a:'right',c:'#7a2f42'});txt(ctx,'(a receptor protein)',SW.x-92,333,{s:15,a:'right',c:'#7a2f42'});txt(ctx,'its real shape',SW.x-92,353,{s:15,a:'right',c:'#7a2f42'});
+  pill(ctx,'the pocket: only a small sugar fits',px-150,py-92,{bg:'#fff',c:'#7a2f42',bd:'#b0566a',s:15.5,w:700});arrow(ctx,px-96,py-76,px-10,py-10,{c:'#7a2f42',lw:2,head:10});
+  if(cu.sflash>0){ctx.globalAlpha=cu.sflash;pill(ctx,'sweet!',px+10,py-34,{bg:C.prod,c:'#fff',bd:null,s:22,w:700});
+    arrow(ctx,SW.x-150,y1+52,SW.x-150,H-8,{c:C.prod,lw:4,head:12});txt(ctx,'signal to your brain',SW.x-138,H-14,{s:15.5,w:700,c:shade(C.prod,-.25)});ctx.globalAlpha=1;}
+  ctx.strokeStyle=C.ink;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(30,H-44);ctx.lineTo(30+50*s,H-44);ctx.moveTo(30,H-51);ctx.lineTo(30,H-37);ctx.moveTo(30+50*s,H-51);ctx.lineTo(30+50*s,H-37);ctx.stroke();
+  txt(ctx,'5 nanometers',30+25*s,H-54,{s:15,w:700,a:'center',c:C.ink});txt(ctx,'Amylase, the sugars and the sweet sensor are drawn to one scale.',30,H-16,{s:15,c:C.soft});}
 
 /* ---------------- the tube: six enzymes in saliva ---------------- */
 const EPOS=[[150,160],[410,140],[670,170],[160,400],[420,420],[680,390]],TSC=1.2,TS=SP*TSC;   // in the tube: 2.2 pixels per ångström
@@ -235,14 +248,15 @@ function phPanel(ctx,s){const x=812,y=10,w=380;rr(ctx,x,y,w,580,12);ctx.fillStyl
 /* ---------------- tell-it-back frames ---------------- */
 const fr=(fn)=>(ctx)=>{ctx.save();ctx.beginPath();ctx.rect(0,0,300,193.3);ctx.clip();ctx.fillStyle=C.sol;ctx.fillRect(0,0,300,194);fn(ctx);ctx.restore();};
 const row=(x0,y,n,sp)=>{const a=[];for(let i=0;i<n;i++)a.push([x0+i*sp,y+Math.sin(i*.9)*5]);return a;};
-function miniSensor(ctx,ok){ctx.fillStyle='#f3b9bf';ctx.strokeStyle='#b0566a';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(300,40);ctx.lineTo(236,40);ctx.lineTo(236,78);ctx.lineTo(196,78);ctx.lineTo(196,116);ctx.lineTo(236,116);ctx.lineTo(236,154);ctx.lineTo(300,154);ctx.closePath();ctx.fill();ctx.stroke();
-  txt(ctx,'sweet',268,64,{s:13,w:700,a:'center',c:'#7a2f42'});txt(ctx,'sensor',268,140,{s:13,w:700,a:'center',c:'#7a2f42'});}
+const MS={x:246,y:148,px:246-17.4,py:148-101.2};
+function miniSensor(ctx){const M=Story.mol,m=M.DATA.SWT;ctx.fillStyle='#fbeeea';ctx.fillRect(176,MS.y+m.mem[1],124,60);ctx.fillStyle='#f0deb4';ctx.fillRect(176,MS.y+m.mem[0],124,m.mem[1]-m.mem[0]);M.draw(ctx,'SWT',MS.x,MS.y,1);
+  txt(ctx,'sweet',150,118,{s:13,w:700,a:'center',c:'#7a2f42'});txt(ctx,'sensor',150,133,{s:13,w:700,a:'center',c:'#7a2f42'});}
 const FRAMES=[
- {label:'A starch chain is too long to fit your sweet sensors',draw:fr(ctx=>{miniSensor(ctx);sugars(ctx,row(20,97,10,17),8);txt(ctx,'✗',182,72,{s:30,w:700,c:C.rj,a:'center'});})},
+ {label:'A starch chain is too long to fit your sweet sensors',draw:fr(ctx=>{miniSensor(ctx);sugars(ctx,row(14,MS.py,13,14),6);txt(ctx,'✗',204,MS.py+34,{s:30,w:700,c:C.rj,a:'center'});})},
  {label:'The chain slides into amylase’s groove (the active site)',draw:fr(ctx=>{enzyme(ctx,160,100,1.45,{});const p=[];for(let j=0;j<14;j++){const x=SP*1.45*(1.5-j);p.push([160+x,100+(Math.abs(x)<HALF*1.45?groove(x,1.45):groove(-HALF*1.45,1.45))]);}sugars(ctx,p,HR*1.45);})},
  {label:'The groove strains the bond, so an ordinary kick breaks it',draw:fr(ctx=>{ctx.fillStyle='#fbfaf6';ctx.fillRect(0,0,300,194);const X=f=>20+f*260,Y=e=>170-e*150;for(const [hb,col,dash] of [[HB_NO,'#8a8f98',[6,5]],[HB_ENZ,C.enz,[]]]){ctx.setLineDash(dash);ctx.lineWidth=dash.length?2.5:4.5;ctx.strokeStyle=col;ctx.beginPath();for(let i=0;i<=50;i++)ctx[i?'lineTo':'moveTo'](X(i/50),Y(hillY(i/50,hb)));ctx.stroke();}ctx.setLineDash([]);
    dot(ctx,X(.45),Y(hillY(.45,HB_ENZ))-9,9,C.sub,C.ink,1.5);ring(ctx,X(.45),Y(hillY(.45,HB_ENZ))-9,14,1,C.gold);txt(ctx,'lower hill',X(.62),Y(.5),{s:14,w:700,c:C.enz});})},
- {label:'Small sugars (maltose) float off and fit: it tastes sweet',draw:fr(ctx=>{miniSensor(ctx);sugars(ctx,[[207,97],[225,97]],8,{halo:true});sugars(ctx,[[60,60],[78,60]],8,{halo:true});sugars(ctx,[[110,140],[128,140]],8,{halo:true});pill(ctx,'sweet!',150,97,{bg:C.prod,c:'#fff',bd:null,s:16,w:700});})},
+ {label:'Small sugars (maltose) float off and fit: it tastes sweet',draw:fr(ctx=>{miniSensor(ctx);sugars(ctx,[[MS.px-6,MS.py],[MS.px+6,MS.py]],6,{halo:true});sugars(ctx,[[50,60],[62,60]],6,{halo:true});sugars(ctx,[[96,160],[108,160]],6,{halo:true});pill(ctx,'sweet!',150,MS.py,{bg:C.prod,c:'#fff',bd:null,s:16,w:700});})},
  {label:'Swallowed: stomach acid changes the groove, and amylase stops',draw:fr(ctx=>{enzyme(ctx,150,104,1.3,{charges:true,capped:true});for(let k=0;k<16;k++){const x=20+hash(k+1)*260,y=14+hash(k+8)*166;dot(ctx,x,y,5,C.h,'#fff',1.2);}sugars(ctx,row(150,36,7,17),8);pill(ctx,'stomach: pH 2',70,172,{bg:'#fff',c:C.h,bd:C.h,s:13.5,w:700});})},
  {label:'In the small intestine, new amylase finishes the job',draw:fr(ctx=>{enzyme(ctx,140,96,1.3,{charges:true});const p=[];for(let j=0;j<12;j++){const x=SP*1.3*(1.5-j);p.push([140+x,96+(Math.abs(x)<HALF*1.3?groove(x,1.3):groove(-HALF*1.3,1.3))]);}sugars(ctx,p,HR*1.3);sugars(ctx,[[236,60],[254,60]],8,{halo:true});sugars(ctx,[[250,120],[268,120]],8,{halo:true});pill(ctx,'small intestine: pH 7',96,172,{bg:'#fff',c:C.good,bd:C.good,s:13.5,w:700});})}
 ];
@@ -255,7 +269,7 @@ function tubeScene(ctx,S,o){drawTube(ctx,S.tube,o);if(!(o&&o.noSide))side(ctx,S.
 
 Story.start({
   id:'enzymes',title:'Why does a cracker turn sweet?',W,H,labHref:'../index.html#enzymes',
-  about:'<p><b>The shapes are real.</b> Amylase and pepsin are drawn from the measured positions of their atoms in the human proteins (Protein Data Bank entries 1SMD and 1PSN, found by X-ray crystallography). You are looking straight into the active site. The three small dots at the cutting spot are the three acid groups that do the cutting, in their measured places. The starch chain is to the same scale as the enzyme: its sugar units are 0.48 nanometers apart, and amylase is about 6 nanometers across.</p><p><b>What is simplified.</b> Colors are labels: molecules are too small to have a color, and the orange glow just marks sugars that have been cut free. Real salivary amylase also cuts in the middle of a chain, leaving a mix of small sugars that is mostly maltose; here it always snips two units off the end so you can follow it. An unfolded enzyme is shown as a loose wavy string, which is the idea, not a measurement. The fat, the protein chain and the sweet sensor are simple drawings. Everything is slowed down a lot: a real amylase makes hundreds of cuts a second, and on its own a starch bond would last for millions of years.</p><p><b>The numbers.</b> The rates use the same model as the full BioLab enzyme tool: twice as fast for every 10 °C, unfolding near 44 °C, permanent heat damage above about 55 °C, and a bell-shaped pH curve (best near pH 6.8 for amylase and pH 2 for pepsin). Real enzymes have messier curves. The energy hill is a picture of activation energy, not a measurement.</p>',
+  about:'<p><b>The shapes are real.</b> Amylase and pepsin are drawn from the measured positions of their atoms in the human proteins (Protein Data Bank entries 1SMD and 1PSN, found by X-ray crystallography). The sweet sensor is the human sweet taste receptor (entry 9UTB): two proteins paired up, standing in the skin of a taste cell. Scientists first measured its shape in 2025, by cryo-electron microscopy. You are looking straight into amylase’s active site. The three small dots at the cutting spot are the three acid groups that do the cutting, in their measured places. The starch chain is to the same scale as the enzyme: its sugar units are 0.48 nanometers apart, and amylase is about 6 nanometers across. The sweet sensor is to that scale too: about 17 nanometers tall.</p><p><b>What is simplified.</b> Colors are labels: molecules are too small to have a color, and the orange glow just marks sugars that have been cut free. Real salivary amylase also cuts in the middle of a chain, leaving a mix of small sugars that is mostly maltose; here it always snips two units off the end so you can follow it. An unfolded enzyme is shown as a loose wavy string, which is the idea, not a measurement. The fat and the protein chain are simple drawings. The sensor’s pocket is inside its top, which closes around a sugar like a Venus flytrap; the sugar is drawn on top so you can see it. In the measurement the pocket holds sucralose, a sweetener the size of maltose. Sugars are thought to use the same pocket, but that has not been measured with maltose. The two colors only mark the two proteins of the pair. Everything is slowed down a lot: a real amylase makes hundreds of cuts a second, and on its own a starch bond would last for millions of years.</p><p><b>The numbers.</b> The rates use the same model as the full BioLab enzyme tool: twice as fast for every 10 °C, unfolding near 44 °C, permanent heat damage above about 55 °C, and a bell-shaped pH curve (best near pH 6.8 for amylase and pH 2 for pepsin). Real enzymes have messier curves. The energy hill is a picture of activation energy, not a measurement.</p>',
   tell:{frames:FRAMES,terms:['enzyme|amylase','substrate|starch','active site|groove','activation energy|energy hill','product|maltose|sugar','denature','pH|acid','optimum|best temperature'],
     nudge:'For each picture ask: what had to happen just before this could happen?',
     done:'<b>That is the story.</b> Now tell it in your own words.',
@@ -278,17 +292,17 @@ Story.start({
    draw(ctx,S){drawZoom(ctx,S,S.v.z);}},
 
   {rail:'The cut',title:'One enzyme, one job',live:true,
-   text(S){const p=S.picks.why,cu=S.cu;return cu.cuts<1?'This is the real shape of amylase. The starch chain lies in a groove on its face. Send one in and watch the cutting spot.':
-     'Each time, amylase snips off two sugar units: a small sugar called <b>maltose</b>. Maltose fits your sweet sensors. Starch never could. '+(p===1?'You called it. ':p==null?'':'So it was not “'+PICK[p].toLowerCase()+'”. ')+'And the amylase is unchanged, ready to cut again.';},
+   text(S){const p=S.picks.why,cu=S.cu;return cu.cuts<1?'On the left is the real shape of amylase. Starch lies in a groove on its face. On the right is a sweet sensor on your tongue, also its real shape. Send in a starch chain.':
+     'Each cut frees two sugar units: a small sugar called <b>maltose</b>. It fits the pocket of your sweet sensor, a <b class="term">receptor</b> protein on a taste cell. Starch is far too long. '+(p===1?'You called it. ':p==null?'':'So it was not “'+PICK[p].toLowerCase()+'”. ')+'The amylase is unchanged, ready to cut again.';},
    alt:'Amylase is a pair of scissors that only cuts one kind of string. The string is starch. The scissors do not wear out, so one amylase can cut again and again.',
    ui:[{type:'button',label:'Send in a starch chain',pulse:true,act(S){S.cu.auto=true;cuSend(S.cu);},show:S=>!S.cu.auto}],
    todo:[{t:'Send in a starch chain',ok:S=>S.cu.auto},{t:'Watch 4 cuts',ok:S=>S.cu.cuts>=4}],
-   enter(S){S.cu=newCU({sensor:true,gap:.9,cx:470,cy:310});},tick(S,dt){stepCU(S.cu,dt);},
+   enter(S){S.cu=newCU({sensor:true,gap:.9,cx:390,cy:290,sc:1.73});},tick(S,dt){stepCU(S.cu,dt);},
    draw(ctx,S){const cu=S.cu;ctx.fillStyle=C.sol;ctx.fillRect(0,0,W,H);sensor(ctx,cu,S.t);drawCU(ctx,cu,{});
-     pill(ctx,'amylase (an enzyme): its real shape',cu.cx,cu.cy+186,{bg:'#fff',c:C.good,bd:C.good,s:17,w:700});
-     pill(ctx,'the cutting spot, in its active site',cu.cx,cu.cy-196,{bg:'#fff',c:C.ink,bd:C.ink,s:16});arrow(ctx,cu.cx,cu.cy-180,cu.cx,cu.cy-22,{c:C.ink,lw:2,head:10});
-     if(cu.chain&&cu.chain.st!=='out')pill(ctx,'starch (the substrate)',cu.cx-380,cu.cy+62,{bg:'#fff',c:shade(C.sub,-.3),bd:C.sub,s:16,w:700,a:'left'});
-     if(cu.cuts)pill(ctx,'maltose (the product)',760,196,{bg:'#fff',c:shade(C.prod,-.25),bd:C.prod,s:16,w:700});
+     pill(ctx,'amylase (an enzyme): its real shape',cu.cx,cu.cy+138,{bg:'#fff',c:C.good,bd:C.good,s:17,w:700});
+     pill(ctx,'the cutting spot, in its active site',cu.cx,cu.cy-146,{bg:'#fff',c:C.ink,bd:C.ink,s:16});arrow(ctx,cu.cx,cu.cy-130,cu.cx,cu.cy-18,{c:C.ink,lw:2,head:10});
+     if(cu.chain&&cu.chain.st!=='out')pill(ctx,'starch (the substrate)',30,cu.cy+60,{bg:'#fff',c:shade(C.sub,-.3),bd:C.sub,s:16,w:700,a:'left'});
+     if(cu.cuts)pill(ctx,'maltose (the product)',640,cu.cy-70,{bg:'#fff',c:shade(C.prod,-.25),bd:C.prod,s:16,w:700});
      pill(ctx,'Cuts by this one enzyme: '+cu.cuts,30,40,{bg:'#fff',c:C.ink,bd:C.ink,s:18,w:700,a:'left',r:8,lw:2});
      if(cu.sweet)pill(ctx,'Sugars tasted: '+cu.sweet,30,82,{bg:'#fff',c:shade(C.prod,-.25),bd:C.prod,s:18,w:700,a:'left',r:8,lw:2});}},
 
