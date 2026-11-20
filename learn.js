@@ -1595,7 +1595,7 @@ glycolysis: {
   startKey: 'arrive', startRun: true, startSpeed: 0.25,
   startOverlay(sim,ctx,LH,k){tag(ctx,'Each colored ball = one carbon atom',190,395,k,{s:12,hi:true});line(ctx,110,380,70,335);tag(ctx,'Glycolysis: in the cytoplasm',190,428,k,{s:12,hi:true});},
   steps: [
-    { key: 'arrive', title: 'One glucose, six carbons', set: { o2: true, mode: 'cell' }, fresh: true, speed: 0.25, focus: [30,42,320,80],
+    { key: 'arrive', title: 'One glucose, six carbons', set: { o2: true }, fresh: true, speed: 0.25, focus: [30,42,320,80],
       see: 'A glucose molecule arrives. Each colored ball is one of its 6 carbons, so you can follow every one.',
       why: 'Glucose is the sugar in your blood. Its bonds hold the energy the cell will move into ATP.',
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['Glucose: C₆H₁₂O₆',{s:14,w:800}],['About 1 nm across. The mitochondrion',{s:12}],['is drawn far smaller than the real 1–2 µm.',{s:12}]]);} },
@@ -1615,7 +1615,7 @@ glycolysis: {
       see: 'A loop of reactions strips off the last 4 carbons as CO₂. It is the <b>Krebs cycle</b>: it ends where it began, and Hans Krebs worked it out.',
       why: 'All 6 carbons are now CO₂, which you breathe out. Their energy goes onto carriers (NADH, FADH₂), plus 2 ATP.',
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['4 more carbons → CO₂ (all 6 gone)',{s:14,w:800}],['+2 ATP, +6 NADH, +2 FADH₂',{s:12}]]);} },
-    { key: 'etc', title: 'Electron transport makes most of the ATP', speed: 0.25, focus: [400,300,370,115],
+    { key: 'etc', title: 'The electron transport chain makes most of the ATP', speed: 0.25, focus: [400,300,370,115],
       see: 'The carriers pass electrons down a row of proteins, like a bucket brigade: the <b>electron transport chain</b>. Oxygen catches them at the end, making water and about 28 ATP.',
       why: 'This needs oxygen, so it is <b>aerobic</b> (“with air”). Total: 2 + 2 + 28 = about 32 ATP per glucose.',
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['2 + 2 + 28 ≈ 32 ATP per glucose',{s:15,w:800,c:CE_GREEN}],['O₂ + electrons + H⁺ → water',{s:12}]]);} },
@@ -1642,11 +1642,7 @@ glycolysis: {
       see: 'Switch to muscle. Pyruvate becomes lactate, and no CO₂ is released.',
       why: 'Fermentation makes no ATP itself. It turns NADH back into NAD⁺, so glycolysis can keep making its 2 ATP.',
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['Muscle: pyruvate → lactate',{s:14,w:800}],['Recycles NAD⁺ so glycolysis can continue.',{s:12}]]);} },
-    { key: 'balloon', lvl: 'honors', title: 'The yeast balloon lab', set: { mode: 'balloon' }, fresh: true, speed: 2, focus: [0,40,800,410],
-      see: 'Five yeast flasks. Glucose and sucrose fill their balloons with CO₂. Lactose and water barely change. Lactose plus lactase fills too.',
-      why: 'Yeast can split sucrose but make no lactase. Add lactase, and lactose becomes glucose they can ferment.',
-      overlay(sim,ctx,LH,k){ceCard(ctx,k,20,48,360,[['CO₂ in each balloon (mL)',{s:14,w:800}],['Glucose '+Math.round(phM(sim,'b_glu'))+'   Sucrose '+Math.round(phM(sim,'b_suc'))+'   Lactose '+Math.round(phM(sim,'b_lac')),{w:700}],['Lactose + lactase '+Math.round(phM(sim,'b_lacz'))+'   Water '+Math.round(phM(sim,'b_none')),{w:700}]]);} },
-    { key: 'where', lvl: 'ap', title: 'Where the ATP comes from', set: { o2: true, mode: 'cell' }, fresh: true, speed: 0.4, focus: [0,0,800,450],
+    { key: 'where', lvl: 'ap', title: 'Where the ATP comes from', set: { o2: true }, fresh: true, speed: 0.4, focus: [0,0,800,450],
       see: 'Back to the cell with oxygen. The card splits the 32 ATP by how each is made.',
       why: 'Enzymes hand phosphate straight to ADP for 4 ATP (substrate-level). The H⁺ gradient drives about 28 (oxidative phosphorylation).',
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['Substrate-level: 2 + 2 = 4 ATP',{s:13,w:800}],['Oxidative: about '+phM(sim,'oxPer')+' ATP',{s:13,w:800}],['10 NADH and 2 FADH₂ feed the chain',{s:12}]]);} }
@@ -1665,6 +1661,52 @@ glycolysis: {
     { title: 'the yeast balloon (30 minutes)',
       steps: ['Pour 1 cup of warm tap water (comfortable to touch, not hot) into each of two empty plastic bottles.', 'Add a packet of dry yeast to each. Add 2 tablespoons of sugar to one bottle only.', 'Stretch a balloon over each opening. Set both somewhere warm.', 'Check every 10 minutes.'],
       look: 'Only the bottle with sugar inflates its balloon. The yeast is fermenting the sugar and releasing CO₂, the same reaction as the class balloon lab.' }
+  ]
+},
+
+yeast: {
+  simple: true,
+  intro: { bio: 'You’ll run a class lab on screen: five flasks of yeast, and a balloon on each to catch the gas. You’ll find out which sugars yeast can use.' },
+  goals: { bio: ['Which sugars yeast can ferment, and which they can’t', 'What the water-only flask is for', 'How warming changes the rate, and why too hot stops it'] },
+  matters: 'This is how bread rises, and it is the same reason some people can’t digest milk: no lactase, no way to use lactose.',
+  question: 'Five flasks hold the same yeast but different sugars. Which balloons will fill, and which will stay flat?',
+  startKey: 'flasks', startRun: true, startSpeed: 2,
+  steps: [
+    { key: 'flasks', title: 'Five flasks, one question', set: { temp: 30 }, fresh: true, speed: 2, focus: [0,40,800,410],
+      see: 'Five flasks hold the same yeast. Four get a different sugar, and one gets only water. A balloon on each catches any gas.',
+      why: 'Yeast break sugar down without oxygen and give off CO₂. This is <b>fermentation</b>. A bigger balloon means more sugar was used.',
+      overlay(sim,ctx,LH,k){ceCard(ctx,k,20,48,372,[['CO₂ in each balloon (mL)',{s:14,w:800}],['Glucose '+Math.round(phM(sim,'b_glu'))+'   Sucrose '+Math.round(phM(sim,'b_suc'))+'   Lactose '+Math.round(phM(sim,'b_lac')),{w:700}],['Lactose + lactase '+Math.round(phM(sim,'b_lacz'))+'   Water '+Math.round(phM(sim,'b_none')),{w:700}]]);} },
+    { key: 'glucose', title: 'Glucose and sucrose fill', speed: 2, focus: [14,60,300,400],
+      see: 'Bubbles rise in flasks 1 and 2, and their balloons swell. Sucrose (table sugar) is a little behind glucose.',
+      why: 'Yeast use glucose directly. Sucrose is glucose joined to another sugar, and yeast make an enzyme that splits it first.',
+      overlay(sim,ctx,LH,k){ceCard(ctx,k,20,48,372,[['CO₂ in each balloon (mL)',{s:14,w:800}],['Glucose '+Math.round(phM(sim,'b_glu'))+'   Sucrose '+Math.round(phM(sim,'b_suc'))+'   Lactose '+Math.round(phM(sim,'b_lac')),{w:700}],['Lactose + lactase '+Math.round(phM(sim,'b_lacz'))+'   Water '+Math.round(phM(sim,'b_none')),{w:700}]]);} },
+    { key: 'lactose', title: 'Lactose stays flat', speed: 2, focus: [326,60,150,400],
+      see: 'Flask 3 has lactose, the sugar in milk. Its balloon barely changes.',
+      why: 'Lactose is two sugars joined together. Splitting it takes an enzyme called <b>lactase</b>, and baker’s yeast do not make it.',
+      overlay(sim,ctx,LH,k){ceCard(ctx,k,20,48,372,[['CO₂ in each balloon (mL)',{s:14,w:800}],['Glucose '+Math.round(phM(sim,'b_glu'))+'   Sucrose '+Math.round(phM(sim,'b_suc'))+'   Lactose '+Math.round(phM(sim,'b_lac')),{w:700}],['Lactose + lactase '+Math.round(phM(sim,'b_lacz'))+'   Water '+Math.round(phM(sim,'b_none')),{w:700}]]);} },
+    { key: 'lactase', title: 'Add lactase, and it fills', speed: 2, focus: [482,60,150,400],
+      see: 'Flask 4 has the same lactose plus lactase. Its balloon fills.',
+      why: 'Lactase splits each lactose into glucose and galactose. The yeast ferment the glucose half right away.',
+      overlay(sim,ctx,LH,k){ceCard(ctx,k,20,48,372,[['CO₂ in each balloon (mL)',{s:14,w:800}],['Glucose '+Math.round(phM(sim,'b_glu'))+'   Sucrose '+Math.round(phM(sim,'b_suc'))+'   Lactose '+Math.round(phM(sim,'b_lac')),{w:700}],['Lactose + lactase '+Math.round(phM(sim,'b_lacz'))+'   Water '+Math.round(phM(sim,'b_none')),{w:700}]]);} },
+    { key: 'water', title: 'Water only: the control', speed: 2, focus: [638,60,160,400],
+      see: 'Flask 5 has yeast and water but no sugar. Its balloon stays flat.',
+      why: 'This flask is the <b>control</b>. It shows the gas comes from the sugar, not from the yeast or the water.',
+      overlay(sim,ctx,LH,k){ceCard(ctx,k,20,48,372,[['CO₂ in each balloon (mL)',{s:14,w:800}],['Glucose '+Math.round(phM(sim,'b_glu'))+'   Sucrose '+Math.round(phM(sim,'b_suc'))+'   Lactose '+Math.round(phM(sim,'b_lac')),{w:700}],['Lactose + lactase '+Math.round(phM(sim,'b_lacz'))+'   Water '+Math.round(phM(sim,'b_none')),{w:700}]]);} },
+    { key: 'warm', cause: { from: { temp: 20 } }, title: 'Warmer is faster', set: { temp: 37 }, fresh: true, speed: 2, focus: [14,60,150,400],
+      see: 'The water bath warms from 20 to 37 °C. The glucose balloon grows faster.',
+      why: 'Fermentation runs on enzymes, and warm enzymes work faster. Above about 45 °C they lose their shape, and the yeast stop.',
+      overlay(sim,ctx,LH,k){ceCard(ctx,k,20,48,372,[['CO₂ in each balloon (mL)',{s:14,w:800}],['Glucose '+Math.round(phM(sim,'b_glu'))+'   Sucrose '+Math.round(phM(sim,'b_suc'))+'   Lactose '+Math.round(phM(sim,'b_lac')),{w:700}],['Lactose + lactase '+Math.round(phM(sim,'b_lacz'))+'   Water '+Math.round(phM(sim,'b_none')),{w:700}]]);} }
+  ],
+  useIt: [
+    { do: 'Let bread dough rise covered, somewhere warm but not hot.',
+      why: 'Yeast in the dough ferments sugar into CO₂ and alcohol. The CO₂ bubbles make the bread rise; too much heat stops the yeast, as you saw.' },
+    { do: 'If milk upsets your stomach, lactose-free milk or a lactase tablet may help. Ask a doctor if it keeps happening.',
+      why: 'Many people make little lactase after childhood, so lactose passes through undigested. Lactose-free milk has lactase added, the same fix as flask 4.' }
+  ],
+  tryIt: [
+    { title: 'the yeast balloon (30 minutes)',
+      steps: ['Pour 1 cup of warm tap water (comfortable to touch, not hot) into each of two empty plastic bottles.', 'Add a packet of dry yeast to each. Add 2 tablespoons of sugar to one bottle only.', 'Stretch a balloon over each opening. Set both somewhere warm.', 'Check every 10 minutes.'],
+      look: 'Only the bottle with sugar inflates its balloon. The bottle without sugar is your control.' }
   ]
 },
 
@@ -1798,7 +1840,19 @@ chloroplast:{questions:[
     choices:['Each one’s products are the other’s reactants','Both make oxygen from glucose and water','Both happen only in plant cells, in daylight','Respiration makes the light that photosynthesis uses'],correct:0,
     steps:['Photosynthesis turns CO₂ and water into glucose and O₂.','Respiration turns glucose and O₂ back into CO₂ and water, releasing energy as ATP.','Plants do both. Animals do only respiration.']}
   ]},
-glycolysis:{core:['carbons','invest','stagemost','o2why','bread','wherestage','nadplus','lactose'],questions:[
+yeast:{core:['gas','control','lactose','lactase','warm'],questions:[
+  {id:'gas',kind:'test',lvl:'bio',q:'What gas fills the balloons in the yeast lab, and where does it come from?',choices:['Oxygen, released as the yeast breathe out','CO₂, made as the yeast break down the sugar','Water vapor, rising off the warm water bath','Air, pushed out as the sugar dissolves'],correct:1,
+    steps:['With no oxygen in a sealed flask, yeast ferment the sugar.','Fermentation in yeast turns sugar into ethanol and CO₂.','The CO₂ is a gas, so it collects in the balloon.']},
+  {id:'control',kind:'test',lvl:'bio',q:'Why does the lab include a flask with yeast and water but no sugar?',choices:['To keep extra yeast ready in case another flask fails','To show that the gas comes from the sugar, not the yeast or water','To cool the other flasks so they stay the same temperature','To give the yeast a place to grow before the lab begins'],correct:1,
+    steps:['That flask is the control: everything is the same except the thing being tested.','Its balloon stays flat.','So the gas in the other balloons must come from the sugar.']},
+  {id:'lactose',kind:'test',lvl:'bio',q:'In the balloon lab, yeast fills balloons with glucose and sucrose but not lactose. Why?',choices:['Lactose is too sweet, and the extra sugar slows yeast down','Yeast lack the enzyme to split lactose into usable sugars','Lactose isn’t a sugar at all, so yeast can’t ferment it','Lactose is toxic to yeast and kills them in the balloon'],correct:1,
+    steps:['Yeast can ferment glucose directly.','It has an enzyme (invertase) that splits sucrose into glucose and fructose.','It has no lactase, so lactose stays unused and the balloon stays flat.']},
+  {id:'lactase',kind:'test',lvl:'bio',q:'Flask 4 has the same lactose as flask 3, plus lactase. Its balloon fills, but a little less than the glucose balloon. Why?',choices:['Lactase is a sugar too, so the yeast ferment it along with the lactose','Lactase kills some of the yeast, so fewer are left to make CO₂','Lactase splits lactose into glucose and galactose, which yeast can use','Lactase turns the yeast’s fermentation into aerobic respiration'],correct:2,
+    steps:['Lactase is an enzyme. It cuts the bond holding lactose’s two sugars together, using one water.','That frees glucose, which yeast ferment right away, so CO₂ fills the balloon.','The other half is galactose. Yeast need hours to switch on the genes for it, so in one hour only about half the sugar is used.']},
+  {id:'warm',kind:'test',lvl:'bio',q:'The lab is run at 20 °C and again at 37 °C. After 20 minutes, which glucose balloon is bigger, and why?',choices:['The 20 °C one, because cold water holds more gas','The 37 °C one, because warm enzymes work faster','They match, because both have the same sugar','The 20 °C one, because heat kills the yeast'],correct:1,
+    steps:['Fermentation is run by enzymes.','Warming speeds enzymes up, about twice as fast for every 10 °C.','So the 37 °C flask makes CO₂ faster, until about 45 °C, where the enzymes start to lose their shape.']}
+  ]},
+glycolysis:{core:['carbons','invest','stagemost','o2why','bread','wherestage','nadplus'],questions:[
   {id:'carbons',kind:'test',lvl:'bio',q:'With oxygen, where do all 6 carbon atoms of a glucose end up?',choices:['In ATP','As CO₂ that you breathe out','As water','They stay in the mitochondrion'],correct:1,
     steps:['2 carbons leave as CO₂ when pyruvate enters the mitochondrion.','The other 4 leave as CO₂ in the Krebs cycle.','You breathe that CO₂ out, which is where most of the mass of burned food goes.']},
   {id:'o2why',kind:'test',lvl:'bio',q:'Why does a cell get about 32 ATP per glucose with oxygen but only 2 without it?',choices:['Oxygen accepts electrons at the end of the chain; without it only glycolysis runs','Oxygen is itself a fuel, and burning it is what releases most of the 32 ATP','Glucose can’t get into cells without oxygen, so only a little is used','Without oxygen the cell still makes 32 ATP, it just takes much longer'],correct:0,
@@ -1811,10 +1865,6 @@ glycolysis:{core:['carbons','invest','stagemost','o2why','bread','wherestage','n
     steps:['Burning fat and sugar breaks their carbon chains apart.','Those carbons leave as CO₂, as you saw in the Krebs cycle.','You breathe the CO₂ out, so most of the lost mass leaves through your lungs.']},
   {id:'nadplus',kind:'test',lvl:'honors',q:'Fermentation makes no ATP. Why do cells do it?',choices:['To make CO₂, which the cell needs to stay at the right pH','To turn pyruvate back into glucose for the next round','It turns NADH back into NAD⁺, so glycolysis can keep going','To get rid of extra heat when the cell is working hard'],correct:2,
     steps:['Glycolysis needs NAD⁺ to accept electrons.','Without oxygen, NADH can’t unload at the electron transport chain.','Fermentation unloads NADH onto pyruvate (making lactate or ethanol), freeing NAD⁺ so glycolysis can continue.']},
-  {id:'lactose',kind:'test',lvl:'honors',q:'In the balloon lab, yeast fills balloons with glucose and sucrose but not lactose. Why?',choices:['Lactose is too sweet, and the extra sugar slows yeast down','Yeast lack the enzyme to split lactose into usable sugars','Lactose isn’t a sugar at all, so yeast can’t ferment it','Lactose is toxic to yeast and kills them in the balloon'],correct:1,
-    steps:['Yeast can ferment glucose directly.','It has an enzyme (invertase) that splits sucrose into glucose and fructose.','It has no lactase, so lactose stays unused and the balloon stays flat.']},
-  {id:'lactase',kind:'test',lvl:'honors',q:'Flask 4 has the same lactose as flask 3, plus lactase. Its balloon fills, but a little less than the glucose balloon. Why?',choices:['Lactase is a sugar too, so the yeast ferment it along with the lactose','Lactase kills some of the yeast, so fewer are left to make CO₂','Lactase splits lactose into glucose and galactose, which yeast can use','Lactase turns the yeast’s fermentation into aerobic respiration'],correct:2,
-    steps:['Lactase is an enzyme. It cuts the bond holding lactose’s two sugars together, using one water.','That frees glucose, which yeast ferment right away, so CO₂ fills the balloon.','The other half is galactose. Yeast need hours to switch on the genes for it, so in one hour only about half the sugar is used.']},
   {id:'substrate',kind:'test',lvl:'ap',q:'How many of the ~32 ATP per glucose come from substrate-level phosphorylation?',choices:['2','28','32','4'],correct:3,
     steps:['Substrate-level: an enzyme transfers phosphate directly to ADP.','Glycolysis gives 2 net this way and the Krebs cycle gives 2.','The other ~28 come from oxidative phosphorylation via ATP synthase.']},
   {id:'stagemost',kind:'test',lvl:'bio',

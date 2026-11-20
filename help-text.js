@@ -29,8 +29,14 @@ H.glycolysis={
  noo2:{ask:'What happens when there is no oxygen?',another:'With no catcher at the end of the line, only the first stage (glycolysis) runs: 2 ATP instead of about 32.',start:'Compare the ATP on the card with the last step.'},
  tally:{ask:'How much more ATP do you get with oxygen?',another:'About 32 vs 2 is like earning $32 instead of $2 for the same work: 16 times as much.',start:'Read the two bars and divide.'},
  muscle:{ask:'Why do muscles make lactate when they run short of oxygen?',another:'Fermentation is like emptying a full backpack so you can keep carrying: it empties NADH back to NAD⁺, so glycolysis can keep going.',start:'Watch pyruvate become lactate. Notice that no CO₂ comes off.'},
- balloon:{ask:'Why do some balloons fill and others don’t?',another:'Yeast can only use sugars they can break apart. Lactose needs a tool (lactase) they don’t have. Give them the tool and they can use it.',start:'Compare the balloons. Which sugars made CO₂?'},
  where:{ask:'Which way of making ATP gives the most?',another:'Two ways to get paid: a few coins handed over directly (4 ATP), or a big paycheck from the H⁺ flow through ATP synthase (about 28 ATP).',start:'Read the two parts of the 32 on the card.'}};
+H.yeast={
+ flasks:{ask:'What is being tested in the five flasks?',another:'Same yeast, different food. Each balloon is a scoreboard for how much of that food the yeast could use.',start:'Read the label under each flask, then watch the balloons.'},
+ glucose:{ask:'Why do the glucose and sucrose balloons fill?',another:'Glucose is ready to use. Sucrose is glucose with another sugar attached, and yeast have the tool to snap them apart.',start:'Compare balloon 1 and balloon 2. Which is a little ahead?'},
+ lactose:{ask:'Why does the lactose balloon stay flat?',another:'Yeast can only use sugars they can break apart. Lactose needs a tool (lactase) they don’t have.',start:'Compare balloon 3 with balloon 1.'},
+ lactase:{ask:'What changes when lactase is added?',another:'Give the yeast the missing tool and the locked sugar opens: lactase splits lactose, and the yeast can use the glucose half.',start:'Compare balloon 4 with balloon 3. They have the same sugar.'},
+ water:{ask:'What is the water-only flask for?',another:'It is the “nothing changed” flask. If its balloon filled, the gas would not be coming from the sugar.',start:'Look at balloon 5. Did it change?'},
+ warm:{ask:'Why does warming speed it up?',another:'Enzymes are like workers who move faster when warm, until it gets so hot they can’t work at all.',start:'Watch the banner for the temperature change, then the glucose balloon.'}};
 H.water={
  start:{ask:'Nothing to answer yet: you’ll heat ice into steam.',start:'Press Next and watch the thermometer.'},
  molecule:{ask:'Why is water called polar?',another:'Like a magnet with two ends: the oxygen end is a little negative, the hydrogen ends a little positive.',start:'Find the δ− on the oxygen and the δ+ on the hydrogens.'},
