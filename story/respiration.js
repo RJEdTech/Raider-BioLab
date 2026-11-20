@@ -8,7 +8,9 @@ const {clamp,lerp,ease,rr,txt,pill,ring,boxring,arrow,hash}=Story.h;
 const W=1200,H=600;
 const C={ims:'#fcefe4',matrix:'#e6f0f8',head:'#dca23a',tail:'#eadbb2',ink:'#26262b',soft:'#62626a',h:'#d81b6a',e:'#f7c20a',es:'#6b4e00',
   atp:'#1b7339',c1:'#3f6fb5',c3:'#22887a',c4:'#7a55a8',syn:'#9c2536',syn2:'#c44a5c',q:'#e08a1e',cyt:'#b8502f',o:'#2f86d1',rj:'#C11430',think:'#a8178f'};
-const X={I:230,III:500,IV:730,S:1000},M0=130,M1=190,TOPH=310;
+const X={I:230,III:500,IV:730,S:1000},M0=142,M1=178,TOPH=310;
+const SA=.8,OR={I:[222,160],III:[500,160],IV:[730,160]};      // SA: pixels per ångström (so 10 nm = 80 px); OR: where each real structure's own origin sits
+const PUMPX={I:[130,162,194,226],III:[478,492,508,522],IV:[722,740]};   // Complex I really has four separate H+ channels along its membrane arm
 const LV=[402,457,487,573];              // electron energy steps, to scale (150 px per volt): NADH -0.32 V, Q +0.05, cytochrome c +0.25, O2 +0.82
 const TR={x0:250,x1:1080,y0:350,y1:376},LOW=586,TUBE={I:268,III:538,IV:768},TY=470;   // TY: turbine center
 const NMAX=48,PUMPN={I:4,III:4,IV:2};
@@ -20,7 +22,7 @@ const G=sim=>Math.min(1,sim.ims.length/NMAX);
 function addIMS(sim,n){for(let k=0;k<n;k++){const s=sim.seed++;sim.ims.push({x:20+hash(s)*1160,y:30+hash(s+.5)*84,vx:0,vy:0});}}
 function sendNADH(sim){if(sim.pairs.some(p=>p.st==='dock'))return false;sim.pairs.push({st:'dock',p:0});return true;}
 function pump(sim,at){if(!sim.showH)return;const n=PUMPN[at];sim.tally[at]=n;sim.n.h+=n;
-  for(let i=0;i<n;i++){const s=sim.seed++;sim.fly.push({k:'hup',at,p:-i*0.13,x:X[at]+(i-(n-1)/2)*15,tx:clamp(X[at]+(hash(s)-.5)*260,20,1180),ty:34+hash(s+.3)*76});}}
+  for(let i=0;i<n;i++){const s=sim.seed++;sim.fly.push({k:'hup',at,i,p:-i*0.13,x:PUMPX[at][i],tx:clamp(PUMPX[at][i]+(hash(s)-.5)*200,20,1180),ty:34+hash(s+.3)*84});}}
 function rate(sim,k,win){win=win||5;const a=sim.ev[k==='atp'?'h':'w'];while(a.length&&a[0]<sim.t-win)a.shift();return a.length/(k==='atp'?4:2)/Math.min(win,Math.max(2,sim.t));}   // ATP = H+ through / 4; O2 = waters / 2
 function step(sim,dt){
   sim.t+=dt;const g=G(sim),bp=sim.showH?Math.max(0,1-g*g):1;sim.bp=bp;
@@ -45,9 +47,9 @@ function step(sim,dt){
   // H+ crowd: random walk, with a gentle pull toward an open ATP synthase
   for(const h of sim.ims){h.vx+=(Math.random()-.5)*520*dt;h.vy+=(Math.random()-.5)*520*dt;if(sim.open)h.vx+=Math.sign(X.S-h.x)*26*dt;
     h.vx*=.94;h.vy*=.94;h.x+=h.vx*dt;h.y+=h.vy*dt;if(h.x<14){h.x=14;h.vx=Math.abs(h.vx);}if(h.x>1186){h.x=1186;h.vx=-Math.abs(h.vx);}
-    if(h.y<30){h.y=30;h.vy=Math.abs(h.vy);}if(h.y>116){h.y=116;h.vy=-Math.abs(h.vy);}}
+    if(h.y<30){h.y=30;h.vy=Math.abs(h.vy);}if(h.y>128){h.y=128;h.vy=-Math.abs(h.vy);}}
   if(sim.open&&sim.ims.length){sim.acc+=sim.d*12*Math.max(g,.3)*dt;
-    while(sim.acc>=1&&sim.ims.length){sim.acc-=1;let bi=0,bd=1e9;sim.ims.forEach((h,i)=>{const d=Math.abs(h.x-X.S)+Math.abs(h.y-116)*.4;if(d<bd){bd=d;bi=i;}});
+    while(sim.acc>=1&&sim.ims.length){sim.acc-=1;let bi=0,bd=1e9;sim.ims.forEach((h,i)=>{const d=Math.abs(h.x-X.S-20)+Math.abs(h.y-128)*.4;if(d<bd){bd=d;bi=i;}});
       const h=sim.ims.splice(bi,1)[0];sim.fly.push({k:'hdown',x:h.x,y:h.y,p:0});sim.rotorT+=Math.PI/6;sim.through++;sim.ev.h.push(sim.t);
       if(sim.through%4===0){sim.n.atp++;sim.fly.push({k:'atp',p:0,s:hash(sim.n.atp*3.1)});}}}
   else sim.acc=Math.min(sim.acc,.5);
@@ -66,13 +68,14 @@ function shade(hex,k){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b
 function poly(pts,p){ // point along a polyline, p in 0..1
   let L=0;const seg=[];for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);seg.push(d);L+=d;}
   let s=clamp(p,0,1)*L;for(let i=0;i<seg.length;i++){if(s<=seg[i]||i===seg.length-1){const k=seg[i]?s/seg[i]:0;return [lerp(pts[i][0],pts[i+1][0],k),lerp(pts[i][1],pts[i+1][1],k)];}s-=seg[i];}}
-const PATH={I:[[186,262],[208,236],[208,160],[286,160]],III:[[462,160],[486,152],[518,130],[540,114]],IV:[[704,116],[726,140],[734,170],[738,198]]};
+/* electron paths go through the real stepping stones: FMN and the iron-sulfur clusters in Complex I, heme and iron-sulfur in Complex III, copper and heme in Complex IV */
+const PATH={I:[[278,259],[276,250],[266,246],[272,242],[272,233],[272,219],[268,213],[261,204],[258,182]],III:[[484,156],[494,149],[482,126],[486,123],[486,104]],IV:[[733,118],[733,143],[736,158],[735,164]]};
 function pairXY(p){
-  if(p.st==='dock')return [lerp(64,150,ease(p.p)),262];
+  if(p.st==='dock')return [lerp(64,222,ease(p.p)),264];
   if(p.st==='I')return poly(PATH.I,p.p);
-  if(p.st==='Q')return [lerp(302,452,p.p),160];
+  if(p.st==='Q')return [lerp(262,480,p.p),lerp(172,158,p.p)];
   if(p.st==='III')return poly(PATH.III,p.p);
-  if(p.st==='c')return [lerp(548,698,p.p),112];
+  if(p.st==='c')return [lerp(486,733,p.p),lerp(90,104,p.p)+26*Math.sin(p.p*Math.PI)];
   return poly(PATH.IV,p.p);}
 function pairE(p){ // the same pair on the energy stairs
   const d=(a,b,pp)=>lerp(a,b,ease((pp-.5)/.5));
@@ -84,54 +87,44 @@ function pairE(p){ // the same pair on the energy stairs
   return [lerp(708,756,p.p),p.p<.5?LV[2]:d(LV[2],LV[3],p.p)];}
 
 /* ---------------- top picture: the real parts ---------------- */
-function drawTop(ctx,sim,o){o=o||{};const t=o.t||0,x0=o.x0||0;
-  ctx.fillStyle=C.ims;ctx.fillRect(0,0,W,M0+30);ctx.fillStyle=C.matrix;ctx.fillRect(0,M1-30,W,TOPH-M1+30);
-  // membrane: two rows of lipids
-  ctx.strokeStyle=C.tail;ctx.lineWidth=2.2;ctx.beginPath();
-  for(let x=7;x<W;x+=12.5){ctx.moveTo(x-2.4,M0+9);ctx.lineTo(x-2.4,M0+29);ctx.moveTo(x+2.4,M0+9);ctx.lineTo(x+2.4,M0+29);ctx.moveTo(x-2.4,M1-29);ctx.lineTo(x-2.4,M1-9);ctx.moveTo(x+2.4,M1-29);ctx.lineTo(x+2.4,M1-9);}ctx.stroke();
-  for(let x=7;x<W;x+=12.5){dot(ctx,x,M0+5,5.4,C.head,shade(C.head,-.3),1);dot(ctx,x,M1-5,5.4,C.head,shade(C.head,-.3),1);}
+function drawTop(ctx,sim,o){o=o||{};const t=o.t||0,x0=o.x0||0,M=Story.mol;
+  ctx.fillStyle=C.ims;ctx.fillRect(0,0,W,M0+18);ctx.fillStyle=C.matrix;ctx.fillRect(0,M1-18,W,TOPH-M1+18);
+  // membrane, to scale: two rows of lipids about 4.5 nm across in all
+  ctx.strokeStyle=C.tail;ctx.lineWidth=1.6;ctx.beginPath();
+  for(let x=4;x<W;x+=6.6){ctx.moveTo(x-1.5,M0+6);ctx.lineTo(x-1.5,M0+18);ctx.moveTo(x+1.5,M0+6);ctx.lineTo(x+1.5,M0+18);ctx.moveTo(x-1.5,M1-18);ctx.lineTo(x-1.5,M1-6);ctx.moveTo(x+1.5,M1-18);ctx.lineTo(x+1.5,M1-6);}ctx.stroke();
+  for(let x=4;x<W;x+=6.6){dot(ctx,x,M0+3.5,3.1,C.head,shade(C.head,-.3),.8);dot(ctx,x,M1-3.5,3.1,C.head,shade(C.head,-.3),.8);}
   {const w=txt(ctx,'OUTSIDE THE INNER MEMBRANE',x0+14,22,{s:15,w:700,c:'#8a5a33'});txt(ctx,'(intermembrane space)',x0+22+w,22,{s:15,c:'#8a5a33'});}
-  {const w=txt(ctx,'INSIDE THE MITOCHONDRION',330,TOPH-9,{s:15,w:700,c:'#44688a'});txt(ctx,'(matrix)',338+w,TOPH-9,{s:15,c:'#44688a'});}
-  // scale bar: 10 nm = 86 px
-  ctx.strokeStyle=C.ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0+470,17);ctx.lineTo(x0+556,17);ctx.moveTo(x0+470,11);ctx.lineTo(x0+470,23);ctx.moveTo(x0+556,11);ctx.lineTo(x0+556,23);ctx.stroke();
-  txt(ctx,'10 nanometers',x0+565,22,{s:15,w:600});
-  // Complex I: L shape, one arm in the membrane and one hanging into the matrix
-  body(ctx,C.c1,()=>{ctx.beginPath();ctx.moveTo(182,124);ctx.arcTo(316,124,316,196,22);ctx.arcTo(316,196,240,196,22);ctx.lineTo(244,196);ctx.arcTo(244,284,178,284,26);ctx.arcTo(170,284,170,200,26);ctx.arcTo(162,196,162,124,20);ctx.arcTo(162,124,316,124,22);ctx.closePath();});
-  // Complex III: a pair (dimer)
-  body(ctx,C.c3,()=>{ctx.beginPath();rr(ctx,456,106,48,124,22);});body(ctx,C.c3,()=>{ctx.beginPath();rr(ctx,496,106,48,124,22);});
-  // Complex IV
-  body(ctx,C.c4,()=>{ctx.beginPath();rr(ctx,690,110,84,102,26);});
-  // ATP synthase: ring in the membrane, axle, and the head that stays still
-  ctx.strokeStyle=shade(C.syn,-.3);ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(1050,132);ctx.quadraticCurveTo(1078,200,1048,246);ctx.stroke();
-  body(ctx,C.syn,()=>{ctx.beginPath();rr(ctx,960,124,80,72,12);});
-  ctx.save();ctx.beginPath();rr(ctx,960,124,80,72,12);ctx.clip();const off=((sim.rotor/(Math.PI/6))*10)%20;ctx.strokeStyle='rgba(255,255,255,.34)';ctx.lineWidth=5;
-  for(let x=950+off;x<1050;x+=20){ctx.beginPath();ctx.moveTo(x,126);ctx.lineTo(x,194);ctx.stroke();}ctx.restore();
-  ctx.fillStyle=shade(C.syn,-.2);ctx.fillRect(992,196,16,30);
-  const sq=Math.floor(sim.through/4)%3;
-  for(let k=0;k<3;k++){const cx=974+k*26;ctx.beginPath();ctx.ellipse(cx,256,15.5,33,0,0,6.2832);ctx.fillStyle=k%2?C.syn2:C.syn;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=shade(C.syn,-.4);ctx.stroke();}
-  // carriers
-  const qx=302+150*sim.q.p,cx=548+150*sim.c.p;
-  ctx.beginPath();ctx.ellipse(qx,160,15,10,0,0,6.2832);ctx.fillStyle=C.q;ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle=shade(C.q,-.4);ctx.stroke();txt(ctx,'Q',qx,164.5,{s:12.5,w:700,a:'center',c:'#fff'});
-  dot(ctx,cx,112,12,C.cyt,shade(C.cyt,-.4),1.5);txt(ctx,'c',cx,116,{s:13,w:700,a:'center',c:'#fff'});
+  {const w=txt(ctx,'INSIDE THE MITOCHONDRION',350,TOPH-6,{s:15,w:700,c:'#44688a'});txt(ctx,'(matrix)',358+w,TOPH-6,{s:15,c:'#44688a'});}
+  // scale bar: 10 nm = 80 px
+  ctx.strokeStyle=C.ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0+470,17);ctx.lineTo(x0+550,17);ctx.moveTo(x0+470,11);ctx.lineTo(x0+470,23);ctx.moveTo(x0+550,11);ctx.lineTo(x0+550,23);ctx.stroke();
+  txt(ctx,'10 nanometers',x0+559,22,{s:15,w:600});
+  // the real structures (Protein Data Bank 5XTH and 8H9S), all at the same scale
+  M.draw(ctx,'CI',OR.I[0],OR.I[1],SA);M.draw(ctx,'CIII',OR.III[0],OR.III[1],SA);M.draw(ctx,'CIV',OR.IV[0],OR.IV[1],SA);M.drawATP(ctx,X.S,160,SA,sim.rotor);
+  // the electron stepping stones inside them, at their measured positions
+  for(const k of ['I','III','IV'])for(const q of M.pts('C'+k)){const px=OR[k][0]+q[1]*SA,py=OR[k][1]+q[2]*SA,cu=q[0][0]==='C',he=q[0][0]==='h';dot(ctx,px,py,he?3.6:3,cu?'#7fd0f0':he?'#f08a6a':'#ffe58a','rgba(40,30,0,.75)',1);}
+  // carriers: Q moves inside the membrane; cytochrome c moves along its outer face
+  const qp=sim.q.p,qx=lerp(262,480,qp),qy=lerp(172,158,qp);ctx.strokeStyle=shade(C.q,-.25);ctx.lineWidth=2.4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(qx-5,qy);for(let i=1;i<=5;i++)ctx.lineTo(qx-5-i*5,qy+((i%2)?3:-3));ctx.stroke();
+  dot(ctx,qx,qy,6,C.q,shade(C.q,-.45),1.4);txt(ctx,'Q',qx,qy-10,{s:13.5,w:700,a:'center',c:shade(C.q,-.5),halo:3});
+  const cp=sim.c.p,cx=lerp(486,733,cp),cy=lerp(90,104,cp)+26*Math.sin(cp*Math.PI);dot(ctx,cx,cy,12,C.cyt,shade(C.cyt,-.4),1.5);txt(ctx,'c',cx,cy+4.5,{s:14,w:700,a:'center',c:'#fff'});
   // part names
-  const nm=(a,b,x,y)=>{txt(ctx,a,x,y,{s:18,w:700,a:'center',c:'#fff'});if(b)txt(ctx,b,x,y+16,{s:13.5,w:500,a:'center',c:'rgba(255,255,255,.9)'});};
-  nm('Pump 1','Complex I',226,152);nm('Pump 2','Complex III',500,186);nm('Pump 3','Complex IV',732,176);
-  txt(ctx,'ATP synthase',X.S,TOPH-5,{s:16.5,w:700,a:'center',c:C.syn,halo:4});
-  // oxygen waiting at the last pump, and the supply drifting nearby
-  const ox=734,oy=228;
-  if(sim.oAtoms>0){for(let k=0;k<sim.oAtoms;k++)dot(ctx,ox+k*17,oy,9.5,C.o,shade(C.o,-.4),1.5);txt(ctx,sim.oAtoms===2?'O₂':'O',ox+(sim.oAtoms===2?8.5:0),oy+27,{s:15.5,w:700,a:'center',c:shade(C.o,-.45)});}
-  const nO=Math.round(sim.o2*4);for(let k=0;k<nO;k++){const bx=830+k*38+Math.sin(t*.7+k*2)*8,by=250+Math.cos(t*.5+k*1.3)*16+(k%2)*18;dot(ctx,bx,by,8,C.o,shade(C.o,-.4),1.3);dot(ctx,bx+14,by,8,C.o,shade(C.o,-.4),1.3);}
+  const nm=(a,b,x,y)=>{txt(ctx,a,x,y,{s:17,w:700,a:'center',c:'#fff',halo:4,hc:'rgba(20,20,30,.6)'});if(b)txt(ctx,b,x,y+16,{s:13.5,w:600,a:'center',c:'#fff',halo:3.5,hc:'rgba(20,20,30,.6)'});};
+  nm('Pump 1','Complex I',170,156);nm('Pump 2','Complex III',500,204);nm('Pump 3','Complex IV',730,194);
+  txt(ctx,'ATP synthase',X.S+6,120,{s:16.5,w:700,a:'center',c:C.syn,halo:4.5});
+  // oxygen at the real reaction site, deep inside Complex IV (drawn on top so you can see it), and the supply drifting nearby
+  const ox=727,oy=171;
+  if(sim.oAtoms>0){for(let k=0;k<sim.oAtoms;k++)dot(ctx,ox+k*16,oy,8.5,C.o,'#fff',1.6);}
+  const nO=Math.round(sim.o2*4);for(let k=0;k<nO;k++){const bx=820+k*30+Math.sin(t*.7+k*2)*8,by=262+Math.cos(t*.5+k*1.3)*12+(k%2)*14;dot(ctx,bx,by,7.5,C.o,shade(C.o,-.4),1.3);dot(ctx,bx+13,by,7.5,C.o,shade(C.o,-.4),1.3);}
   if(nO)txt(ctx,'oxygen from your breath',936,TOPH-9,{s:14.5,c:shade(C.o,-.45),w:600,a:'right'});
   // waiting NADH (fuel), then every moving particle
-  if(o.fuel!==false&&x0<20)for(let k=0;k<2;k++)nadh(ctx,[48,44][k]+Math.sin(t*.6+k)*5,[218,294][k]+Math.cos(t*.8+k*2)*3,.5);
+  if(o.fuel!==false&&x0<20)for(let k=0;k<2;k++)nadh(ctx,[48,44][k]+Math.sin(t*.6+k)*5,[222,294][k]+Math.cos(t*.8+k*2)*3,.5);
   for(const p of sim.pairs){const [x,y]=pairXY(p);if(p.st==='dock')nadh(ctx,x,y,1,true);else epair(ctx,x,y);}
   for(const f of sim.fly){
-    if(f.k==='hup'&&f.p>0){const y0=f.at==='I'?222:f.at==='III'?236:218,e=ease(f.p),x=lerp(f.x,f.tx,e*e),y=lerp(y0,f.ty,e);hplus(ctx,x,y,Math.min(1,f.p*5));}
-    else if(f.k==='hdown'){const e=f.p;let x,y;if(e<.45){const k=ease(e/.45);x=lerp(f.x,X.S,k);y=lerp(f.y,124,k);}else{const k=(e-.45)/.55;x=X.S+Math.sin(k*9)*5;y=lerp(124,214,k);}hplus(ctx,x,y,e>.85?(1-e)/.15:1);}
-    else if(f.k==='water'){const x=ox+10+f.p*74+f.s*10,y=oy+6+f.p*40;ctx.globalAlpha=f.p>.75?(1-f.p)/.25:1;water(ctx,x,y);ctx.globalAlpha=1;}
-    else if(f.k==='atp'){const x=1046+f.p*70,y=262-f.p*34+f.s*26;ctx.globalAlpha=f.p>.75?(1-f.p)/.25:1;pill(ctx,'ATP',x,y,{bg:C.atp,c:'#fff',bd:null,s:14.5,w:700});ctx.globalAlpha=1;}
-    else if(f.k==='nad'){ctx.globalAlpha=1-f.p;pill(ctx,'NAD⁺ (empty)',150-f.p*60,262+f.p*30,{bg:'#eef0f3',c:C.soft,bd:'#a9afb8',s:14});ctx.globalAlpha=1;}
-    else if(f.k==='o2in'){const k=ease(f.p);ctx.globalAlpha=k;dot(ctx,lerp(830,ox,k),lerp(256,oy,k),9.5,C.o);dot(ctx,lerp(847,ox+17,k),lerp(256,oy,k),9.5,C.o);ctx.globalAlpha=1;}
+    if(f.k==='hup'&&f.p>0){const e=ease(f.p),x=lerp(f.x,f.tx,e*e*e),y=lerp(204,f.ty,e);hplus(ctx,x,y,Math.min(1,f.p*5));}
+    else if(f.k==='hdown'){const e=f.p;let x,y;if(e<.45){const k=ease(e/.45);x=lerp(f.x,X.S+20,k);y=lerp(f.y,M0-2,k);}else{const k=(e-.45)/.55;x=X.S+20-Math.sin(k*Math.PI)*16;y=lerp(M0-2,M1+12,k);}hplus(ctx,x,y,e>.85?(1-e)/.15:1);}
+    else if(f.k==='water'){const x=ox+10+f.p*46+f.s*10,y=oy+26+f.p*60;ctx.globalAlpha=f.p<.12?f.p/.12:f.p>.75?(1-f.p)/.25:1;water(ctx,x,y);ctx.globalAlpha=1;}
+    else if(f.k==='atp'){const x=1040+f.p*64,y=252+f.p*22+f.s*18;ctx.globalAlpha=f.p>.75?(1-f.p)/.25:1;pill(ctx,'ATP',x,y,{bg:C.atp,c:'#fff',bd:null,s:14.5,w:700});ctx.globalAlpha=1;}
+    else if(f.k==='nad'){ctx.globalAlpha=1-f.p;pill(ctx,'NAD⁺ (empty)',210-f.p*70,264+f.p*28,{bg:'#eef0f3',c:C.soft,bd:'#a9afb8',s:14});ctx.globalAlpha=1;}
+    else if(f.k==='o2in'){const k=ease(f.p);ctx.globalAlpha=k;dot(ctx,lerp(820,ox,k),lerp(262,oy,k),8.5,C.o,'#fff',1.6);dot(ctx,lerp(833,ox+16,k),lerp(262,oy,k),8.5,C.o,'#fff',1.6);ctx.globalAlpha=1;}
   }
   if(sim.showH)for(const h of sim.ims)hplus(ctx,h.x,h.y);
 }
@@ -168,7 +161,7 @@ function drawEnergy(ctx,sim,lvl,o){o=o||{};const a=o.alpha==null?1:o.alpha;if(a<
   for(const p of sim.pairs){const [x,y]=pairE(p);epair(ctx,x,y-8.5);}
   if(lvl>=2){
     for(const p of sim.pairs){const i=['I','III','IV'].indexOf(p.st);if(i>=0&&p.p>.5&&p.p<1){const k=['I','III','IV'][i],my=(LV[i]+LV[i+1])/2;ctx.globalAlpha=a*Math.sin((p.p-.5)*2*Math.PI);arrow(ctx,X[k]+5,my,TUBE[k]-12,my,{c:C.h,lw:4,head:11});ctx.globalAlpha=a;}}
-    for(const f of sim.fly)if(f.k==='hup'&&f.p>0){const i=Math.round((f.x-X[f.at])/15+(PUMPN[f.at]-1)/2);hplus(ctx,TUBE[f.at]+((i%2)?4.5:-4.5),lerp(LOW-6,TR.y1-7,ease(f.p))-i*3);}
+    for(const f of sim.fly)if(f.k==='hup'&&f.p>0){const i=f.i;hplus(ctx,TUBE[f.at]+((i%2)?4.5:-4.5),lerp(LOW-6,TR.y1-7,ease(f.p))-i*3);}
     for(const k of ['I','III','IV'])if(sim.tally[k])txt(ctx,'lifts '+PUMPN[k]+' H⁺',TUBE[k]+17,TR.y1+24,{s:15.5,w:700,c:'#8d1146'});
   }
   if(lvl>=3){ // the turbine
@@ -273,7 +266,7 @@ function setup(S,o){const sim=S.sim=newSim();Object.assign(sim,o||{});if(o&&o.fi
 /* ---------------- tell-it-back frames ---------------- */
 function crop(ctx,x,y,w,fn){ctx.save();ctx.beginPath();ctx.rect(0,0,300,193.3);ctx.clip();const s=300/w;ctx.scale(s,s);ctx.translate(-x,-y);fn();ctx.restore();}
 function still(o){const s=newSim();Object.assign(s,o);return s;}
-const hups=(at,p)=>{const n=PUMPN[at],a=[];for(let i=0;i<n;i++)a.push({k:'hup',at,p,x:X[at]+(i-(n-1)/2)*15,tx:X[at]+(i-(n-1)/2)*30,ty:60+i*8});return a;};
+const hups=(at,p)=>{const n=PUMPN[at],a=[];for(let i=0;i<n;i++)a.push({k:'hup',at,i,p,x:PUMPX[at][i],tx:PUMPX[at][i],ty:60+i*8});return a;};
 const crowd=(n,x0,x1)=>{x0=x0||20;x1=x1||1180;const a=[];for(let k=0;k<n;k++)a.push({x:x0+hash(k+3)*(x1-x0),y:30+hash(k+9.5)*84});return a;};
 const FRAMES=[
   {label:'NADH drops off electrons from your food',draw:ctx=>crop(ctx,40,96,340,()=>drawTop(ctx,still({pairs:[{st:'dock',p:.85}],showH:false,o2:0,oAtoms:0}),{}))},
@@ -287,11 +280,11 @@ const FRAMES=[
 /* ---------------- chapters ---------------- */
 const PICK=['It comes back out as the CO₂ you breathe out','It becomes water','It turns into energy','It stays in your blood'];
 let zAnim=null,chainT=-99;
-const CHAIN=[['Legs spend ATP faster',890,52,46],['Turbine spins faster',X.S,160,52],['The H⁺ crowd thins',600,72,58],['Pumps push more easily',X.III,168,74],['Electrons fall faster',470,470,62],['More oxygen is used',742,232,40],['You breathe harder',1140,476,54]];
+const CHAIN=[['Legs spend ATP faster',890,52,46],['Turbine spins faster',X.S,160,52],['The H⁺ crowd thins',600,72,58],['Pumps push more easily',X.III,172,78],['Electrons fall faster',470,470,62],['More oxygen is used',735,171,30],['You breathe harder',1140,476,54]];
 
 Story.start({
   id:'respiration',title:'Why are you out of breath?',W,H,labHref:'../index.html#respiration',
-  about:'<p>The parts on the membrane are drawn to scale with each other (about 10 nanometers for the bar shown), and in their real order and general shape. Colors are labels: real molecules are too small to have a color. Electrons and H⁺ are drawn far bigger than they are so you can see them, and the whole thing is slowed down hundreds of times. Every count is real: 2 electrons per NADH; 4, 4 and 2 H⁺ pumped; about 4 H⁺ per ATP; and each oxygen atom takes 2 electrons and 2 H⁺ to become one water. The energy steps are drawn to scale from measured voltages (NADH −0.32 V, Q +0.05 V, cytochrome c +0.25 V, oxygen +0.82 V). Left out to keep one story: Complex II (the FADH₂ entrance), and the fact that some H⁺ leak back on their own. In ATP synthase the ring and axle spin while the head stays still; that is how the real one works.</p>',
+  about:'<p><b>The shapes are real.</b> Pumps 1, 2 and 3 and ATP synthase are drawn from the measured positions of their atoms in human proteins (Protein Data Bank entries 5XTH and 8H9S, found by cryo-electron microscopy). They are seen from the side, in their real order, all at one scale (the bar is 10 nanometers), with a membrane of the real thickness. The small dots inside the pumps are the real stepping stones the electrons hop along: iron–sulfur clusters, hemes and copper. In ATP synthase the gold ring and axle really do turn while the red head stays still.</p><p><b>What is simplified.</b> Colors are labels: molecules are too small to have a color. Electrons, H⁺, oxygen and water are drawn far bigger than they are, and NADH is shown as a label. The pumps are spread out in a row so you can follow the path; in a real mitochondrion pumps 1, 2 and 3 often sit pressed together as one unit. Oxygen reacts deep inside pump 3, and it is drawn on top so you can see it. Everything is slowed down hundreds of times. Left out to keep one story: Complex II (the FADH₂ entrance) and the H⁺ that leak back on their own.</p><p><b>The numbers.</b> 2 electrons per NADH; 4, 4 and 2 H⁺ pumped; each oxygen atom takes 2 electrons and 2 H⁺ to become one water. “About 4 H⁺ per ATP” is the figure most textbooks use: the real human ring has 8 teeth, so one full turn takes 8 H⁺ and makes 3 ATP, and bringing in the phosphate costs about one more H⁺ each. The energy steps are to scale from measured voltages (NADH −0.32 V, Q +0.05 V, cytochrome c +0.25 V, oxygen +0.82 V).</p>',
   tell:{frames:FRAMES,swaps:[[2,3]],terms:['NADH','electron','H⁺|h+|hydrogen ion|protons','gradient','ATP synthase','oxygen','water','ATP'],
     nudge:'For each picture ask: what had to happen just before this could happen?',
     done:'<b>That is the story.</b> (Pictures 3 and 4 happen at the same time, so either order counts.) Now tell it in your own words.',
@@ -307,7 +300,7 @@ Story.start({
      z<1.5?'Muscle is bundles of long cells called fibers. Blood vessels run between them and bring the oxygen.':
      z<2.5?'Inside one fiber. The striped bands do the pulling. Packed between them are <b class="term">mitochondria</b>: a muscle cell has thousands.':
      z<3.5?'One mitochondrion. Its inner membrane is folded over and over. More folds mean more room for the machines that sit in it.':
-     'The inner membrane, close up and drawn to scale. These machines are where your oxygen gets used. The membrane is about 7 nanometers thick.';},
+     'The inner membrane, close up. These are the real shapes of the machines in it, measured atom by atom, all at the same scale. This is where your oxygen gets used.';},
    ui:[{type:'button',label:'Zoom in',pulse:true,act(S){const a=S.v.z,b=Math.min(4,Math.floor(a+.02)+1);zAnim={a,b,t:0};},show:S=>S.v.z<3.98},
        {type:'range',key:'z',min:0,max:4,step:.01,val:0,label:'Zoom',fmt:v=>['You','Muscle','Inside a muscle cell','One mitochondrion','Its inner membrane'][Math.round(v)],on(){zAnim=null;}}],
    todo:[{t:'Zoom all the way in',ok:S=>S.v.z>=3.97}],
@@ -320,9 +313,9 @@ Story.start({
    alt:'Think of a relay race. NADH hands off the baton (the electrons) at the start. Oxygen is waiting at the finish line. The pumps in between are the runners.',
    enter(S){setup(S,{showH:false,o2:.75,oAtoms:0,hold:true,supply:true});},tick(S,dt){step(S.sim,dt);},
    draw(ctx,S){scene(ctx,S,{k:0,over(){
-     boxring(ctx,112,240,84,44,S.t,C.rj);pill(ctx,'From your breakfast',196,306,{bg:C.rj,c:'#fff',bd:null,s:15,w:700});
-     boxring(ctx,716,206,56,46,S.t+1,C.o);pill(ctx,'From your breath',744,274,{bg:C.o,c:'#fff',bd:null,s:15,w:700});
-     arrow(ctx,330,262,650,262,{c:'#7b7f88',lw:3,dash:[8,8],head:13});pill(ctx,'How does the energy get across?',490,262,{bg:'#fff',c:C.ink,bd:'#7b7f88',s:14.5});}});}},
+     boxring(ctx,186,242,84,44,S.t,C.rj);pill(ctx,'From your breakfast',206,318,{bg:C.rj,c:'#fff',bd:null,s:15,w:700});
+     ring(ctx,735,171,22,S.t+1,C.o);pill(ctx,'From your breath',735,244,{bg:C.o,c:'#fff',bd:null,s:15,w:700});
+     arrow(ctx,330,272,660,272,{c:'#7b7f88',lw:3,dash:[8,8],head:13});pill(ctx,'How does the energy get across?',495,272,{bg:'#fff',c:C.ink,bd:'#7b7f88',s:14.5});}});}},
 
   {rail:'Electrons fall',title:'Electrons step downhill',
    text:'Press the button, then watch both pictures. <b>Top:</b> the real parts. <b>Bottom:</b> the same trip drawn as energy. At each hand-off the electrons drop to a lower step. Oxygen is the lowest step of all, so that is where they end up.',
@@ -340,19 +333,19 @@ Story.start({
    enter(S){setup(S,{showH:true,o2:.75});},tick(S,dt){step(S.sim,dt);},
    draw(ctx,S){const sim=S.sim,ta=sim.tally;scene(ctx,S,{energy:2});
      const parts=[ta.I?'4':'…',ta.III?'4':'…',ta.IV?'2':'…'],sum=ta.I+ta.III+ta.IV;
-     if(sim.n.nadh)chip(ctx,'H⁺ pumped by this NADH:  '+parts.join(' + ')+(sum===10?'  =  10':''),330,268,{bd:C.h,c:'#8d1146'});}},
+     if(sim.n.nadh)chip(ctx,'H⁺ pumped by this NADH:  '+parts.join(' + ')+(sum===10?'  =  10':''),350,268,{bd:C.h,c:'#8d1146'});}},
 
   {rail:'The turbine',title:'The crowd pushes a turbine',live:true,
-   text(S){return S.sim.open?'H⁺ rush back through <b class="term">ATP synthase</b>. Its ring and axle spin like a turbine, and every 4 H⁺ make one ATP. So one NADH, which pumped 10 H⁺, is worth about 2.5 ATP.':
+   text(S){return S.sim.open?'H⁺ rush back through <b class="term">ATP synthase</b>. Its ring and axle (gold) spin like a turbine while the red head stays still, and every 4 H⁺ make one ATP. So one NADH, which pumped 10 H⁺, is worth about 2.5 ATP.':
      'Crowded H⁺ are stored energy, like water behind a dam. A crowd this lopsided is called a <b class="term">gradient</b>. Watch the pumps slow as the crowd pushes back. Then open the only way through: ATP synthase.';},
    alt:'Blow up a balloon and let go. The air you forced in rushes back out and the balloon flies. The pumps force H⁺ to one side. Letting them rush back is what makes ATP.',
    ui:[{type:'button',label:'Open ATP synthase',pulse:true,act(S){S.sim.open=true;S.sim.d=.6;},show:S=>!S.sim.open}],
    todo:[{t:'Open ATP synthase',ok:S=>S.sim.open},{t:'Watch it make 4 ATP',ok:S=>S.sim.n.atp>=4}],
    enter(S){setup(S,{supply:true,open:false,o2:1,fill:30});},tick(S,dt){step(S.sim,dt);},
    draw(ctx,S){const sim=S.sim;scene(ctx,S,{energy:3});
-     if(!sim.open&&sim.bp<.25)chip(ctx,'Pumps stalled: the crowd is pushing back',330,268,{bd:C.rj,c:C.rj});
-     if(sim.open){chip(ctx,'ATP made: '+sim.n.atp,W-12,52,{bd:C.atp,c:C.atp,a:'right'});chip(ctx,'10 H⁺ per NADH  ÷  4 H⁺ per ATP  ≈  2.5 ATP',330,268,{bd:C.atp,c:C.atp});}
-     if(!sim.open)boxring(ctx,948,112,104,186,S.t,C.rj);}},
+     if(!sim.open&&sim.bp<.25)chip(ctx,'Pumps stalled: the crowd is pushing back',350,268,{bd:C.rj,c:C.rj});
+     if(sim.open){chip(ctx,'ATP made: '+sim.n.atp,W-12,52,{bd:C.atp,c:C.atp,a:'right'});chip(ctx,'10 H⁺ per NADH  ÷  4 H⁺ per ATP  ≈  2.5 ATP',350,268,{bd:C.atp,c:C.atp});}
+     if(!sim.open)boxring(ctx,944,116,122,194,S.t,C.rj);}},
 
   {rail:'The oxygen',title:'Where the oxygen goes',
    text(S){const p=S.picks.o2;return 'At the last pump, each oxygen atom takes 2 used electrons and 2 H⁺ and becomes <b>water</b>. '+(p===1?'You called it.':p==null?'':'You guessed “'+PICK[p].toLowerCase()+'”. Most people do.')+' The CO₂ you breathe out gets its carbon from your food, in earlier stages.';},
@@ -366,11 +359,11 @@ Story.start({
    todo:[{t:'Tap O₂ in the equation',ok:S=>S.v.termsHit&&S.v.termsHit.o2},{t:'Tap H₂O',ok:S=>S.v.termsHit&&S.v.termsHit.h2o}],
    enter(S){setup(S,{supply:true,open:true,d:.6,o2:1,fill:22});},tick(S,dt){step(S.sim,dt);},
    draw(ctx,S){const sim=S.sim;scene(ctx,S,{energy:3});const T=S.v.term;
-     chip(ctx,'O₂ used: '+sim.n.o2+'     H₂O made: '+sim.n.water,330,268,{bd:C.o,c:shade(C.o,-.45)});
-     if(T==='glu'){boxring(ctx,18,150,160,134,S.t,C.rj);}
-     else if(T==='o2'){ring(ctx,743,228,30,S.t,C.rj);ring(ctx,814,LV[3]-12,24,S.t,C.rj);}
-     else if(T==='h2o'){boxring(ctx,736,212,120,70,S.t,C.rj);}
-     else if(T==='atp'){boxring(ctx,952,208,160,90,S.t,C.rj);ring(ctx,X.S,TY,46,S.t,C.rj);}
+     chip(ctx,'O₂ used: '+sim.n.o2+'     H₂O made: '+sim.n.water,350,268,{bd:C.o,c:shade(C.o,-.45)});
+     if(T==='glu'){boxring(ctx,18,198,262,96,S.t,C.rj);}
+     else if(T==='o2'){ring(ctx,735,171,24,S.t,C.rj);ring(ctx,814,LV[3]-12,24,S.t,C.rj);}
+     else if(T==='h2o'){boxring(ctx,724,186,112,84,S.t,C.rj);}
+     else if(T==='atp'){boxring(ctx,956,222,160,84,S.t,C.rj);ring(ctx,X.S,TY,46,S.t,C.rj);}
      else if(T==='co2'){pill(ctx,'CO₂ is not in this picture. It was made earlier, from the food’s carbon.',600,TOPH+150,{bg:'#fff',c:C.ink,bd:C.rj,s:17,w:700,lw:2.5,r:10});}}},
 
   {rail:'No oxygen',title:'Hold your breath',live:true,patience:70,
@@ -382,7 +375,7 @@ Story.start({
    enter(S){setup(S,{supply:true,open:true,d:1.2,o2:1,fill:18});S.v.o2=100;},tick(S,dt){step(S.sim,dt);},
    draw(ctx,S){const sim=S.sim;scene(ctx,S,{energy:3});const r=rate(sim,'atp',4);
      chip(ctx,'ATP made per second: '+r.toFixed(1),W-12,52,{bd:C.atp,c:r<.05?C.rj:C.atp,a:'right'});
-     if(sim.o2<=0&&sim.oAtoms===0){chip(ctx,'No oxygen: the last pump is stuck',330,268,{bd:C.rj,c:C.rj});boxring(ctx,684,104,96,114,S.t,C.rj);
+     if(sim.o2<=0&&sim.oAtoms===0){chip(ctx,'No oxygen: the last pump is stuck',350,268,{bd:C.rj,c:C.rj});boxring(ctx,676,112,110,114,S.t,C.rj);
        if(sim.pairs.length>=4)pill(ctx,'JAMMED: every step is full',60,TOPH+24,{bg:C.rj,c:'#fff',bd:null,s:15.5,w:700,r:7,a:'left'});}}},
 
   {rail:'The sprint',title:'So why are you out of breath?',

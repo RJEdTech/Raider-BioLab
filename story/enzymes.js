@@ -20,22 +20,24 @@ function hex(ctx,x,y,r,fill,stroke,lw){ctx.beginPath();for(let i=0;i<6;i++){cons
 function sugars(ctx,pts,r,o){o=o||{};ctx.strokeStyle=o.bond||shade(C.sub,-.35);ctx.lineWidth=Math.max(1.5,r*.34);ctx.beginPath();pts.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p[0],p[1]));ctx.stroke();
   if(o.halo){ctx.save();ctx.strokeStyle=C.prod;ctx.lineWidth=r*.9;ctx.lineCap='round';ctx.globalAlpha*=.55;ctx.beginPath();pts.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p[0],p[1]));ctx.stroke();ctx.restore();for(const p of pts)dot(ctx,p[0],p[1],r*1.34,'rgba(223,116,26,.5)');}
   for(const p of pts)hex(ctx,p[0],p[1],r,o.fill||C.sub,shade(C.sub,-.45),Math.max(1,r*.16));}
-const LOBES=[[-.42,.30,.62],[.42,.30,.62],[0,.52,.6],[-.62,-.38,.42],[.62,-.38,.42],[-.15,-.62,.4],[.2,-.6,.38],[0,-.1,.5]];
-const groove=(x,sc)=>6*sc*Math.sin(x/(40*sc));        // the groove is a gentle curve across the enzyme's face
-function enzyme(ctx,x,y,sc,o){o=o||{};const u=clamp(o.u||0,0,1),col=o.col||C.enz,R=62*sc;ctx.save();ctx.translate(x,y);if(o.rot)ctx.rotate(o.rot);const a0=ctx.globalAlpha;
+/* The enzymes are the real molecules (Protein Data Bank 1SMD and 1PSN), seen looking straight into the active-site groove.
+   PX: pixels per ångström when sc = 1. Sugar units are to the same scale: 4.8 Å apart along the chain. */
+const PX=1.85,SP=4.8*PX,HR=2.4*PX,HALF=31*PX;
+const groove=(x,sc)=>(3+1.5*Math.sin(x/(30*sc)))*sc;        // the starch chain lies along the groove, through the cutting spot at the center
+function enzyme(ctx,x,y,sc,o){o=o||{};const u=clamp(o.u||0,0,1),pep=o.col===C.pep,name=pep?'PEP':'AMY',P=PX*sc,R=HALF*sc;ctx.save();ctx.translate(x,y);const a0=ctx.globalAlpha;
   const fold=clamp(1-(u-.55)*2.4,0,1);
-  if(fold>0){ctx.globalAlpha=a0*fold;const g=ctx.createLinearGradient(0,-R,0,R);g.addColorStop(0,shade(col,.22));g.addColorStop(1,shade(col,-.15));
-    ctx.fillStyle=shade(col,-.4);for(const l of LOBES){ctx.beginPath();ctx.arc(l[0]*R*(1+u*.5),l[1]*R*(1+u*.5),l[2]*R+1.6*Math.max(1,sc*.8),0,6.2832);ctx.fill();}
-    ctx.fillStyle=g;for(const l of LOBES){ctx.beginPath();ctx.arc(l[0]*R*(1+u*.5),l[1]*R*(1+u*.5),l[2]*R,0,6.2832);ctx.fill();}
-    // the groove (active site): a darker channel with the cutting spot in the middle
-    ctx.strokeStyle=shade(col,-.42);ctx.lineWidth=20*sc;ctx.lineCap='round';ctx.beginPath();for(let k=-10;k<=10;k++){const gx=k/10*R*.93;ctx[k===-10?'moveTo':'lineTo'](gx,groove(gx,sc));}ctx.stroke();
-    ctx.fillStyle=o.capped?'#9aa0aa':'#ffd34d';for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(-5*sc,s*15*sc);ctx.lineTo(5*sc,s*15*sc);ctx.lineTo(0,s*7*sc);ctx.closePath();ctx.fill();}
-    if(o.charges){for(const cx of [-.62,-.3,.3,.62]){const px=cx*R,py=groove(px,sc)-13*sc;const cap=o.capped;dot(ctx,px,py,5.2*sc,cap?C.h:'#fff',cap?'#fff':shade(col,-.5),1.2);txt(ctx,cap?'+':'−',px,py+4.2*sc,{s:11*sc,w:700,a:'center',c:cap?'#fff':shade(col,-.5)});}}
+  if(fold>0){ctx.save();if(u>0){const k=1+u*.16;ctx.scale(k,k);}Story.mol.draw(ctx,name,0,0,P,{alpha:fold,col:o.dead?'#8fa596':undefined});ctx.restore();
+    if(!pep){ // the three acid groups that do the cutting, at their measured positions
+      const acids=Story.mol.pts('AMY').slice(1,4);ctx.globalAlpha=a0*fold;
+      if(o.charges)for(const q of acids){const px=q[1]*P*1.9,py=q[2]*P*1.9-10*sc,cap=o.capped;dot(ctx,px,py,5.2*sc,cap?C.h:'#fff',cap?'#fff':'#1d4a2f',1.2);txt(ctx,cap?'+':'−',px,py+4.2*sc,{s:11*sc,w:700,a:'center',c:cap?'#fff':'#1d4a2f'});}
+      else if(sc>=.9)for(const q of acids)dot(ctx,q[1]*P,q[2]*P,1.7*sc,o.capped?'#9aa0aa':'#ffd34d','rgba(40,30,0,.7)',.8);
+      ctx.globalAlpha=a0;}
   }
-  // the chain the enzyme is made of: tucked inside when folded, a loose wavy string when unfolded
-  ctx.globalAlpha=a0*(fold>=1?.5:1);ctx.strokeStyle=fold>=1?'rgba(255,255,255,.75)':(o.dead?C.enzd:shade(col,-.05));ctx.lineWidth=(fold>=1?2.2+u*3:8)*sc;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();
-  for(let i=0;i<=44;i++){const f=i/44,fx=Math.cos(i*.9)*.52*(f*.6+.4)*R,fy=(Math.sin(i*1.3)*.34+.36)*R,ux=(f-.5)*3.1*R,uy=(Math.sin(i*.8+ (o.wob||0))*.36+Math.sin(i*.33)*.22)*R,px=lerp(fx,ux,u),py=lerp(fy,uy,u);ctx[i?'lineTo':'moveTo'](px,py);}
-  ctx.stroke();ctx.globalAlpha=a0;ctx.restore();}
+  // the one long chain the enzyme is made of: a loose wavy string once the fold is gone
+  if(fold<1){ctx.globalAlpha=a0*(1-fold);ctx.strokeStyle=o.dead?C.enzd:shade(pep?C.pep:C.enz,-.05);ctx.lineWidth=7*sc;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();
+    for(let i=0;i<=44;i++){const f=i/44,fx=Math.cos(i*.9)*.52*(f*.6+.4)*R,fy=(Math.sin(i*1.3)*.34+.1)*R,ux=(f-.5)*3.1*R,uy=(Math.sin(i*.8+(o.wob||0))*.36+Math.sin(i*.33)*.22)*R;ctx[i?'lineTo':'moveTo'](lerp(fx,ux,u),lerp(fy,uy,u));}
+    ctx.stroke();}
+  ctx.globalAlpha=a0;ctx.restore();}
 function fat(ctx,x,y,sc){ctx.save();ctx.translate(x,y);ctx.strokeStyle=shade(C.fat,-.3);ctx.lineWidth=4.5*sc;ctx.lineCap='round';ctx.lineJoin='round';
   for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(-10*sc,k*17*sc);for(let i=1;i<=9;i++)ctx.lineTo(-10*sc-i*11*sc,k*17*sc+((i%2)?-5:5)*sc);ctx.stroke();}
   ctx.strokeStyle=shade(C.fat,-.45);ctx.lineWidth=7*sc;ctx.beginPath();ctx.moveTo(-6*sc,-19*sc);ctx.lineTo(-6*sc,19*sc);ctx.stroke();for(let k=-1;k<=1;k++)dot(ctx,-6*sc,k*17*sc,6.5*sc,C.fat,shade(C.fat,-.45),1.5);ctx.restore();}
@@ -73,7 +75,7 @@ function drawHill(ctx,x,y,w,h,o){o=o||{};const hb=lerp(HB_NO,HB_ENZ,o.enz==null?
 function newCU(o){return Object.assign({cx:430,cy:320,sc:2.5,chain:null,malt:[],cuts:0,auto:false,wait:0,sensor:false,sweet:0,flash:0,t:0},o);}
 function cuSend(cu){if(cu.chain)return;cu.chain={n:14,st:'in',p:0};}
 function cuSnip(cu){if(cu.chain&&cu.chain.st==='hold'){cu.chain.st='strain';cu.chain.p=0;return true;}return false;}
-function stepCU(cu,dt){cu.t+=dt;cu.flash=Math.max(0,cu.flash-dt*2.2);const c=cu.chain,sp=13.5*cu.sc;
+function stepCU(cu,dt){cu.t+=dt;cu.flash=Math.max(0,cu.flash-dt*2.2);const c=cu.chain,sp=SP*cu.sc;
   if(c){if(c.st==='in'){c.p+=dt/1.3;if(c.p>=1){c.st='hold';c.p=0;}}
     else if(c.st==='hold'){if(cu.auto){cu.wait+=dt;if(cu.wait>cu.gap){cu.wait=0;c.st='strain';c.p=0;}}}
     else if(c.st==='strain'){c.p+=dt/.65;if(c.p>=1){cu.cuts++;cu.flash=1;const y=cu.cy+groove(sp*1.5,cu.sc);cu.malt.push({x:cu.cx+sp*1.5,y,vx:60+Math.random()*30,vy:-34-Math.random()*26,a:0,rot:0,dock:cu.sensor});
@@ -83,20 +85,20 @@ function stepCU(cu,dt){cu.t+=dt;cu.flash=Math.max(0,cu.flash-dt*2.2);const c=cu.
   else if(cu.auto){cu.wait+=dt;if(cu.wait>.5){cu.wait=0;cuSend(cu);}}
   for(const m of cu.malt){m.a+=dt;if(m.dock){const tx=1010,ty=300,k=Math.min(1,dt*1.6);m.x+=(tx-m.x)*k;m.y+=(ty-m.y)*k;if(!m.done&&Math.abs(m.x-tx)<6){m.done=true;cu.sweet++;m.a=3.2;cu.sflash=1;}}else{m.x+=m.vx*dt;m.y+=m.vy*dt;m.vy+=6*dt;}}
   cu.malt=cu.malt.filter(m=>m.a<4.4);cu.sflash=Math.max(0,(cu.sflash||0)-dt*1.6);}
-function chainPts(cu){const c=cu.chain,sp=13.5*cu.sc,pts=[];if(!c)return pts;
+function chainPts(cu){const c=cu.chain,sp=SP*cu.sc,pts=[];if(!c)return pts;
   let lead=cu.cx+sp*1.5;                                  // two units sit past the cutting spot
-  if(c.st==='in')lead=lerp(cu.cx-62*cu.sc-sp*3,lead,ease(c.p));else if(c.st==='slide')lead-=sp*2*(1-ease(c.p));else if(c.st==='out')lead+=ease(c.p)*sp*9;
-  for(let j=0;j<c.n;j++){let x=lead-j*sp;if(c.st==='strain'&&j<2)x+=ease(c.p)*5*cu.sc;const dx=x-cu.cx,inside=Math.abs(dx)<62*cu.sc;
-    pts.push([x,cu.cy+(inside?groove(dx,cu.sc):groove(Math.sign(dx)*62*cu.sc,cu.sc)+Math.sin(x*.035+cu.t*1.6)*5*cu.sc*Math.min(1,(Math.abs(dx)-62*cu.sc)/(40*cu.sc)))+(c.st==='out'?-ease(c.p)*60:0)]);}
+  if(c.st==='in')lead=lerp(cu.cx-HALF*cu.sc-sp*3,lead,ease(c.p));else if(c.st==='slide')lead-=sp*2*(1-ease(c.p));else if(c.st==='out')lead+=ease(c.p)*sp*9;
+  for(let j=0;j<c.n;j++){let x=lead-j*sp;if(c.st==='strain'&&j<2)x+=ease(c.p)*5*cu.sc;const dx=x-cu.cx,inside=Math.abs(dx)<HALF*cu.sc;
+    pts.push([x,cu.cy+(inside?groove(dx,cu.sc):groove(Math.sign(dx)*HALF*cu.sc,cu.sc)+Math.sin(x*.035+cu.t*1.6)*5*cu.sc*Math.min(1,(Math.abs(dx)-HALF*cu.sc)/(40*cu.sc)))+(c.st==='out'?-ease(c.p)*60:0)]);}
   return pts;}
-function drawCU(ctx,cu,o){o=o||{};const r=6.6*cu.sc;
+function drawCU(ctx,cu,o){o=o||{};const r=HR*cu.sc;
   if(o.enz!==false)enzyme(ctx,cu.cx,cu.cy,cu.sc,{u:o.u||0,charges:o.charges,capped:o.capped,col:o.col});
   const pts=chainPts(cu),c=cu.chain;
   if(pts.length){ctx.globalAlpha=c.st==='out'?1-ease(c.p):1;sugars(ctx,pts,r);ctx.globalAlpha=1;
     if(c.st==='strain'||(o.strain&&c.st==='hold')){const a=pts[1],b=pts[2];ctx.strokeStyle=C.rj;ctx.lineWidth=4.5*cu.sc*.5+2;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a[0]-r*.7,a[1]);ctx.lineTo(b[0]+r*.7,b[1]);ctx.stroke();
-      if(o.strainLabel)pill(ctx,'this bond is bent and strained',cu.cx,cu.cy-52*cu.sc,{bg:'#fff',c:C.rj,bd:C.rj,s:15.5,w:700});}}
+      if(o.strainLabel)pill(ctx,'this bond is bent and strained',cu.cx,cu.cy-76*cu.sc,{bg:'#fff',c:C.rj,bd:C.rj,s:15.5,w:700});}}
   if(cu.flash>0){ctx.globalAlpha=cu.flash;ring(ctx,cu.cx,cu.cy,20*cu.sc*(1.4-cu.flash*.4),0,C.gold);ctx.globalAlpha=1;}
-  for(const m of cu.malt){const a=m.a<.25?m.a/.25:m.a>3.6?Math.max(0,(4.4-m.a)/.8):1;ctx.globalAlpha=a;const d=7.2*cu.sc*.5;sugars(ctx,[[m.x-d*1.9,m.y],[m.x+d*1.9,m.y]],r,{halo:true});ctx.globalAlpha=1;}
+  for(const m of cu.malt){const a=m.a<.25?m.a/.25:m.a>3.6?Math.max(0,(4.4-m.a)/.8):1;ctx.globalAlpha=a;const d=SP*cu.sc/2;sugars(ctx,[[m.x-d,m.y],[m.x+d,m.y]],r,{halo:true});ctx.globalAlpha=1;}
 }
 function sensor(ctx,cu,t){ // a sweet sensor on the tongue: a pocket only small sugars fit
   ctx.fillStyle='#f3b9bf';ctx.strokeStyle='#b0566a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(1210,150);ctx.lineTo(1080,150);ctx.quadraticCurveTo(1052,150,1052,190);ctx.lineTo(1052,262);ctx.lineTo(968,262);ctx.lineTo(968,338);ctx.lineTo(1052,338);ctx.lineTo(1052,410);ctx.quadraticCurveTo(1052,450,1080,450);ctx.lineTo(1210,450);ctx.closePath();ctx.fill();ctx.stroke();
@@ -105,7 +107,7 @@ function sensor(ctx,cu,t){ // a sweet sensor on the tongue: a pocket only small 
   if(cu.sflash>0){ctx.globalAlpha=cu.sflash;pill(ctx,'sweet!',1010,236,{bg:C.prod,c:'#fff',bd:null,s:22,w:700});ctx.globalAlpha=1;}}
 
 /* ---------------- the tube: six enzymes in saliva ---------------- */
-const EPOS=[[150,160],[410,140],[670,170],[160,400],[420,420],[680,390]];
+const EPOS=[[150,160],[410,140],[670,170],[160,400],[420,420],[680,390]],TSC=1.2,TS=SP*TSC;   // in the tube: 2.2 pixels per ångström
 function newTube(o){const s=Object.assign({T:37,pH:7,loc:0,t:0,n:0,cuts:[],malt:[],hill:newHill(),hp:[],pep:false,pcuts:0},o);
   s.enz=EPOS.map((p,i)=>({x:p[0],y:p[1],dead:false,u:0,acc:hash(i+2)*.9,n:10+2*(i%3),slide:0,enter:0,flash:0,rot:(hash(i)-.5)*.5,ph:hash(i*3)*6.28}));
   s.pepz=[[300,285],[560,285]].map((p,i)=>({x:p[0],y:p[1],acc:hash(i+9),flash:0,n:8,slide:0}));return s;}
@@ -115,7 +117,7 @@ function stepTube(s,dt){s.t+=dt;const T=s.T,fp=fph(s.pH,6.8),rev=1-ff(T);
     e.flash=Math.max(0,e.flash-dt*2.4);e.slide=Math.max(0,e.slide-dt*2.6);e.enter=Math.max(0,e.enter-dt*1.2);
     const rate=e.dead?0:K37*kick(T)*(1-rev)*fp;e.rate=rate;e.acc+=rate*dt*(.75+.5*Math.random());
     if(e.acc>=1&&e.enter<=0){e.acc-=1;e.flash=1;e.slide=1;e.n-=2;s.n++;s.cuts.push(s.t);hillKick(s.hill,true);
-      s.malt.push({x:e.x+34,y:e.y+3,vx:26+Math.random()*30,vy:(Math.random()-.5)*46,a:0});if(e.n<4){e.n=10+2*Math.floor(Math.random()*3);e.enter=1;}}}
+      s.malt.push({x:e.x+TS*1.5,y:e.y+4,vx:26+Math.random()*30,vy:(Math.random()-.5)*46,a:0});if(e.n<4){e.n=10+2*Math.floor(Math.random()*3);e.enter=1;}}}
   const tot=s.enz.reduce((a,e)=>a+(e.rate||0),0);s.rateNow=s.rateNow==null?tot:s.rateNow+(tot-s.rateNow)*Math.min(1,dt*3);
   if(Math.random()<dt*(1.2+kick(T)*2.2))hillKick(s.hill,false);stepHill(s.hill,dt);
   for(const m of s.malt){m.a+=dt;m.x+=m.vx*dt;m.y+=m.vy*dt;m.vx*=.992;}s.malt=s.malt.filter(m=>m.a<5&&m.x<790);
@@ -129,17 +131,17 @@ function drawTube(ctx,s,o){o=o||{};const T=s.T,wide=o.wide?W:800,jig=clamp(.25+T
   const warm=clamp((T-37)/50,0,1),cold=clamp((25-T)/25,0,1);ctx.fillStyle=C.sol;ctx.fillRect(0,0,wide,H);
   if(warm>0){ctx.fillStyle='rgba(235,110,60,'+(.16*warm)+')';ctx.fillRect(0,0,wide,H);}if(cold>0){ctx.fillStyle='rgba(120,170,235,'+(.2*cold)+')';ctx.fillRect(0,0,wide,H);}
   // loose starch chains drifting in the saliva
-  const nf=o.wide?9:5;for(let k=0;k<nf;k++){const bx=((hash(k+40)*wide+t*(6+k*2)*jig)%(wide+200))-100,by=(o.wide?40:60)+hash(k+50)*480,pts=[];for(let j=0;j<9+k%4;j++)pts.push([bx-j*13.5+Math.sin(t*jig+j*.8+k)*2,by+Math.sin(j*.7+t*jig*1.3+k*2)*8]);ctx.globalAlpha=.62;sugars(ctx,pts,6.4);ctx.globalAlpha=1;}
+  const nf=o.wide?9:5;for(let k=0;k<nf;k++){const bx=((hash(k+40)*wide+t*(6+k*2)*jig)%(wide+200))-100,by=(o.wide?40:60)+hash(k+50)*480,pts=[];for(let j=0;j<11+k%5;j++)pts.push([bx-j*TS+Math.sin(t*jig+j*.8+k)*2,by+Math.sin(j*.7+t*jig*1.3+k*2)*8]);ctx.globalAlpha=.62;sugars(ctx,pts,HR*TSC);ctx.globalAlpha=1;}
   const es=o.wide?s.enz.concat([{x:930,y:150,u:0,n:12,slide:0,flash:0,enter:0,rot:.2,ph:1},{x:960,y:410,u:0,n:10,slide:0,flash:0,enter:0,rot:-.2,ph:2}]):s.enz;
   for(const e of es){const jx=Math.sin(t*jig*7+e.ph)*1.6*jig,jy=Math.cos(t*jig*6.3+e.ph*2)*1.6*jig,ex=e.x+jx,ey=e.y+jy,cap=s.pH<4.5;
-    enzyme(ctx,ex,ey,1,{u:e.u,dead:e.dead,rot:e.rot*(1+e.u),wob:t*2+e.ph,charges:o.charges,capped:cap});
-    if(!e.dead&&ff(T)>.12&&!cap){const pts=[],sh=e.slide*27-e.enter*150;for(let j=0;j<e.n;j++){const x=20.25-j*13.5-sh;if(x<-150)break;const inside=Math.abs(x)<60;pts.push([ex+x,ey+(inside?groove(x,1):groove(-60,1)+Math.sin(x*.05+t*jig*1.5)*7)]);}
-      ctx.globalAlpha=1-e.enter*.6;sugars(ctx,pts,6.4);ctx.globalAlpha=1;}
+    enzyme(ctx,ex,ey,TSC,{u:e.u,dead:e.dead,wob:t*2+e.ph,charges:o.charges,capped:cap});
+    if(!e.dead&&ff(T)>.12&&!cap){const pts=[],sh=e.slide*TS*2-e.enter*150;for(let j=0;j<e.n;j++){const x=TS*1.5-j*TS-sh;if(x<-150)break;const inside=Math.abs(x)<HALF*TSC;pts.push([ex+x,ey+(inside?groove(x,TSC):groove(-HALF*TSC,TSC)+Math.sin(x*.05+t*jig*1.5)*7)]);}
+      ctx.globalAlpha=1-e.enter*.6;sugars(ctx,pts,HR*TSC);ctx.globalAlpha=1;}
     if(e.flash>0){ctx.globalAlpha=e.flash;ring(ctx,ex,ey,24*(1.5-e.flash*.5),0,C.gold);ctx.globalAlpha=1;}
-    if(o.tagNew&&!e.dead)pill(ctx,'new amylase',ex,ey+78,{bg:'#fff',c:C.good,bd:C.good,s:13.5,w:700});}
-  if(s.pep)for(const e of s.pepz){const on=fph(s.pH,2)>.3;ctx.globalAlpha=on?1:.45;enzyme(ctx,e.x,e.y,.82,{col:C.pep,u:0});if(on)protein(ctx,e.x+34-e.slide*14,e.y+2,.8,e.n);ctx.globalAlpha=1;
-    if(e.flash>0){ctx.globalAlpha=e.flash;ring(ctx,e.x,e.y,20*(1.5-e.flash*.5),0,C.gold);ctx.globalAlpha=1;}pill(ctx,on?'pepsin: cutting protein':'pepsin: switched off',e.x,e.y+66,{bg:'#fff',c:shade(C.pep,-.3),bd:C.pep,s:13.5,w:700});}
-  for(const m of s.malt){ctx.globalAlpha=m.a<.2?m.a/.2:m.a>4?5-m.a:1;sugars(ctx,[[m.x-7,m.y],[m.x+7,m.y]],6.4,{halo:true});ctx.globalAlpha=1;}
+    if(o.tagNew&&!e.dead)pill(ctx,'new amylase',ex,ey+88,{bg:'#fff',c:C.good,bd:C.good,s:13.5,w:700});}
+  if(s.pep)for(const e of s.pepz){const on=fph(s.pH,2)>.3;ctx.globalAlpha=on?1:.45;enzyme(ctx,e.x,e.y,1,{col:C.pep,u:0});if(on)protein(ctx,e.x+30-e.slide*12,e.y,.62,e.n);ctx.globalAlpha=1;
+    if(e.flash>0){ctx.globalAlpha=e.flash;ring(ctx,e.x,e.y,20*(1.5-e.flash*.5),0,C.gold);ctx.globalAlpha=1;}pill(ctx,on?'pepsin: cutting protein':'pepsin: switched off',e.x,e.y+78,{bg:'#fff',c:shade(C.pep,-.3),bd:C.pep,s:13.5,w:700});}
+  for(const m of s.malt){ctx.globalAlpha=m.a<.2?m.a/.2:m.a>4?5-m.a:1;sugars(ctx,[[m.x-TS/2,m.y],[m.x+TS/2,m.y]],HR*TSC,{halo:true});ctx.globalAlpha=1;}
   if(o.hplus)for(const h of s.hp){dot(ctx,h.x,h.y,5,C.h,'#fff',1.3);txt(ctx,'+',h.x,h.y+3.6,{s:9.5,w:700,a:'center',c:'#fff'});}
   if(o.strip!==false){ // temperature strip with everyday landmarks
     const y=556,x0=40,x1=760,X=v=>lerp(x0,x1,v/100);ctx.fillStyle='rgba(255,255,255,.92)';ctx.fillRect(0,y-14,800,H-y+14);const g=ctx.createLinearGradient(x0,0,x1,0);g.addColorStop(0,'#5b9ee6');g.addColorStop(.37,'#7bc47f');g.addColorStop(.6,'#f0a23a');g.addColorStop(1,'#d5402b');
@@ -153,7 +155,7 @@ function side(ctx,s,o){o=o||{};const x=812,w=380; // the right-hand instruments
   rr(ctx,x+16,398,w-32,18,9);ctx.fillStyle='#ecebe6';ctx.fill();rr(ctx,x+16,398,Math.max(4,(w-32)*clamp(r/6,0,1)),18,9);ctx.fillStyle=r<.15?C.rj:C.good;ctx.fill();
   const nx=x+16+(w-32)*(NE*K37*ff(37)/6);ctx.fillStyle=C.ink;ctx.fillRect(nx-1,392,2,30);txt(ctx,'normal, at 37 °C',nx,438,{s:14,a:'center',c:C.soft});
   txt(ctx,'Enzymes in',x+16,474,{s:17,w:700});txt(ctx,'working shape',x+16,494,{s:17,w:700});const f=folded(s);
-  for(let i=0;i<NE;i++){const e=s.enz[i];ctx.save();ctx.translate(x+168+i*21,482);ctx.scale(.155,.155);enzyme(ctx,0,0,1,{u:e.u,dead:e.dead});ctx.restore();}
+  for(let i=0;i<NE;i++){const e=s.enz[i];ctx.save();ctx.translate(x+168+i*21,482);ctx.scale(.16,.16);enzyme(ctx,0,0,1,{u:e.u,dead:e.dead});ctx.restore();}
   txt(ctx,f+' of '+NE,x+w-16,492,{s:22,w:700,a:'right',c:f<NE?C.rj:C.good});
   txt(ctx,'Sugar made so far',x+16,542,{s:17,w:700});txt(ctx,String(s.n),x+w-16,546,{s:26,w:700,a:'right',c:shade(C.prod,-.2)});
   txt(ctx,'Slowed down a lot: the real thing is hundreds a second.',x+16,574,{s:13,c:C.soft});
@@ -237,12 +239,12 @@ function miniSensor(ctx,ok){ctx.fillStyle='#f3b9bf';ctx.strokeStyle='#b0566a';ct
   txt(ctx,'sweet',268,64,{s:13,w:700,a:'center',c:'#7a2f42'});txt(ctx,'sensor',268,140,{s:13,w:700,a:'center',c:'#7a2f42'});}
 const FRAMES=[
  {label:'A starch chain is too long to fit your sweet sensors',draw:fr(ctx=>{miniSensor(ctx);sugars(ctx,row(20,97,10,17),8);txt(ctx,'✗',182,72,{s:30,w:700,c:C.rj,a:'center'});})},
- {label:'The chain slides into amylase’s groove (the active site)',draw:fr(ctx=>{enzyme(ctx,160,100,1.45,{});const p=[];for(let j=0;j<12;j++){const x=30-j*19.5;p.push([160+x,100+(Math.abs(x)<90?groove(x,1.45):groove(-90,1.45))]);}sugars(ctx,p,9.3);})},
+ {label:'The chain slides into amylase’s groove (the active site)',draw:fr(ctx=>{enzyme(ctx,160,100,1.45,{});const p=[];for(let j=0;j<14;j++){const x=SP*1.45*(1.5-j);p.push([160+x,100+(Math.abs(x)<HALF*1.45?groove(x,1.45):groove(-HALF*1.45,1.45))]);}sugars(ctx,p,HR*1.45);})},
  {label:'The groove strains the bond, so an ordinary kick breaks it',draw:fr(ctx=>{ctx.fillStyle='#fbfaf6';ctx.fillRect(0,0,300,194);const X=f=>20+f*260,Y=e=>170-e*150;for(const [hb,col,dash] of [[HB_NO,'#8a8f98',[6,5]],[HB_ENZ,C.enz,[]]]){ctx.setLineDash(dash);ctx.lineWidth=dash.length?2.5:4.5;ctx.strokeStyle=col;ctx.beginPath();for(let i=0;i<=50;i++)ctx[i?'lineTo':'moveTo'](X(i/50),Y(hillY(i/50,hb)));ctx.stroke();}ctx.setLineDash([]);
    dot(ctx,X(.45),Y(hillY(.45,HB_ENZ))-9,9,C.sub,C.ink,1.5);ring(ctx,X(.45),Y(hillY(.45,HB_ENZ))-9,14,1,C.gold);txt(ctx,'lower hill',X(.62),Y(.5),{s:14,w:700,c:C.enz});})},
  {label:'Small sugars (maltose) float off and fit: it tastes sweet',draw:fr(ctx=>{miniSensor(ctx);sugars(ctx,[[207,97],[225,97]],8,{halo:true});sugars(ctx,[[60,60],[78,60]],8,{halo:true});sugars(ctx,[[110,140],[128,140]],8,{halo:true});pill(ctx,'sweet!',150,97,{bg:C.prod,c:'#fff',bd:null,s:16,w:700});})},
  {label:'Swallowed: stomach acid changes the groove, and amylase stops',draw:fr(ctx=>{enzyme(ctx,150,104,1.3,{charges:true,capped:true});for(let k=0;k<16;k++){const x=20+hash(k+1)*260,y=14+hash(k+8)*166;dot(ctx,x,y,5,C.h,'#fff',1.2);}sugars(ctx,row(150,36,7,17),8);pill(ctx,'stomach: pH 2',70,172,{bg:'#fff',c:C.h,bd:C.h,s:13.5,w:700});})},
- {label:'In the small intestine, new amylase finishes the job',draw:fr(ctx=>{enzyme(ctx,140,96,1.3,{charges:true});const p=[];for(let j=0;j<8;j++){const x=24-j*17.5;p.push([140+x,96+(Math.abs(x)<80?groove(x,1.3):groove(-80,1.3))]);}sugars(ctx,p,8.4);sugars(ctx,[[236,60],[254,60]],8,{halo:true});sugars(ctx,[[250,120],[268,120]],8,{halo:true});pill(ctx,'small intestine: pH 7',96,172,{bg:'#fff',c:C.good,bd:C.good,s:13.5,w:700});})}
+ {label:'In the small intestine, new amylase finishes the job',draw:fr(ctx=>{enzyme(ctx,140,96,1.3,{charges:true});const p=[];for(let j=0;j<12;j++){const x=SP*1.3*(1.5-j);p.push([140+x,96+(Math.abs(x)<HALF*1.3?groove(x,1.3):groove(-HALF*1.3,1.3))]);}sugars(ctx,p,HR*1.3);sugars(ctx,[[236,60],[254,60]],8,{halo:true});sugars(ctx,[[250,120],[268,120]],8,{halo:true});pill(ctx,'small intestine: pH 7',96,172,{bg:'#fff',c:C.good,bd:C.good,s:13.5,w:700});})}
 ];
 
 /* ---------------- chapters ---------------- */
@@ -253,7 +255,7 @@ function tubeScene(ctx,S,o){drawTube(ctx,S.tube,o);if(!(o&&o.noSide))side(ctx,S.
 
 Story.start({
   id:'enzymes',title:'Why does a cracker turn sweet?',W,H,labHref:'../index.html#enzymes',
-  about:'<p>Amylase is drawn as a folded blob with a groove because that is the idea that matters; the real protein is one chain of 496 amino acids, roughly 7 nanometers across, with a long groove on its surface where the starch chain lies. Sizes are roughly to scale with each other, except that the sugar units are drawn a little large so you can count them. Real salivary amylase also cuts in the middle of a chain, leaving a mix of small sugars that is mostly maltose; here it always snips two units off the end so you can follow it. Colors are labels: real molecules are too small to have a color, and the orange glow just marks sugars that have been cut free. Everything is slowed down a lot: a real amylase makes hundreds of cuts a second, and on its own a starch bond would last for millions of years. The rates use the same model as the full BioLab enzyme tool: twice as fast for every 10 °C, unfolding near 44 °C, permanent heat damage above about 55 °C, and a bell-shaped pH curve (best near pH 6.8 for amylase and pH 2 for pepsin). Real enzymes have messier curves. The energy hill is a picture of activation energy, not a measurement.</p>',
+  about:'<p><b>The shapes are real.</b> Amylase and pepsin are drawn from the measured positions of their atoms in the human proteins (Protein Data Bank entries 1SMD and 1PSN, found by X-ray crystallography). You are looking straight into the active site. The three small dots at the cutting spot are the three acid groups that do the cutting, in their measured places. The starch chain is to the same scale as the enzyme: its sugar units are 0.48 nanometers apart, and amylase is about 6 nanometers across.</p><p><b>What is simplified.</b> Colors are labels: molecules are too small to have a color, and the orange glow just marks sugars that have been cut free. Real salivary amylase also cuts in the middle of a chain, leaving a mix of small sugars that is mostly maltose; here it always snips two units off the end so you can follow it. An unfolded enzyme is shown as a loose wavy string, which is the idea, not a measurement. The fat, the protein chain and the sweet sensor are simple drawings. Everything is slowed down a lot: a real amylase makes hundreds of cuts a second, and on its own a starch bond would last for millions of years.</p><p><b>The numbers.</b> The rates use the same model as the full BioLab enzyme tool: twice as fast for every 10 °C, unfolding near 44 °C, permanent heat damage above about 55 °C, and a bell-shaped pH curve (best near pH 6.8 for amylase and pH 2 for pepsin). Real enzymes have messier curves. The energy hill is a picture of activation energy, not a measurement.</p>',
   tell:{frames:FRAMES,terms:['enzyme|amylase','substrate|starch','active site|groove','activation energy|energy hill','product|maltose|sugar','denature','pH|acid','optimum|best temperature'],
     nudge:'For each picture ask: what had to happen just before this could happen?',
     done:'<b>That is the story.</b> Now tell it in your own words.',
@@ -267,7 +269,7 @@ Story.start({
   {rail:'Zoom in',title:'Go to where it happens',live:true,
    text(S){const z=S.v.z||0;return z<.5?'A cracker is mostly <b class="term">starch</b>. Whatever is making it sweet is too small to see. <b>Zoom in</b> to the wet surface of the cracker.':
      z<1.5?'Starch is stored in tiny grains. Each grain is millions of long chains packed together. Your saliva is soaking into them.':
-     'Now you can see single molecules. The blue chains are starch: sugar units linked end to end. The green blobs are <b class="term">amylase</b>, a protein in your saliva.';},
+     'Now you can see single molecules. The blue chains are starch: sugar units linked end to end. The green shapes are <b class="term">amylase</b>, a protein in your saliva, drawn from its measured structure.';},
    ui:[{type:'button',label:'Zoom in',pulse:true,act(S){const a=S.v.z,b=Math.min(2,Math.floor(a+.02)+1);zAnim={a,b,t:0};},show:S=>S.v.z<1.98},
        {type:'range',key:'z',min:0,max:2,step:.01,val:0,label:'Zoom',fmt:v=>['The cracker','Starch grains','Single molecules'][Math.round(v)],on(){zAnim=null;}}],
    todo:[{t:'Zoom all the way in',ok:S=>S.v.z>=1.97}],
@@ -276,16 +278,16 @@ Story.start({
    draw(ctx,S){drawZoom(ctx,S,S.v.z);}},
 
   {rail:'The cut',title:'One enzyme, one job',live:true,
-   text(S){const p=S.picks.why,cu=S.cu;return cu.cuts<1?'Send a starch chain to the amylase and watch the middle of the groove.':
+   text(S){const p=S.picks.why,cu=S.cu;return cu.cuts<1?'This is the real shape of amylase. The starch chain lies in a groove on its face. Send one in and watch the cutting spot.':
      'Each time, amylase snips off two sugar units: a small sugar called <b>maltose</b>. Maltose fits your sweet sensors. Starch never could. '+(p===1?'You called it. ':p==null?'':'So it was not “'+PICK[p].toLowerCase()+'”. ')+'And the amylase is unchanged, ready to cut again.';},
    alt:'Amylase is a pair of scissors that only cuts one kind of string. The string is starch. The scissors do not wear out, so one amylase can cut again and again.',
    ui:[{type:'button',label:'Send in a starch chain',pulse:true,act(S){S.cu.auto=true;cuSend(S.cu);},show:S=>!S.cu.auto}],
    todo:[{t:'Send in a starch chain',ok:S=>S.cu.auto},{t:'Watch 4 cuts',ok:S=>S.cu.cuts>=4}],
-   enter(S){S.cu=newCU({sensor:true,gap:.9});},tick(S,dt){stepCU(S.cu,dt);},
+   enter(S){S.cu=newCU({sensor:true,gap:.9,cx:470,cy:310});},tick(S,dt){stepCU(S.cu,dt);},
    draw(ctx,S){const cu=S.cu;ctx.fillStyle=C.sol;ctx.fillRect(0,0,W,H);sensor(ctx,cu,S.t);drawCU(ctx,cu,{});
-     pill(ctx,'amylase (an enzyme)',cu.cx,cu.cy+178,{bg:'#fff',c:C.good,bd:C.good,s:17,w:700});
-     pill(ctx,'the groove: its active site',cu.cx,cu.cy-116,{bg:'#fff',c:C.ink,bd:C.ink,s:16});arrow(ctx,cu.cx,cu.cy-100,cu.cx,cu.cy-44,{c:C.ink,lw:2,head:10});
-     if(cu.chain&&cu.chain.st!=='out')pill(ctx,'starch (the substrate)',cu.cx-330,cu.cy+70,{bg:'#fff',c:shade(C.sub,-.3),bd:C.sub,s:16,w:700,a:'left'});
+     pill(ctx,'amylase (an enzyme): its real shape',cu.cx,cu.cy+186,{bg:'#fff',c:C.good,bd:C.good,s:17,w:700});
+     pill(ctx,'the cutting spot, in its active site',cu.cx,cu.cy-196,{bg:'#fff',c:C.ink,bd:C.ink,s:16});arrow(ctx,cu.cx,cu.cy-180,cu.cx,cu.cy-22,{c:C.ink,lw:2,head:10});
+     if(cu.chain&&cu.chain.st!=='out')pill(ctx,'starch (the substrate)',cu.cx-380,cu.cy+62,{bg:'#fff',c:shade(C.sub,-.3),bd:C.sub,s:16,w:700,a:'left'});
      if(cu.cuts)pill(ctx,'maltose (the product)',760,196,{bg:'#fff',c:shade(C.prod,-.25),bd:C.prod,s:16,w:700});
      pill(ctx,'Cuts by this one enzyme: '+cu.cuts,30,40,{bg:'#fff',c:C.ink,bd:C.ink,s:18,w:700,a:'left',r:8,lw:2});
      if(cu.sweet)pill(ctx,'Sugars tasted: '+cu.sweet,30,82,{bg:'#fff',c:shade(C.prod,-.25),bd:C.prod,s:18,w:700,a:'left',r:8,lw:2});}},
@@ -301,7 +303,7 @@ Story.start({
        if(tryMol.k==='starch'&&cu.chain&&cu.chain.st==='hold'&&cu.cuts<1+(tryMol.c0||0)){cuSnip(cu);}
        if(tryMol.p>=.55)S.v.tried[tryMol.k]=1;if(tryMol.p>=1&&tryMol.k!=='starch')tryMol=null;}},
    draw(ctx,S){const cu=S.cu;ctx.fillStyle=C.sol;ctx.fillRect(0,0,W,H);drawCU(ctx,cu,{});
-     pill(ctx,'amylase',cu.cx,cu.cy+178,{bg:'#fff',c:C.good,bd:C.good,s:17,w:700});
+     pill(ctx,'amylase',cu.cx,cu.cy+186,{bg:'#fff',c:C.good,bd:C.good,s:17,w:700});
      if(tryMol&&tryMol.k!=='starch'){const p=tryMol.p,ax=p<.4?ease(p/.4):p<.6?1-.05*Math.sin((p-.4)/.2*Math.PI*3):1-ease((p-.6)/.4)*1.2,x=lerp(-40,cu.cx-150,ax)+(p>.6?-(p-.6)*200:0),y=cu.cy+(p>.6?(p-.6)*-260:0);
        if(tryMol.k==='fat')fat(ctx,x,y,2.3);else protein(ctx,x,y,2.3,7);
        if(p>.36)pill(ctx,(tryMol.k==='fat'?'Fat':'Protein')+': wrong shape. It does not fit the groove.',cu.cx,90,{bg:'#fff',c:C.rj,bd:C.rj,s:18,w:700,r:9,lw:2});}
@@ -319,7 +321,7 @@ Story.start({
      if(S.v.enz&&!cu.chain){cu.wait+=dt;if(cu.wait>.4){cu.wait=0;cuSend(cu);}}},
    draw(ctx,S){const cu=S.cu,on=!!S.v.enz;ctx.fillStyle=C.sol;ctx.fillRect(0,0,W,H);
      if(on)drawCU(ctx,cu,{strain:true,strainLabel:true});
-     else{const pts=[];for(let j=0;j<12;j++)pts.push([cu.cx+150-j*27.7+Math.sin(S.t*2+j)*3,cu.cy+Math.sin(j*.8+S.t*1.7)*12]);sugars(ctx,pts,13.5);
+     else{const pts=[];for(let j=0;j<14;j++)pts.push([cu.cx+125-j*SP*cu.sc+Math.sin(S.t*2+j)*3,cu.cy+Math.sin(j*.8+S.t*1.7)*12]);sugars(ctx,pts,HR*cu.sc);
        pill(ctx,'a starch chain on its own',cu.cx,cu.cy-70,{bg:'#fff',c:shade(C.sub,-.3),bd:C.sub,s:16,w:700});pill(ctx,'On its own, one of these bonds would last millions of years.',cu.cx,cu.cy+90,{bg:'#fff',c:C.ink,bd:C.ink,s:15});}
      drawHill(ctx,590,24,596,552,{hill:S.hill,enz:on?1:0,t:S.t,jig:.6,label:true,title:'The energy hill: each dot is one bond'});
      pill(ctx,'Bonds over the hill: '+S.hill.over,1170,560,{bg:'#fff',c:on?C.good:C.rj,bd:on?C.good:C.rj,s:18,w:700,a:'right',r:8,lw:2});
