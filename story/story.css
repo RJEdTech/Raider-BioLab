@@ -37,6 +37,11 @@ body{padding-bottom:28px}
 .st-stagebtns{display:flex;gap:6px;margin-left:auto}
 .st-stagebtns button{border:1px solid var(--line);background:var(--card);border-radius:7px;padding:3px 10px;font-size:13.5px;font-weight:600;cursor:pointer}
 .st-stagebtns button:hover{border-color:#9a9aa0}
+.st-view{display:inline-flex;margin-right:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}
+.st-view[hidden]{display:none}
+.st-view button{border:0;border-radius:0;padding:3px 11px}
+.st-view button+button{border-left:1px solid var(--line)}
+.st-view button[aria-pressed=true]{background:var(--rj,#C11430);color:#fff}
 
 body.st-hasstrip .st-stagebox{width:min(100%,calc((100vh - 262px) * var(--st-aspect,2.2)))}
 /* equation / word strip under the picture */

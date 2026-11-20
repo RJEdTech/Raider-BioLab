@@ -47,12 +47,14 @@ Story.start=function(cfg){
   const q=new URLSearchParams(location.search);
   const S={i:0,tau:0,t:0,dt:0,v:{},picks:{},did:{},mouse:{x:-1,y:-1,in:false},teach:q.get('teacher')==='1',paused:false,W,H,cfg};
   Story.S=S;
+  /* two ways to draw the molecules: 'simple' (flat, like a textbook) and 'real' (the measured shape). ?view=simple in the link sets the starting view. */
+  Story.view=['simple','real'].includes(q.get('view'))?q.get('view'):LS.get('raider-story-view','real');Story.realK=Story.view==='real'?1:0;
   const seen=new Set([0]);let unlockAt=0,speakOn=false,altOpen=false;
   document.documentElement.style.setProperty('--st-aspect',(W/H).toFixed(4));
 
   /* ---------- page skeleton ---------- */
   const root=document.getElementById('story');
-  root.innerHTML='<div class="st-top"><h2></h2><span class="st-stagebtns"><button type="button" class="b-pause">Pause</button><button type="button" class="b-replay">Replay this step</button></span><a></a></div><ol class="st-rail"></ol>'+
+  root.innerHTML='<div class="st-top"><h2></h2><span class="st-stagebtns"><span class="st-view" role="group" aria-label="How the molecules are drawn" hidden><button type="button" data-view="simple">Simple drawing</button><button type="button" data-view="real">Real shape</button></span><button type="button" class="b-pause">Pause</button><button type="button" class="b-replay">Replay this step</button></span><a></a></div><ol class="st-rail"></ol>'+
     '<div class="st-main"><div class="st-left"><div class="st-stagebox"><canvas aria-label="The picture for this step. The caption beside it says what it shows."></canvas><div class="st-board" hidden></div></div>'+
     '<div class="st-strip" hidden></div><p class="st-stripnote" hidden></p></div>'+
     '<section class="st-cap"><p class="st-step"></p><h3></h3><div class="st-text" aria-live="polite"></div><div class="st-predbox"></div><div class="st-ui"></div><ul class="st-todo"></ul>'+
@@ -61,6 +63,9 @@ Story.start=function(cfg){
     '<div class="st-foot"></div>';
   const $=s=>root.querySelector(s);
   $('.st-top h2').textContent=cfg.title;
+  const viewEl=$('.st-view'),viewBtns=[...viewEl.querySelectorAll('button')];
+  function setView(v,keep){Story.view=v;viewBtns.forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===v?'true':'false'));if(keep)LS.set('raider-story-view',v);}
+  viewBtns.forEach(b=>b.addEventListener('click',()=>{setView(b.dataset.view,true);count('story-view/'+cfg.id+'/'+b.dataset.view,'Story view');}));setView(Story.view);
   const back=$('.st-top a');back.href=cfg.labHref;back.textContent='Open the full lab →';
   const cv=$('canvas'),ctx=cv.getContext('2d'),board=$('.st-board'),stripEl=$('.st-strip'),stripNote=$('.st-stripnote');
   const uiEl=$('.st-ui'),todoEl=$('.st-todo'),textEl=$('.st-text'),predEl=$('.st-predbox'),altBtn=$('.st-altbtn'),altEl=$('.st-alt');
@@ -134,7 +139,7 @@ Story.start=function(cfg){
       b.addEventListener('click',()=>{S.v.term=t.k;S.v.termsHit[t.k]=1;S.v.termT=S.t;[...stripEl.querySelectorAll('button')].forEach(x=>x.setAttribute('aria-pressed',x===b));b.classList.add('hit');stripNote.innerHTML=t.note;});
       stripEl.appendChild(b);});
     stripNote.innerHTML=st.hint||'';}
-  function render(){const c=CH[S.i];
+  function render(){const c=CH[S.i];viewEl.hidden=!cfg.views||!!c.tell||c.views===false;if(c.tell)Story.realK=Story.view==='real'?1:0;
     $('.st-step').textContent='Step '+(S.i+1)+' of '+N;$('.st-cap h3').textContent=c.title;
     textEl.innerHTML=(c.predict&&S.picks[c.predict.key]==null?'<p><b>'+c.predict.q+'</b></p>':'')+(typeof c.text==='function'?c.text(S):(c.text||''));
     buildPredict(c);
@@ -200,7 +205,8 @@ Story.start=function(cfg){
 
   /* ---------- loop ---------- */
   let last=performance.now();
-  function frame(now){const raw=Math.min(.05,(now-last)/1000);last=now;const dt=S.paused?0:raw;S.dt=dt;S.t+=dt;S.tau+=dt;const c=CH[S.i];
+  function frame(now){const raw=Math.min(.05,(now-last)/1000);last=now;{const tg=Story.view==='real'?1:0;Story.realK+=(tg-Story.realK)*Math.min(1,raw*5);if(Math.abs(tg-Story.realK)<.012)Story.realK=tg;}
+    const dt=S.paused?0:raw;S.dt=dt;S.t+=dt;S.tau+=dt;const c=CH[S.i];
     if(c.tick&&dt>0)c.tick(S,dt);
     if(!c.tell){ctx.setTransform(cv.width/W,0,0,cv.width/W,0,0);ctx.clearRect(0,0,W,H);ctx.save();try{c.draw(ctx,S);}catch(err){if(!frame.err){frame.err=1;console.error(err);}}ctx.restore();}
     // latch finished to-dos, refresh the checklist and the Next button
