@@ -1587,7 +1587,7 @@ glycolysis: {
            honors: 'You’ll follow one sugar molecule as your cells break it down, see why oxygen matters so much, and see what yeast and muscle do without it.' },
   goals: {
     bio: ['How your cells take one glucose apart, and where its 6 carbons go', 'Why oxygen lets a cell make about 32 ATP instead of 2', 'What fermentation is, and why yeast and sprinting muscles use it'],
-    honors: ['The three stages: glycolysis, the Krebs cycle and electron transport, and where each happens', 'Where NADH and FADH₂ come from, and why they matter', 'Yeast vs. muscle fermentation, and why fermentation recycles NAD⁺'],
+    honors: ['The three stages: glycolysis, the Krebs cycle and the electron transport chain, and where each happens', 'Where NADH and FADH₂ come from, and why they matter', 'Yeast vs. muscle fermentation, and why fermentation recycles NAD⁺'],
     ap: ['Substrate-level vs. oxidative phosphorylation', 'Carbon accounting from glucose to CO₂', 'Why fermentation keeps glycolysis running without O₂']
   },
   matters: 'Every move you make, from blinking to sprinting, runs on ATP made this way. It also explains where the mass goes when you lose weight, why bread rises and why a bulging can is dangerous.',
@@ -1625,8 +1625,8 @@ glycolysis: {
       overlay(sim,ctx,LH,k){GLC(sim,ctx,k,[['No O₂: '+phM(sim,'atpPer')+' ATP per glucose',{s:15,w:800,c:CE_RED}],['32 ÷ 2 = 16 times less. A cell must burn',{s:12}],['sugar about 16 times faster to keep up.',{s:12}]]);} },
     { key: 'tally', title: 'Add it up: the ATP scoreboard', speed: 0.25,
       see: 'A bar graph of ATP from one glucose. With oxygen: 2 + 2 + about 28 = about 32. Without oxygen: just 2.',
-      why: 'Oxygen lets the Krebs cycle and electron transport run, so a cell with oxygen gets about 16 times as much ATP.',
-      overlay(sim,ctx,LH,k,tau){dim(ctx,LH,1);const kk=Math.min(k,1.25),p=tau%12,X0=230,W=440,per=W/32,S=[['Glycolysis',2,'#b26b00'],['Krebs cycle',2,'#2a6fdb'],['Electron transport',28,'#1b7a3a']];
+      why: 'Oxygen lets the Krebs cycle and the electron transport chain run, so a cell with oxygen gets about 16 times as much ATP.',
+      overlay(sim,ctx,LH,k,tau){dim(ctx,LH,1);const kk=Math.min(k,1.25),p=tau%12,X0=230,W=440,per=W/32,S=[['Glycolysis',2,'#b26b00'],['Krebs cycle',2,'#2a6fdb'],['Electron transport chain',28,'#1b7a3a']];
         tag(ctx,'ATP made from one glucose',400,36,k,{hi:true});
         const row=(y,label,segs,t0)=>{H.txt(ctx,label,X0-14,y+22,{s:14*kk,w:700,a:'right',b:'middle'});let x=X0,tot=0;
           segs.forEach(([n,v,c],i)=>{const f=clamp((p-t0-i*1.2)/1.2,0,1);if(f<=0)return;const w=v*per*ease(f);ctx.fillStyle=c;H.rr(ctx,x,y,Math.max(2,w),44,4);ctx.fill();if(f>=1)tot+=v;x+=v*per;});
@@ -1856,7 +1856,7 @@ glycolysis:{core:['carbons','invest','stagemost','o2why','bread','wherestage','n
   {id:'carbons',kind:'test',lvl:'bio',q:'With oxygen, where do all 6 carbon atoms of a glucose end up?',choices:['In ATP','As CO₂ that you breathe out','As water','They stay in the mitochondrion'],correct:1,
     steps:['2 carbons leave as CO₂ when pyruvate enters the mitochondrion.','The other 4 leave as CO₂ in the Krebs cycle.','You breathe that CO₂ out, which is where most of the mass of burned food goes.']},
   {id:'o2why',kind:'test',lvl:'bio',q:'Why does a cell get about 32 ATP per glucose with oxygen but only 2 without it?',choices:['Oxygen accepts electrons at the end of the chain; without it only glycolysis runs','Oxygen is itself a fuel, and burning it is what releases most of the 32 ATP','Glucose can’t get into cells without oxygen, so only a little is used','Without oxygen the cell still makes 32 ATP, it just takes much longer'],correct:0,
-    steps:['Most ATP (about 28) comes from electron transport, which needs O₂ to accept electrons.','No O₂ means no electron transport, and the Krebs cycle stalls too.','Only glycolysis is left: 2 ATP per glucose.']},
+    steps:['Most ATP (about 28) comes from the electron transport chain, which needs O₂ to accept electrons.','With no O₂ the electron transport chain stops, and the Krebs cycle stalls too.','Only glycolysis is left: 2 ATP per glucose.']},
   {id:'invest',kind:'test',lvl:'bio',q:'Glycolysis spends 2 ATP before it makes any. Why is that worth it?',choices:['It isn’t worth it; the cell just loses 2 ATP each time','The 2 ATP are stored in glucose and given back later','Glucose needs the ATP to get into the mitochondrion','Phosphates make glucose split, and 4 ATP come back: net 2'],correct:3,
     steps:['Adding 2 phosphates destabilizes the glucose.','It splits, and its halves release energy to make 4 ATP.','4 − 2 = net 2 ATP from glycolysis.']},
   {id:'bread',kind:'real',lvl:'bio',q:'Why does bread dough rise?',choices:['Flour swells as it soaks up the water in the dough','Kneading pumps air bubbles into the dough, and they expand','Yeast ferments sugar, and the CO₂ it makes is trapped','Salt reacts with the water and gives off a gas'],correct:2,
@@ -1869,11 +1869,11 @@ glycolysis:{core:['carbons','invest','stagemost','o2why','bread','wherestage','n
     steps:['Substrate-level: an enzyme transfers phosphate directly to ADP.','Glycolysis gives 2 net this way and the Krebs cycle gives 2.','The other ~28 come from oxidative phosphorylation via ATP synthase.']},
   {id:'stagemost',kind:'test',lvl:'bio',
     q:'<p>Which stage of cellular respiration makes the most ATP per glucose?</p>',
-    choices:['Electron transport','Glycolysis','The Krebs cycle','Fermentation'],correct:0,
-    steps:['Glycolysis nets 2 ATP and the Krebs cycle 2.','Electron transport, using the NADH and FADH₂ from the earlier stages, makes about 28.','So about 28 of the 32 ATP come from electron transport.']},
+    choices:['The electron transport chain','Glycolysis','The Krebs cycle','Fermentation'],correct:0,
+    steps:['Glycolysis nets 2 ATP and the Krebs cycle 2.','The electron transport chain, using the NADH and FADH₂ from the earlier stages, makes about 28.','So about 28 of the 32 ATP come from the electron transport chain.']},
   {id:'wherestage',kind:'test',lvl:'honors',
     q:'<p>Where does each stage of cellular respiration happen?</p>',
-    choices:['Glycolysis in the cytoplasm; Krebs in the matrix; electron transport on the inner membrane','Glycolysis in the matrix; Krebs in the cytoplasm; electron transport on the inner membrane','Glycolysis on the inner membrane; Krebs in the matrix; electron transport in the cytoplasm','Glycolysis in the cytoplasm; Krebs on the inner membrane; electron transport in the matrix'],correct:0,
+    choices:['Glycolysis in the cytoplasm; Krebs in the matrix; the electron transport chain on the inner membrane','Glycolysis in the matrix; Krebs in the cytoplasm; the electron transport chain on the inner membrane','Glycolysis on the inner membrane; Krebs in the matrix; the electron transport chain in the cytoplasm','Glycolysis in the cytoplasm; Krebs on the inner membrane; the electron transport chain in the matrix'],correct:0,
     steps:['Glycolysis happens in the cytoplasm, outside the mitochondrion.','Pyruvate enters the mitochondrion, and the Krebs cycle runs in the fluid inside, the matrix.','The electron transport chain and ATP synthase sit in the folded inner membrane.']},
   {id:'equation',kind:'test',lvl:'bio',
     q:'<p>Which equation shows aerobic cellular respiration?</p>',

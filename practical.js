@@ -285,7 +285,7 @@ enz: {
 },
 glycolysis: {
   hook: 'When you burn off a granola bar on a run, its sugar does not just vanish. Follow one glucose molecule with oxygen available. Where do its 6 carbon atoms end up, and how much ATP does your cell get from it?',
-  answer: 'All 6 carbons leave as CO₂ that you breathe out: 2 when pyruvate enters the mitochondrion and 4 in the Krebs cycle. The cell gets about 32 ATP: 2 from glycolysis, 2 from the Krebs cycle and about 28 from electron transport. Turn oxygen off and the same glucose gives only 2.',
+  answer: 'All 6 carbons leave as CO₂ that you breathe out: 2 when pyruvate enters the mitochondrion and 4 in the Krebs cycle. The cell gets about 32 ATP: 2 from glycolysis, 2 from the Krebs cycle and about 28 from the electron transport chain. Turn oxygen off and the same glucose gives only 2.',
   uses: [
     'Losing weight: most of the mass of the fat and sugar you burn leaves through your lungs as CO₂, not as sweat or heat.',
     'Bread dough: yeast short on oxygen ferment sugar into CO₂ and alcohol. The CO₂ bubbles make the dough rise, and the alcohol bakes off in the oven.',
@@ -300,6 +300,15 @@ glycolysis: {
     'The remaining carbons go around the Krebs cycle and leave as CO₂. Every carbon from the glucose has now been breathed out, and the energy is stored in NADH, FADH₂ and 2 ATP.',
     'NADH and FADH₂ deliver electrons to the electron transport chain. Oxygen catches them at the end, and ATP synthase makes about 28 ATP, most of the total. See the Cellular respiration simulation for this step up close.'
   ]
+},
+yeast: {
+  hook: 'Five flasks hold the same yeast but different sugars: glucose, sucrose, lactose, lactose with the enzyme lactase, and water only. Which balloons will fill, and which will stay flat?',
+  answer: 'Glucose fills fastest, with sucrose close behind. Lactose stays almost flat, because baker’s yeast do not make lactase. Lactose with lactase fills, because the lactase splits it and the yeast use the glucose half. Water only stays flat: no sugar, no gas.',
+  uses: [
+    'Bread dough: yeast ferment the sugar in dough into CO₂ and alcohol. The CO₂ bubbles make the bread rise.',
+    'Lactose-free milk: it has lactase added, which splits the lactose before you drink it. That is the same fix as flask 4.'
+  ],
+  takeaway: 'Yeast can only ferment a sugar if they have the enzyme to break it apart. The gas comes from the sugar, and warming speeds it up until the enzymes lose their shape.'
 },
 chloroplast: {
   hook: 'On a hot, dry afternoon, a plant closes the pores in its leaves to save water, which also shuts out CO₂. The sun is still bright. Set CO₂ to 0 at 80% light. Does the leaf keep splitting water and releasing oxygen?',
