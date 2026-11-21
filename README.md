@@ -31,12 +31,13 @@ Each course list ends with **Go further** tools: optional, advanced tools for st
 Link straight to any tool with `#<name>`, e.g. `#transport`, `#pcr` or `#smog`.
 
 ## Story pages (pilot, November 2026)
-Two tools also exist as a **story**: one question a student cares about, answered by walking through linked pictures that the student changes, ending with the student putting the story back in order and telling it in their own words (with a Copy for Canvas button). They are separate pages and do not change the tools above.
+Three topics also exist as a **story**: one question a student cares about, answered by walking through linked pictures that the student changes, ending with the student putting the story back in order and telling it in their own words (with a Copy for Canvas button). They are separate pages and do not change the tools above.
 
 - **Why are you out of breath?** (cellular respiration): https://rjedtech.github.io/Raider-BioLab/story/respiration.html
 - **Why does a cracker turn sweet?** (enzymes): https://rjedtech.github.io/Raider-BioLab/story/enzymes.html
+- **What is a tree made of?** (photosynthesis): https://rjedtech.github.io/Raider-BioLab/story/photosynthesis.html
 
-Add `?teacher=1` for Teacher view (picture only, every step unlocked, arrow keys move between steps) and `?step=6` to open at a step. The shared code is `story/story-kit.js` and `story/story.css`; each story is one file (`story/respiration.js`, `story/enzymes.js`).
+Every protein is drawn from its measured structure (Protein Data Bank), and a switch above the picture changes between **Simple drawing** and **Real shape**; `?view=simple` starts in the simple view. Add `?teacher=1` for Teacher view (picture only, every step unlocked, arrow keys move between steps) and `?step=6` to open at a step. The shared code is `story/story-kit.js` and `story/story.css`; each story is one file (`story/respiration.js`, `story/enzymes.js`).
 
 ## Files
 - `index.html`: page shell
