@@ -105,7 +105,7 @@ function drawTop(ctx,sim,o){o=o||{};const t=o.t||0;
   for(const f of sim.fly){const k=ease(f.p);
     if(f.k==='hup'){const x=k<.4?lerp(f.x,X.S+24,k/.4):X.S+24,y=k<.4?lerp(f.y,196,k/.4):lerp(196,112,(k-.4)/.6);hplus(ctx,x,y,f.p>.85?(1-f.p)/.15:1);}
     else if(f.k==='atp'){ctx.globalAlpha=f.p>.85?(1-f.p)/.15:1;pill(ctx,'ATP',lerp(X.S-8,sim.cap?POOL.x+30:1100,k),lerp(52,sim.cap?POOL.ya:84,k),{bg:'#fde9ec',c:C.syn,bd:C.atp,s:14,w:700});ctx.globalAlpha=1;}
-    else if(f.k==='nadph'){ctx.globalAlpha=f.p>.85?(1-f.p)/.15:1;pill(ctx,'NADPH',lerp(P.fnr[0]+38,sim.cap?POOL.x+30:850,k),lerp(P.fnr[1]-22,sim.cap?POOL.yn:48,k)-(sim.cap?Math.sin(k*3.14)*40:0),{bg:'#ece6fb',c:'#3d2a8a',bd:C.nad,s:14,w:700});ctx.globalAlpha=1;}}
+    else if(f.k==='nadph'){ctx.globalAlpha=f.p>.85?(1-f.p)/.15:1;pill(ctx,'NADPH',lerp(P.fnr[0]+38,sim.cap?POOL.x+30:850,k),lerp(P.fnr[1]-22,sim.cap?POOL.yn:22,k)-(sim.cap?Math.sin(k*3.14)*40:0),{bg:'#ece6fb',c:'#3d2a8a',bd:C.nad,s:14,w:700});ctx.globalAlpha=1;}}
   // the two batteries, when the story is counting what is in stock
   if(sim.cap){const row=(lab,n,max,y,col)=>{txt(ctx,lab,POOL.x-6,y+5,{s:14,w:700,a:'right',c:col,halo:4});for(let i=0;i<max;i++){rr(ctx,POOL.x+i*13,y-8,10,16,3);ctx.fillStyle=i<n?col:'#fff';ctx.fill();ctx.lineWidth=1.2;ctx.strokeStyle=col;ctx.stroke();}};
     row('ATP',sim.atp,ATPMAX,POOL.ya,C.atp);row('NADPH',sim.nadph,NADMAX,POOL.yn,C.nad);txt(ctx,'in stock',POOL.x+124,POOL.ya+5,{s:13,c:C.soft});}
@@ -287,7 +287,7 @@ Story.start({
    alt:'It is two escalators with a water wheel between them. The first escalator lifts the electrons, the wheel takes some energy as they roll down, and the second escalator lifts them to the top floor: NADPH.',
    todo:[{t:'Make 3 NADPH',ok:S=>S.sim.n.nadph>=3},{t:'Count the H⁺ for each pair: 2 from water + 4 pumped = 6',ok:S=>S.sim.n.h>=18}],
    enter(S){setup(S,{light:1,open:false});},tick(S,dt){step(S.sim,dt);},
-   draw(ctx,S){const n=S.sim.n;scene(ctx,S,{bottom:'energy',lvl:2});chip(ctx,'NADPH made: '+n.nadph,790,48,{c:'#3d2a8a',bd:C.nad});chip(ctx,'H⁺ added inside: '+n.h,780,262,{c:C.h,bd:C.h});
+   draw(ctx,S){const n=S.sim.n;scene(ctx,S,{bottom:'energy',lvl:2});chip(ctx,'NADPH made: '+n.nadph,800,22,{c:'#3d2a8a',bd:C.nad,s:16});chip(ctx,'H⁺ added inside: '+n.h,780,262,{c:C.h,bd:C.h});
      if(S.sim.lum.length>LMAX-4)pill(ctx,'The disc is full of H⁺. Next step: the way out.',400,284,{bg:C.ink,c:'#fff',bd:null,s:15.5,w:700});}},
 
   {rail:'The turbine',title:'The crowd turns a turbine',
