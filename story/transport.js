@@ -15,11 +15,11 @@ const RATE=9,AK=.27,DV=.025,BURST=1.62;
 const cIn=V=>.54/(V-.4);
 
 /* ---------------- the model ---------------- */
-function newSim(){return {t:0,cOut:.9,V:1,burst:false,bt:0,cross:[],accI:0,accO:0,n:{in:0,out:0,cyc:0,na:0,k:0},ev:{i:[],o:[]},test:[],did:{},pump:null,showPump:false,flow:true};}
+function newSim(){return {t:0,cOut:.9,V:1,Vt:1,burst:false,bt:0,cross:[],accI:0,accO:0,n:{in:0,out:0,cyc:0,na:0,k:0},ev:{i:[],o:[]},test:[],did:{},pump:null,showPump:false,flow:true};}
 function recent(a,t,w){while(a.length&&a[0]<t-w)a.shift();return a.length;}
 function step(sim,dt){sim.t+=dt;
-  if(sim.flow){const ci=sim.burst?sim.cOut:cIn(sim.V);sim.accI+=RATE*Math.max(.05,1-AK*sim.cOut)*dt;sim.accO+=RATE*Math.max(.05,1-AK*ci)*dt;
-    for(const d of [1,-1]){const k=d>0?'accI':'accO';while(sim[k]>=1){sim[k]-=1;const s=sim.t*7.3+sim.cross.length;sim.cross.push({d,pore:Math.random()<.5?0:1,p:0,sx:(hash(s)-.5)*150,sy:30+hash(s+.3)*70,ex:(hash(s+.6)-.5)*170,ey:36+hash(s+.9)*80});}}}
+  if(sim.flow){const ci=sim.burst?sim.cOut:cIn(sim.Vt);sim.accI+=RATE*Math.max(.05,1-AK*sim.cOut)*dt;sim.accO+=RATE*Math.max(.05,1-AK*ci)*dt;
+    for(const d of [1,-1]){const k=d>0?'accI':'accO';while(sim[k]>=1){sim[k]-=1;if(!sim.burst)sim.Vt=clamp(sim.Vt+d*DV,.52,2);const s=sim.t*7.3+sim.cross.length;sim.cross.push({d,pore:Math.random()<.5?0:1,p:0,sx:(hash(s)-.5)*150,sy:30+hash(s+.3)*70,ex:(hash(s+.6)-.5)*170,ey:36+hash(s+.9)*80});}}}
   for(const c of sim.cross){c.p+=dt/1.5;if(c.p>=1){if(c.d>0){sim.n.in++;sim.ev.i.push(sim.t);}else{sim.n.out++;sim.ev.o.push(sim.t);}if(!sim.burst)sim.V=clamp(sim.V+c.d*DV,.5,2);}}
   sim.cross=sim.cross.filter(c=>c.p<1);
   if(!sim.burst&&sim.V>=BURST){sim.burst=true;sim.bt=sim.t;}
@@ -55,7 +55,7 @@ function drawClose(ctx,sim,o){o=o||{};const t=sim.t,y0=MY-HM,y1=MY+HM;
   txt(ctx,'water channel',AX,y0-64,{s:16,w:700,a:'center',c:'#1f4f86',halo:4.5});txt(ctx,'(aquaporin)',AX,y0-46,{s:14,a:'center',c:'#1f4f86',halo:4});
   if(sim.showPump){txt(ctx,'sodium-potassium pump',PX+10,36,{s:16,w:700,a:'center',c:'#7a3f1c',halo:4.5});}
   // dissolved particles, in true proportion to the water: about 1 for every 185 waters at blood strength
-  const nOut=Math.round(15*sim.cOut/.9),ci=sim.burst?sim.cOut:cIn(sim.V),nIn=Math.round(22*ci/.9);
+  const nOut=Math.round(15*sim.cOut/.9),ci=sim.burst?sim.cOut:cIn(Math.max(.52,sim.V)),nIn=Math.round(22*ci/.9);
   for(let i=0;i<nOut;i++){const x=24+hash(i*3.1+1)*(CW-48)+Math.sin(t*.6+i)*7,y=44+hash(i*5.7+2)*(y0-76)+Math.cos(t*.5+i*1.7)*6;if(Math.abs(x-AX)<70&&y>y0-84)continue;ion(ctx,x,y,i%2?C.cl:C.na);}
   for(let i=0;i<nIn;i++){const x=24+hash(i*4.3+7)*(CW-48)+Math.sin(t*.55+i*2)*7,y=y1+30+hash(i*6.1+3)*(H-y1-70)+Math.cos(t*.45+i)*6;if(sim.showPump&&Math.abs(x-PX)<120)continue;ion(ctx,x,y,i%3?C.k:C.cl);}
   // a few waters picked out so you can follow them; then the ones on their way through a channel
@@ -94,7 +94,7 @@ function drawCell(ctx,sim,o){o=o||{};rr(ctx,CW+10,8,W-CW-18,H-16,12);ctx.fillSty
   rr(ctx,bx,by,bw,20,6);ctx.fillStyle='#eee9dc';ctx.fill();const v=sim.burst?BURST:sim.V;rr(ctx,bx,by,Math.max(8,fx(v)-bx),20,6);ctx.fillStyle=sim.burst?'#c98a86':C.w;ctx.fill();
   for(const [val,lab,col] of [[1,'normal',C.ink],[BURST,'bursts',C.rj]]){ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(fx(val),by-5);ctx.lineTo(fx(val),by+25);ctx.stroke();txt(ctx,lab,fx(val),by+42,{s:13.5,a:'center',c:col,w:600});}
   if(o.counts!==false){const ri=recent(sim.ev.i,t,5),ro=recent(sim.ev.o,t,5);chip(ctx,'Waters in (last 5 s): '+ri,bx,by+82,{c:'#0f4f9a',bd:C.w,s:15.5});chip(ctx,'Waters out (last 5 s): '+ro,bx,by+116,{c:'#0f4f9a',bd:C.w,s:15.5});}
-  const st=sim.burst?'':Math.abs(sim.cOut-cIn(sim.V))<.12?(sim.V<.93?'In = out again, at a smaller size.':sim.V>1.07?'In = out again, at a bigger size.':'In = out. The cell holds its size.'):sim.cOut>cIn(sim.V)?'More water out than in. The cell is shrinking.':'More water in than out. The cell is swelling.';
+  const ciT=cIn(sim.Vt),st=sim.burst?'':Math.abs(sim.cOut-ciT)<.16?(sim.V<.93?'In = out again, at a smaller size.':sim.V>1.07?'In = out again, at a bigger size.':'In = out. The cell holds its size.'):sim.cOut>ciT?'More water out than in. The cell is shrinking.':'More water in than out. The cell is swelling.';
   if(st)txt(ctx,st,RP.x,74,{s:15.5,w:700,a:'center',c:C.ink});
   txt(ctx,'Outside: '+sim.cOut.toFixed(1)+'% salt'+(sim.cOut>3.4?' (seawater)':Math.abs(sim.cOut-.9)<.05?' (same as blood)':sim.cOut<.05?' (pure water)':''),RP.x,100,{s:14.5,a:'center',c:'#2c5f8a'});}
 
