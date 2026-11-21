@@ -216,7 +216,7 @@ Story.start=function(cfg){
     if(typeof c.text==='function'&&c.live){const h=c.text(S);if(h!==frame.h){frame.h=h;textEl.innerHTML=h;}}
     if(c.predict&&c.predict.reveal&&S.picks[c.predict.key]!=null&&predEl.dataset.shown==='0'&&c.predict.reveal(S))buildPredict(c);
     setNext();requestAnimationFrame(frame);}
-  fit();go(Math.min(N-1,Math.max(0,(parseInt(q.get('step'),10)||1)-1)));requestAnimationFrame(frame);
+  Story.go=go;fit();go(Math.min(N-1,Math.max(0,(parseInt(q.get('step'),10)||1)-1)));requestAnimationFrame(frame);
 };
 window.Story=Story;
 })();
