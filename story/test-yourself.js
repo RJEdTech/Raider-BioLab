@@ -9,15 +9,25 @@
      questions:[{q, choices:[...], answer:index | answer:number, tol, unit, hint, why, step (1-based story step), stepName}]}) */
 (function(){
 'use strict';
+const mounted=[];
+/* Choices are shown in a fixed shuffled order (seeded by page id and question number), so the right answer's position varies
+   but every student and every visit sees the same order. Inputs keep the authored index as their value. */
+function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
+  return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);h^=h>>>16;return (h>>>0)/4294967296;};}
+/* The right answer rotates through the positions question by question (starting point set by the page), and the
+   wrong answers are shuffled around it, so answer positions spread evenly within a page. */
+function order(n,key,ans,i,pageKey){const r=seeded(key),o=[...Array(n).keys()].filter(k=>k!==ans);for(let k=o.length-1;k>0;k--){const j=Math.floor(r()*(k+1));[o[k],o[j]]=[o[j],o[k]];}
+  const start=Math.floor(seeded(pageKey)()*n);o.splice((start+i)%n,0,ans);return o;}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function send(path,title){(function go(n){const g=window.goatcounter;if(g&&typeof g.count==='function'){try{g.count({path,title,event:true});}catch(e){}}else if(n<40)setTimeout(()=>go(n+1),250);})(0);}
 function mount(cfg){
+  mounted.push(cfg);
   const root=typeof cfg.el==='string'?document.querySelector(cfg.el):cfg.el;if(!root)return;
-  const Q=cfg.questions,st=Q.map(()=>({first:null,done:false,tries:0,last:''})),base='story/'+cfg.lab+'/'+cfg.id+'/test-';let doneSent=false;
+  const Q=cfg.questions,mc=(()=>{let k=0;return Q.map(q=>q.choices?k++:-1);})(),st=Q.map(()=>({first:null,done:false,tries:0,last:''})),base='story/'+cfg.lab+'/'+cfg.id+'/test-';let doneSent=false;
   root.classList.add('ty');
   root.innerHTML=`<h2>Test yourself</h2><p class="ty-lead">${Q.length} new situations, no picture this time. If you get stuck, <b>Show me in the picture</b> takes you back to the step that shows it.</p>
     <ol class="ty-list">${Q.map((q,i)=>`<li class="ty-q" id="ty-q${i}"><fieldset><legend><span class="ty-n">${i+1}.</span> ${q.q}</legend>${q.choices?
-      `<div class="ty-ch">${q.choices.map((c,j)=>`<label><input type="radio" name="ty${i}" value="${j}"> <span>${c}</span></label>`).join('')}</div>`:
+      `<div class="ty-ch">${order(q.choices.length,cfg.lab+'/'+cfg.id+'/'+i,q.answer,mc[i],cfg.lab+'/'+cfg.id).map(j=>`<label><input type="radio" name="ty${i}" value="${j}"> <span>${q.choices[j]}</span></label>`).join('')}</div>`:
       `<div class="ty-num"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer${q.unit?' in '+esc(q.unit):''}" id="ty-in${i}">${q.unit?`<span>${q.unit}</span>`:''}</div>`}
       <div class="ty-acts"><button type="button" class="ty-btn ty-pri" data-check="${i}">Check</button></div>
       <div class="ty-fb" id="ty-fb${i}" aria-live="polite"></div></fieldset></li>`).join('')}</ol>
@@ -51,14 +61,14 @@ function mount(cfg){
 const st=document.createElement('style');st.textContent=
 `.ty{max-width:1100px;margin:18px auto;background:var(--card,#fff);border:1px solid var(--line,#d8d8d3);border-radius:12px;padding:16px 20px;color:var(--fg,#1c1c1f);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
 .ty h2{margin:0 0 4px;font-size:21px}.ty-lead{margin:0 0 10px;color:var(--muted,#5d5d63)}
-.ty-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px}.ty-q fieldset{border:0;margin:0;padding:0}.ty-n{color:#a8102a;margin-right:2px}.ty-q legend{font-size:17px;font-weight:600;line-height:1.4;padding:0;margin-bottom:6px}
+.ty-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px}.ty-q fieldset{border:0;margin:0;padding:0}.ty-n{color:var(--rj-ink,#a8102a);margin-right:2px}.ty-q legend{font-size:17px;font-weight:600;line-height:1.4;padding:0;margin-bottom:6px}
 .ty-ch{display:flex;flex-direction:column;gap:5px}.ty-ch label{display:flex;gap:8px;align-items:flex-start;font-size:16px;line-height:1.4;cursor:pointer}.ty-ch input{margin-top:4px}
-.ty-num{display:flex;gap:8px;align-items:center;font-size:16px}.ty-num input{width:110px;padding:8px 10px;font-size:17px;border:1px solid var(--line,#ccc);border-radius:8px}
+.ty-num{display:flex;gap:8px;align-items:center;font-size:16px}.ty-num input{width:110px;padding:8px 10px;font-size:17px;border:1px solid var(--line,#ccc);border-radius:8px;background:var(--card2,#fff);color:inherit}
 .ty-acts{margin-top:8px}.ty-btn{font:600 15px/1.2 inherit;padding:8px 14px;border-radius:9px;border:1px solid var(--line,#ccc);background:var(--card2,#f3f3f1);color:inherit;cursor:pointer}.ty-btn:disabled{opacity:.5;cursor:default}
-.ty-pri{background:#C11430;border-color:#C11430;color:#fff}.ty-fb{margin-top:8px;font-size:16px;line-height:1.5}.ty-fb.ok{color:#1b7339}.ty-fb.no{color:#a8102a}.ty-fb .ty-btn{margin:4px 0}
+.ty-pri{background:#C11430;border-color:#C11430;color:#fff}.ty-fb{margin-top:8px;font-size:16px;line-height:1.5}.ty-fb.ok{color:var(--good,#1b7339)}.ty-fb.no{color:var(--rj-ink,#a8102a)}.ty-fb .ty-btn{margin:4px 0}
 .ty-sum{margin-top:14px;border-top:1px solid var(--line,#ddd);padding-top:12px;font-size:16px}.ty-sum p{margin:0 0 8px}.ty-sum textarea{width:100%;min-height:140px}
 #ty-back{position:fixed;right:18px;bottom:18px;z-index:50;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 html.sh-easy .ty :is(legend,label,p,.ty-fb),body.st-easy .ty :is(legend,label,p,.ty-fb){line-height:1.75;letter-spacing:.035em;word-spacing:.14em}`;
 document.head.appendChild(st);
-window.TestYourself={mount};
+window.TestYourself={mount,mounted,order};
 })();
