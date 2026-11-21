@@ -116,7 +116,7 @@ function sensor(ctx,cu,t){const s=PX*cu.sc,M=Story.mol,m=M.DATA.SWT,y0=SW.y+m.me
   M.draw(ctx,'SWT',SW.x,SW.y,s);
   {const sk=1-M.realK();if(sk>0){ctx.globalAlpha=sk;ctx.beginPath();ctx.ellipse(px,py,SP*cu.sc*1.45,HR*cu.sc*1.9,0,0,6.2832);ctx.fillStyle='#fff3f5';ctx.fill();ctx.lineWidth=2.4;ctx.strokeStyle='#7a2f42';ctx.stroke();ctx.globalAlpha=1;}}   // simple view: the pocket is drawn open
   pill(ctx,'surface of a taste cell',x0+176,(y0+y1)/2,{bg:'#fffaf0',c:'#6b5320',bd:'#b89238',s:15.5,w:700});txt(ctx,'inside the taste cell',x0+96,y1+34,{s:15,c:'#7a4a44'});
-  txt(ctx,'sweet sensor',SW.x-92,312,{s:17,w:700,a:'right',c:'#7a2f42'});txt(ctx,'(a receptor protein)',SW.x-92,333,{s:15,a:'right',c:'#7a2f42'});txt(ctx,Story.view==='real'?'its real shape':'a simple drawing',SW.x-92,353,{s:15,a:'right',c:'#7a2f42'});
+  txt(ctx,'sweet sensor',SW.x-92,312,{s:17,w:700,a:'right',c:'#7a2f42'});txt(ctx,'(a receptor protein)',SW.x-92,333,{s:15,a:'right',c:'#7a2f42'});txt(ctx,Story.view==='real'?'its real shape,':'a simple drawing',SW.x-92,353,{s:15,a:'right',c:'#7a2f42'});if(Story.view==='real')txt(ctx,'first seen in 2025',SW.x-92,373,{s:15,w:700,a:'right',c:'#7a2f42'});
   pill(ctx,'the pocket: only a small sugar fits',px-150,py-92,{bg:'#fff',c:'#7a2f42',bd:'#b0566a',s:15.5,w:700});arrow(ctx,px-96,py-76,px-10,py-10,{c:'#7a2f42',lw:2,head:10});
   if(cu.sflash>0){ctx.globalAlpha=cu.sflash;pill(ctx,'sweet!',px+10,py-34,{bg:C.prod,c:'#fff',bd:null,s:22,w:700});
     arrow(ctx,SW.x-150,y1+52,SW.x-150,H-8,{c:C.prod,lw:4,head:12});txt(ctx,'signal to your brain',SW.x-138,H-14,{s:15.5,w:700,c:shade(C.prod,-.25)});ctx.globalAlpha=1;}
@@ -366,11 +366,11 @@ Story.start({
 
   {rail:'The graph',title:'Build the graph yourself',live:true,patience:120,
    text(S){const n=(S.v.pts||[]).length;return !S.v.doneT?'Build the graph you will see on a test. Pick a temperature, then press <b>Measure</b>. Each dot is a real 3-second count with fresh saliva.':
-     'Two different stories make one curve. The left side climbs because kicks get harder. The right side crashes because the enzyme unfolds. The peak between them is the <b class="term">optimum</b> (Latin for “best”): near body temperature.';},
+     'Two stories make one curve. The left side climbs because kicks get harder. The right side crashes because the enzyme unfolds. The peak is the <b class="term">optimum</b> (Latin for “best”): near body temperature.';},
    alt:'Read the curve from left to right like a story. Cold: slow, but nothing is broken. Warmer: faster. Past the peak: the enzyme is coming apart, so the rate falls off a cliff.',
    ui:[tempUI([{v:4,l:'4°'},{v:20,l:'20°'},{v:37,l:'37°'},{v:50,l:'50°'},{v:70,l:'70°'}]),
-       {type:'button',label:'Measure here (3 seconds)',pulse:true,act(S){if(S.v.meas)return;fresh(S.tube);S.v.meas={T:S.tube.T,t:0,n:0,n0:0};},show:S=>!S.v.doneT||(S.v.pts||[]).length<9},
-       {type:'button',label:'Show the two causes',ghost:true,act(S){S.v.causes=!S.v.causes;},show:S=>!!S.v.doneT}],
+       {type:'button',label:'Measure here (3 seconds)',pulse:true,act(S){if(S.v.meas)return;fresh(S.tube);S.v.meas={T:S.tube.T,t:0,n:0,n0:0};},show:S=>!S.v.doneT||(S.v.causes&&(S.v.pts||[]).length<9)},
+       {type:'button',label:'Show the two causes',pulse:true,act(S){S.v.causes=true;},show:S=>!!S.v.doneT&&!S.v.causes}],
    todo:[{t:'Measure 5 temperatures (one below 20 °C, one above 60 °C)',ok:S=>{const p=S.v.pts||[];return p.length>=5&&p.some(q=>q.T<20)&&p.some(q=>q.T>60);}},{t:'Press “Show the two causes”',ok:S=>!!S.v.causes}],
    enter(S){S.tube=newTube();S.v.T=37;S.v.pts=[];S.v.meas=null;S.v.causes=false;S.v.doneT=0;},
    tick(S,dt){const s=S.tube,m=S.v.meas;if(m){s.T=m.T;S.v.T=m.T;}stepTube(s,dt);if(m){m.t+=dt;m.n=s.n;if(m.t>=3){const p=S.v.pts.filter(q=>Math.abs(q.T-m.T)>1.5);p.push({T:m.T,r:m.n/3});S.v.pts=p;S.v.meas=null;const ok=p.length>=5&&p.some(q=>q.T<20)&&p.some(q=>q.T>60);if(ok&&!S.v.doneT)S.v.doneT=S.t;}}},
