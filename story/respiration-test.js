@@ -3,7 +3,7 @@ TestYourself.mount({lab:'BioLab',id:'respiration',title:'Raider BioLab · Why ar
   go:i=>window.Story&&window.Story.go&&window.Story.go(i),
   questions:[
   {q:'Where does the oxygen you breathe in end up?',
-   choices:['In the carbon dioxide you breathe out','In water, made at the end of the chain','Inside ATP','In the glucose you eat'],answer:1,
+   choices:['In the carbon dioxide that you breathe out','In water, made at the end of the chain','Inside the ATP that the turbine makes','In the glucose stored in your muscles'],answer:1,
    hint:'Follow the oxygen to the last step. It catches the electrons at the end of the chain. What does it join with there?',step:7,stepName:'where the oxygen goes',
    why:'Oxygen catches the electrons at the end of the chain and joins H⁺ to make water. The carbon dioxide you breathe out comes from your food.'},
   {q:'In this model, one NADH moves 10 H⁺ across the membrane, and the turbine makes 1 ATP for every 4 H⁺ that flow back. How many ATP come from 4 NADH?',answer:10,tol:.01,unit:'ATP',
@@ -14,7 +14,7 @@ TestYourself.mount({lab:'BioLab',id:'respiration',title:'Raider BioLab · Why ar
    hint:'What does each electron drop do? If the electrons cannot move, what stops being pushed across the membrane?',step:8,stepName:'hold your breath',
    why:'With nowhere to go, the electrons stop moving, the pumps stop, the H⁺ crowd runs down and the turbine stops. That is why cyanide is so deadly.'},
   {q:'You stand up on the pedals for a hard bike climb. Why does your breathing speed up too?',
-   choices:['Your muscles turn oxygen straight into motion','Your muscles use ATP faster, so the turbine spins faster, the pumps work faster and more oxygen is used','Oxygen is stored in your muscles and runs out','Each ATP is built from oxygen atoms'],answer:1,
+   choices:['Your muscles turn oxygen straight into motion, so they need more','Your muscles use ATP faster, so the chain runs faster and uses more oxygen','Oxygen is stored in your muscles, and a climb uses it up','Each ATP is built from oxygen atoms, so more ATP needs more oxygen'],answer:1,
    hint:'Start at the muscle and walk the chain backward. What does the muscle use up, and what makes more of it?',step:9,stepName:'why you are out of breath',
    why:'Using ATP faster lets the turbine spin faster, which thins the H⁺ crowd, so electrons fall faster and oxygen is used faster.'},
   {q:'Each time the electrons drop to a lower step, what does that energy do?',

@@ -10,9 +10,9 @@ TestYourself.mount({lab:'BioLab',id:'photosynthesis',title:'Raider BioLab · Wha
  {q:'In this model the sugar factory spends 3 ATP and 2 NADPH for each CO₂. How many ATP does it spend to fix 6 CO₂?',answer:18,tol:.01,unit:'ATP',
   hint:v=>Math.abs(v-12)<.01?'12 is the NADPH. Count the ATP: 3 for each CO₂.':'Each CO₂ costs 3 ATP. Multiply by 6.',step:6,stepName:'spend the batteries on sugar',
   why:'6 × 3 = 18 ATP (and 6 × 2 = 12 NADPH) for 6 CO₂: enough carbon for one glucose.'},
- {q:'A plant is in bright sun, but its leaf pores are closed, so no CO₂ gets in. What happens?',choices:['NADPH and ATP pile up, electrons back up to water, and oxygen release stops','It makes sugar even faster','It makes sugar from water instead','Nothing changes while the light is on'],answer:0,
+ {q:'A plant is in bright sun, but its leaf pores are closed, so no CO₂ gets in. What happens?',choices:['NADPH and ATP pile up, and oxygen release stops','It makes sugar faster, because the light is so bright','It makes sugar from water instead of from CO₂','Nothing changes, because the light reactions keep going'],answer:0,
   hint:'Without CO₂ the sugar factory cannot spend its batteries. What happens to the light side when the batteries are full?',step:8,stepName:'a hot day: the pores close',
   why:'With the batteries full there is nowhere for electrons to go, so they jam back to water and no more oxygen is made.'},
- {q:'Why do the “dark reactions” stop within seconds after the lights go out?',choices:['They run on ATP and NADPH that only light makes, and the supply runs out','They need warmth from the sun','Light must shine on them directly','They only work at night'],answer:0,
+ {q:'Why do the “dark reactions” stop within seconds after the lights go out?',choices:['They run on ATP and NADPH, and the supply runs out','They need warmth from the sun, and the leaf cools down','Light must shine directly on the sugar factory itself','They only run at night, so they wait until it is dark'],answer:0,
   hint:'What does the sugar factory spend? Where do those come from?',step:7,stepName:'the “dark reactions” in the dark',
   why:'They don’t need light themselves, but they spend ATP and NADPH made in the light. When those run out, they stop.'}]});
