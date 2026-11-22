@@ -8,6 +8,124 @@
    name agencies and programs, never parties; no em dashes. */
 window.RAIDER_NEWS = [
  {
+  "id": "who-tb-report-2026",
+  "week": "2026-11-22",
+  "date": "2026-11-12",
+  "title": "WHO: TB deaths have fallen 35% since 2015, and treatment has saved an estimated 86 million lives",
+  "summary": "The World Health Organization released its Global Tuberculosis Report 2026 on November 12. Deaths from tuberculosis (TB), a bacterial lung disease, keep falling, though the world is about five years behind its targets and millions of cases are still missed.",
+  "numbers": [
+   "About 1.13 million people died of TB in 2025, down from 1.18 million in 2024 and 1.74 million in 2015, a 35% drop since 2015 (<a href=\"https://healthpolicy-watch.news/global-tuberculosis-burden-declining-but-five-years-behind-schedule/\" target=\"_blank\" rel=\"noopener\">Health Policy Watch, reporting the WHO Global TB Report 2026, Nov 13, 2026</a>).",
+   "New TB cases in 2025: 129 per 100,000 people, down from 131 in 2024 and 14% lower than in 2015; the End TB Strategy milestone for 2025 was a 50% drop (<a href=\"https://healthpolicy-watch.news/global-tuberculosis-burden-declining-but-five-years-behind-schedule/\" target=\"_blank\" rel=\"noopener\">Health Policy Watch, reporting the WHO Global TB Report 2026, Nov 13, 2026</a>).",
+   "About 10.6 million people fell ill with TB in 2025; 8.4 million were diagnosed, leaving about 2.2 million undiagnosed or unreported (<a href=\"https://www.manoramayearbook.in/current-affairs/world/2026/11/14/who-global-tuberculosis-report-2026.html\" target=\"_blank\" rel=\"noopener\">Manorama Yearbook, reporting the WHO Global TB Report 2026, Nov 14, 2026</a>).",
+   "TB treatment has saved an estimated 86 million lives since 2000 (<a href=\"https://www.manoramayearbook.in/current-affairs/world/2026/11/14/who-global-tuberculosis-report-2026.html\" target=\"_blank\" rel=\"noopener\">Manorama Yearbook, reporting the WHO Global TB Report 2026, Nov 14, 2026</a>).",
+   "About 370,000 people developed TB resistant to the drug rifampicin in 2025, and 42% of them got treatment (<a href=\"https://www.manoramayearbook.in/current-affairs/world/2026/11/14/who-global-tuberculosis-report-2026.html\" target=\"_blank\" rel=\"noopener\">Manorama Yearbook, reporting the WHO Global TB Report 2026, Nov 14, 2026</a>).",
+   "Funding for TB care reached $6.6 billion in 2025, about 30% of the $22 billion a year targeted for 2027 (<a href=\"https://healthpolicy-watch.news/global-tuberculosis-burden-declining-but-five-years-behind-schedule/\" target=\"_blank\" rel=\"noopener\">Health Policy Watch, reporting the WHO Global TB Report 2026, Nov 13, 2026</a>)."
+  ],
+  "concept": {
+   "title": "Why TB is treated with several antibiotics at once",
+   "html": "TB is caused by the bacterium <i>Mycobacterium tuberculosis</i>, which spreads through the air and grows very slowly, so treatment lasts months. In a large population of bacteria, a few may already carry a random mutation that resists one drug. If you treat with that drug alone, those few survive and multiply: natural selection in action. Resistance to two different drugs usually needs two separate mutations, so the chances <b>multiply</b>: if 1 in a million resists drug A and 1 in 100 million resists drug B, only about 1 in 10<sup>14</sup> resists both. That is why TB patients take a combination of drugs, and why stopping early is dangerous."
+  },
+  "hook": {
+   "prompt": "Parts (a) and (b) use the report's numbers. Part (c) uses made-up teaching numbers: a patient's lungs hold 10<sup>9</sup> TB bacteria; 1 in 10<sup>6</sup> resists drug A and 1 in 10<sup>8</sup> resists drug B, independently.",
+   "parts": [
+    {
+     "label": "(a) By what percent did TB deaths fall from 2015 (1.74 million) to 2025 (1.13 million)?",
+     "answer": 35.1,
+     "tol": 0.2,
+     "unit": "%"
+    },
+    {
+     "label": "(b) What percent of the 10.6 million people who fell ill in 2025 were diagnosed?",
+     "answer": 79.2,
+     "tol": 0.3,
+     "unit": "%"
+    },
+    {
+     "label": "(c) About how many of the 10<sup>9</sup> bacteria resist drug A?",
+     "answer": 1000,
+     "tol": 1,
+     "unit": "bacteria"
+    },
+    {
+     "label": "(d) To expect even one bacterium resistant to both drugs, how many times more than 10<sup>9</sup> bacteria would there need to be?",
+     "answer": 100000,
+     "tol": 1,
+     "unit": "times"
+    }
+   ],
+   "worked": "(a) 1.74 &minus; 1.13 = 0.61 million fewer deaths. 0.61 &divide; 1.74 = 0.351, about <b>35.1%</b>. (b) 8.4 &divide; 10.6 = 0.792, about <b>79.2%</b>; about 1 in 5 cases was missed. (c) 10<sup>9</sup> &times; 10<sup>&minus;6</sup> = <b>1,000 bacteria</b>: one drug alone would leave a resistant population to regrow. (d) Both: 10<sup>&minus;6</sup> &times; 10<sup>&minus;8</sup> = 10<sup>&minus;14</sup>. You would need 10<sup>14</sup> bacteria to expect one, and 10<sup>14</sup> &divide; 10<sup>9</sup> = <b>100,000 times</b> more than the patient has. Two drugs together almost never fail at once."
+  },
+  "hides": "Deaths are estimates built from death records, surveys and models, especially in countries where many deaths are not registered. About 2.2 million cases were never diagnosed, so the counts depend on how hard countries look. Progress is uneven: the report shows a 42% drop in new cases in the European Region since 2015 but only 6.6% in the Eastern Mediterranean Region. Drug-resistant TB is rising as a share of the problem, and less than half of those cases got treatment. The mutation rates in the hook are teaching numbers, not measured values.",
+  "evidence": "Strong: WHO's annual report, built from country data. This page read news coverage of the report, not the WHO report itself, and the two sources describe the 2030 target differently (80% or 90% fewer cases), so that target is not quoted.",
+  "investigate": "Open WHO's <a href=\"https://www.who.int/teams/global-tuberculosis-programme/tb-reports/global-tuberculosis-report-2025\" target=\"_blank\" rel=\"noopener\">Global TB Report 2025 page</a> and find the estimated TB deaths for 2024. Use it with this year's 1.13 million for 2025. What one-year percent change do you get, and does it match the 4% drop reported?",
+  "related": [
+   {
+    "href": "index.html#antibiotic",
+    "label": "Antibiotic resistance: evolution you can watch"
+   },
+   {
+    "href": "index.html#epidemic",
+    "label": "Epidemics and herd immunity"
+   }
+  ]
+ },
+ {
+  "id": "cervical-cancer-elimination-day-2026",
+  "week": "2026-11-22",
+  "date": "2026-11-17",
+  "title": "166 countries now vaccinate against HPV, and the first cancer ever targeted for elimination is in sight",
+  "summary": "On November 17, the world marked the first official World Cervical Cancer Elimination Day. WHO's Director-General and co-authors wrote that 166 countries now include the HPV vaccine in routine immunization, and that Australia and Sweden are approaching the elimination of cervical cancer as a public health problem.",
+  "numbers": [
+   "166 countries have introduced HPV vaccination, including Burundi, Papua New Guinea and Ukraine in the past year (<a href=\"https://allafrica.com/stories/202611160848.html\" target=\"_blank\" rel=\"noopener\">column by WHO Director-General Tedros Adhanom Ghebreyesus and co-authors, via allAfrica, Nov 16, 2026</a>).",
+   "96 countries report using a one-dose schedule (<a href=\"https://allafrica.com/stories/202611160848.html\" target=\"_blank\" rel=\"noopener\">column by WHO Director-General Tedros Adhanom Ghebreyesus and co-authors, via allAfrica, Nov 16, 2026</a>).",
+   "Global HPV vaccination coverage has reached 33% (<a href=\"https://allafrica.com/stories/202611160848.html\" target=\"_blank\" rel=\"noopener\">column by WHO Director-General Tedros Adhanom Ghebreyesus and co-authors, via allAfrica, Nov 16, 2026</a>). The column does not say which year or which age group.",
+   "More than 600,000 women are diagnosed with cervical cancer each year, and about 280,000 die (<a href=\"https://allafrica.com/stories/202611160848.html\" target=\"_blank\" rel=\"noopener\">column by WHO Director-General Tedros Adhanom Ghebreyesus and co-authors, via allAfrica, Nov 16, 2026</a>).",
+   "The 2030 targets: 90% of girls vaccinated, 70% of women screened, and 90% of women with precancer or cancer treated (<a href=\"https://allafrica.com/stories/202611160848.html\" target=\"_blank\" rel=\"noopener\">column by WHO Director-General Tedros Adhanom Ghebreyesus and co-authors, via allAfrica, Nov 16, 2026</a>; <a href=\"https://www.who.int/campaigns/world-cervical-cancer-elimination-day/2026\" target=\"_blank\" rel=\"noopener\">WHO, World Cervical Cancer Elimination Day 2026, Nov 17, 2026</a>).",
+   "194 countries adopted the WHO elimination strategy on November 17, 2020, the first global commitment to eliminate a cancer (<a href=\"https://www.who.int/campaigns/world-cervical-cancer-elimination-day/2026\" target=\"_blank\" rel=\"noopener\">WHO, World Cervical Cancer Elimination Day 2026, Nov 17, 2026</a>)."
+  ],
+  "concept": {
+   "title": "How a virus causes cancer, and how a vaccine stops it",
+   "html": "Almost all cervical cancer starts with a long-lasting infection by certain types of human papillomavirus (HPV). The virus makes two proteins, E6 and E7, that switch off the cell's own brakes on the cell cycle: E6 leads to the breakdown of p53, and E7 blocks Rb. With the brakes off, infected cells keep dividing and collect more mutations over years. The vaccine contains only the virus's outer shell protein (L1) assembled into empty <b>virus-like particles</b>, with no viral DNA, so it cannot infect anyone. The immune system learns to make antibodies against that shell and blocks the real virus before it ever gets into cells. Because cancer takes years to develop after infection, vaccinating girls today prevents cancers decades from now."
+  },
+  "hook": {
+   "prompt": "Use the numbers from the column.",
+   "parts": [
+    {
+     "label": "(a) What percent of the 166 countries use a one-dose schedule?",
+     "answer": 57.8,
+     "tol": 0.3,
+     "unit": "%"
+    },
+    {
+     "label": "(b) Coverage must go from 33% to the 90% target. How many times today's coverage is that?",
+     "answer": 2.73,
+     "tol": 0.02,
+     "unit": "times"
+    },
+    {
+     "label": "(c) About 280,000 deaths and 600,000 new cases a year: deaths are what percent of new cases?",
+     "answer": 46.7,
+     "tol": 0.3,
+     "unit": "%"
+    }
+   ],
+   "worked": "(a) 96 &divide; 166 = 0.578, about <b>57.8%</b>. (b) 90 &divide; 33 = <b>2.73 times</b>. (c) 280,000 &divide; 600,000 = 0.467, about <b>46.7%</b>. This is a rough ratio, not a death rate: this year's deaths are mostly among women diagnosed in earlier years, and survival is much higher where screening and treatment are available."
+  },
+  "hides": "The 33% coverage figure comes without its year, age group or number of doses, so it cannot be compared directly with the 90% target. The case and death totals are rounded and the column did not cite their source. \"Elimination as a public health problem\" does not mean zero cases: in WHO's 2020 strategy it means fewer than 4 new cases per 100,000 women per year (that threshold was not in the pages read this week). Vaccination prevents future cancers, so screening still matters for women who were never vaccinated.",
+  "evidence": "Moderate to strong: an opinion column by WHO's Director-General and other leaders, plus WHO's own campaign page. WHO's November 17 news update on screening and treatment could not be opened by this automated run, so its figures are not included.",
+  "investigate": "Open the <a href=\"https://immunizationdata.who.int/\" target=\"_blank\" rel=\"noopener\">WHO immunization data portal</a> and search for HPV vaccination coverage in the United States and in one other country you choose. Which is closer to 90%? What does the portal count: first dose or last dose, girls or boys?",
+  "related": [
+   {
+    "href": "index.html#cellcycle",
+    "label": "Cell cycle and cancer"
+   },
+   {
+    "href": "index.html#virus",
+    "label": "Viruses: lytic and lysogenic"
+   }
+  ]
+ },
+ {
   "id": "frisco-creek-bears-2026",
   "week": "2026-11-15",
   "date": "2026-11-12",
