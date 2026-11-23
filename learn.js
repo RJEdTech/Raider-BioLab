@@ -1585,8 +1585,8 @@ chloroplast: {
 
 glycolysis: {
   simple: true,
-  intro: { bio: 'You’ll follow one sugar molecule as your cells break it down, and see why oxygen matters so much.',
-           honors: 'You’ll follow one sugar molecule as your cells break it down, see why oxygen matters so much, and see what yeast and muscle do without it.' },
+  intro: { bio: 'Watch the colored balls: each one is a carbon atom from one sugar (glucose) molecule inside a cell. Next, you’ll follow where those six carbons go, and see why oxygen matters so much.',
+           honors: 'Watch the colored balls: each one is a carbon atom from one sugar (glucose) molecule inside a cell. Next, you’ll follow where those six carbons go, see why oxygen matters so much, and see what yeast and muscle do without it.' },
   goals: {
     bio: ['How your cells take one glucose apart, and where its 6 carbons go', 'Why oxygen lets a cell make about 32 ATP instead of 2', 'What fermentation is, and why yeast and sprinting muscles use it'],
     honors: ['The three stages: glycolysis, the Krebs cycle and the electron transport chain, and where each happens', 'Where NADH and FADH₂ come from, and why they matter', 'Yeast vs. muscle fermentation, and why fermentation recycles NAD⁺'],

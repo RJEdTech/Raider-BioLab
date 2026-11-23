@@ -159,6 +159,7 @@ Jason: "It needs to provide good teaching without trying to do practical plus gu
 
 How to switch a tool to it (opt-in, one tool at a time):
 - In its learn entry: `simple: true` and `intro: {bio, honors, …}` (one sentence that replaces goals / why it matters / question on the first screen).
+- **Start here names the picture** (Nov 23, from the weekly "This confused me" log: 4 of 11 taps were on Start here). A simple tool's `intro` starts with what to watch ("Watch the tube: green enzymes cut blue starch…"). A goals-based tool can add `look: {bio, honors, ap}` or one string: one sentence naming what the opening picture shows. It sits above "You will learn". The engine ends every Start here with "👉 Press Next to take the first step. Each step changes one thing in the picture." student-help.js gives Start here its own confused help.
 - Its step `so:` lines become the "How is this useful in my life?" click, so keep only real everyday uses there; move test tips into the teaching or cut them.
 - In its review entry: `core: [ids]`, one question per Learn it idea. The rest stay as More practice.
 - Engine effects for simple tools: no level lede or "You will be able to…" at the top; the Learn it end card shows the big idea + Test yourself + Learn it again, with Use it / Try it at home folded into one closed block; Test yourself results skip Myth / Think again.
