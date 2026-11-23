@@ -1,0 +1,18 @@
+/* Test yourself questions for "Why does an egg white turn solid and white?" (protein story). Steps are 1-based story steps. */
+TestYourself.mount({lab:'BioLab',id:'eggwhite',title:'Raider BioLab · Why does an egg white turn solid and white?',el:'#ty',scrollTo:'#story',go:i=>window.Story.go(i),
+ questions:[
+ {q:'Raw egg white is mostly water and protein, yet you can see through it. Why?',choices:['Its proteins are tiny folded balls, far smaller than a wave of light, spread evenly','It has no protein until it is cooked','Its proteins are clear plastic','Light is too fast to hit anything in it'],answer:0,
+  hint:'How big is one folded protein compared with a wave of light?',step:2,stepName:'what is in egg white?',
+  why:'Each folded protein is a few nanometers across, about 100 times smaller than light’s wavelength, and they are spread evenly, so light passes straight through.'},
+ {q:'What does heat do to the protein chains in egg white?',choices:['It makes them shake until they unfold and show their oily parts','It melts them into fat','It makes them fold up even tighter','It breaks them into single sugar units'],answer:0,
+  hint:'Watch the beads as you turn up the heat. Do the balls stay tight?',step:3,stepName:'turn up the heat',
+  why:'Heat is faster shaking. Past about 62 °C the chains shake loose and unfold, and their oily parts, once tucked inside, end up out in the water.'},
+ {q:'Why do unfolded chains stick to each other?',choices:['Their oily parts stick to the oily parts of other chains instead of touching water','The pan glues them together','They are magnetic when hot','Unfolded chains are covered in sugar'],answer:0,
+  hint:'Which beads link up when the egg white sets?',step:4,stepName:'the chains stick together',
+  why:'Oily (water-fearing) parts avoid water and stick to each other. Chains grab other chains this way and form one tangled net that traps the water, so the egg white turns solid.'},
+ {q:'Cooked egg white is white for the same reason as',choices:['milk and clouds: clumps bounce light in every direction','a white shirt: it has white dye','snow on a sunny day: it is cold','paper: it is made of trees'],answer:0,
+  hint:'In cooked egg white, what happens to a beam of light when it hits a clump?',step:5,stepName:'why it turns white',
+  why:'The tangled clumps are as big as a light wave or bigger. They scatter light of every color in every direction, and that looks white, just like the droplets in milk and clouds.'},
+ {q:'You cool a fried egg back down to room temperature. What happens to the egg white?',choices:['It stays solid and white, because the tangled chains cannot refold','It turns clear and runny again','It turns to water','It turns yellow'],answer:0,
+  hint:'Cool the pan in the last step. Did any chain fold back up?',step:6,stepName:'can you un-cook it?',
+  why:'Cooling slows the shaking, but the chains are stuck to many others and cannot find their folds again. Unfolding a protein this way (denaturing it) usually cannot be undone.'}]});

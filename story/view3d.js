@@ -5,7 +5,7 @@
          V.render(ctx,{x,y,w,h,nm:90,items:[...],center:[0,0,0]});   // nm = screen units per nanometer, so sizes stay real; center = the point the camera turns around
    Items (positions in nanometers, centered on 0,0,0; op = opacity on any item):
      {t:'atom',p:[x,y,z],r:.07,c:'#888'}             a shaded ball
-     {t:'bond',a:[..],b:[..],r:.02,c:'#999'}          a rod between two points
+     {t:'bond',a:[..],b:[..],r:.02,c:'#999'}          a rod between two points (dash:true for a dashed line, such as a hydrogen bond)
      {t:'face',pts:[[..],..],c:'#3b6fd8',op:.35}       a flat ring face (fills a sugar ring so it reads as one unit)
      {t:'tag',p:[..],text:'maltose',c:'#333'}         a label that follows a point
    Students drag the picture (or use the arrow keys while it has focus) to turn it. It turns slowly on its own until touched. */
@@ -27,7 +27,7 @@ function render(V,ctx,f){
   const L=[];
   for(const it of f.items){
     if(it.t==='atom'){const q=P(it.p);L.push({z:q.z,d(){atom(ctx,q,it.r*S*q.k,it.c,it.op,fog(q.z));}});}
-    else if(it.t==='bond'){const a=P(it.a),b=P(it.b);L.push({z:(a.z+b.z)/2+.001,d(){bond(ctx,a,b,it.r*S*(a.k+b.k)/2,it.c,it.op,fog((a.z+b.z)/2));}});}
+    else if(it.t==='bond'){const a=P(it.a),b=P(it.b);L.push({z:(a.z+b.z)/2+.001,d(){bond(ctx,a,b,it.r*S*(a.k+b.k)/2,it.c,it.op,fog((a.z+b.z)/2),it.dash);}});}
     else if(it.t==='face'){const qs=it.pts.map(P);const z=qs.reduce((s,q)=>s+q.z,0)/qs.length;L.push({z:z+.002,d(){face(ctx,qs,it.c,it.op,fog(z));}});}
     else if(it.t==='tag'){const q=P(it.p);L.push({z:-1e9,d(){tag(ctx,q,it);}});}}
   L.sort((m,n)=>n.z-m.z);
@@ -38,7 +38,8 @@ function render(V,ctx,f){
   function atom(ctx,q,r,c,a,fz){if(r<.4)return;const col=mix(rgb(c),bg,fz),hi=mix(col,[255,255,255],.6),lo=mix(col,[0,0,0],.45);
     const g=ctx.createRadialGradient(q.x-r*.35,q.y-r*.4,r*.1,q.x,q.y,r);g.addColorStop(0,css(hi,a));g.addColorStop(.55,css(col,a));g.addColorStop(1,css(lo,a));
     ctx.beginPath();ctx.arc(q.x,q.y,r,0,7);ctx.fillStyle=g;ctx.fill();}
-  function bond(ctx,a,b,r,c,al,fz){const col=mix(rgb(c),bg,fz);ctx.lineCap='round';
+  function bond(ctx,a,b,r,c,al,fz,dash){const col=mix(rgb(c),bg,fz);ctx.lineCap='round';
+    if(dash){ctx.save();ctx.setLineDash([Math.max(3,r*2.2),Math.max(3,r*2.4)]);ctx.strokeStyle=css(col,al);ctx.lineWidth=Math.max(1.4,r*1.4);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.restore();return;}
     ctx.strokeStyle=css(mix(col,[0,0,0],.22),al);ctx.lineWidth=Math.max(1,r*2+.8);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
     ctx.strokeStyle=css(col,al);ctx.lineWidth=Math.max(.8,r*2-.6);ctx.stroke();
     ctx.strokeStyle=css(mix(col,[255,255,255],.45),al==null?.7:al*.7);ctx.lineWidth=Math.max(.4,r*.6);ctx.stroke();}
