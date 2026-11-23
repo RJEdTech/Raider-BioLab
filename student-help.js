@@ -75,6 +75,12 @@ const lvlNow=()=>{const lb=document.querySelector('#lvl [aria-pressed="true"], [
 const ORDER=['bio','chem','honors','ap'];
 function pickLv(v){if(!v||typeof v==='string')return v||'';const lv=lvlNow();const want=Math.max(0,ORDER.indexOf(lv));let out='';ORDER.forEach((l,i)=>{if(v[l]&&i<=want)out=v[l];});return out||v.bio||v.chem||v.honors||v.ap||'';}
 function written(kind){if(kind!=='tour')return null;const H=window.RL_HELP&&window.RL_HELP[toolId()],k=stepKey();if(!H||!k||!H[k])return null;const h=H[k];return {ask:pickLv(h.ask),another:pickLv(h.another),start:pickLv(h.start)};}
+/* Nov 23, 2026 (weekly "This confused me" log: 4 of 11 taps were on Start here screens): Start here is an opening screen,
+   not a step that changes something, so it gets its own help: what the screen is, what to look at, and the first move. */
+const START_HELP={ask:'Nothing to answer yet. This first screen tells you what the tool is about and what you will find out.',
+  another:'Look at the picture: that is where the lesson starts. Every step after this one changes <b>one thing</b> in it.',
+  start:'Press <b>Next</b> to take the first step. If a step goes by too fast, press <b>Show this step again</b>.'};
+const isStartScreen=(kind,el)=>kind==='tour'&&!!el&&/^\s*start here\s*$/i.test(((el.querySelector('.tb-t')||{}).textContent)||'');
 const GENERIC={
   tour:{ask:'Each step shows <b>one change</b>. Find the part of the picture that moves or is highlighted, then read the first sentence again.',start:'Press <b>Show this step again</b> and watch only that part. Then say in your own words what changed, and why.'},
   review:{ask:'Find the one question in the sentence. What is it asking you to pick?',start:'Cover the choices. Say your own answer first, then find the choice that matches it. Cross out any you know are wrong.'},
@@ -86,7 +92,7 @@ function replayStep(el){const back=el.querySelector('[data-tour=back]'),next=el.
   /* keep the help open after the replay */
   setTimeout(()=>{const tb=document.querySelector('.tourbar:not([hidden])');if(tb&&!tb.querySelector('.sh-help')){const c=tb.querySelector('.sh-cf');c&&c.click();}},450);}
 const learnBtn=()=>[...document.querySelectorAll('.modebar button')].find(b=>/learn it/i.test(b.textContent)&&b.offsetParent&&b.getAttribute('aria-pressed')!=='true');
-function helpHTML(kind,el){const w=written(kind)||{},g=GENERIC[kind]||GENERIC.tour;const ask=w.ask||g.ask,another=w.another||'',start=w.start||g.start;
+function helpHTML(kind,el){const w=written(kind)||{},st=isStartScreen(kind,el),g=st?START_HELP:(GENERIC[kind]||GENERIC.tour);const ask=w.ask||g.ask,another=w.another||(st?g.another:''),start=w.start||g.start;
   const back=el.querySelector('[data-tour=back]');
   const acts=(kind==='tour'?'<button type="button" class="btn sh-a" data-sha="again">🔁 Show this step again</button>'+(back&&!back.disabled?'<button type="button" class="btn sh-a" data-sha="back">← Back a step</button>':''):'')+
     ((kind==='review'||kind==='predict')&&learnBtn()?'<button type="button" class="btn sh-a" data-sha="learn">📘 Go to Learn it</button>':'')+'<button type="button" class="btn sh-a" data-sha="say">🔊 Read it to me</button>';

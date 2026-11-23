@@ -87,8 +87,8 @@ const lnPick=(v,l)=>{if(v==null)return v;if(typeof v!=='object'||Array.isArray(v
 const lnLv=f=>({bio:f('bio'),honors:f('honors'),ap:f('ap')});
 function applyLearn(d){const L=LEARN[d.id];if(!L)return;d.learn=L;const P=d.practical||{},defs={};(d.controls||[]).forEach(c=>defs[c.id]=c.def);
   const li=a=>(a||[]).map(x=>`<li>${x}</li>`).join('');
-  const start={title:'Start here',pause:!L.startRun,hook:true,key:L.startKey,overlay:L.startOverlay,speed:L.startSpeed,text:lnLv(l=>{const g=lnPick(L.goals,l),m=lnPick(L.matters,l),q=lnPick(L.question||P.hook,l);if(L.simple)return `<p class="ln-intro">${lnPick(L.intro,l)}</p>`;
-    return `<p class="ln-k">You will learn</p><ul class="ln-goals">${li(g)}</ul>${m?`<p class="ln-k">Why it matters</p><p>${m}</p>`:''}${q?`<p class="ln-k">Keep this question in mind</p><p class="ln-q">${q}</p>`:''}`;}),
+  const start={title:'Start here',pause:!L.startRun,hook:true,key:L.startKey,overlay:L.startOverlay,speed:L.startSpeed,text:lnLv(l=>{const g=lnPick(L.goals,l),m=lnPick(L.matters,l),q=lnPick(L.question||P.hook,l);const snx=`<p class="ln-next">👉 Press <b>Next</b> to take the first step. Each step changes <b>one thing</b> in the picture.</p>`;if(L.simple)return `<p class="ln-intro">${lnPick(L.intro,l)}</p>${snx}`;
+    return `<p class="ln-k">You will learn</p><ul class="ln-goals">${li(g)}</ul>${m?`<p class="ln-k">Why it matters</p><p>${m}</p>`:''}${q?`<p class="ln-k">Keep this question in mind</p><p class="ln-q">${q}</p>`:''}${snx}`;}),
     setup(sim){BL.setValues(sim,Object.assign({},defs));BL.reset(sim);}};
   const steps=(L.steps||[]).map(s=>({title:s.title,lvl:s.lvl,focus:s.focus,speed:s.speed,pause:s.pause,key:s.key,overlay:s.overlay,cause:s.cause,
     text:lnLv(l=>{const see=lnPick(s.see,l),why=lnPick(s.why,l),so=lnPick(s.so,l);return `${see?`<p class="ln-k">What you see</p><p>${see}</p>`:''}${why?`<p class="ln-k">Why it happens</p><p>${why}</p>`:''}${so?(L.simple?`<details class="ln-more"><summary>🤔 How is this useful in my life?</summary><p>${so}</p></details>`:`<p class="ln-k">Why it matters</p><p>${so}</p>`):''}`;}),
