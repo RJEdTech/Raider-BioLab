@@ -640,3 +640,14 @@ details.ln-use-d{margin:0}
 details.ln-use-d>summary{font-size:1.05em;padding:4px 0}
 details.lede-more{max-width:62ch;margin:6px 0 10px;border-top:0;padding-top:0}
 details.lede-more>p{margin:6px 0}
+
+/* Home page, Nov 24, 2026: the first tools should show on a laptop screen without scrolling (rule: usable cold, obvious first move).
+   The Raider Labs switcher drops to one compact row (each subject stays in the link's name for screen readers and in its tooltip),
+   and the feature cards sit side by side instead of stacked. */
+.labs{gap:3px;margin:0 0 14px}
+.labs .labs-l{margin-right:3px}
+.labs a{padding:3px 8px;font-size:12.5px}
+.labs a small{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.home-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:6px 0 16px;max-width:1120px}
+.home-cards:has(>a:only-child){max-width:72ch}
+.home-cards>a{margin:0!important;max-width:none!important;box-sizing:border-box}
