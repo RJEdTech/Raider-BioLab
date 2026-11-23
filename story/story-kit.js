@@ -77,10 +77,28 @@ Story.start=function(cfg){
   CH.forEach((c,k)=>{const li=el('li'),b=el('button',{type:'button',title:c.title},'<b>'+(k+1)+'</b><span>'+(c.rail||c.title)+'</span>');
     b.addEventListener('click',()=>{if(S.teach||seen.has(k))go(k);});li.appendChild(b);rail.appendChild(li);});
 
+  /* Read aloud uses only a natural-sounding voice (Raider Labs rule, Nov 18, 2026: robotic voices put students off).
+     With no natural voice in this browser, the button shows how to use Microsoft Edge's own Read aloud instead. */
+  const RLV={v:null,
+   pick(){try{const vs=speechSynthesis.getVoices()||[],en=vs.filter(x=>/^en(-|_)?US/i.test(x.lang)),pool=en.length?en:vs.filter(x=>/^en/i.test(x.lang));
+     this.v=pool.find(x=>/natural|online|neural|premium|enhanced/i.test(x.name))||null;}catch(e){this.v=null;}return this.v;},
+   get(){return this.v||this.pick();},
+   how(){let d=document.getElementById('rlv-how');if(!d){d=document.createElement('dialog');d.id='rlv-how';d.setAttribute('aria-labelledby','rlv-h');
+     d.style.cssText='max-width:min(540px,92vw);border:0;border-radius:14px;padding:20px 24px;font:16px/1.55 "Segoe UI",system-ui,sans-serif;color:#1c1c1f;background:#fff';
+     const edge=/Edg\//.test(navigator.userAgent);
+     const steps=[[!edge,'Open this page in Microsoft Edge','Edge has natural-sounding voices built in. Copy the link from the address bar and paste it into Edge.'],
+      [1,'Select the words you want to hear','Drag across the text, then right-click it and choose <b>Read aloud selection</b>. To hear the whole page, press <b>Ctrl + Shift + U</b>.'],
+      [1,'Pick a natural voice','In the Read aloud bar at the top, click <b>Voice options</b> and choose a voice with <b>Natural</b> in its name.'],
+      [1,'Want fewer distractions? Use Immersive Reader','Select the text, right-click, and choose <b>Open in Immersive Reader</b>.']].filter(s=>s[0]);
+     d.innerHTML='<h2 id="rlv-h" style="margin:0 0 6px;font-size:20px">Hear it read aloud in Microsoft Edge</h2><p style="margin:0 0 8px">'+(edge?'Edge’s natural voices haven’t loaded yet. Wait a few seconds and try again, or use Edge’s own Read aloud:':'This browser doesn’t have a natural-sounding voice, so use Edge’s Read aloud.')+'</p><ol style="padding-left:22px;margin:8px 0 14px">'+
+      steps.map(s=>'<li style="margin:0 0 10px"><b>'+s[1]+'</b><br>'+s[2]+'</li>').join('')+'</ol><button type="button" style="font:inherit;padding:8px 16px;border-radius:9px;border:1px solid #ccc;background:#f3f3f1;cursor:pointer">Got it</button>';
+     d.querySelector('button').addEventListener('click',()=>d.close());d.addEventListener('click',e=>{if(e.target===d)d.close();});document.body.appendChild(d);}
+    if(d.showModal)d.showModal();else d.setAttribute('open','');}};
+  if('speechSynthesis' in window){RLV.pick();try{speechSynthesis.addEventListener('voiceschanged',()=>RLV.pick());}catch(e){}}
   /* header tools */
   const tools=document.querySelector('.st-tools');
   function tool(label,fn,pressed){const b=el('button',{type:'button','aria-pressed':pressed?'true':'false'},label);b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);fn(on);});tools.appendChild(b);return b;}
-  tool('🔊 Read aloud',on=>{speakOn=on;if(on)say();else if(window.speechSynthesis)speechSynthesis.cancel();});
+  const raBtn=tool('🔊 Read aloud',on=>{if(on&&!(window.speechSynthesis&&RLV.get())){raBtn.setAttribute('aria-pressed','false');RLV.how();return;}speakOn=on;if(on)say();else if(window.speechSynthesis)speechSynthesis.cancel();});
   tool('Aa Easier reading',on=>{document.body.classList.toggle('st-easy',on);LS.set('raider-story-easy',on);},LS.get('raider-story-easy',false));
   document.body.classList.toggle('st-easy',LS.get('raider-story-easy',false));
   tool('Teacher view',on=>{S.teach=on;document.body.classList.toggle('st-teach',on);fit();render();},S.teach);
@@ -88,8 +106,7 @@ Story.start=function(cfg){
 
   function say(){if(!speakOn||!window.speechSynthesis)return;const c=CH[S.i];let s=c.title+'. '+plain(textEl.innerHTML);
     if(c.predict&&S.picks[c.predict.key]==null)s+=' '+c.predict.q+' '+c.predict.opts.map((o,k)=>'Choice '+(k+1)+': '+plain(o)).join('. ');
-    speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(s),vs=speechSynthesis.getVoices();
-    const v=vs.find(v=>/Natural/.test(v.name)&&/^en-US/.test(v.lang))||vs.find(v=>/^en-US/.test(v.lang));if(v)u.voice=v;u.rate=.95;speechSynthesis.speak(u);}
+    speechSynthesis.cancel();const v=RLV.get();if(!v)return;const u=new SpeechSynthesisUtterance(s);u.voice=v;u.lang=v.lang;u.rate=.95;speechSynthesis.speak(u);}
 
   /* ---------- canvas sizing and pointer ---------- */
   function fit(){const r=cv.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2.5),w=Math.max(320,Math.round(r.width*d));
