@@ -119,8 +119,9 @@ enz: {
         else{const f=ease((p-4.4)/2.4),seat=cx+R*0.44;art(sim).starch(ctx,lerp(790,seat,f),cy,3,11,0,PAL['cv-sub']);
           if(f>=1)tag(ctx,'✓  Starch fits the groove',600,300,k,{c:'#1b7a3a',hi:true});}} },
     { key: 'cut', title: 'The cut: substrate in, products out', speed: 0.25,
-      see: 'Starch slides in, one bond snaps, and two small sugars float away. What a reaction produces are its <b>products</b>.',
-      why: 'The enzyme comes out unchanged and grabs the next starch. It is not used up.',
+      /* Nov 23, 2026 ("This confused me", 1 tap): the text now follows the four numbered labels on the picture, in order. */
+      see: 'Follow the numbers on the right. 1: Starch slides in. 2: The bond strains, like a bent stick. 3: It snaps in two, and two small sugars float away. They are the <b>products</b>.',
+      why: '4: The enzyme is unchanged and grabs the next starch. It is not used up.',
       so: 'That is why a cracker tastes sweet if you chew it long enough.',
       overlay(sim,ctx,LH,k,tau){dim(ctx,LH);const p=tau%9,cx=200,cy=225,R=112,A=art(sim),r=11,x0=cx+R*0.40;
         const ph=p<1.8?0:p<3.2?1:p<5?2:3;let a=0.5;if(ph===1)a=0.5-0.1*ease((p-1.8)/0.6);else if(ph===2)a=0.4+0.1*ease((p-3.2)/0.8);
@@ -190,13 +191,14 @@ enz: {
       /* Nov 23, 2026 ("This confused me", 2 taps, 1 "question was confusing"): 50 → 45 words; names the close-up and the rate bar, in the order they happen. */
       see: 'Now as acidic as your stomach: <b>pH</b> 2, full of H⁺ ions. In the close-up, red H⁺ ions cover the negative charges in the groove. The starch slips out, and the rate bar falls to nearly zero.',
       why: 'The groove grips starch with electric charges. Cancel them and the grip fails.',
-      overlay(sim,ctx,LH,k,tau){ezMeter(ctx,sim,k,{x:14,w:300});const bx=452,by=40,bw=336,bh=250,p=tau%9;ctx.save();H.rr(ctx,bx,by,bw,bh,10);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#c8102e';ctx.stroke();ctx.clip();
-        const R=150,cx=bx+bw*0.5-R*0.72,cy=by+bh*0.5,f=p<2.6?0:ease((p-2.6)/2.2),a=lerp(0.5,0.14,f);art(sim).protein(ctx,cx,cy,R,0,a,2,0,sim.vt,{outline:true});
-        const spots=[[0.68,-1],[0.48,0],[0.68,1]].map(([rr,s])=>{const an=s*a*0.75,r=R*rr;return [cx+Math.cos(an)*r,cy+Math.sin(an)*r];});
-        spots.forEach(([x,y],i)=>{const hx=lerp(bx+bw-20,x+20,clamp(f*1.3-i*0.12,0,1)),hy=lerp(by+30+i*60,y,clamp(f*1.3-i*0.12,0,1));
-          ctx.beginPath();ctx.arc(x+6,y,11,0,6.29);ctx.fillStyle=f>0.6?'#9aa0a6':'#2a6fdb';ctx.fill();H.txt(ctx,f>0.6?'0':'−',x+6,y+1,{s:15*k,w:700,c:'#fff',a:'center',b:'middle'});
-          if(p>2.4){ctx.beginPath();ctx.arc(hx,hy,11,0,6.29);ctx.fillStyle='#d93025';ctx.fill();H.txt(ctx,'H⁺',hx,hy+1,{s:11*k,w:700,c:'#fff',a:'center',b:'middle'});}});
-        const sx=lerp(cx+R*0.62,bx+bw+30,ease((p-4.2)/1.6));if(sx<bx+bw+10)art(sim).starch(ctx,sx,cy,1,14,0,PAL['cv-sub']);
+      overlay(sim,ctx,LH,k,tau){ezMeter(ctx,sim,k,{x:14,w:300});/* Nov 23: on a phone-width canvas the close-up was too small and the three H⁺ ions overlapped, so it grows 1.3× and the charges stay apart. */
+        const Z=ctx.canvas.clientWidth&&ctx.canvas.clientWidth<600?1.3:1,bx=Z>1?322:452,by=40,bw=Z>1?466:336,bh=Z>1?322:250,p=tau%9;ctx.save();H.rr(ctx,bx,by,bw,bh,10);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#c8102e';ctx.stroke();ctx.clip();
+        const R=150*Z,cx=bx+bw*0.5-R*0.72,cy=by+bh*0.5,f=p<2.6?0:ease((p-2.6)/2.2),a=lerp(0.5,0.14,f);art(sim).protein(ctx,cx,cy,R,0,a,2,0,sim.vt,{outline:true});
+        const spots=[[0.68,-1],[0.48,0],[0.68,1]].map(([rr,s])=>{const an=s*Math.max(a,0.34)*0.75,r=R*rr;return [cx+Math.cos(an)*r,cy+Math.sin(an)*r];});
+        spots.forEach(([x,y],i)=>{const hx=lerp(bx+bw-20,x+20,clamp(f*1.3-i*0.12,0,1)),hy=lerp(by+30+i*60*Z,y,clamp(f*1.3-i*0.12,0,1));
+          ctx.beginPath();ctx.arc(x+6,y,11*Z,0,6.29);ctx.fillStyle=f>0.6?'#9aa0a6':'#2a6fdb';ctx.fill();H.txt(ctx,f>0.6?'0':'−',x+6,y+1,{s:15*k*Z,w:700,c:'#fff',a:'center',b:'middle'});
+          if(p>2.4){ctx.beginPath();ctx.arc(hx,hy,11*Z,0,6.29);ctx.fillStyle='#d93025';ctx.fill();H.txt(ctx,'H⁺',hx,hy+1,{s:11*k*Z,w:700,c:'#fff',a:'center',b:'middle'});}});
+        const sx=lerp(cx+R*0.62,bx+bw+30,ease((p-4.2)/1.6));if(sx<bx+bw+10)art(sim).starch(ctx,sx,cy,1,14*Z,0,PAL['cv-sub']);
         tag(ctx,'Close-up of one groove',bx+bw/2,by+22,k,{s:12});tag(ctx,f<0.5?'pH 7: charges grip starch':'pH 2: charges canceled',bx+bw/2,by+bh-22,k,{s:13,hi:true});ctx.restore();} },
     { key: 'pgraph', title: 'The pH graph', speed: 0.25,
       see: 'Amylase’s curve peaks near pH 7. Then <b>pepsin</b>, a stomach enzyme, draws one that peaks near pH 2.',
@@ -1595,7 +1597,10 @@ glycolysis: {
   matters: 'Every move you make, from blinking to sprinting, runs on ATP made this way. It also explains where the mass goes when you lose weight, why bread rises and why a bulging can is dangerous.',
   question: 'When you burn off a granola bar on a run, its sugar doesn’t just vanish. Follow one glucose molecule with oxygen available. Where do its 6 carbon atoms end up, and how much ATP does your cell get from it?',
   startKey: 'arrive', startRun: true, startSpeed: 0.25,
-  startOverlay(sim,ctx,LH,k){tag(ctx,'Each colored ball = one carbon atom',190,395,k,{s:12,hi:true});line(ctx,110,380,70,335);tag(ctx,'Glycolysis: in the cytoplasm',190,428,k,{s:12,hi:true});},
+  /* Nov 23: a legend instead of a leader line. The balls move, so the fixed arrow pointed at empty space. */
+  startOverlay(sim,ctx,LH,k){const CC=['#d1495b','#e39b2d','#4f9a6a','#00798c','#30638e','#8e5572'];
+    ctx.save();CC.forEach((c,i)=>{ctx.beginPath();ctx.arc(28+i*15,395,6,0,6.29);ctx.fillStyle=c;ctx.fill();});ctx.restore();
+    ezTagA(ctx,'= 6 carbons in one glucose',122,395,k,{s:12,hi:true},'l');ezTagA(ctx,'They start here, in the cytoplasm',18,428,k,{s:12},'l');},
   steps: [
     { key: 'arrive', title: 'One glucose, six carbons', set: { o2: true }, fresh: true, speed: 0.25, focus: [30,42,320,80],
       see: 'A glucose molecule arrives. Each colored ball is one of its 6 carbons, so you can follow every one.',
