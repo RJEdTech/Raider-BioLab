@@ -77,8 +77,9 @@ function ezDot(ctx,x,y,col,r){ctx.save();ctx.beginPath();ctx.arc(x,y,r||7,0,6.29
 BioLab.addLearn({
 enz: {
   simple: true,
-  intro: { bio: 'You’ll see what an enzyme does, and what speeds it up, slows it down or breaks it.',
-           honors: 'You’ll see what an enzyme does, what speeds it up, slows it down or breaks it, and how a blocker can slow it.' },
+  /* Nov 23, 2026 ("This confused me", 2 taps on Start here): the intro now says what the picture shows, so it makes sense read aloud. */
+  intro: { bio: 'Watch the tube: green enzymes cut blue starch into small orange sugars. Next, you’ll see what speeds an enzyme up, slows it down or breaks it.',
+           honors: 'Watch the tube: green enzymes cut blue starch into small orange sugars. Next, you’ll see what speeds an enzyme up, slows it down or breaks it, and how a blocker can slow it.' },
   goals: {
     bio: ['What an enzyme is, and how it speeds up a reaction', 'What temperature and pH do to an enzyme, and how to read those graphs', 'How to use this in your kitchen and laundry room'],
     honors: ['What an enzyme is, and how it lowers activation energy', 'What temperature and pH do to an enzyme, and how to read those graphs', 'How a competitive inhibitor slows an enzyme, and how more substrate wins it back'],
@@ -186,8 +187,9 @@ enz: {
           tag(ctx,'Denatured',X(58),Y(0.12),k,{s:12.5,c:'#b3261e'});
           if(hon){const Tq=p<11?100*clamp((p-8)/3,0,1):100;ezCurve(ctx,B,xr,ezTaqT,Tq,AMB,[8,6]);if(p>=11)tag(ctx,'Hot-spring bacteria',X(76),Y(1)-22,k,{s:12.5,c:AMB});}}} },
     { key: 'acid', cause: { from: { ph: 7 } }, title: 'Strong acid', set: { ph: 2 }, fresh: true, speed: 0.5,
-      see: 'Now as acidic as your stomach: <b>pH</b> 2. pH counts H⁺ ions (it stands for “power of hydrogen”); lower means more acid. The H⁺ ions cancel the groove’s charges, and the starch slips out.',
-      why: 'The groove grips starch with electric charges. Change them and the grip fails.',
+      /* Nov 23, 2026 ("This confused me", 2 taps, 1 "question was confusing"): 50 → 45 words; names the close-up and the rate bar, in the order they happen. */
+      see: 'Now as acidic as your stomach: <b>pH</b> 2, full of H⁺ ions. In the close-up, red H⁺ ions cover the negative charges in the groove. The starch slips out, and the rate bar falls to nearly zero.',
+      why: 'The groove grips starch with electric charges. Cancel them and the grip fails.',
       overlay(sim,ctx,LH,k,tau){ezMeter(ctx,sim,k,{x:14,w:300});const bx=452,by=40,bw=336,bh=250,p=tau%9;ctx.save();H.rr(ctx,bx,by,bw,bh,10);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#c8102e';ctx.stroke();ctx.clip();
         const R=150,cx=bx+bw*0.5-R*0.72,cy=by+bh*0.5,f=p<2.6?0:ease((p-2.6)/2.2),a=lerp(0.5,0.14,f);art(sim).protein(ctx,cx,cy,R,0,a,2,0,sim.vt,{outline:true});
         const spots=[[0.68,-1],[0.48,0],[0.68,1]].map(([rr,s])=>{const an=s*a*0.75,r=R*rr;return [cx+Math.cos(an)*r,cy+Math.sin(an)*r];});
@@ -195,7 +197,7 @@ enz: {
           ctx.beginPath();ctx.arc(x+6,y,11,0,6.29);ctx.fillStyle=f>0.6?'#9aa0a6':'#2a6fdb';ctx.fill();H.txt(ctx,f>0.6?'0':'−',x+6,y+1,{s:15*k,w:700,c:'#fff',a:'center',b:'middle'});
           if(p>2.4){ctx.beginPath();ctx.arc(hx,hy,11,0,6.29);ctx.fillStyle='#d93025';ctx.fill();H.txt(ctx,'H⁺',hx,hy+1,{s:11*k,w:700,c:'#fff',a:'center',b:'middle'});}});
         const sx=lerp(cx+R*0.62,bx+bw+30,ease((p-4.2)/1.6));if(sx<bx+bw+10)art(sim).starch(ctx,sx,cy,1,14,0,PAL['cv-sub']);
-        tag(ctx,'Close-up of one groove',bx+bw/2,by+22,k,{s:12});tag(ctx,f<0.5?'pH 7: charges grip the starch':'pH 2: H⁺ cancels the charges',bx+bw/2,by+bh-22,k,{s:14,hi:true});ctx.restore();} },
+        tag(ctx,'Close-up of one groove',bx+bw/2,by+22,k,{s:12});tag(ctx,f<0.5?'pH 7: charges grip starch':'pH 2: charges canceled',bx+bw/2,by+bh-22,k,{s:13,hi:true});ctx.restore();} },
     { key: 'pgraph', title: 'The pH graph', speed: 0.25,
       see: 'Amylase’s curve peaks near pH 7. Then <b>pepsin</b>, a stomach enzyme, draws one that peaks near pH 2.',
       why: 'Each enzyme’s best pH matches where it works. Far from it, the groove’s charges are wrong and the rate drops.',
