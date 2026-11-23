@@ -152,7 +152,7 @@ Story.start({
   chapters:[
   {rail:'The question',title:'Water, water everywhere',views:false,
    predict:{key:'sea',q:'You are adrift on a raft, out of fresh water, with an ocean all around you. If you drink seawater, what happens to the cells in your body?',opts:PICK,right:1,after:'<b>Locked in.</b> Now go and look at one cell.'},
-   text:'<p class="why">Take your best guess. You will test it in step 8.</p>',
+   text:'<p class="why">Take your best guess. You will test it in step 9.</p>',
    enter(S){setup(S);},draw(ctx,S){drawSea(ctx,S,true);}},
 
   {rail:'Zoom in',title:'Go down to one cell',live:true,
@@ -182,6 +182,8 @@ Story.start({
    todo:[{t:'Count 8 waters going in',ok:S=>S.sim.n.in>=8},{t:'Count 8 coming out',ok:S=>S.sim.n.out>=8}],
    enter(S){setup(S);},tick(S,dt){step(S.sim,dt);},
    draw(ctx,S){scene(ctx,S,{});chip(ctx,'In: '+S.sim.n.in,380,60,{c:'#0f4f9a',bd:C.w});chip(ctx,'Out: '+S.sim.n.out,380,96,{c:'#0f4f9a',bd:C.w});}},
+
+  window.Water3D.chapter(C),
 
   {rail:'More salt',title:'Make the outside saltier',live:true,patience:60,
    text(S){const s=S.sim;return s.cOut<1.5?'Add salt to the outside. Salt cannot cross, but each salt ion holds a coat of water around itself. Watch what that does to the water going in.':

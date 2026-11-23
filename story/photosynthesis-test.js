@@ -15,4 +15,7 @@ TestYourself.mount({lab:'BioLab',id:'photosynthesis',title:'Raider BioLab · Wha
   why:'With the batteries full there is nowhere for electrons to go, so they jam back to water and no more oxygen is made.'},
  {q:'Why do the “dark reactions” stop within seconds after the lights go out?',choices:['They run on ATP and NADPH, and the supply runs out','They need warmth from the sun, and the leaf cools down','Light must shine directly on the sugar factory itself','They only run at night, so they wait until it is dark'],answer:0,
   hint:'What does the sugar factory spend? Where do those come from?',step:7,stepName:'the “dark reactions” in the dark',
-  why:'They don’t need light themselves, but they spend ATP and NADPH made in the light. When those run out, they stop.'}]});
+  why:'They don’t need light themselves, but they spend ATP and NADPH made in the light. When those run out, they stop.'},
+ {q:'In the 3D picture you built 18 sugar units of wood from 108 carbons. Where did every one of those carbons come from?',choices:['CO₂ from the air','Minerals from the soil','The water the roots took up','Sunlight turned into matter'],answer:0,
+  hint:'Watch where each gray carbon flies in from before it joins a sugar ring.',step:10,stepName:'from air to wood',
+  why:'Each carbon came in as CO₂ through the leaves. Light supplies the energy, water supplies hydrogen, and the soil gives only a pinch of minerals, so most of a tree\'s dry weight came from the air.'}]});

@@ -336,6 +336,8 @@ Story.start({
    todo:[{t:'Tap CO₂ in the equation',ok:S=>S.v.termsHit&&S.v.termsHit.co2},{t:'Tap O₂',ok:S=>S.v.termsHit&&S.v.termsHit.o2}],
    enter(S){setup(S);},draw(ctx,S){drawBack(ctx,S);}},
 
+  window.Wood3D.chapter(C),
+
   {rail:'Tell it',title:'Now you tell the story',tell:true,
    text:'You have followed the light from a leaf to a sugar. Put the story back in order, then explain it the way you would to a friend who missed class.'}
   ]});

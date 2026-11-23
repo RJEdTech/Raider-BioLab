@@ -281,7 +281,7 @@ Story.start({
   chapters:[
   {rail:'The question',title:'The cracker that turns sweet',
    predict:{key:'why',q:'Chew a plain cracker for a full minute without swallowing. It starts to taste sweet. Why?',opts:PICK,right:1,after:'<b>Locked in.</b> You can test it for real at lunch.'},
-   text:'<p class="why">Take your best guess. The answer is in step 3.</p>',
+   text:'<p class="why">Take your best guess. The answer is in step 4.</p>',
    enter(S){S.tube=newTube();},draw(ctx,S){drawCracker(ctx,S,true);}},
 
   {rail:'Zoom in',title:'Go to where it happens',live:true,
@@ -294,6 +294,8 @@ Story.start({
    enter(S){S.tube=newTube();S.v.z=0;zAnim=null;},
    tick(S,dt){stepTube(S.tube,dt);if(zAnim){zAnim.t+=dt/2.3;S.v.z=lerp(zAnim.a,zAnim.b,ease(zAnim.t));if(zAnim.t>=1){S.v.z=zAnim.b;zAnim=null;}}},
    draw(ctx,S){drawZoom(ctx,S,S.v.z);}},
+
+  window.Starch3D.chapter(C),
 
   {rail:'The cut',title:'One enzyme, one job',live:true,
    text(S){const p=S.picks.why,cu=S.cu;return cu.cuts<1?'On the left is amylase. Starch lies in a groove on its face. On the right is a sweet sensor on your tongue. Switch between <b>Simple drawing</b> and <b>Real shape</b> above the picture, then send in a starch chain.':
