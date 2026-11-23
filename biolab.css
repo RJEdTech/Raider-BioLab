@@ -651,3 +651,10 @@ details.lede-more>p{margin:6px 0}
 .home-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:6px 0 16px;max-width:1120px}
 .home-cards:has(>a:only-child){max-width:72ch}
 .home-cards>a{margin:0!important;max-width:none!important;box-sizing:border-box}
+/* Learn it, Nov 24, 2026: the Back / Next row (and its "Look at the picture" timer) stays pinned to the bottom of the screen while
+   the step text runs below the fold, so the next move is always in sight on a laptop. overflow:clip (not hidden) lets sticky work. */
+.sim.m-guided .stage{overflow:clip}
+.sim.m-guided .stage>.tourbar{overflow:visible}
+.tourbar .tb-nav{margin-top:8px}
+.sim.m-guided .tourbar .tb-nav{position:sticky;bottom:0;z-index:2;background:var(--card2);margin:8px -18px -16px;padding:8px 18px 12px;border-top:1px solid var(--line);box-shadow:0 -6px 12px -8px rgba(0,0,0,.18)}
+.tourbar .tb-nav .pace-cue{margin:0 0 6px}

@@ -142,7 +142,7 @@ function buildSim(sim){
   <div class="bench">
     <div class="stage">${d.scale?`<p class="scale"></p>`:''}<canvas id="${id}-stage" style="aspect-ratio:${asp};--asp:${asp}" role="img" aria-label="${d.title} simulation"></canvas>
       <div class="tourbar" hidden><div class="tb-h"><span class="tb-n"></span><b class="tb-t"></b></div><div class="tb-x"></div>
-        <div class="row"><button type="button" class="btn" data-tour="back">Back</button><button type="button" class="btn primary" data-tour="next">Next</button><button type="button" class="btn" data-tour="exit">Exit walkthrough</button></div></div>
+        <div class="tb-nav"><div class="row"><button type="button" class="btn" data-tour="back">Back</button><button type="button" class="btn primary" data-tour="next">Next</button><button type="button" class="btn" data-tour="exit">Exit walkthrough</button></div></div></div>
       ${d.narrate?'<p class="cap"></p>':''}
       <div class="transport">
         <button type="button" class="btn" data-act="play">Pause</button>
@@ -211,8 +211,8 @@ function buildSim(sim){
   ui.play.addEventListener('click',()=>{setRunning(sim,!sim.running);});
   ui.stepBtn.addEventListener('click',()=>{sim.stepLeft=d.stepSize||0.25;});
   if(d.tour){sec.querySelector('[data-act=tour]').addEventListener('click',()=>tourGo(sim,0));
-    ui.tourbar.querySelector('[data-tour=back]').addEventListener('click',()=>tourGo(sim,sim.tour.i-1));
-    ui.tourbar.querySelector('[data-tour=next]').addEventListener('click',()=>tourGo(sim,sim.tour.i+1));
+    ui.tourbar.querySelector('[data-tour=back]').addEventListener('click',()=>{tourGo(sim,sim.tour.i-1);tourView(sim);});
+    ui.tourbar.querySelector('[data-tour=next]').addEventListener('click',()=>{tourGo(sim,sim.tour.i+1);tourView(sim);});
     ui.tourbar.querySelector('[data-tour=exit]').addEventListener('click',()=>tourExit(sim,'exit'));}
   sec.querySelector('[data-act=reset]').addEventListener('click',()=>{resetSim(sim);sim.ch.changed=false;if(sim.vlab&&sim.mode==='vlab')vlBenchReset(sim);if(sim.ch.phase==='running'){sim.ch.phase='ask';renderChallenge(sim);}updateReadouts(sim);drawGraph(sim);});
   ui.speedSel.addEventListener('change',e=>{sim.speed=parseFloat(e.target.value);});
@@ -238,6 +238,10 @@ function setRunning(sim,on){sim.running=on;sim.ui.play.textContent=on?'Pause':'P
 function setSpeed(sim,v){sim.speed=v;const sel=sim.ui.speedSel;if(!sel)return;if(![...sel.options].some(o=>o.value===String(v))){const o=document.createElement('option');o.value=String(v);o.textContent=v+'×';sel.insertBefore(o,sel.firstChild);}sel.value=String(v);}
 const lvText=t=>{if(!t||typeof t==='string')return t||'';let out='';['bio','honors','ap'].forEach(l=>{if(t[l]&&atLeast(l))out=t[l];});return out;};
 function tourSteps(sim){return (sim.def.tour||[]).filter(s=>atLeast(s.lvl));}
+/* Nov 24, 2026: on a 1366x720 laptop the Learn it picture starts halfway down the page. When a student presses Next or Back,
+   bring the whole picture into view (only if it is mostly off screen), so each step's change is seen. */
+function tourView(sim){try{const st=sim.ui.sec.querySelector('.stage');if(!st||QS.get('embed')==='1')return;const r=st.getBoundingClientRect(),H=innerHeight;
+  if(r.top>H*0.3||r.top<-Math.min(r.height*0.4,H*0.5))scrollBy({top:r.top-12,behavior:'smooth'});}catch(e){}}
 function tourGo(sim,i){const st=tourSteps(sim);if(!st.length)return;if(i>=st.length){tourExit(sim);return;}i=Math.max(0,i);
   const first=!sim.tour||!sim.tour.on;if(first&&sim.def.tourReset!==false){const base={};(sim.def.controls||[]).forEach(c=>base[c.id]=c.def);applyValues(sim,base);resetSim(sim);if(sim.ch.phase==='running'){sim.ch.phase='ask';renderChallenge(sim);}}
   sim.tour={on:true,i};const s=st[i];sim.lnKey=s.key||null;sim.lnT0=performance.now();if(s.setup)s.setup(sim);setSpeed(sim,s.speed!==undefined?s.speed:0.25);setRunning(sim,!s.pause);

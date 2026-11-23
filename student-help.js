@@ -145,6 +145,12 @@ function tick(force){ensureButtons();if(!on)return;const c=current();if(!c)retur
 let pend=0;const mo=new MutationObserver(()=>{if(pend)return;pend=setTimeout(()=>{pend=0;tick(false);},350);});
 function boot(){ensureButtons();mo.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['hidden']});}
 window.addEventListener('hashchange',()=>{if(CAN_SPEAK)SS.cancel();lastSig='';});window.addEventListener('pagehide',()=>{if(CAN_SPEAK)SS.cancel();});
+/* Keep the picture in view (Nov 24, 2026). On a 1366x720 laptop the model starts halfway down the page, so after a main action in the
+   side panel (Lock in my gut answer, Show the math, Next...) the change in the picture can happen off screen. If the picture is mostly
+   below or above the screen after such a click, scroll it into view. Embedded copies (?embed=1) are left alone. */
+document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('.sim.m-guided .stage>.donecard .btn.primary, .sim.m-guided .stage>.gamecard .btn.primary, .sim.m-guided .stage>.tourbar>.row [data-tour=next], .sim.m-guided .stage>.tourbar>.row [data-tour=back]');
+  if(!b||/[?&]embed=1/.test(location.search))return;const st=b.closest('.stage');
+  setTimeout(()=>{try{const r=st.getBoundingClientRect(),H=innerHeight;if(r.top>H*0.3||r.top<-Math.min(r.height*0.4,H*0.5))scrollBy({top:r.top-12,behavior:'smooth'});}catch(x){}},80);});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 /* ---------- 2. Easier reading styles (only text panels; the canvas is unchanged) ---------- */
 const T='.tourbar,.panel.review,.panel.predict,.donecard,.gutbox';
