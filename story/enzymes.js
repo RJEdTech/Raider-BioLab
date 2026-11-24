@@ -265,6 +265,48 @@ const FRAMES=[
  {label:'In the small intestine, new amylase finishes the job',draw:fr(ctx=>{enzyme(ctx,140,96,1.3,{charges:true});const p=[];for(let j=0;j<12;j++){const x=SP*1.3*(1.5-j);p.push([140+x,96+(Math.abs(x)<HALF*1.3?groove(x,1.3):groove(-HALF*1.3,1.3))]);}sugars(ctx,p,HR*1.3);sugars(ctx,[[236,60],[254,60]],8,{halo:true});sugars(ctx,[[250,120],[268,120]],8,{halo:true});pill(ctx,'small intestine: pH 7',96,172,{bg:'#fff',c:C.good,bd:C.good,s:13.5,w:700});})}
 ];
 
+
+/* ---------- "Who is doing this" (Nov 24, 2026): enzymes that cut plastic ----------
+   Sources: Yoshida, Oda et al., Science 351:1196 (2016): Ideonella sakaiensis, found by screening 250 samples from a PET bottle
+   recycling site in Sakai, Japan (PBS NewsHour; Scientific American); it almost entirely broke down a PET film in six weeks at
+   30 °C (Nature Index highlight). Tournier et al., Nature 580:216 (2020), Toulouse Biotechnology Institute + Carbios: an engineered
+   enzyme (from leaf-branch compost cutinase) breaks down at least 90% of PET in 10 hours. Carbios's first plant (Longlaville,
+   France) was postponed for financing; expected in the first half of 2028 (Apparel Resources). Both enzymes cut the ester bond:
+   the oxygen bridge between building blocks, split with water, the same kind of cut amylase makes in starch.
+   Picture: PET drawn as rings (terephthalate) joined by short links through red oxygen bridges; simplified, not to scale. */
+const PET_N=12;
+function newPet(){return {pick:null,cut:new Array(PET_N-1).fill(0),t:0,ex:0,phase:0,bounce:0};}
+function petChain(ctx,P,x0,y,o){o=o||{};const sp=o.sp||52,r=o.r||14;
+  for(let i=0;i<PET_N;i++){const x=x0+i*sp,off=P&&P.cut.slice(0,i).filter(v=>v>=1).length,dy=P&&P.phase>=1?(off%2?1:-1)*Math.min(26,off*4)*Math.min(1,P.ex):0;
+    const cx=x+(P?off*8*Math.min(1,P.ex):0),cy=y+dy;
+    if(i<PET_N-1&&!(P&&P.cut[i]>=1)){const nx=x0+(i+1)*sp+(P?(off+(P.cut[i]>=1?1:0))*8*Math.min(1,P.ex):0);ctx.strokeStyle='#8a8f98';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(cx+r,cy);ctx.lineTo(nx-r,cy);ctx.stroke();
+      ctx.fillStyle='#d9362b';ctx.beginPath();ctx.arc((cx+nx)/2,cy,6.5,0,7);ctx.fill();if(P&&P.cut[i]>0&&P.cut[i]<1){ctx.fillStyle='rgba(58,138,85,.45)';ctx.beginPath();ctx.arc((cx+nx)/2,cy,14+P.cut[i]*10,0,7);ctx.fill();}}
+    ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;ctx[k?'lineTo':'moveTo'](cx+r*Math.cos(a),cy+r*Math.sin(a));}ctx.closePath();ctx.fillStyle=o.col||'#7d8794';ctx.fill();ctx.strokeStyle='#4b525b';ctx.lineWidth=1.5;ctx.stroke();}}
+function bottle(ctx,x,y,s,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle='rgba(143,193,234,.55)';ctx.strokeStyle='#5b8fb8';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(-10,-70);ctx.lineTo(10,-70);ctx.lineTo(10,-56);ctx.quadraticCurveTo(28,-46,28,-26);ctx.lineTo(28,60);ctx.quadraticCurveTo(28,70,18,70);ctx.lineTo(-18,70);ctx.quadraticCurveTo(-28,70,-28,60);ctx.lineTo(-28,-26);ctx.quadraticCurveTo(-28,-46,-10,-56);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='#2f8f6a';ctx.fillRect(-12,-80,24,12);ctx.restore();}
+const PET_PICK=[{v:'ring',x:600,y:40},{v:'o',x:740,y:40}];
+function petPickCards(ctx,S){PET_PICK.forEach(c=>{rr(ctx,c.x,c.y,120,110,14);ctx.fillStyle='#fff';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=C.ink;ctx.stroke();const cx=c.x+60,cy=c.y+55;
+  if(c.v==='ring'){ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;ctx[k?'lineTo':'moveTo'](cx+22*Math.cos(a),cy+22*Math.sin(a));}ctx.closePath();ctx.fillStyle='#7d8794';ctx.fill();
+    ctx.strokeStyle=C.enz;ctx.lineWidth=4;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(cx,cy-30);ctx.lineTo(cx,cy+30);ctx.stroke();ctx.setLineDash([]);}
+  else{ctx.strokeStyle='#8a8f98';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(cx-44,cy);ctx.lineTo(cx+44,cy);ctx.stroke();ctx.fillStyle='#d9362b';ctx.beginPath();ctx.arc(cx,cy,9,0,7);ctx.fill();
+    ctx.strokeStyle=C.enz;ctx.lineWidth=4;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(cx,cy-30);ctx.lineTo(cx,cy+30);ctx.stroke();ctx.setLineDash([]);}});
+  ctx.save();ctx.globalAlpha=.55+.45*Math.sin(S.t*4);txt(ctx,'👆',800,178,{s:30,a:'center'});ctx.restore();}
+function petStep(P,dt){P.t+=dt;if(!P.pick)return;if(P.pick==='ring'&&P.bounce<1){P.bounce+=dt*.9;return;}
+  if(P.phase===0){P.phase=1;}
+  if(P.phase===1){const next=P.cut.findIndex(v=>v<1);if(next<0){P.phase=2;return;}P.cut[next]=Math.min(1,P.cut[next]+dt*2.2);P.ex=Math.min(1,P.ex+dt*.4);}
+  else if(P.phase===2){P.ex=Math.min(2.2,P.ex+dt*.5);}}
+/* starch cut at its oxygen bridge (step 3) = plastic cut at its oxygen bridge */
+function petRhyme(ctx,x,y,w,h){ctx.save();rr(ctx,x,y,w,h,12);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
+  const cy=y+h/2,seg=(cx,col)=>{for(const dx of [-34,34]){ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;ctx[k?'lineTo':'moveTo'](cx+dx+13*Math.cos(a),cy+13*Math.sin(a));}ctx.closePath();ctx.fillStyle=col;ctx.fill();}
+    ctx.strokeStyle='#8a8f98';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx-21,cy);ctx.lineTo(cx+21,cy);ctx.stroke();ctx.fillStyle='#d9362b';ctx.beginPath();ctx.arc(cx,cy,6,0,7);ctx.fill();
+    ctx.strokeStyle=C.enz;ctx.lineWidth=3;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(cx,cy-24);ctx.lineTo(cx,cy+24);ctx.stroke();ctx.setLineDash([]);txt(ctx,'✂',cx,cy-30,{s:18,a:'center',c:C.enz});};
+  seg(x+w*.25,C.sub);txt(ctx,'=',x+w/2,cy+14,{s:38,w:700,c:C.ink,a:'center'});seg(x+w*.75,'#7d8794');ctx.restore();}
+function petPanel(ctx,S){const x=900;ctx.fillStyle='#fff';ctx.strokeStyle='#d5d9de';ctx.lineWidth=1;rr(ctx,x,24,280,552,12);ctx.fill();ctx.stroke();
+  txt(ctx,'Who is doing this',x+18,58,{s:17,w:700,c:C.ink});
+  [['🗑️','250 recycling-site samples'],['🦠','2016: a bug that eats PET'],['🇯🇵','Kohei Oda\'s team'],['🧪','2020: 90% in 10 hours'],['🇫🇷','Toulouse + Carbios'],['🏭','first plant: late, 2028'],['♻️','bottle → bottle']]
+    .forEach(([i,t],k)=>{const y=104+k*58;txt(ctx,i,x+36,y,{s:26,a:'center'});txt(ctx,t,x+64,y-4,{s:14,w:600,c:C.ink});});
+  txt(ctx,'Sources: Science 2016; Nature 2020;',x+18,540,{s:12,c:C.soft});txt(ctx,'news of the plant delay (2025).',x+18,556,{s:12,c:C.soft});}
 /* ---------------- chapters ---------------- */
 const PICK=['The cracker has hidden sugar that slowly dissolves','Something in your saliva cuts the starch into sugar','Your tongue just gets used to the salt','Chewing warms the cracker and melts it'];
 let zAnim=null,tryMol=null;
@@ -273,7 +315,7 @@ function tubeScene(ctx,S,o){drawTube(ctx,S.tube,o);if(!(o&&o.noSide))side(ctx,S.
 
 Story.start({
   id:'enzymes',title:'Why does a cracker turn sweet?',W,H,views:true,labHref:'../index.html#enzymes',
-  about:'<p><b>Two ways to see it.</b> <b>Real shape</b> shows each protein as it was measured. <b>Simple drawing</b> shows the same outline smoothed and filled flat, the way a textbook or a test draws it, with the groove and the pocket marked. Nothing else changes when you switch.</p><p><b>The shapes are real.</b> Amylase and pepsin are drawn from the measured positions of their atoms in the human proteins (Protein Data Bank entries 1SMD and 1PSN, found by X-ray crystallography). The sweet sensor is the human sweet taste receptor (entry 9UTB): two proteins paired up, standing in the skin of a taste cell. Scientists first measured its shape in 2025, by cryo-electron microscopy. You are looking straight into amylase’s active site. The three small dots at the cutting spot are the three acid groups that do the cutting, in their measured places. The starch chain is to the same scale as the enzyme: its sugar units are 0.48 nanometers apart, and amylase is about 6 nanometers across. The sweet sensor is to that scale too: about 17 nanometers tall.</p><p><b>What is simplified.</b> Colors are labels: molecules are too small to have a color, and the orange glow just marks sugars that have been cut free. Real salivary amylase also cuts in the middle of a chain, leaving a mix of small sugars that is mostly maltose; here it always snips two units off the end so you can follow it. An unfolded enzyme is shown as a loose wavy string, which is the idea, not a measurement. The fat and the protein chain are simple drawings. The sensor’s pocket is inside its top, which closes around a sugar like a Venus flytrap; the sugar is drawn on top so you can see it. In the measurement the pocket holds sucralose, a sweetener the size of maltose. Sugars are thought to use the same pocket, but that has not been measured with maltose. The two colors only mark the two proteins of the pair. Everything is slowed down a lot: a real amylase makes hundreds of cuts a second, and on its own a starch bond would last for millions of years.</p><p><b>The numbers.</b> The rates use the same model as the full BioLab enzyme tool: twice as fast for every 10 °C, unfolding near 44 °C, permanent heat damage above about 55 °C, and a bell-shaped pH curve (best near pH 6.8 for amylase and pH 2 for pepsin). Real enzymes have messier curves. The energy hill is a picture of activation energy, not a measurement.</p>',
+  about:'<p><b>Two ways to see it.</b> <b>Real shape</b> shows each protein as it was measured. <b>Simple drawing</b> shows the same outline smoothed and filled flat, the way a textbook or a test draws it, with the groove and the pocket marked. Nothing else changes when you switch.</p><p><b>The shapes are real.</b> Amylase and pepsin are drawn from the measured positions of their atoms in the human proteins (Protein Data Bank entries 1SMD and 1PSN, found by X-ray crystallography). The sweet sensor is the human sweet taste receptor (entry 9UTB): two proteins paired up, standing in the skin of a taste cell. Scientists first measured its shape in 2025, by cryo-electron microscopy. You are looking straight into amylase’s active site. The three small dots at the cutting spot are the three acid groups that do the cutting, in their measured places. The starch chain is to the same scale as the enzyme: its sugar units are 0.48 nanometers apart, and amylase is about 6 nanometers across. The sweet sensor is to that scale too: about 17 nanometers tall.</p><p><b>What is simplified.</b> Colors are labels: molecules are too small to have a color, and the orange glow just marks sugars that have been cut free. Real salivary amylase also cuts in the middle of a chain, leaving a mix of small sugars that is mostly maltose; here it always snips two units off the end so you can follow it. An unfolded enzyme is shown as a loose wavy string, which is the idea, not a measurement. The fat and the protein chain are simple drawings. The sensor’s pocket is inside its top, which closes around a sugar like a Venus flytrap; the sugar is drawn on top so you can see it. In the measurement the pocket holds sucralose, a sweetener the size of maltose. Sugars are thought to use the same pocket, but that has not been measured with maltose. The two colors only mark the two proteins of the pair. Everything is slowed down a lot: a real amylase makes hundreds of cuts a second, and on its own a starch bond would last for millions of years.</p><p><b>The numbers.</b> The rates use the same model as the full BioLab enzyme tool: twice as fast for every 10 °C, unfolding near 44 °C, permanent heat damage above about 55 °C, and a bell-shaped pH curve (best near pH 6.8 for amylase and pH 2 for pepsin). Real enzymes have messier curves. The energy hill is a picture of activation energy, not a measurement.</p><p><b>Enzymes that cut plastic (step 11).</b> Ideonella sakaiensis was found in 2016 by Kohei Oda’s team after screening 250 samples from a bottle recycling site in Sakai, Japan (Science, 2016). In 2020, Toulouse Biotechnology Institute and Carbios published an engineered enzyme that breaks down at least 90% of PET in 10 hours (Nature, 2020). Carbios’s first plant was postponed for financing and is expected in 2028. The plastic is drawn as simple rings and links, not to scale.</p>',
   tell:{frames:FRAMES,terms:['enzyme|amylase','substrate|starch','active site|groove','activation energy|energy hill','product|maltose|sugar','denature','pH|acid','optimum|best temperature'],
     nudge:'For each picture ask: what had to happen just before this could happen?',
     done:'<b>That is the story.</b> Now tell it in your own words.',
@@ -390,6 +432,25 @@ Story.start({
    draw(ctx,S){const s=S.tube;drawTube(ctx,s,{strip:false,charges:true,hplus:true,tagNew:s.loc===2});phPanel(ctx,s);
      pill(ctx,['In your mouth: pH 7','In your stomach: pH 2','In your small intestine: pH 7'][s.loc],20,34,{bg:s.loc===1?C.h:'#fff',c:s.loc===1?'#fff':C.ink,bd:s.loc===1?null:C.ink,s:18,w:700,a:'left',r:9,lw:2});
      if(s.loc===1&&s.pH<3)pill(ctx,'H⁺ ions (pink) cover the groove’s charges',400,574,{bg:'#fff',c:C.h,bd:C.h,s:16,w:700});}},
+
+  {rail:'Who did it',title:'Enzymes that cut plastic',live:true,views:false,
+   text(S){const P=S.pet;if(!P||!P.pick)return 'A plastic bottle (PET) is a long chain too. <b>Tap the bond</b> a plastic-eating enzyme cuts.';
+     if(P.pick==='ring'&&P.bounce<1)return 'Not the ring. Watch.';
+     if(P.phase<2)return 'It cuts at the <b style="color:#d9362b">oxygen bridges</b>, the same kind of cut amylase makes in starch.';
+     return 'Back to building blocks, then back into a <b>new bottle</b>. Found in 2016 at a bottle recycling site in Japan; tuned in France to cut 90% in 10 hours.';},
+   alt:'Look at the two pictures at the bottom. A starch chain and a plastic chain both have oxygen bridges between their pieces. Amylase cuts the starch there; the plastic enzyme cuts the plastic there.',
+   ui:[{type:'seg',key:'pp',val:'',label:'Which bond does it cut?',opts:[{v:'ring',l:'Inside the ring'},{v:'o',l:'The oxygen bridge'}],on(S,v){if(S.pet&&!S.pet.pick)S.pet.pick=v;},show:S=>S.pet&&!S.pet.pick},
+       {type:'button',label:'Start over',ghost:true,act(S){S.pet=newPet();S.v.pp='';},show:S=>S.pet&&S.pet.phase===2}],
+   todo:[{t:'Tap the bond the enzyme cuts',ok:S=>S.pet&&S.pet.pick},{t:'Watch the bottle go back to building blocks',ok:S=>S.pet&&S.pet.phase===2&&S.pet.ex>1.6}],
+   enter(S){S.pet=newPet();S.v.pp='';},tick(S,dt){if(S.pet)petStep(S.pet,dt);},
+   click(S,x,y){const P=S.pet;if(!P||P.pick)return;for(const c of PET_PICK)if(x>c.x&&x<c.x+120&&y>c.y&&y<c.y+110){P.pick=c.v;S.v.pp=c.v;}},
+   draw(ctx,S){const P=S.pet||(S.pet=newPet());ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);
+     const fade=P.phase===2?Math.max(0,1-(P.ex-1)):1;
+     bottle(ctx,110,140,1,P.phase===2?fade:1);ctx.save();ctx.globalAlpha=P.phase===2?fade:1;petChain(ctx,P,190,250);ctx.restore();
+     if(P.pick==='ring'&&P.bounce<1){const cx=190+5*52;ctx.save();ctx.globalAlpha=1-P.bounce;ctx.strokeStyle=C.rj;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(cx-18,232);ctx.lineTo(cx+18,268);ctx.moveTo(cx+18,232);ctx.lineTo(cx-18,268);ctx.stroke();ctx.restore();}
+     if(P.phase===2&&P.ex>1){const k=Math.min(1,P.ex-1);bottle(ctx,560,170,1.1,k);txt(ctx,'♻️',440,190,{s:44,a:'center'});ctx.save();ctx.globalAlpha=k;petChain(ctx,null,190,330,{sp:34,r:9});ctx.restore();}
+     if(!P.pick)petPickCards(ctx,S);
+     petRhyme(ctx,20,440,520,140);petPanel(ctx,S);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true,
    text:'You have followed the cracker from the first bite to the small intestine. Put the story back in order, then explain it the way you would to a friend who missed class.',

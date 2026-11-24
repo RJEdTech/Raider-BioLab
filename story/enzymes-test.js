@@ -18,4 +18,7 @@ TestYourself.mount({lab:'BioLab',id:'enzymes',title:'Raider BioLab · Why does a
   why:'At pH 2 amylase barely works. Pepsin is built for acid, so starch digestion pauses and protein digestion starts.'},
  {q:'In the 3D starch chain, amylase cut the oxygen bridges between sugar units. Why does that make the cracker taste sweet?',choices:['The cuts free small pieces, like maltose, that fit the sweet sensors on your tongue','The cuts add sugar that was not in the cracker','The cuts make the starch chain longer and sweeter','The oxygen that is cut off tastes sweet'],answer:0,
   hint:'Starch is far too long to fit a sweet sensor. What size are the pieces after many cuts?',step:3,stepName:'spin a starch chain',
-  why:'Starch is hundreds of sugar units long. Amylase cuts it into pieces of 2 or 3 units (maltose and maltotriose), and those are small enough to fit the sweet receptor.'}]});
+  why:'Starch is hundreds of sugar units long. Amylase cuts it into pieces of 2 or 3 units (maltose and maltotriose), and those are small enough to fit the sweet receptor.'},
+ {q:'The engineered plastic-cutting enzyme breaks down at least 90% of the PET in 10 hours. A recycler starts with 200 g of bottle flakes. At least how many grams are broken back into building blocks after 10 hours?',answer:180,tol:1,unit:'g',
+  hint:v=>v===20?'That is the part left over. How much was broken down?':'Find 90% of 200 g.',step:11,stepName:'enzymes that cut plastic',
+  why:'0.90 × 200 g = 180 g. The building blocks can be made into new bottle plastic, so a bottle can become a bottle again.'}]});

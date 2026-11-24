@@ -69,13 +69,50 @@ const FRAMES=[
  {label:'Oily parts of different chains stick together: a tangled net',draw:fr(mini(1,1))},
  {label:'Big clumps bounce light every way, so it looks white',draw:fr(ctx=>lightBox(ctx,10,10,280,173,true,0))},
  {label:'Cooling does not untangle it: cooked stays cooked',draw:fr(ctx=>{pan(ctx,140,97,.55,1);txt(ctx,'❄',255,40,{s:30,c:'#2f7fd0'});})}];
+
+/* ---------- "Who is doing this" (Nov 24, 2026): a vaccine that can take the heat ----------
+   Sources: PATH press release (Nov 14, 2012) and WHO guidance WHO/IVB/13.04: MenAfriVac, made for Africa's meningitis belt (26
+   countries) by the PATH-WHO Meningitis Vaccine Project with Serum Institute of India, was the first vaccine for Africa approved for a
+   controlled temperature chain: up to 40 °C for up to 4 days. Most vaccines must be kept at 2 to 8 °C. Benin, 2012 (Vaccine 2014 via
+   PMC5355207 and WHO AFRO): 155,000 people vaccinated this way; only 9 vials thrown out for passing 4 days; none for heat; vaccinators
+   preferred it. Cost (Bulletin of the WHO, via PATH): could halve, from US$0.24 to US$0.12 per person. Impact (PATH/WHO/Gavi, 2016):
+   more than 235 million people aged 1-29 vaccinated in 16 countries, 2010-2015; meningitis A nearly eliminated; experts warn it could
+   come back unless babies keep being vaccinated.
+   Simplified: the protein is the same 27-bead chain as the rest of this story; real vaccine proteins are much bigger, and heat damage
+   builds up over time rather than all at once. */
+const VP=View3D.make({yaw:.5,pitch:-.25,auto:.3,hint:false}),VR1=View3D.make({yaw:.5,pitch:-.3,auto:0,hint:false});
+function oneProt(u,k){k=k||0;const c=PROT[k].c,B=beads(k,u,0).map(p=>G.sub(p,c)),it=[];
+  for(let i=0;i<B.length;i++){it.push({t:'atom',p:B[i],r:.17,c:OILY[i]?C.oil:C.wet});if(i)it.push({t:'bond',a:B[i-1],b:B[i],r:.06,c:'#9aa1ab'});}return it;}
+function vacPick(S,v){const V=S.vac;if(!V||V.seen40)return;V.pick=v;if(v==='40')V.seen40=true;}
+function newVac(){return {pick:null,seen40:false,ctc:false,u:0,t:0};}
+const VAC_PICK=[{v:'5',x:36,y:30},{v:'40',x:176,y:30}];
+function thermoCard(ctx,c,on){rr(ctx,c.x,c.y,120,118,14);ctx.fillStyle=on?'#fff3c4':'#fff';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=C.ink;ctx.stroke();
+  const cx=c.x+40,top=c.y+18,hot=c.v==='40';ctx.fillStyle='#e9ecef';rr(ctx,cx-7,top,14,64,7);ctx.fill();ctx.fillStyle=hot?C.heat:'#2f7fd0';rr(ctx,cx-7,top+(hot?8:48),14,hot?56:16,7);ctx.fill();ctx.beginPath();ctx.arc(cx,top+74,12,0,7);ctx.fill();
+  txt(ctx,hot?'☀️':'❄️',c.x+88,c.y+48,{s:30,a:'center'});txt(ctx,c.v+' °C',c.x+88,c.y+92,{s:17,w:700,c:hot?C.heat:'#2f7fd0',a:'center'});}
+function route(ctx,V,x,y,w,h){ctx.save();rr(ctx,x,y,w,h,12);ctx.fillStyle='#fbf8ef';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
+  const P=[[x+30,y+h-40],[x+w*.3,y+h*.55],[x+w*.48,y+h*.72],[x+w*.62,y+h*.38],[x+w*.8,y+h*.6],[x+w-34,y+34]];
+  ctx.strokeStyle='#c9b48f';ctx.lineWidth=6;ctx.setLineDash([10,8]);ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();ctx.setLineDash([]);
+  txt(ctx,'🏥',P[0][0],P[0][1]+10,{s:30,a:'center'});
+  const reach=V.ctc?5:2;for(let i=1;i<P.length;i++){const ok=V.seen40&&i<=reach;txt(ctx,'🏘️',P[i][0],P[i][1]+10,{s:26,a:'center'});ctx.beginPath();ctx.arc(P[i][0]+18,P[i][1]-14,9,0,7);ctx.fillStyle=!V.seen40?'#c9ced5':ok?'#2f8f6a':'#C11430';ctx.fill();
+    txt(ctx,ok?'✓':V.seen40?'✗':'',P[i][0]+18,P[i][1]-9,{s:13,w:800,c:'#fff',a:'center'});}
+  txt(ctx,V.ctc?'☀️ no ice, tested vaccine':'🧊 ice runs out',x+w-14,y+h-14,{s:14,w:700,c:V.ctc?C.heat:'#2f7fd0',a:'right'});ctx.restore();}
+function vacRhyme(ctx,x,y,w,h,t){ctx.save();rr(ctx,x,y,w,h,12);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
+  const u=.5+.5*Math.sin(t*1.2),q=(w-60)/2;
+  VR1.render(ctx,{x:x,y:y,w:q,h,nm:40,items:oneProt(u,0),bg:'#ffffff'});txt(ctx,'🍳',x+22,y+30,{s:24});
+  txt(ctx,'=',x+w/2,y+h/2+14,{s:38,w:700,c:C.ink,a:'center'});
+  VR1.render(ctx,{x:x+w-q,y:y,w:q,h,nm:40,items:oneProt(u,3),bg:'#ffffff'});txt(ctx,'💉',x+w-q+10,y+30,{s:24});ctx.restore();}
+function vacPanel(ctx){const x=900;ctx.fillStyle='#fff';ctx.strokeStyle='#d5d9de';ctx.lineWidth=1;rr(ctx,x,24,280,552,12);ctx.fill();ctx.stroke();
+  txt(ctx,'Who is doing this',x+18,58,{s:17,w:700,c:C.ink});
+  [['💉','meningitis A vaccine, Africa'],['🤝','PATH + WHO + Serum Institute'],['🌡️','2012: OK at 40 °C for 4 days'],['🛵','Benin: 155,000 vaccinated'],['🗑️','only 9 vials thrown out'],['💵','cost per person cut in half'],['🌍','235 million protected'],['⚠️','babies must keep getting it']]
+    .forEach(([i,t],k)=>{const y=100+k*52;txt(ctx,i,x+36,y,{s:24,a:'center'});txt(ctx,t,x+64,y-4,{s:13.5,w:600,c:C.ink});});
+  txt(ctx,'Sources: PATH 2012, 2016; WHO; Gavi;',x+18,540,{s:12,c:C.soft});txt(ctx,'Vaccine journal 2014.',x+18,556,{s:12,c:C.soft});}
 /* ---------- chapters ---------- */
 const PICK=['The water boils away and leaves the white part','The pan adds white color to the egg','Heat makes the proteins unfold and tangle together','Heat turns the clear part into fat'];
 const V2=View3D.make({yaw:.4,pitch:-.25,auto:.2}),V3=View3D.make({yaw:.4,pitch:-.25,auto:.12}),V4=View3D.make({yaw:.6,pitch:-.3,auto:.12}),V6=View3D.make({yaw:.4,pitch:-.25,auto:.12});
 const draw3=(ctx,V,u,net,o)=>{ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);V.render(ctx,{x:0,y:0,w:880,h:600,nm:lerp(118,84,ease(u))*(1+.15*net),items:items(u,net,o),bg:'#f4f6f8'});};
 Story.start({
   id:'eggwhite',title:'Why does an egg white turn solid and white?',W,H,labHref:'../index.html#protein',
-  about:'<p><b>What is real.</b> Raw egg white is about 88% water and 10% protein. Its proteins are folded chains a few nanometers across, much smaller than a wave of light. Egg white starts to set near 62 °C and its main protein (ovalbumin) unfolds near 80 °C. Unfolded chains stick together by their oily parts and trap the water, and the clumps scatter light.</p><p><b>What is simplified.</b> Each protein is drawn as a chain of 27 beads (one bead is one amino acid). Real egg-white proteins are chains of about 400. Only a few water molecules are drawn, and hydrogen atoms on the proteins are left out.</p>',
+  about:'<p><b>What is real.</b> Raw egg white is about 88% water and 10% protein. Its proteins are folded chains a few nanometers across, much smaller than a wave of light. Egg white starts to set near 62 °C and its main protein (ovalbumin) unfolds near 80 °C. Unfolded chains stick together by their oily parts and trap the water, and the clumps scatter light.</p><p><b>What is simplified.</b> Each protein is drawn as a chain of 27 beads (one bead is one amino acid). Real egg-white proteins are chains of about 400. Only a few water molecules are drawn, and hydrogen atoms on the proteins are left out.</p><p><b>A vaccine that can take the heat (step 7).</b> MenAfriVac, from the PATH-WHO Meningitis Vaccine Project and Serum Institute of India, was the first vaccine for Africa approved for use at up to 40 °C for up to 4 days (2012); most vaccines must stay at 2 to 8 °C. In Benin in 2012, 155,000 people were vaccinated this way and only 9 vials were thrown out. More than 235 million people were vaccinated in 2010 to 2015, and meningitis A was nearly eliminated. Sources: PATH, WHO, Gavi, and the journal Vaccine (2014). The vaccine protein is drawn with the same bead chain as the egg white; heat damage really builds up over time.</p>',
   tell:{frames:FRAMES,terms:['protein','fold|folded','unfold|denature','oily|hydrophobic','tangle|net|gel','scatter|light'],
     nudge:'For each picture ask: what had to happen just before this could happen?',
     done:'<b>That is the story.</b> Now tell it in your own words.',
@@ -137,6 +174,25 @@ Story.start({
    enter(S){S.v.T=90;},
    draw(ctx,S){draw3(ctx,V6,1,1);side(ctx,'Temperature',[],x=>{thermo(ctx,x+18,110,S.v.T);txt(ctx,'Proteins unfolded',x+18,230,{s:15,c:C.soft});txt(ctx,'100%',x+262,232,{s:24,w:700,a:'right',c:C.heat});
      txt(ctx,'Cooling does not refold them.',x+18,270,{s:14,c:C.ink});});}},
+
+  {rail:'Who did it',title:'A vaccine that can take the heat',live:true,
+   text(S){const V=S.vac;if(!V||!V.pick)return 'Vaccines are built on proteins, like egg white. <b>Tap where a vaccine stops working.</b>';
+     if(!V.seen40)return 'Cold keeps it folded. It still works. Tap the other one.';
+     if(!V.ctc)return 'Too warm, too long: it unfolds, like egg white. Ice runs out before the far villages. <b>Try the tested vaccine.</b>';
+     return 'This meningitis vaccine was tested to hold its shape at 40 °C for up to 4 days, so health workers could carry it without ice. Every village reached.';},
+   alt:'Look at the two pictures at the bottom: the same chain folds and unfolds in the egg and in the vaccine. Heat shakes a protein open. A vaccine that has unfolded no longer looks like the germ it is teaching your body to fight.',
+   ui:[{type:'seg',key:'vp',val:'',label:'Where does it stop working?',opts:[{v:'5',l:'❄️ 5 °C'},{v:'40',l:'☀️ 40 °C'}],on(S,v){vacPick(S,v);},show:S=>S.vac&&!S.vac.seen40},
+       {type:'button',label:'☀️ Carry the tested vaccine without ice',pulse:true,act(S){S.vac.ctc=true;},show:S=>S.vac&&S.vac.seen40&&!S.vac.ctc}],
+   todo:[{t:'Find where a vaccine stops working',ok:S=>S.vac&&S.vac.seen40},{t:'Carry the tested vaccine to every village',ok:S=>S.vac&&S.vac.ctc}],
+   enter(S){S.vac=newVac();S.v.vp='';},
+   tick(S,dt){const V=S.vac;if(!V)return;V.t+=dt;const tg=V.pick==='40'&&!V.ctc?1:0;V.u+=(tg-V.u)*Math.min(1,dt*.9);},
+   click(S,x,y){const V=S.vac;if(!V||V.seen40)return;for(const c of VAC_PICK)if(x>c.x&&x<c.x+120&&y>c.y&&y<c.y+118){vacPick(S,c.v);S.v.vp=c.v;}},
+   draw(ctx,S){const V=S.vac||(S.vac=newVac());ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);
+     VAC_PICK.forEach(c=>thermoCard(ctx,c,V.pick===c.v));if(!V.pick){ctx.save();ctx.globalAlpha=.55+.45*Math.sin(S.t*4);txt(ctx,'👆',156,186,{s:30,a:'center'});ctx.restore();}
+     rr(ctx,320,24,250,260,12);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
+     VP.render(ctx,{x:320,y:24,w:250,h:260,nm:lerp(66,48,V.u),items:oneProt(V.u,3),bg:'#ffffff'});
+     txt(ctx,V.u>.6?'unfolded ✗':'folded ✓',445,272,{s:16,w:700,c:V.u>.6?C.rj:C.good,a:'center'});if(V.ctc)txt(ctx,'tested: 40 °C, 4 days',445,48,{s:14,w:700,c:C.heat,a:'center'});
+     route(ctx,V,590,24,290,400);vacRhyme(ctx,20,440,560,140,S.t);vacPanel(ctx);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true}
   ]});

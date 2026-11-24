@@ -15,4 +15,7 @@ TestYourself.mount({lab:'BioLab',id:'eggwhite',title:'Raider BioLab · Why does 
   why:'The tangled clumps are as big as a light wave or bigger. They scatter light of every color in every direction, and that looks white, just like the droplets in milk and clouds.'},
  {q:'You cool a fried egg back down to room temperature. What happens to the egg white?',choices:['It stays solid and white, because the tangled chains cannot refold','It turns clear and runny again','It turns to water','It turns yellow'],answer:0,
   hint:'Cool the pan in the last step. Did any chain fold back up?',step:6,stepName:'can you un-cook it?',
-  why:'Cooling slows the shaking, but the chains are stuck to many others and cannot find their folds again. Unfolding a protein this way (denaturing it) usually cannot be undone.'}]});
+  why:'Cooling slows the shaking, but the chains are stuck to many others and cannot find their folds again. Unfolding a protein this way (denaturing it) usually cannot be undone.'},
+ {q:'In Benin in 2012, carrying the tested vaccine without ice could cut the cost from $0.24 to $0.12 per person. About how many dollars would that save for 155,000 people?',answer:18600,tol:50,unit:'dollars',
+  hint:v=>Math.abs(v-37200)<60?'That is the cost the old way. How much is saved per person?':Math.abs(v-0.12)<.01?'That is the saving for one person. Now multiply by the number of people.':'Saved per person: $0.24 − $0.12. Then multiply by 155,000.',step:7,stepName:'a vaccine that can take the heat',
+  why:'$0.12 saved per person × 155,000 people = $18,600, money that can reach more children.'}]});
