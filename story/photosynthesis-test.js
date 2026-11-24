@@ -18,4 +18,7 @@ TestYourself.mount({lab:'BioLab',id:'photosynthesis',title:'Raider BioLab · Wha
   why:'They don’t need light themselves, but they spend ATP and NADPH made in the light. When those run out, they stop.'},
  {q:'In the 3D picture you built 18 sugar units of wood from 108 carbons. Where did every one of those carbons come from?',choices:['CO₂ from the air','Minerals from the soil','The water the roots took up','Sunlight turned into matter'],answer:0,
   hint:'Watch where each gray carbon flies in from before it joins a sugar ring.',step:10,stepName:'from air to wood',
-  why:'Each carbon came in as CO₂ through the leaves. Light supplies the energy, water supplies hydrogen, and the soil gives only a pinch of minerals, so most of a tree\'s dry weight came from the air.'}]});
+  why:'Each carbon came in as CO₂ through the leaves. Light supplies the energy, water supplies hydrogen, and the soil gives only a pinch of minerals, so most of a tree\'s dry weight came from the air.'},
+ {q:'Dry wood is about half carbon. A 10 kg log of dry wood holds about 5 kg of carbon. In CO₂, 12 parts out of every 44 (by mass) are carbon. About how many kilograms of CO₂ did the tree pull from the air to build that carbon?',answer:18.3,tol:.3,unit:'kg',
+  hint:v=>Math.abs(v-1.36)<.1?'You multiplied by 12/44. The CO₂ weighs more than the carbon in it: multiply by 44/12.':'5 kg of carbon × 44 ÷ 12.',step:11,stepName:'wangari maathai, kenya',
+  why:'5 × 44 ÷ 12 ≈ 18.3 kg of CO₂, almost twice the log\'s own weight, pulled out of the air (the extra mass is the oxygen, which goes back out).'}]});

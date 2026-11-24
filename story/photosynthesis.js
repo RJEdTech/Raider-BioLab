@@ -248,9 +248,33 @@ const FRAMES=[
 ];
 const PICK=['The soil it grows in','The water it drinks','The air','The sunlight itself'];
 
+
+/* ---------- "Who is doing this" (Nov 24, 2026): Wangari Maathai and the Green Belt Movement ----------
+   Sources: NobelPrize.org (Peace 2004, the first African woman); National Academies laureate profile (biologist; founded the Green
+   Belt Movement; over 51 million trees; repeatedly arrested and jailed); LSE (founded 1977; 51 million trees across Kenya);
+   Google Arts & Culture / Green Belt Movement (PhD 1971, University of Nairobi; women's tree nurseries). Dry wood is about half carbon
+   by mass; CO₂ is 12 parts carbon in 44. Pictures are drawings, not to scale. */
+const MT_PICK=[{v:'soil',x:600,y:30,draw(ctx,cx,cy){ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.ellipse(cx,cy+18,42,22,0,Math.PI,0);ctx.fill();ctx.fillRect(cx-42,cy+18,84,10);txt(ctx,'🌍',cx,cy-12,{s:30,a:'center'});}},
+  {v:'air',x:740,y:30,draw(ctx,cx,cy){txt(ctx,'💨',cx,cy-12,{s:30,a:'center'});co2Mini(ctx,cx,cy+22,1.4);}}];
+function co2Mini(ctx,x,y,s){s=s||1;ctx.save();ctx.strokeStyle='#a3aab4';ctx.lineWidth=3*s;ctx.beginPath();ctx.moveTo(x-12*s,y);ctx.lineTo(x+12*s,y);ctx.stroke();
+  [[x-12*s,'#d9362b',5.5],[x,'#5f6670',6],[x+12*s,'#d9362b',5.5]].forEach(([xx,c,r])=>{ctx.beginPath();ctx.arc(xx,y,r*s,0,7);ctx.fillStyle=c;ctx.fill();});ctx.restore();}
+function treeIcon(ctx,x,y,s,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.fillStyle='#7a4f22';ctx.fillRect(x-3*s,y-12*s,6*s,14*s);ctx.fillStyle='#2f8f4e';ctx.beginPath();ctx.arc(x,y-20*s,13*s,0,7);ctx.fill();ctx.fillStyle='#3fa864';ctx.beginPath();ctx.arc(x-6*s,y-24*s,7*s,0,7);ctx.fill();ctx.restore();}
+function mtScene(ctx,S){const M=S.mt,t=S.t;ctx.fillStyle='#eaf4fb';ctx.fillRect(0,0,590,430);
+  ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.moveTo(0,330);ctx.quadraticCurveTo(220,250,590,300);ctx.lineTo(590,430);ctx.lineTo(0,430);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#6f9a4a';ctx.beginPath();ctx.moveTo(0,330);ctx.quadraticCurveTo(220,250,590,300);ctx.lineTo(590,312);ctx.quadraticCurveTo(220,262,0,342);ctx.closePath();ctx.fill();
+  const n=M.pick==='air'?Math.floor(ease(M.k)*22):0;
+  for(let i=0;i<22;i++){const x=30+i*25,y=lerp(334,302,i/21)-Math.sin(i/21*Math.PI)*18+(i%2)*14;if(i<n)treeIcon(ctx,x,y,1+((i*7)%5)/10);else if(M.pick==='air'){ctx.fillStyle='#5a8a3a';ctx.fillRect(x-1,y-4,2,4);}}
+  // CO₂ from the sky into the trees
+  for(let k=0;k<10;k++){const u=((t*.25+k/10)%1),x=40+((k*53)%520),y=lerp(30,260,u);ctx.save();ctx.globalAlpha=M.pick==='air'?.9*(1-u*.6):.25;co2Mini(ctx,x,y,1);ctx.restore();}
+  if(M.pick==='soil'&&M.k<1){ctx.save();ctx.globalAlpha=1-M.k;txt(ctx,'⚖️',300,220,{s:60,a:'center'});txt(ctx,'soil: almost no change',300,270,{s:17,w:700,c:'#7a4f22',a:'center'});ctx.restore();}
+  if(M.pick==='air'){txt(ctx,Math.round(ease(M.k)*51).toLocaleString('en-US')+' million trees',20,44,{s:26,w:800,c:'#2f8f4e'});txt(ctx,'Kenya, since 1977',20,70,{s:15,w:600,c:'#62626a'});}}
+function mtRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{co2Mini(c,x+50,y+h/2,1.6);arrow(c,x+86,y+h/2,x+128,y+h/2,'#62626a');c.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;c[k?'lineTo':'moveTo'](x+170+26*Math.cos(a),y+h/2+26*Math.sin(a));}c.closePath();c.fillStyle='#9b6a36';c.fill();},
+  (c,x,y,w,h)=>{co2Mini(c,x+50,y+h/2,1.6);arrow(c,x+86,y+h/2,x+128,y+h/2,'#62626a');treeIcon(c,x+175,y+h/2+38,1.9);});}
+
+function mtPick(S,v){const M=S.mt;if(!M||M.pick==='air')return;M.pick=v;M.k=0;}
 Story.start({
   id:'photosynthesis',title:'What is a tree made of?',W,H,views:true,labHref:'../index.html#chloroplast',
-  about:'<p><b>Two ways to see it.</b> <b>Real shape</b> shows each machine as it was measured. <b>Simple drawing</b> shows the same outline smoothed and filled flat, the way a textbook or a test draws it. Nothing else changes when you switch.</p><p><b>The shapes are real.</b> Photosystem II, the pump (cytochrome b₆f), photosystem I, ATP synthase and Rubisco are drawn from the measured positions of their atoms in spinach and pea proteins (Protein Data Bank entries 3JCU, 6RQF, 5L8R, 6FKF and 1RCX). They are seen from the side, in their real order, all at one scale: the bar is 10 nanometers. The small dots inside them are the real stepping stones the electrons use, in their measured places; the purple one is the cluster of manganese atoms where water is split. The ring of this ATP synthase really has 14 parts, so 14 H⁺ turn it once.</p><p><b>What is simplified.</b> Colors are labels. A real disc holds thousands of these machines, with photosystem II packed into the stacked discs and photosystem I and ATP synthase out on the edges; here one of each sits side by side. The small carriers (Q, PC, Fd) are drawn as dots. Each photosystem’s short drop before its lift is left out, and so is a loop that real plants use to make extra ATP. The Calvin cycle is drawn as three stops; the real one has 13 steps. Everything is slowed down enormously.</p><p><b>The willow.</b> Jan van Helmont grew a willow in a weighed pot of soil for five years. His report was published in 1648: the tree had gained about 74 kilograms (164 pounds) and the soil had lost about 57 grams (2 ounces). He thought the weight came from water; the role of the air was worked out later.</p><p><b>The numbers.</b> Each water gives 2 electrons and 2 H⁺; two waters leave one O₂. The pump moves 4 H⁺ per pair of electrons. Each pair loads one NADPH. Fourteen H⁺ make 3 ATP. Each CO₂ costs 3 ATP and 2 NADPH, and 3 CO₂ make one 3-carbon sugar. The energy steps are drawn to scale from measured voltages.</p>',
+  about:'<p><b>Two ways to see it.</b> <b>Real shape</b> shows each machine as it was measured. <b>Simple drawing</b> shows the same outline smoothed and filled flat, the way a textbook or a test draws it. Nothing else changes when you switch.</p><p><b>The shapes are real.</b> Photosystem II, the pump (cytochrome b₆f), photosystem I, ATP synthase and Rubisco are drawn from the measured positions of their atoms in spinach and pea proteins (Protein Data Bank entries 3JCU, 6RQF, 5L8R, 6FKF and 1RCX). They are seen from the side, in their real order, all at one scale: the bar is 10 nanometers. The small dots inside them are the real stepping stones the electrons use, in their measured places; the purple one is the cluster of manganese atoms where water is split. The ring of this ATP synthase really has 14 parts, so 14 H⁺ turn it once.</p><p><b>What is simplified.</b> Colors are labels. A real disc holds thousands of these machines, with photosystem II packed into the stacked discs and photosystem I and ATP synthase out on the edges; here one of each sits side by side. The small carriers (Q, PC, Fd) are drawn as dots. Each photosystem’s short drop before its lift is left out, and so is a loop that real plants use to make extra ATP. The Calvin cycle is drawn as three stops; the real one has 13 steps. Everything is slowed down enormously.</p><p><b>The willow.</b> Jan van Helmont grew a willow in a weighed pot of soil for five years. His report was published in 1648: the tree had gained about 74 kilograms (164 pounds) and the soil had lost about 57 grams (2 ounces). He thought the weight came from water; the role of the air was worked out later.</p><p><b>The numbers.</b> Each water gives 2 electrons and 2 H⁺; two waters leave one O₂. The pump moves 4 H⁺ per pair of electrons. Each pair loads one NADPH. Fourteen H⁺ make 3 ATP. Each CO₂ costs 3 ATP and 2 NADPH, and 3 CO₂ make one 3-carbon sugar. The energy steps are drawn to scale from measured voltages.</p><p><b>Wangari Maathai (step 11).</b> Maathai, a Kenyan biologist (PhD 1971, University of Nairobi), founded the Green Belt Movement in 1977. It trained women to grow tree nurseries and has planted over 51 million trees in Kenya. She was arrested and jailed for her activism, and in 2004 became the first African woman to win the Nobel Peace Prize. Dry wood is about half carbon by mass, and every gram of that carbon came from CO₂ in the air. Sources: NobelPrize.org; National Academies; London School of Economics; Green Belt Movement.</p>',
   tell:{frames:FRAMES,swaps:[[2,3]],terms:['light','water','electron','oxygen|O₂|o2','H⁺|h+|hydrogen ion|proton','NADPH','ATP','CO₂|co2|carbon dioxide','Rubisco','sugar|glucose'],
     nudge:'For each picture ask: what had to happen just before this could happen?',
     done:'<b>That is the story.</b> (Pictures 3 and 4 happen at the same time, so either order counts.) Now tell it in your own words.',
@@ -337,6 +361,19 @@ Story.start({
    enter(S){setup(S);},draw(ctx,S){drawBack(ctx,S);}},
 
   window.Wood3D.chapter(C),
+
+  {rail:'Who did it',title:'Wangari Maathai, Kenya',live:true,views:false,
+   text(S){const M=S.mt;if(!M||!M.pick)return 'Kenya, 1977. A biologist starts planting trees. <b>Tap where a tree\'s weight comes from.</b>';
+     if(M.pick==='soil')return 'The soil barely changes. Try the other.';
+     return 'From the air: each tree pulls in CO₂ and builds wood. Her Green Belt Movement planted over <b>51 million trees</b>.';},
+   alt:'Look at the two pictures at the bottom. CO₂ becomes a sugar ring in the leaf, and sugar rings become wood. Every tree planted is a machine for pulling CO₂ out of the air.',
+   ui:[{type:'seg',key:'mp',val:'',label:'Where does a tree\'s weight come from?',opts:[{v:'soil',l:'🌍 The soil'},{v:'air',l:'💨 The air'}],on(S,v){mtPick(S,v);},show:S=>S.mt&&S.mt.pick!=='air'}],
+   todo:[{t:'Tap where a tree\'s weight comes from',ok:S=>S.mt&&S.mt.pick==='air'},{t:'Watch the trees grow',ok:S=>S.mt&&S.mt.pick==='air'&&S.mt.k>=.95}],
+   enter(S){S.mt={pick:null,k:0};S.v.mp='';},tick(S,dt){const M=S.mt;if(M&&M.pick)M.k=Math.min(1,M.k+dt*(M.pick==='air'?.18:.5));},
+   click(S,x,y){const v=Who.hit(MT_PICK,x,y);if(v){mtPick(S,v);S.v.mp=v;}},
+   draw(ctx,S){const M=S.mt||(S.mt={pick:null,k:0});ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);mtScene(ctx,S);
+     if(M.pick!=='air')Who.cards(ctx,S,MT_PICK,M.pick);mtRhyme(ctx);
+     Who.panel(ctx,'Wangari Maathai',[['🎓','biologist, PhD 1971'],['🌱','1977: Green Belt Movement'],['👩‍🌾','women grow tree nurseries'],['🌳','51 million trees, Kenya'],['✋','arrested and jailed'],['🏅','2004 Nobel Peace Prize']],['Sources: NobelPrize.org; National','Academies; LSE; Green Belt Movement.']);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true,
    text:'You have followed the light from a leaf to a sugar. Put the story back in order, then explain it the way you would to a friend who missed class.'}
