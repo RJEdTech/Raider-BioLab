@@ -142,9 +142,44 @@ const FRAMES=[
 ];
 const PICK=['They soak it up and swell','They lose water and shrivel','Nothing: water is water','The salt gets into them and poisons them'];
 
+
+/* ---------- "Who used this" (Nov 24, 2026): Dr. Dilip Mahalanabis and oral rehydration ----------
+   Sources: Bulletin of the WHO 2001;79(5):471-472 (camp case-fatality about 3% vs 20-30% in IV-only camps);
+   Bulletin of the WHO 2009;87:91-92 (interview: clinicians resisted untrained people giving ORS; drums with nozzles, cups and mugs);
+   Our World in Data, "Oral rehydration therapy" (about 70 million lives saved since the late 1970s, an estimate). */
+function whoCamp(ctx,S){const k=Math.round(S.v.k),x0=50,y0=142,gap=40;
+  // a drum with a tap, and cups: how the drink reached each patient
+  ctx.save();ctx.fillStyle='#5b6b7c';rr(ctx,70,40,70,90,10);ctx.fill();ctx.fillStyle='#46525f';ctx.fillRect(70,60,70,6);ctx.fillRect(70,104,70,6);ctx.fillStyle='#8a99a8';ctx.fillRect(140,96,16,8);
+  for(let c=0;c<3;c++){ctx.fillStyle='#d9c9a8';rr(ctx,176+c*40,98,26,30,4);ctx.fill();}
+  txt(ctx,S.v.cm==='ors'?'Sugar-salt drink, given by family members':'IV fluid only (and it ran short)',260,74,{s:17,w:700,c:'#26262b'});ctx.restore();
+  // 100 patients
+  for(let i=0;i<100;i++){const r=Math.floor(i/10),c=i%10,x=x0+c*gap+20,y=y0+r*gap+20,dead=i>=100-k;
+    ctx.fillStyle=dead?'#C11430':'#2f8f6a';ctx.beginPath();ctx.arc(x,y-8,7,0,7);ctx.fill();rr(ctx,x-8,y,16,14,6);ctx.fill();}
+  txt(ctx,S.v.cm==='ors'?'About 3 of every 100 died':'About 20 to 30 of every 100 died',x0+gap*5+20,y0+gap*10+26,{s:19,w:700,c:'#C11430',a:'center'});
+  whyGut(ctx,S,500,130,370,420);}
+/* why the drink works: sodium and sugar go in together through one door in the gut wall, and water follows the salt */
+function whyGut(ctx,S,x,y,w,h){const on=S.v.cm==='ors',t=S.t;ctx.save();rr(ctx,x,y,w,h,12);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
+  txt(ctx,'Why the drink works',x+16,y+28,{s:16,w:700,c:'#26262b'});txt(ctx,'inside the gut',x+16,y+60,{s:13.5,c:'#62626a'});txt(ctx,'gut wall',x+16,y+h*.52,{s:13.5,c:'#62626a'});txt(ctx,'blood',x+16,y+h-18,{s:13.5,c:'#62626a'});
+  const wy=y+h*.42,wh=h*.2;ctx.fillStyle='#f3d9c9';ctx.fillRect(x+90,wy,w-110,wh);ctx.strokeStyle='#d9b29a';for(let i=0;i<6;i++){ctx.strokeRect(x+90+i*(w-110)/6,wy,(w-110)/6,wh);}
+  const dx=x+90+(w-110)*.5;ctx.fillStyle='#7a5ad0';rr(ctx,dx-16,wy-4,32,wh+8,8);ctx.fill();
+  if(!on){txt(ctx,'Plain water alone: the gut',x+w/2+40,y+h*.82,{s:14,c:'#26262b',a:'center'});txt(ctx,'pushes salt and water out',x+w/2+40,y+h*.82+20,{s:14,c:'#26262b',a:'center'});ctx.restore();return;}
+  // a sodium and a sugar travel down through the door together, over and over; water dots follow beside the door
+  for(let k=0;k<3;k++){const u=((t*.35+k/3)%1),py=lerp(y+80,y+h-40,u);
+    ctx.fillStyle='#2e9a4c';ctx.beginPath();ctx.arc(dx-8,py,7,0,7);ctx.fill();
+    ctx.fillStyle='#df741a';ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx[i?'lineTo':'moveTo'](dx+9+8*Math.cos(a),py+8*Math.sin(a));}ctx.closePath();ctx.fill();
+    for(let j=0;j<3;j++){const v=((t*.3+k/3+j*.08)%1),qy=lerp(y+80,y+h-40,v);ctx.fillStyle='#2f7fd0';ctx.beginPath();ctx.arc(dx+60+j*22,qy,5,0,7);ctx.fill();}}
+  txt(ctx,'Na⁺ + sugar go in together',dx-150,y+88,{s:13.5,w:700,c:'#2e9a4c'});txt(ctx,'water follows the salt',x+w-12,y+h-56,{s:13.5,w:700,c:'#2f7fd0',a:'right'});
+  ctx.restore();}
+function whoPanel(ctx,S){const x=900;ctx.fillStyle='#fff';ctx.strokeStyle='#d5d9de';ctx.lineWidth=1;rr(ctx,x,24,280,552,12);ctx.fill();ctx.stroke();
+  txt(ctx,'How he got there',x+18,58,{s:17,w:700,c:'#26262b'});
+  const L=[['A children\'s doctor','trained in Kolkata, India'],['1966','starts studying oral rehydration at a research center in Kolkata'],['1971','runs a refugee-camp health center and uses it for everyone'],['The hard part','many doctors thought only IV fluid by trained staff was safe'],['Since the late 1970s','about 70 million lives saved (estimate)']];
+  let y=92;L.forEach(([h,b])=>{txt(ctx,h,x+18,y,{s:14.5,w:700,c:'#C11430'});y+=20;const words=b.split(' ');let line='';
+    for(const w of words){const t=line?line+' '+w:w;ctx.font='500 14px "Segoe UI",system-ui,sans-serif';if(ctx.measureText(t).width>240){txt(ctx,line,x+18,y,{s:14,c:'#26262b'});y+=19;line=w;}else line=t;}if(line){txt(ctx,line,x+18,y,{s:14,c:'#26262b'});y+=19;}y+=12;});
+  txt(ctx,'Sources: WHO Bulletin 2001 and 2009;',x+18,540,{s:12,c:'#62626a'});txt(ctx,'Our World in Data.',x+18,556,{s:12,c:'#62626a'});}
+
 Story.start({
   id:'transport',title:'Why can’t you drink seawater?',W,H,views:true,labHref:'../index.html#transport',
-  about:'<p><b>Two ways to see it.</b> <b>Real shape</b> shows each protein as it was measured. <b>Simple drawing</b> shows the same outline smoothed and filled flat, the way a textbook or a test draws it.</p><p><b>The shapes and sizes are real.</b> The water channel is aquaporin-1 taken from human red blood cells, and the pump is the human sodium-potassium pump holding three sodium ions (Protein Data Bank entries 7UZE and 7E1Z, both found by cryo-electron microscopy). The membrane, the proteins, the water molecules and the ions are all drawn to one scale: the bar is 5 nanometers. The number of dissolved particles is in true proportion too: in blood, about 1 for every 185 water molecules.</p><p><b>What is simplified.</b> Colors are labels. Water really fills both sides, packed tight; the pale dots stand for it, and a few waters are drawn darker so you can follow them. The inside of a real red blood cell is crowded with hemoglobin, the protein that carries oxygen; it is left out so you can see the water. The real imbalance of water going in and out is small, under 1 in 100. It matters because one channel passes about 3 billion waters a second and a cell has thousands of channels; here the imbalance is made bigger so you can see it. The real pump changes shape at each step; here it stays in one measured shape. “Salt” stands for everything dissolved.</p><p><b>The numbers.</b> Blood is about 0.9% salt and seawater about 3.5%. A red blood cell bursts when the outside falls to about half the strength of blood. The pump moves 3 Na⁺ out and 2 K⁺ in for each ATP.</p>',
+  about:'<p><b>Two ways to see it.</b> <b>Real shape</b> shows each protein as it was measured. <b>Simple drawing</b> shows the same outline smoothed and filled flat, the way a textbook or a test draws it.</p><p><b>The shapes and sizes are real.</b> The water channel is aquaporin-1 taken from human red blood cells, and the pump is the human sodium-potassium pump holding three sodium ions (Protein Data Bank entries 7UZE and 7E1Z, both found by cryo-electron microscopy). The membrane, the proteins, the water molecules and the ions are all drawn to one scale: the bar is 5 nanometers. The number of dissolved particles is in true proportion too: in blood, about 1 for every 185 water molecules.</p><p><b>What is simplified.</b> Colors are labels. Water really fills both sides, packed tight; the pale dots stand for it, and a few waters are drawn darker so you can follow them. The inside of a real red blood cell is crowded with hemoglobin, the protein that carries oxygen; it is left out so you can see the water. The real imbalance of water going in and out is small, under 1 in 100. It matters because one channel passes about 3 billion waters a second and a cell has thousands of channels; here the imbalance is made bigger so you can see it. The real pump changes shape at each step; here it stays in one measured shape. “Salt” stands for everything dissolved.</p><p><b>The numbers.</b> Blood is about 0.9% salt and seawater about 3.5%. A red blood cell bursts when the outside falls to about half the strength of blood. The pump moves 3 Na⁺ out and 2 K⁺ in for each ATP.</p><p><b>Who used this.</b> The camp numbers in step 10 (about 3 deaths per 100 with the drink, 20 to 30 in camps using IV fluid alone) are from the Bulletin of the World Health Organization (2001 and 2009). The 70 million lives saved is an estimate from Our World in Data. No home recipe is given here on purpose: the right amounts matter, so follow a health worker or an ORS packet.</p>',
   tell:{frames:FRAMES,terms:['membrane','channel|aquaporin','salt|solute|dissolved','water','osmosis','shrink|shrivel','concentrat|saltier|salty','diffus|spread'],
     nudge:'For each picture ask: what had to be true just before this could happen?',
     done:'<b>That is the story.</b> Now tell it in your own words.',
@@ -219,6 +254,19 @@ Story.start({
    todo:[{t:'Switch the outside to seawater',ok:S=>S.sim.cOut>3},{t:'Watch the cell',ok:S=>S.sim.cOut>3&&S.sim.V<.62}],
    enter(S){setup(S,{showPump:true});S.v.sw=0;},tick(S,dt){step(S.sim,dt);},
    draw(ctx,S){scene(ctx,S,{outLab:S.sim.cOut>3?'(seawater)':'(blood plasma)'});}},
+
+  {rail:'Who did it',title:'Who used this to save lives: Dr. Dilip Mahalanabis',live:true,views:false,
+   text(S){return S.v.cm==='ors'?
+     'He had family members give the sick a drink of <b>sugar and salt in clean water</b>, from drums with taps. Deaths fell to about <b>3 in 100</b>. '+
+     'Why it works is this story: a door in the gut wall lets sodium in only together with sugar, and water follows the salt (osmosis). '+
+     'Many doctors called it second-class medicine. He kept going. Today this drink, oral rehydration solution, is estimated to have saved about <b>70 million lives</b>.':
+     '<b>1971</b>, a refugee camp during Bangladesh\'s war for independence. Cholera drains the body of water and salt, and the camp ran short of IV fluid. '+
+     'In camps that relied on IV drips alone, about <b>20 to 30 of every 100</b> cholera patients died. Each dot is one patient. <b>Switch to what Dr. Mahalanabis did.</b>';},
+   alt:'Plain water alone does not stay in a cholera patient: the gut is pushing salt and water out. Adding salt and sugar opens a second way in. Sugar and sodium enter the gut wall together, and the water follows the salt, the same way water followed the salt in every step of this story.',
+   ui:[{type:'seg',key:'cm',val:'iv',label:'Camp',opts:[{v:'iv',l:'IV drips only'},{v:'ors',l:'Sugar-salt drink by mouth'}]}],
+   todo:[{t:'See what changed with the drink',ok:S=>S.v.cm==='ors'}],
+   enter(S){S.v.cm='iv';S.v.k=25;},tick(S,dt){const tg=S.v.cm==='ors'?3:25;S.v.k+=(tg-S.v.k)*Math.min(1,dt*2.5);},
+   draw(ctx,S){ctx.fillStyle='#f6f3ec';ctx.fillRect(0,0,W,H);whoCamp(ctx,S);whoPanel(ctx,S);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true,
    text:'You have followed the water from the ocean to a single doorway in one cell. Put the story back in order, then explain it the way you would to a friend who missed class.'}

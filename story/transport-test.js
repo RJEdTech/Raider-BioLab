@@ -18,4 +18,7 @@ TestYourself.mount({lab:'BioLab',id:'transport',title:'Raider BioLab · Why can�
   why:'Seawater is saltier than your kidneys can make urine, so flushing out its salt costs more water than you drank.'},
  {q:'A water molecule fits through aquaporin, but a sodium ion does not, even though a bare sodium ion is smaller than a water molecule. Why?',choices:['The ion carries a shell of water molecules that makes it much wider than the pore','Sodium is heavier than water','The pore only opens for things that are blue','Sodium moves too fast to enter'],answer:0,
   hint:'Look at the purple ion in the 3D picture. What is stuck around it?',step:5,stepName:'inside the water doorway',
-  why:'In water, each sodium ion holds about 6 water molecules around it. Ion plus shell is far wider than the pore, which is only one water molecule wide (and its charge is turned away inside the channel).'}]});
+  why:'In water, each sodium ion holds about 6 water molecules around it. Ion plus shell is far wider than the pore, which is only one water molecule wide (and its charge is turned away inside the channel).'},
+ {q:'Picture a camp with 1,000 cholera patients. With IV drips alone, about 25 of every 100 died. With Dr. Mahalanabis’s sugar-salt drink, about 3 of every 100 died. How many more people survive with the drink?',answer:220,tol:5,unit:'people',
+  hint:v=>v===22?'That is per 100 patients. The camp has 1,000.':'Deaths with IV only: 25 per 100, so 250 of 1,000. With the drink: 3 per 100, so 30 of 1,000. Subtract.',step:10,stepName:'who used this to save lives: dr. dilip mahalanabis',
+  why:'250 − 30 = 220 more people survive out of every 1,000. Across the world, the same drink is estimated to have saved about 70 million lives since the late 1970s.'}]});
