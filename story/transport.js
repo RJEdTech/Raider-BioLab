@@ -147,35 +147,53 @@ const PICK=['They soak it up and swell','They lose water and shrivel','Nothing: 
    Sources: Bulletin of the WHO 2001;79(5):471-472 (camp case-fatality about 3% vs 20-30% in IV-only camps);
    Bulletin of the WHO 2009;87:91-92 (interview: clinicians resisted untrained people giving ORS; drums with nozzles, cups and mugs);
    Our World in Data, "Oral rehydration therapy" (about 70 million lives saved since the late 1970s, an estimate). */
-function whoCamp(ctx,S){const k=Math.round(S.v.k),x0=50,y0=142,gap=40;
-  // a drum with a tap, and cups: how the drink reached each patient
-  ctx.save();ctx.fillStyle='#5b6b7c';rr(ctx,70,40,70,90,10);ctx.fill();ctx.fillStyle='#46525f';ctx.fillRect(70,60,70,6);ctx.fillRect(70,104,70,6);ctx.fillStyle='#8a99a8';ctx.fillRect(140,96,16,8);
-  for(let c=0;c<3;c++){ctx.fillStyle='#d9c9a8';rr(ctx,176+c*40,98,26,30,4);ctx.fill();}
-  txt(ctx,S.v.cm==='ors'?'Sugar-salt drink, given by family members':'IV fluid only (and it ran short)',260,74,{s:17,w:700,c:'#26262b'});ctx.restore();
-  // 100 patients
-  for(let i=0;i<100;i++){const r=Math.floor(i/10),c=i%10,x=x0+c*gap+20,y=y0+r*gap+20,dead=i>=100-k;
-    ctx.fillStyle=dead?'#C11430':'#2f8f6a';ctx.beginPath();ctx.arc(x,y-8,7,0,7);ctx.fill();rr(ctx,x-8,y,16,14,6);ctx.fill();}
-  txt(ctx,S.v.cm==='ors'?'About 3 of every 100 died':'About 20 to 30 of every 100 died',x0+gap*5+20,y0+gap*10+26,{s:19,w:700,c:'#C11430',a:'center'});
-  whyGut(ctx,S,500,130,370,420);}
-/* why the drink works: sodium and sugar go in together through one door in the gut wall, and water follows the salt */
-function whyGut(ctx,S,x,y,w,h){const on=S.v.cm==='ors',t=S.t;ctx.save();rr(ctx,x,y,w,h,12);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
-  txt(ctx,'Why the drink works',x+16,y+28,{s:16,w:700,c:'#26262b'});txt(ctx,'inside the gut',x+16,y+60,{s:13.5,c:'#62626a'});txt(ctx,'gut wall',x+16,y+h*.52,{s:13.5,c:'#62626a'});txt(ctx,'blood',x+16,y+h-18,{s:13.5,c:'#62626a'});
-  const wy=y+h*.42,wh=h*.2;ctx.fillStyle='#f3d9c9';ctx.fillRect(x+90,wy,w-110,wh);ctx.strokeStyle='#d9b29a';for(let i=0;i<6;i++){ctx.strokeRect(x+90+i*(w-110)/6,wy,(w-110)/6,wh);}
-  const dx=x+90+(w-110)*.5;ctx.fillStyle='#7a5ad0';rr(ctx,dx-16,wy-4,32,wh+8,8);ctx.fill();
-  if(!on){txt(ctx,'Plain water alone: the gut',x+w/2+40,y+h*.82,{s:14,c:'#26262b',a:'center'});txt(ctx,'pushes salt and water out',x+w/2+40,y+h*.82+20,{s:14,c:'#26262b',a:'center'});ctx.restore();return;}
-  // a sodium and a sugar travel down through the door together, over and over; water dots follow beside the door
-  for(let k=0;k<3;k++){const u=((t*.35+k/3)%1),py=lerp(y+80,y+h-40,u);
-    ctx.fillStyle='#2e9a4c';ctx.beginPath();ctx.arc(dx-8,py,7,0,7);ctx.fill();
-    ctx.fillStyle='#df741a';ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx[i?'lineTo':'moveTo'](dx+9+8*Math.cos(a),py+8*Math.sin(a));}ctx.closePath();ctx.fill();
-    for(let j=0;j<3;j++){const v=((t*.3+k/3+j*.08)%1),qy=lerp(y+80,y+h-40,v);ctx.fillStyle='#2f7fd0';ctx.beginPath();ctx.arc(dx+60+j*22,qy,5,0,7);ctx.fill();}}
-  txt(ctx,'Na⁺ + sugar go in together',dx-150,y+88,{s:13.5,w:700,c:'#2e9a4c'});txt(ctx,'water follows the salt',x+w-12,y+h-56,{s:13.5,w:700,c:'#2f7fd0',a:'right'});
+const WHO_CUPS=[{x:110,y:96,v:'plain'},{x:240,y:96,v:'ors'}];
+function cup(ctx,x,y,salty,on){ctx.save();ctx.translate(x,y);if(on){rr(ctx,-50,-58,100,116,14);ctx.fillStyle='#fff3c4';ctx.fill();}
+  ctx.beginPath();ctx.moveTo(-30,-34);ctx.lineTo(30,-34);ctx.lineTo(22,40);ctx.lineTo(-22,40);ctx.closePath();ctx.fillStyle='#e7f1fb';ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle='#5b6b7c';ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-27,-14);ctx.lineTo(27,-14);ctx.lineTo(22,38);ctx.lineTo(-22,38);ctx.closePath();ctx.fillStyle='#8fc1ea';ctx.fill();
+  if(salty){for(let i=0;i<5;i++){ctx.fillStyle='#2e9a4c';ctx.beginPath();ctx.arc(-14+i*7,4+(i%2)*14,4.5,0,7);ctx.fill();}
+    for(let i=0;i<3;i++){const cx=-10+i*11,cy=24-(i%2)*14;ctx.fillStyle='#df741a';ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3;ctx[k?'lineTo':'moveTo'](cx+5*Math.cos(a),cy+5*Math.sin(a));}ctx.closePath();ctx.fill();}}
   ctx.restore();}
+/* the main picture: two cups to tap, the gut wall doing its job, and the 100 patients */
+function whoScene(ctx,S){const c=S.v.cup,t=S.t-(S.v.t0||0);
+  WHO_CUPS.forEach(q=>cup(ctx,q.x,q.y,q.v==='ors',c===q.v));if(!c){ctx.save();ctx.globalAlpha=.5+.5*Math.sin(S.t*4);txt(ctx,'👆',175,170,{s:30,a:'center'});ctx.restore();}
+  gut(ctx,S,30,190,500,250,c,t);
+  // 100 patients
+  const k=Math.round(S.v.k),x0=560,y0=40,g=30;
+  for(let i=0;i<100;i++){const r=Math.floor(i/10),cc=i%10,x=x0+cc*g+12,y=y0+r*g+12,dead=c&&i>=100-k;
+    ctx.fillStyle=!c?'#c9ced5':dead?'#C11430':'#2f8f6a';ctx.beginPath();ctx.arc(x,y-6,5.5,0,7);ctx.fill();rr(ctx,x-6,y,12,10,5);ctx.fill();}
+  if(c)txt(ctx,(c==='ors'?'3':'20–30')+' of 100 died',x0+g*5,y0+g*10+18,{s:19,w:700,c:'#C11430',a:'center'});
+  rhyme(ctx,S,560,385,310,200);}
+/* the gut wall: inside the gut on top, blood below; the purple door lets sodium in only with sugar */
+function gut(ctx,S,x,y,w,h,c,t){ctx.save();rr(ctx,x,y,w,h,12);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
+  const wy=y+h*.42,wh=h*.2;ctx.fillStyle='#f3d9c9';ctx.fillRect(x+20,wy,w-40,wh);ctx.strokeStyle='#d9b29a';for(let i=0;i<8;i++)ctx.strokeRect(x+20+i*(w-40)/8,wy,(w-40)/8,wh);
+  txt(ctx,'gut',x+14,y+24,{s:14,w:700,c:'#62626a'});txt(ctx,'blood',x+14,y+h-12,{s:14,w:700,c:'#C11430'});
+  const dx=x+w*.36;ctx.fillStyle='#7a5ad0';rr(ctx,dx-16,wy-5,32,wh+10,8);ctx.fill();
+  const lane=(u,top,bot)=>lerp(top,bot,u);
+  if(c==='plain'){for(let k=0;k<6;k++){const u=((t*.45+k/6)%1);const px=x+w*.55+k*30,py=u<.5?lane(u*2,y+40,wy+wh*.5):lane((u-.5)*2,wy+wh*.5,y+40);ctx.fillStyle='#2f7fd0';ctx.beginPath();ctx.arc(px,py,6,0,7);ctx.fill();}
+    arrowT(ctx,x+w*.8,wy-12,x+w*.8,y+30,'#2f7fd0',4);}
+  else if(c==='ors'){for(let k=0;k<3;k++){const u=((t*.35+k/3)%1),py=lane(u,y+40,y+h-26);
+      ctx.fillStyle='#2e9a4c';ctx.beginPath();ctx.arc(dx-8,py,7,0,7);ctx.fill();ctx.fillStyle='#df741a';ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx[i?'lineTo':'moveTo'](dx+9+8*Math.cos(a),py+8*Math.sin(a));}ctx.closePath();ctx.fill();
+      for(let j=0;j<4;j++){const v=((t*.3+k/3+j*.06)%1),qy=lane(v,y+40,y+h-26);ctx.fillStyle='#2f7fd0';ctx.beginPath();ctx.arc(dx+50+j*26,qy,6,0,7);ctx.fill();}}
+    arrowT(ctx,x+w*.82,y+34,x+w*.82,y+h-30,'#2f7fd0',4);}
+  ctx.restore();}
+/* same rule, two places: water moves toward the salt (red blood cell from step 6 = gut wall here) */
+function rhyme(ctx,S,x,y,w,h){ctx.save();rr(ctx,x,y,w,h,12);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
+  // left: a red blood cell in salty water, water arrows leaving toward the salt
+  {const cx=x+70,cy=y+h/2-6,g=ctx.createRadialGradient(cx,cy,4,cx,cy,30);g.addColorStop(0,'#f08a83');g.addColorStop(.55,'#d5433f');g.addColorStop(1,'#a52b27');ctx.beginPath();ctx.arc(cx,cy,30,0,7);ctx.fillStyle=g;ctx.fill();}
+  for(let i=0;i<6;i++){const a=i/6*6.283;ctx.fillStyle='#2e9a4c';ctx.beginPath();ctx.arc(x+70+Math.cos(a)*62,y+h/2-6+Math.sin(a)*40,4.5,0,7);ctx.fill();}
+  arrowT(ctx,x+90,y+h/2-20,x+120,y+h/2-40,'#2f7fd0',3);arrowT(ctx,x+50,y+h/2+8,x+20,y+h/2+28,'#2f7fd0',3);
+  txt(ctx,'=',x+w/2,y+h/2+6,{s:40,w:700,c:'#26262b',a:'center'});
+  // right: the gut wall, salt going in and water following
+  const gx=x+w-80,gy=y+h/2-6;ctx.fillStyle='#f3d9c9';ctx.fillRect(gx-55,gy-10,110,20);ctx.fillStyle='#7a5ad0';rr(ctx,gx-8,gy-14,16,28,5);ctx.fill();
+  ctx.fillStyle='#2e9a4c';ctx.beginPath();ctx.arc(gx,gy-34,4.5,0,7);ctx.fill();arrowT(ctx,gx+30,gy-38,gx+30,gy+38,'#2f7fd0',3);
+  txt(ctx,'💧 → 🧂',x+w/2,y+h-14,{s:18,a:'center'});ctx.restore();}
+function arrowT(ctx,x1,y1,x2,y2,col,lw){const a=Math.atan2(y2-y1,x2-x1),hl=10+lw;ctx.save();ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*hl*.7,y2-Math.sin(a)*hl*.7);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hl*Math.cos(a-.45),y2-hl*Math.sin(a-.45));ctx.lineTo(x2-hl*Math.cos(a+.45),y2-hl*Math.sin(a+.45));ctx.closePath();ctx.fill();ctx.restore();}
 function whoPanel(ctx,S){const x=900;ctx.fillStyle='#fff';ctx.strokeStyle='#d5d9de';ctx.lineWidth=1;rr(ctx,x,24,280,552,12);ctx.fill();ctx.stroke();
-  txt(ctx,'How he got there',x+18,58,{s:17,w:700,c:'#26262b'});
-  const L=[['A children\'s doctor','trained in Kolkata, India'],['1966','starts studying oral rehydration at a research center in Kolkata'],['1971','runs a refugee-camp health center and uses it for everyone'],['The hard part','many doctors thought only IV fluid by trained staff was safe'],['Since the late 1970s','about 70 million lives saved (estimate)']];
-  let y=92;L.forEach(([h,b])=>{txt(ctx,h,x+18,y,{s:14.5,w:700,c:'#C11430'});y+=20;const words=b.split(' ');let line='';
-    for(const w of words){const t=line?line+' '+w:w;ctx.font='500 14px "Segoe UI",system-ui,sans-serif';if(ctx.measureText(t).width>240){txt(ctx,line,x+18,y,{s:14,c:'#26262b'});y+=19;line=w;}else line=t;}if(line){txt(ctx,line,x+18,y,{s:14,c:'#26262b'});y+=19;}y+=12;});
-  txt(ctx,'Sources: WHO Bulletin 2001 and 2009;',x+18,540,{s:12,c:'#62626a'});txt(ctx,'Our World in Data.',x+18,556,{s:12,c:'#62626a'});}
+  txt(ctx,'Dr. Dilip Mahalanabis',x+18,58,{s:17,w:700,c:'#26262b'});
+  [['🩺','children\'s doctor'],['🔬','1966: research'],['⛺','1971: refugee camp'],['✋','doctors said no'],['💪','he kept going'],['❤️','≈70 million lives']].forEach(([i,t],k)=>{const y=110+k*62;txt(ctx,i,x+40,y,{s:30,a:'center'});txt(ctx,t,x+76,y-4,{s:16,w:600,c:'#26262b'});});
+  txt(ctx,'Sources: WHO Bulletin 2001, 2009;',x+18,540,{s:12,c:'#62626a'});txt(ctx,'Our World in Data (estimate).',x+18,556,{s:12,c:'#62626a'});}
 
 Story.start({
   id:'transport',title:'Why can’t you drink seawater?',W,H,views:true,labHref:'../index.html#transport',
@@ -255,18 +273,15 @@ Story.start({
    enter(S){setup(S,{showPump:true});S.v.sw=0;},tick(S,dt){step(S.sim,dt);},
    draw(ctx,S){scene(ctx,S,{outLab:S.sim.cOut>3?'(seawater)':'(blood plasma)'});}},
 
-  {rail:'Who did it',title:'Who used this to save lives: Dr. Dilip Mahalanabis',live:true,views:false,
-   text(S){return S.v.cm==='ors'?
-     'He had family members give the sick a drink of <b>sugar and salt in clean water</b>, from drums with taps. Deaths fell to about <b>3 in 100</b>. '+
-     'Why it works is this story: a door in the gut wall lets sodium in only together with sugar, and water follows the salt (osmosis). '+
-     'Many doctors called it second-class medicine. He kept going. Today this drink, oral rehydration solution, is estimated to have saved about <b>70 million lives</b>.':
-     '<b>1971</b>, a refugee camp during Bangladesh\'s war for independence. Cholera drains the body of water and salt, and the camp ran short of IV fluid. '+
-     'In camps that relied on IV drips alone, about <b>20 to 30 of every 100</b> cholera patients died. Each dot is one patient. <b>Switch to what Dr. Mahalanabis did.</b>';},
-   alt:'Plain water alone does not stay in a cholera patient: the gut is pushing salt and water out. Adding salt and sugar opens a second way in. Sugar and sodium enter the gut wall together, and the water follows the salt, the same way water followed the salt in every step of this story.',
-   ui:[{type:'seg',key:'cm',val:'iv',label:'Camp',opts:[{v:'iv',l:'IV drips only'},{v:'ors',l:'Sugar-salt drink by mouth'}]}],
-   todo:[{t:'See what changed with the drink',ok:S=>S.v.cm==='ors'}],
-   enter(S){S.v.cm='iv';S.v.k=25;},tick(S,dt){const tg=S.v.cm==='ors'?3:25;S.v.k+=(tg-S.v.k)*Math.min(1,dt*2.5);},
-   draw(ctx,S){ctx.fillStyle='#f6f3ec';ctx.fillRect(0,0,W,H);whoCamp(ctx,S);whoPanel(ctx,S);}},
+  {rail:'Who did it',title:'Dr. Dilip Mahalanabis, 1971',live:true,views:false,
+   text(S){const c=S.v.cup;return c==='ors'?'Salt and sugar go in together. <b>Water follows the salt.</b> Deaths: about 3 in 100. Since then: about <b>70 million lives</b> saved.':
+     c==='plain'?'Plain water: the sick gut pushes it right back out. Try the other cup.':'A refugee camp, 1971. Cholera. IV fluid ran short. <b>Tap a cup</b> to give the patients.';},
+   alt:'Look at the two pictures at the bottom. In the red blood cell, water moved toward the salt. In the gut, the salt goes in, so the water goes in after it. Same rule, new place.',
+   ui:[{type:'seg',key:'cup',val:'',label:'Give them',opts:[{v:'plain',l:'Plain water'},{v:'ors',l:'Salt + sugar'}],on(S){S.v.t0=S.t;}}],
+   todo:[{t:'Give the salt + sugar drink',ok:S=>S.v.cup==='ors'}],
+   enter(S){S.v.cup='';S.v.k=25;S.v.t0=0;},tick(S,dt){const tg=S.v.cup==='ors'?3:25;S.v.k+=(tg-S.v.k)*Math.min(1,dt*1.6);},
+   click(S,x,y){for(const c of WHO_CUPS)if(Math.abs(x-c.x)<46&&y>c.y-56&&y<c.y+56){S.v.cup=c.v;S.v.t0=S.t;}},
+   draw(ctx,S){ctx.fillStyle='#f6f3ec';ctx.fillRect(0,0,W,H);whoScene(ctx,S);whoPanel(ctx,S);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true,
    text:'You have followed the water from the ocean to a single doorway in one cell. Put the story back in order, then explain it the way you would to a friend who missed class.'}
