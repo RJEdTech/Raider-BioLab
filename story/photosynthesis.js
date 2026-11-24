@@ -249,32 +249,104 @@ const FRAMES=[
 const PICK=['The soil it grows in','The water it drinks','The air','The sunlight itself'];
 
 
-/* ---------- "Who is doing this" (Nov 24, 2026): Wangari Maathai and the Green Belt Movement ----------
+/* ---------- "Who is doing this" (Nov 24, 2026; rebuilt Nov 23 for cause and effect): Wangari Maathai and the Green Belt Movement ----------
    Sources: NobelPrize.org (Peace 2004, the first African woman); National Academies laureate profile (biologist; founded the Green
-   Belt Movement; over 51 million trees; repeatedly arrested and jailed); LSE (founded 1977; 51 million trees across Kenya);
-   Google Arts & Culture / Green Belt Movement (PhD 1971, University of Nairobi; women's tree nurseries). Dry wood is about half carbon
-   by mass; CO₂ is 12 parts carbon in 44. Pictures are drawings, not to scale. */
+   Belt Movement after rural women reported streams drying up, soil washing away and firewood running out; over 51 million trees;
+   repeatedly arrested and jailed); LSE (founded 1977); Green Belt Movement (women's tree nurseries).
+   What the student does and sees, with no numbers on screen (Jason: show the environment, not an abstract number):
+   tap the bare hill to plant (cause) → each tree pulls CO₂ molecules out of the sky → in the leaf close-up, CO₂ + water become a sugar
+   ring and O₂ leaves → sugar becomes wood: the log's rings grow and the trunks thicken (transformation) → when it rains, bare ground
+   washes into the stream and turns it brown; roots hold the soil, so the stream runs clear and birds come back (effect). Cutting the
+   trees brings the mud back. Rates and sizes are made up; dry wood is about half carbon by mass. */
 const MT_PICK=[{v:'soil',x:600,y:30,draw(ctx,cx,cy){ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.ellipse(cx,cy+18,42,22,0,Math.PI,0);ctx.fill();ctx.fillRect(cx-42,cy+18,84,10);txt(ctx,'🌍',cx,cy-12,{s:30,a:'center'});}},
   {v:'air',x:740,y:30,draw(ctx,cx,cy){txt(ctx,'💨',cx,cy-12,{s:30,a:'center'});co2Mini(ctx,cx,cy+22,1.4);}}];
-function co2Mini(ctx,x,y,s){s=s||1;ctx.save();ctx.strokeStyle='#a3aab4';ctx.lineWidth=3*s;ctx.beginPath();ctx.moveTo(x-12*s,y);ctx.lineTo(x+12*s,y);ctx.stroke();
+function co2Mini(ctx,x,y,s,a){s=s||1;ctx.save();if(a!=null)ctx.globalAlpha=a;ctx.strokeStyle='#a3aab4';ctx.lineWidth=3*s;ctx.beginPath();ctx.moveTo(x-12*s,y);ctx.lineTo(x+12*s,y);ctx.stroke();
   [[x-12*s,'#d9362b',5.5],[x,'#5f6670',6],[x+12*s,'#d9362b',5.5]].forEach(([xx,c,r])=>{ctx.beginPath();ctx.arc(xx,y,r*s,0,7);ctx.fillStyle=c;ctx.fill();});ctx.restore();}
-function treeIcon(ctx,x,y,s,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.fillStyle='#7a4f22';ctx.fillRect(x-3*s,y-12*s,6*s,14*s);ctx.fillStyle='#2f8f4e';ctx.beginPath();ctx.arc(x,y-20*s,13*s,0,7);ctx.fill();ctx.fillStyle='#3fa864';ctx.beginPath();ctx.arc(x-6*s,y-24*s,7*s,0,7);ctx.fill();ctx.restore();}
-function mtScene(ctx,S){const M=S.mt,t=S.t;ctx.fillStyle='#eaf4fb';ctx.fillRect(0,0,590,430);
-  ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.moveTo(0,330);ctx.quadraticCurveTo(220,250,590,300);ctx.lineTo(590,430);ctx.lineTo(0,430);ctx.closePath();ctx.fill();
-  ctx.fillStyle='#6f9a4a';ctx.beginPath();ctx.moveTo(0,330);ctx.quadraticCurveTo(220,250,590,300);ctx.lineTo(590,312);ctx.quadraticCurveTo(220,262,0,342);ctx.closePath();ctx.fill();
-  const n=M.pick==='air'?Math.floor(ease(M.k)*22):0;
-  for(let i=0;i<22;i++){const x=30+i*25,y=lerp(334,302,i/21)-Math.sin(i/21*Math.PI)*18+(i%2)*14;if(i<n)treeIcon(ctx,x,y,1+((i*7)%5)/10);else if(M.pick==='air'){ctx.fillStyle='#5a8a3a';ctx.fillRect(x-1,y-4,2,4);}}
-  // CO₂ from the sky into the trees
-  for(let k=0;k<10;k++){const u=((t*.25+k/10)%1),x=40+((k*53)%520),y=lerp(30,260,u);ctx.save();ctx.globalAlpha=M.pick==='air'?.9*(1-u*.6):.25;co2Mini(ctx,x,y,1);ctx.restore();}
-  if(M.pick==='soil'&&M.k<1){ctx.save();ctx.globalAlpha=1-M.k;txt(ctx,'⚖️',300,220,{s:60,a:'center'});txt(ctx,'soil: almost no change',300,270,{s:17,w:700,c:'#7a4f22',a:'center'});ctx.restore();}
-  if(M.pick==='air'){txt(ctx,Math.round(ease(M.k)*51).toLocaleString('en-US')+' million trees',20,44,{s:26,w:800,c:'#2f8f4e'});txt(ctx,'Kenya, since 1977',20,70,{s:15,w:600,c:'#62626a'});}}
+function treeIcon(ctx,x,y,s,a,tw){ctx.save();ctx.globalAlpha=a==null?1:a;tw=tw||1;ctx.fillStyle='#7a4f22';ctx.fillRect(x-3*s*tw,y-12*s,6*s*tw,14*s);ctx.fillStyle='#2f8f4e';ctx.beginPath();ctx.arc(x,y-20*s,13*s,0,7);ctx.fill();ctx.fillStyle='#3fa864';ctx.beginPath();ctx.arc(x-6*s,y-24*s,7*s,0,7);ctx.fill();ctx.restore();}
+const MT_X=[110,165,220,275,330,385,440,495,550],MT_HEX=[0,1,2,3,4,5].map(i=>[Math.cos(i*Math.PI/3+Math.PI/6),Math.sin(i*Math.PI/3+Math.PI/6)]);
+const LC=[742,148],LR=104;
+function hillY(x){let b=0,bd=1e9;for(let i=0;i<=80;i++){const t=i/80,bx=2*(1-t)*t*220+t*t*590,by=(1-t)*(1-t)*300+2*(1-t)*t*215+t*t*275;const d=Math.abs(bx-x);if(d<bd){bd=d;b=by;}}return b;}
+function mtMol(x,y){return {x:x==null?20+Math.random()*560:x,y:y==null?30+Math.random()*150:y,vx:(Math.random()-.5)*40,vy:(Math.random()-.5)*24,tgt:null};}
+function newMt(){const air=[];for(let i=0;i<34;i++)air.push(mtMol());return {pick:null,k:0,air,trees:[],inflow:0,mud:1,rain:0,rainT:6,soil:[],leaf:{co2:[],h2o:[],o2:[],phase:'collect',p:0},rings:0,cut:false,cutSeen:false,birds:0};}
+function mtGrown(M){return M.trees.filter(t=>t.grow>=1).length;}
+function mtBare(M){return 1-mtGrown(M)/MT_X.length;}
+function mtPlant(S,x){const M=S.mt;if(!M||M.pick!=='air')return;const free=MT_X.filter(v=>!M.trees.some(t=>t.x===v));if(!free.length)return;
+  const v=x==null?free[0]:free.reduce((a,b)=>Math.abs(b-x)<Math.abs(a-x)?b:a);M.trees.push({x:v,y:hillY(v),grow:0,cool:.6+Math.random(),got:0,wood:0});M.cut=false;}
+function mtRain(S){const M=S.mt;if(M&&M.pick==='air'&&M.rain<=0){M.rain=3.2;M.rainT=12;}}
+function mtCut(S){const M=S.mt;M.trees=[];M.air.forEach(m=>m.tgt=null);M.cut=true;M.rainT=Math.min(M.rainT,1.5);}
+function mtLeafFeed(M){const L=M.leaf;if(L.phase==='collect'&&L.co2.length<6)L.co2.push({x:LC[0]-LR+6,y:LC[1]+(Math.random()-.5)*60,i:L.co2.length});}
+function mtTick(S,dt){const M=S.mt;if(!M||!M.pick)return;M.k=Math.min(1,M.k+dt*.5);if(M.pick!=='air')return;
+  M.inflow+=dt;while(M.inflow>.9){M.inflow-=.9;if(M.air.filter(m=>!m.tgt).length<42)M.air.push(mtMol(-10,40+Math.random()*120));}
+  M.air.forEach(m=>{if(m.tgt){const tr=m.tgt,s=mtSize(tr),cx=tr.x,cy=tr.y-20*s,dx=cx-m.x,dy=cy-m.y,d=Math.hypot(dx,dy);if(d<8){m.done=true;tr.got++;M.last=tr;if(tr.got%3===0)tr.wood++;mtLeafFeed(M);}else{m.x+=dx/d*170*dt;m.y+=dy/d*170*dt;}return;}
+    m.vx+=(Math.random()-.5)*40*dt;m.vy+=(Math.random()-.5)*30*dt;m.vx=clamp(m.vx,-30,40);m.vy=clamp(m.vy,-18,18);m.x+=m.vx*dt;m.y+=m.vy*dt;
+    if(m.x<10){m.x=10;m.vx=Math.abs(m.vx);}if(m.x>580){m.x=580;m.vx=-Math.abs(m.vx);}if(m.y<24){m.y=24;m.vy=Math.abs(m.vy);}if(m.y>hillY(m.x)-70){m.y=hillY(m.x)-70;m.vy=-Math.abs(m.vy);}});
+  M.air=M.air.filter(m=>!m.done);
+  M.trees.forEach(tr=>{tr.grow=Math.min(1,tr.grow+dt*.6);if(tr.grow<1)return;tr.cool-=dt;if(tr.cool>0)return;tr.cool=1;
+    let best=null,bd=1e9;M.air.forEach(m=>{if(m.tgt)return;const d=Math.hypot(m.x-tr.x,m.y-tr.y);if(d<bd){bd=d;best=m;}});if(best)best.tgt=tr;});
+  // rain: bare ground washes into the stream, roots hold it
+  M.rainT-=dt;if(M.rainT<=0)mtRain(S);
+  if(M.rain>0){M.rain-=dt;const bare=mtBare(M);M.mud+=(bare-M.mud)*dt*.7;
+    MT_X.forEach(x=>{if(M.trees.some(t=>t.x===x&&t.grow>=1))return;if(Math.random()<dt*6)M.soil.push({x:x+(Math.random()-.5)*40,y:hillY(x)+6,vy:20});});
+    if(M.cut&&M.mud>.6)M.cutSeen=true;}
+  M.soil.forEach(p=>{p.vy+=120*dt;p.y+=p.vy*dt;p.x+=(p.x<300?18:-8)*dt;});M.soil=M.soil.filter(p=>p.y<402);
+  M.birds=lerp(M.birds,(M.mud<.35&&mtGrown(M)>=6)?1:0,dt*.8);
+  // inside the leaf: CO₂ + water → sugar ring, O₂ out; the sugar becomes wood
+  const L=M.leaf;L.co2.forEach(c=>{const w=[LC[0]-62,LC[1]-62+c.i*25];c.x=lerp(c.x,w[0],dt*3);c.y=lerp(c.y,w[1],dt*3);});
+  if(L.phase==='collect'&&L.co2.length>=6){if(!L.h2o.length)for(let i=0;i<3;i++)L.h2o.push({x:LC[0]-30+i*30,y:LC[1]+LR-4});
+    L.h2o.forEach(h=>{h.y=lerp(h.y,LC[1]+58,dt*3);});if(L.h2o.every(h=>h.y<LC[1]+64)){L.phase='build';L.p=0;}}
+  else if(L.phase==='build'){L.p=Math.min(1,L.p+dt/1.8);if(L.p>=1){L.phase='out';L.p=0;L.o2=L.h2o.map(h=>({x:h.x,y:h.y,a:1}));}}
+  else if(L.phase==='out'){L.p=Math.min(1,L.p+dt/1.4);if(L.p>=1){M.rings=Math.min(9,M.rings+1);L.phase='collect';L.co2=[];L.h2o=[];L.p=0;}}
+  L.o2.forEach(o=>{o.y-=40*dt;o.a-=dt*.5;});L.o2=L.o2.filter(o=>o.a>0);}
+function mtSize(tr){return (.35+.65*ease(tr.grow))*(1+Math.min(tr.wood,12)*.04);}
+function mtScene(ctx,S){const M=S.mt,t=S.t,on=M.pick==='air';
+  const rainy=M.rain>0;ctx.fillStyle=rainy?'#cdd6df':'#eaf4fb';ctx.fillRect(0,0,590,430);
+  // distant city adding CO₂ from the left
+  ctx.fillStyle='#b8bec6';[[0,150,22,60],[24,170,16,40],[44,160,18,50]].forEach(([x,y,w,h])=>ctx.fillRect(x,y,w,h));
+  ctx.fillStyle='rgba(150,150,150,.35)';for(let k=0;k<3;k++){ctx.beginPath();ctx.arc(30+k*14+Math.sin(t+k)*3,140-k*12,9+k*3,0,7);ctx.fill();}
+  // hill: bare brown with gullies, the stream at the bottom
+  ctx.fillStyle='#9a6a38';ctx.beginPath();ctx.moveTo(0,hillY(0));for(let x=0;x<=590;x+=10)ctx.lineTo(x,hillY(x));ctx.lineTo(590,430);ctx.lineTo(0,430);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(90,55,25,.55)';ctx.lineWidth=2;MT_X.forEach(x=>{if(M.trees.some(tr=>tr.x===x&&tr.grow>=1))return;ctx.beginPath();ctx.moveTo(x-6,hillY(x)+8);ctx.quadraticCurveTo(x+4,hillY(x)+50,x-4,398);ctx.stroke();});
+  const mud=clamp(M.mud,0,1);ctx.fillStyle='#5b3b1a';ctx.fillRect(0,392,590,8);ctx.fillStyle=`rgb(${Math.round(lerp(70,196,mud))},${Math.round(lerp(150,150,mud))},${Math.round(lerp(220,98,mud))})`;
+  ctx.beginPath();ctx.moveTo(0,398);for(let x=0;x<=590;x+=10)ctx.lineTo(x,398+Math.sin(x*.05+t*2)*3);ctx.lineTo(590,430);ctx.lineTo(0,430);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;for(let k=0;k<6;k++){const x=(k*110+t*25)%620-20;ctx.beginPath();ctx.moveTo(x,414);ctx.lineTo(x+22,414);ctx.stroke();}
+  if(M.birds>.05){ctx.save();ctx.globalAlpha=M.birds;for(let k=0;k<4;k++){const bx=(t*30+k*140)%620-20,by=60+k*18+Math.sin(t*3+k)*5;ctx.strokeStyle='#26262b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx-8,by);ctx.quadraticCurveTo(bx-4,by-6,bx,by);ctx.quadraticCurveTo(bx+4,by-6,bx+8,by);ctx.stroke();}
+    txt(ctx,'🐟',200+Math.sin(t)*30,420,{s:16,a:'center'});ctx.restore();}
+  // trees with roots
+  M.trees.forEach(tr=>{const s=mtSize(tr);if(tr.grow>=1){ctx.strokeStyle='rgba(70,40,15,.8)';ctx.lineWidth=2;for(let r=-2;r<=2;r++){ctx.beginPath();ctx.moveTo(tr.x,tr.y);ctx.quadraticCurveTo(tr.x+r*8,tr.y+16,tr.x+r*16,tr.y+30);ctx.stroke();}}
+    treeIcon(ctx,tr.x,tr.y+2,s,1,1+Math.min(tr.wood,12)*.06);});
+  // soil washing down, CO₂ in the sky, rain
+  ctx.fillStyle='#6b4420';M.soil.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,3,0,7);ctx.fill();});
+  M.air.forEach(m=>co2Mini(ctx,m.x,m.y,.8,on||m.tgt?.95:.5));
+  if(rainy){ctx.fillStyle='#8a94a0';[[120,40],[300,30],[470,44]].forEach(([x,y])=>{ctx.beginPath();ctx.ellipse(x,y,70,20,0,0,7);ctx.fill();});
+    ctx.strokeStyle='rgba(47,127,208,.7)';ctx.lineWidth=2;for(let k=0;k<70;k++){const x=(k*53)%590,y=(t*400+k*37)%380+50;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-3,y+12);ctx.stroke();}}
+  if(M.pick==='soil'&&M.k<1){ctx.save();ctx.globalAlpha=1-M.k;txt(ctx,'⚖️',300,220,{s:60,a:'center'});ctx.restore();}}
+function mtLeaf(ctx,S){const M=S.mt,L=M.leaf;const tr=M.last&&M.trees.includes(M.last)?M.last:null;
+  if(tr){const s=mtSize(tr),cx=tr.x,cy=tr.y-20*s+2;ctx.save();ctx.strokeStyle='rgba(47,143,78,.6)';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(cx,cy,15*s+4,0,7);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+10,cy-12*s);ctx.lineTo(LC[0]-30,LC[1]-LR+6);ctx.moveTo(cx+10,cy+12*s);ctx.lineTo(LC[0]-30,LC[1]+LR-6);ctx.stroke();ctx.restore();}
+  ctx.save();ctx.beginPath();ctx.arc(LC[0],LC[1],LR,0,7);ctx.fillStyle='#dff2df';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='#2f8f4e';ctx.stroke();ctx.clip();
+  txt(ctx,'☀️',LC[0]+62,LC[1]-58,{s:26,a:'center'});txt(ctx,'🍃',LC[0],LC[1]-LR+26,{s:20,a:'center'});
+  const H=(i,r)=>[LC[0]+MT_HEX[i][0]*r,LC[1]+MT_HEX[i][1]*r];
+  if(L.phase==='collect'||L.phase==='build'){const p=L.phase==='build'?ease(L.p):0;
+    L.co2.forEach(c=>{const v=H(c.i,30),cx=lerp(c.x,v[0],p),cy=lerp(c.y,v[1],p);
+      ctx.globalAlpha=1;ctx.strokeStyle='#a3aab4';ctx.lineWidth=3*(1-p);if(p<1){ctx.beginPath();ctx.moveTo(c.x-12,c.y);ctx.lineTo(c.x+12,c.y);ctx.stroke();}
+      [[-12,'#d9362b',5],[12,'#d9362b',5]].forEach(([d,col,r])=>{const o=H(c.i,42+(d>0?6:-6)*0);ctx.beginPath();ctx.arc(lerp(c.x+d,o[0]+d*.25,p),lerp(c.y,o[1],p),r*(1-.4*p),0,7);ctx.fillStyle=col;ctx.fill();});
+      ctx.beginPath();ctx.arc(cx,cy,6,0,7);ctx.fillStyle='#5f6670';ctx.fill();});
+    if(p>0){ctx.globalAlpha=p;ctx.strokeStyle='#5f6670';ctx.lineWidth=3;ctx.beginPath();for(let i=0;i<=6;i++){const v=H(i%6,30);ctx[i?'lineTo':'moveTo'](v[0],v[1]);}ctx.stroke();ctx.globalAlpha=1;}
+    L.h2o.forEach(h=>{const tx=lerp(h.x,LC[0],ease(L.phase==='build'?L.p:0)*.3);ctx.beginPath();ctx.arc(tx,h.y,7,0,7);ctx.fillStyle='#d9362b';ctx.fill();[[-8,-5],[8,-5]].forEach(([dx,dy])=>{ctx.beginPath();ctx.arc(tx+dx,h.y+dy,4,0,7);ctx.fillStyle='#f2f2f2';ctx.fill();ctx.strokeStyle='#bbb';ctx.lineWidth=1;ctx.stroke();});});}
+  if(L.phase==='out'){const p=ease(L.p),x=lerp(LC[0],LC[0]+20,p),y=lerp(LC[1],LC[1]+LR+40,p);ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3+Math.PI/6;ctx[i?'lineTo':'moveTo'](x+30*Math.cos(a),y+30*Math.sin(a));}ctx.closePath();ctx.fillStyle='#c98a4b';ctx.fill();ctx.strokeStyle='#7a4f22';ctx.lineWidth=2;ctx.stroke();}
+  L.o2.forEach(o=>{ctx.globalAlpha=Math.max(0,o.a);[[-6,0],[6,0]].forEach(([dx])=>{ctx.beginPath();ctx.arc(o.x+dx,o.y,6,0,7);ctx.fillStyle='#d9362b';ctx.fill();});});
+  ctx.restore();
+  // the sugar becomes wood: a log whose rings grow
+  arrow(ctx,LC[0],LC[1]+LR+4,LC[0],LC[1]+LR+30,'#7a4f22');
+  const lx=LC[0],ly=346,rr2=26+M.rings*4.5;ctx.fillStyle='#d9a066';ctx.beginPath();ctx.arc(lx,ly,rr2,0,7);ctx.fill();ctx.strokeStyle='#7a4f22';ctx.lineWidth=3;ctx.stroke();
+  ctx.lineWidth=1.5;for(let i=1;i<=M.rings+2;i++){ctx.beginPath();ctx.arc(lx,ly,rr2*i/(M.rings+3),0,7);ctx.stroke();}
+  txt(ctx,'🌳',lx+rr2+18,ly+10,{s:24,a:'center'});}
 function mtRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{co2Mini(c,x+50,y+h/2,1.6);arrow(c,x+86,y+h/2,x+128,y+h/2,'#62626a');c.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;c[k?'lineTo':'moveTo'](x+170+26*Math.cos(a),y+h/2+26*Math.sin(a));}c.closePath();c.fillStyle='#9b6a36';c.fill();},
   (c,x,y,w,h)=>{co2Mini(c,x+50,y+h/2,1.6);arrow(c,x+86,y+h/2,x+128,y+h/2,'#62626a');treeIcon(c,x+175,y+h/2+38,1.9);});}
-
-function mtPick(S,v){const M=S.mt;if(!M||M.pick==='air')return;M.pick=v;M.k=0;}
+function mtPick(S,v){const M=S.mt;if(!M||M.pick==='air')return;M.pick=v;M.k=0;if(v==='air')M.rainT=2.5;}
 Story.start({
   id:'photosynthesis',title:'What is a tree made of?',W,H,views:true,labHref:'../index.html#chloroplast',
-  about:'<p><b>Two ways to see it.</b> <b>Real shape</b> shows each machine as it was measured. <b>Simple drawing</b> shows the same outline smoothed and filled flat, the way a textbook or a test draws it. Nothing else changes when you switch.</p><p><b>The shapes are real.</b> Photosystem II, the pump (cytochrome b₆f), photosystem I, ATP synthase and Rubisco are drawn from the measured positions of their atoms in spinach and pea proteins (Protein Data Bank entries 3JCU, 6RQF, 5L8R, 6FKF and 1RCX). They are seen from the side, in their real order, all at one scale: the bar is 10 nanometers. The small dots inside them are the real stepping stones the electrons use, in their measured places; the purple one is the cluster of manganese atoms where water is split. The ring of this ATP synthase really has 14 parts, so 14 H⁺ turn it once.</p><p><b>What is simplified.</b> Colors are labels. A real disc holds thousands of these machines, with photosystem II packed into the stacked discs and photosystem I and ATP synthase out on the edges; here one of each sits side by side. The small carriers (Q, PC, Fd) are drawn as dots. Each photosystem’s short drop before its lift is left out, and so is a loop that real plants use to make extra ATP. The Calvin cycle is drawn as three stops; the real one has 13 steps. Everything is slowed down enormously.</p><p><b>The willow.</b> Jan van Helmont grew a willow in a weighed pot of soil for five years. His report was published in 1648: the tree had gained about 74 kilograms (164 pounds) and the soil had lost about 57 grams (2 ounces). He thought the weight came from water; the role of the air was worked out later.</p><p><b>The numbers.</b> Each water gives 2 electrons and 2 H⁺; two waters leave one O₂. The pump moves 4 H⁺ per pair of electrons. Each pair loads one NADPH. Fourteen H⁺ make 3 ATP. Each CO₂ costs 3 ATP and 2 NADPH, and 3 CO₂ make one 3-carbon sugar. The energy steps are drawn to scale from measured voltages.</p><p><b>Wangari Maathai (step 11).</b> Maathai, a Kenyan biologist (PhD 1971, University of Nairobi), founded the Green Belt Movement in 1977. It trained women to grow tree nurseries and has planted over 51 million trees in Kenya. She was arrested and jailed for her activism, and in 2004 became the first African woman to win the Nobel Peace Prize. Dry wood is about half carbon by mass, and every gram of that carbon came from CO₂ in the air. Sources: NobelPrize.org; National Academies; London School of Economics; Green Belt Movement.</p>',
+  about:'<p><b>Two ways to see it.</b> <b>Real shape</b> shows each machine as it was measured. <b>Simple drawing</b> shows the same outline smoothed and filled flat, the way a textbook or a test draws it. Nothing else changes when you switch.</p><p><b>The shapes are real.</b> Photosystem II, the pump (cytochrome b₆f), photosystem I, ATP synthase and Rubisco are drawn from the measured positions of their atoms in spinach and pea proteins (Protein Data Bank entries 3JCU, 6RQF, 5L8R, 6FKF and 1RCX). They are seen from the side, in their real order, all at one scale: the bar is 10 nanometers. The small dots inside them are the real stepping stones the electrons use, in their measured places; the purple one is the cluster of manganese atoms where water is split. The ring of this ATP synthase really has 14 parts, so 14 H⁺ turn it once.</p><p><b>What is simplified.</b> Colors are labels. A real disc holds thousands of these machines, with photosystem II packed into the stacked discs and photosystem I and ATP synthase out on the edges; here one of each sits side by side. The small carriers (Q, PC, Fd) are drawn as dots. Each photosystem’s short drop before its lift is left out, and so is a loop that real plants use to make extra ATP. The Calvin cycle is drawn as three stops; the real one has 13 steps. Everything is slowed down enormously.</p><p><b>The willow.</b> Jan van Helmont grew a willow in a weighed pot of soil for five years. His report was published in 1648: the tree had gained about 74 kilograms (164 pounds) and the soil had lost about 57 grams (2 ounces). He thought the weight came from water; the role of the air was worked out later.</p><p><b>The numbers.</b> Each water gives 2 electrons and 2 H⁺; two waters leave one O₂. The pump moves 4 H⁺ per pair of electrons. Each pair loads one NADPH. Fourteen H⁺ make 3 ATP. Each CO₂ costs 3 ATP and 2 NADPH, and 3 CO₂ make one 3-carbon sugar. The energy steps are drawn to scale from measured voltages.</p><p><b>Wangari Maathai (step 11).</b> Maathai, a Kenyan biologist (PhD 1971, University of Nairobi), founded the Green Belt Movement in 1977. It trained women to grow tree nurseries and has planted over 51 million trees in Kenya. She was arrested and jailed for her activism, and in 2004 became the first African woman to win the Nobel Peace Prize. She started it after rural women said their streams were drying up, their soil was washing away and firewood was running out. Dry wood is about half carbon by mass, and every gram of that carbon came from CO₂ in the air. In the picture, rates and sizes are made up; the O₂ a leaf gives off comes from the water it splits. Sources: NobelPrize.org; National Academies; London School of Economics; Green Belt Movement.</p>',
   tell:{frames:FRAMES,swaps:[[2,3]],terms:['light','water','electron','oxygen|O₂|o2','H⁺|h+|hydrogen ion|proton','NADPH','ATP','CO₂|co2|carbon dioxide','Rubisco','sugar|glucose'],
     nudge:'For each picture ask: what had to happen just before this could happen?',
     done:'<b>That is the story.</b> (Pictures 3 and 4 happen at the same time, so either order counts.) Now tell it in your own words.',
@@ -363,16 +435,23 @@ Story.start({
   window.Wood3D.chapter(C),
 
   {rail:'Who did it',title:'Wangari Maathai, Kenya',live:true,views:false,
-   text(S){const M=S.mt;if(!M||!M.pick)return 'Kenya, 1977. A biologist starts planting trees. <b>Tap where a tree\'s weight comes from.</b>';
+   text(S){const M=S.mt;if(!M||!M.pick)return 'Kenya, 1977. The hills are cut bare and the streams run brown. <b>Tap where a tree\'s weight comes from.</b>';
      if(M.pick==='soil')return 'The soil barely changes. Try the other.';
-     return 'From the air: each tree pulls in CO₂ and builds wood. Her Green Belt Movement planted over <b>51 million trees</b>.';},
-   alt:'Look at the two pictures at the bottom. CO₂ becomes a sugar ring in the leaf, and sugar rings become wood. Every tree planted is a machine for pulling CO₂ out of the air.',
-   ui:[{type:'seg',key:'mp',val:'',label:'Where does a tree\'s weight come from?',opts:[{v:'soil',l:'🌍 The soil'},{v:'air',l:'💨 The air'}],on(S,v){mtPick(S,v);},show:S=>S.mt&&S.mt.pick!=='air'}],
-   todo:[{t:'Tap where a tree\'s weight comes from',ok:S=>S.mt&&S.mt.pick==='air'},{t:'Watch the trees grow',ok:S=>S.mt&&S.mt.pick==='air'&&S.mt.k>=.95}],
-   enter(S){S.mt={pick:null,k:0};S.v.mp='';},tick(S,dt){const M=S.mt;if(M&&M.pick)M.k=Math.min(1,M.k+dt*(M.pick==='air'?.18:.5));},
-   click(S,x,y){const v=Who.hit(MT_PICK,x,y);if(v){mtPick(S,v);S.v.mp=v;}},
-   draw(ctx,S){const M=S.mt||(S.mt={pick:null,k:0});ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);mtScene(ctx,S);
-     if(M.pick!=='air')Who.cards(ctx,S,MT_PICK,M.pick);mtRhyme(ctx);
+     if(!M.trees.length&&!M.cut)return 'From the air. <b>Tap the bare hill to plant a tree.</b>';
+     if(M.cutSeen)return 'No roots: the rain carries the hill into the stream again. Her Green Belt Movement planted over 51 million trees.';
+     if(M.cut)return 'Watch the next rain.';
+     if(M.mud>=.35)return 'Watch one CO₂ go in: the leaf turns it and water into sugar, then wood. Roots grip the soil. <b>Plant more.</b>';
+     return 'The trees pull CO₂ out of the sky, and roots keep the soil out of the stream. <b>Now cut them down.</b>';},
+   alt:'Look at the two pictures at the bottom. CO₂ becomes a sugar ring in the leaf, and sugar rings become wood. On a bare hill, rain carries soil into the stream; tree roots hold it in place.',
+   ui:[{type:'seg',key:'mp',val:'',label:'Where does a tree\'s weight come from?',opts:[{v:'soil',l:'🌍 The soil'},{v:'air',l:'💨 The air'}],on(S,v){mtPick(S,v);},show:S=>S.mt&&S.mt.pick!=='air'},
+     {type:'button',label:'🌱 Plant a tree',pulse:true,act(S){mtPlant(S);},show:S=>S.mt&&S.mt.pick==='air'&&S.mt.trees.length<MT_X.length},
+     {type:'button',label:'🌧️ Make it rain',act(S){mtRain(S);},show:S=>S.mt&&S.mt.pick==='air'},
+     {type:'button',label:'🪓 Cut the trees',act(S){mtCut(S);},show:S=>S.mt&&S.mt.trees.length>0}],
+   todo:[{t:'Tap where a tree\'s weight comes from',ok:S=>S.mt&&S.mt.pick==='air'},{t:'Plant trees until the stream runs clear',ok:S=>S.mt&&S.mt.pick==='air'&&S.mt.mud<.35},{t:'Cut them down and watch the rain',ok:S=>S.mt&&S.mt.cutSeen}],
+   enter(S){S.mt=newMt();S.v.mp='';},tick(S,dt){mtTick(S,dt);},
+   click(S,x,y){const v=Who.hit(MT_PICK,x,y);if(v&&S.mt.pick!=='air'){mtPick(S,v);S.v.mp=v;return;}if(S.mt.pick==='air'&&x<590&&y>180&&y<400)mtPlant(S,x);},
+   draw(ctx,S){const M=S.mt||(S.mt=newMt());ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);mtScene(ctx,S);
+     if(M.pick!=='air')Who.cards(ctx,S,MT_PICK,M.pick);else mtLeaf(ctx,S);mtRhyme(ctx);
      Who.panel(ctx,'Wangari Maathai',[['🎓','biologist, PhD 1971'],['🌱','1977: Green Belt Movement'],['👩‍🌾','women grow tree nurseries'],['🌳','51 million trees, Kenya'],['✋','arrested and jailed'],['🏅','2004 Nobel Peace Prize']],['Sources: NobelPrize.org; National','Academies; LSE; Green Belt Movement.']);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true,
