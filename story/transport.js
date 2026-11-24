@@ -62,8 +62,10 @@ function drawClose(ctx,sim,o){o=o||{};const t=sim.t,y0=MY-HM,y1=MY+HM;
   for(let i=0;i<26;i++)waterDot(ctx,30+hash(i*2.3+11)*(CW-60)+Math.sin(t*1.1+i*1.3)*9,40+hash(i*7.9+5)*(y0-70)+Math.cos(t*.9+i)*8,.9);
   for(let i=0;i<34;i++)waterDot(ctx,30+hash(i*3.7+17)*(CW-60)+Math.sin(t+i*1.9)*9,y1+26+hash(i*5.3+9)*(H-y1-60)+Math.cos(t*.8+i*1.1)*8,.9);
   for(const c of sim.cross){const path=c.d>0?PORE[c.pore]:PORE[c.pore].slice().reverse(),a=path[0],b=path[4],sx=a[0]+c.sx,sy=c.d>0?a[1]-c.sy:a[1]+c.sy,ex=b[0]+c.ex,ey=c.d>0?b[1]+c.ey:b[1]-c.ey;
-    let x,y;if(c.p<.3){const k=ease(c.p/.3);x=lerp(sx,a[0],k);y=lerp(sy,a[1],k);}else if(c.p<.72){[x,y]=poly(path,(c.p-.3)/.42);}else{const k=ease((c.p-.72)/.28);x=lerp(b[0],ex,k);y=lerp(b[1],ey,k);}
-    dot(ctx,x,y,5,'#fff','#0f4f9a',2);dot(ctx,x,y,2.6,'#0f4f9a');}
+    const at=q=>{if(q<.3){const k=ease(q/.3);return [lerp(sx,a[0],k),lerp(sy,a[1],k)];}if(q<.72)return poly(path,(q-.3)/.42);const k=ease((q-.72)/.28);return [lerp(b[0],ex,k),lerp(b[1],ey,k)];};
+    // in = blue, out = orange, each with a short trail, so both directions can be seen, not just counted
+    const col=c.d>0?'#0f4f9a':'#d0640a';for(let g=4;g>=1;g--){const q=Math.max(0,c.p-g*.035),[gx,gy]=at(q);ctx.globalAlpha=.12+.08*(4-g);dot(ctx,gx,gy,3.2,col);}ctx.globalAlpha=1;
+    const [x,y]=at(c.p);dot(ctx,x,y,5.5,'#fff',col,2.4);dot(ctx,x,y,2.8,col);}
   // step 3: what gets through the wall on its own?
   for(const q of sim.test){const p=q.p;
     if(q.k==='o2'){const y=lerp(60,H-90,ease(p)),x=430+Math.sin(p*9)*5;dot(ctx,x-5,y,5.5,C.o,'#7d1f1c',1);dot(ctx,x+5,y,5.5,C.o,'#7d1f1c',1);txt(ctx,'O₂',x+16,y+5,{s:14,w:700,c:'#7d1f1c',halo:4});}
@@ -230,11 +232,11 @@ Story.start({
    draw(ctx,S){scene(ctx,S,{counts:false});}},
 
   {rail:'The doorway',title:'Water goes both ways',
-   text:'Now watch the water channel run. Waters (dark blue) squeeze through one at a time, in <b>and</b> out. In blood, the salt outside matches the salt inside, so the two directions match and the cell keeps its size.',
+   text:'Now watch the water channel run. Waters squeeze through one at a time: <b style="color:#0f4f9a">blue ones going in</b>, <b style="color:#d0640a">orange ones coming out</b>. In blood, the salt outside matches the salt inside, so the two directions match and the cell keeps its size.',
    alt:'Picture a doorway between two equally crowded rooms. People wander through both ways at the same rate, so neither room empties.',
    todo:[{t:'Count 8 waters going in',ok:S=>S.sim.n.in>=8},{t:'Count 8 coming out',ok:S=>S.sim.n.out>=8}],
    enter(S){setup(S);},tick(S,dt){step(S.sim,dt);},
-   draw(ctx,S){scene(ctx,S,{});chip(ctx,'In: '+S.sim.n.in,380,60,{c:'#0f4f9a',bd:C.w});chip(ctx,'Out: '+S.sim.n.out,380,96,{c:'#0f4f9a',bd:C.w});}},
+   draw(ctx,S){scene(ctx,S,{});chip(ctx,'↓ In (blue): '+S.sim.n.in,380,60,{c:'#0f4f9a',bd:'#0f4f9a'});chip(ctx,'↑ Out (orange): '+S.sim.n.out,380,96,{c:'#d0640a',bd:'#d0640a'});}},
 
   window.Water3D.chapter(C),
 

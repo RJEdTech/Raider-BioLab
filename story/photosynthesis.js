@@ -379,10 +379,12 @@ Story.start({
    draw(ctx,S){scene(ctx,S,{bottom:'energy',k:ease(S.tau/1.2)});chip(ctx,'Waters split: '+S.sim.n.water,780,226);chip(ctx,'O₂ released: '+S.sim.n.o2,780,262,{c:shade(C.o,-.45),bd:C.o});}},
 
   {rail:'Two lifts',title:'Down through a pump, then up again',
-   text:'Follow one pair. The lifted electrons roll downhill through a pump, and the drop pushes H⁺ (pink) into the disc. Then <b class="term">photosystem I</b> lifts them again, high enough to load onto <b class="term">NADPH</b>, a carrier of high-energy electrons.',
+   text(S){if(S.sim.light===0)return '<b>Light off:</b> no electrons get lifted, so nothing rolls through the pump, no H⁺ goes in, and no NADPH is made. <b>Turn it back on.</b>';
+     return 'Follow one pair. The lifted electrons roll downhill through a pump, and the drop pushes H⁺ (pink) into the disc. Then <b class="term">photosystem I</b> lifts them again, high enough to load onto <b class="term">NADPH</b>, a carrier of high-energy electrons.'+(S.sim.n.nadph>=3?' <b>Now turn the light off.</b>':'');},
+   ui:[{type:'seg',key:'L',val:1,label:'The light',opts:[{v:1,l:'☀️ On'},{v:0,l:'🌑 Off'}],on(S,v){S.sim.light=v;if(v)S.v.ltOn=S.v.ltOff;else S.v.ltOff=1;}}],
    alt:'It is two escalators with a water wheel between them. The first escalator lifts the electrons, the wheel takes some energy as they roll down, and the second escalator lifts them to the top floor: NADPH.',
-   todo:[{t:'Make 3 NADPH',ok:S=>S.sim.n.nadph>=3},{t:'Count the H⁺ for each pair: 2 from water + 4 pumped = 6',ok:S=>S.sim.n.h>=18}],
-   enter(S){setup(S,{light:1,open:false});},tick(S,dt){step(S.sim,dt);},
+   todo:[{t:'Make 3 NADPH',ok:S=>S.sim.n.nadph>=3},{t:'Count the H⁺ for each pair: 2 from water + 4 pumped = 6',ok:S=>S.sim.n.h>=18},{t:'Turn the light off, then back on',ok:S=>!!S.v.ltOn}],
+   enter(S){setup(S,{light:1,open:false});S.v.L=1;S.v.ltOn=0;S.v.ltOff=0;},tick(S,dt){step(S.sim,dt);},
    draw(ctx,S){const n=S.sim.n;scene(ctx,S,{bottom:'energy',lvl:2});chip(ctx,'NADPH made: '+n.nadph,800,22,{c:'#3d2a8a',bd:C.nad,s:16});chip(ctx,'H⁺ added inside: '+n.h,780,262,{c:C.h,bd:C.h});
      if(S.sim.lum.length>LMAX-4)pill(ctx,'The disc is full of H⁺. Next step: the way out.',400,284,{bg:C.ink,c:'#fff',bd:null,s:15.5,w:700});}},
 
