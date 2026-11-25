@@ -11,7 +11,7 @@ TestYourself.mount({lab:'BioLab',id:'enzymes',title:'Raider BioLab · Why does a
   hint:v=>Math.abs(v-40)<.01?'40 is one doubling (17 to 27 °C). 37 °C is two doublings warmer.':'17 °C to 37 °C is 20 °C warmer: two steps of 10 °C. Double, then double again.',step:9,stepName:'build the graph yourself',
   why:'20 → 40 at 27 °C → 80 at 37 °C. Warmer molecules hit the enzyme more often and harder.'},
  {q:'Amylase is boiled for a minute, then cooled back to 37 °C. Does it work?',choices:['No: the heat unfolded it, and its shape does not come back','Yes: once it cools, it folds back and works normally','Yes: the heat made it work even faster than before','Only if acid is added to bring its shape back'],answer:0,
-  hint:'In ice water the enzyme was slow but fine. What happened to its shape in the hot coffee?',step:8,stepName:'hot coffee',
+  hint:'In ice water the enzyme was slow but fine. What happened to its shape in the hot coffee?',step:8,stepName:'hot coffee: broken for good',
   why:'Heat unfolds the enzyme. Without its shape, the pocket is gone, and cooling does not fold it back.'},
  {q:'Amylase works best near pH 6.8. Stomach acid is about pH 2. What happens to amylase when you swallow?',choices:['It stops working, and pepsin takes over to digest protein','It works faster, because acid helps break bonds','It keeps breaking down starch all the way to the intestine','It turns into pepsin, which then digests the starch'],answer:0,
   hint:'Each enzyme has a pH where it works best. How far is pH 2 from 6.8?',step:10,stepName:'swallow: acid switches it off',
