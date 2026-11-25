@@ -57,7 +57,7 @@ Story.start=function(cfg){
   root.innerHTML='<div class="st-top"><h2></h2><span class="st-stagebtns"><span class="st-view" role="group" aria-label="How the molecules are drawn" hidden><button type="button" data-view="simple">Simple drawing</button><button type="button" data-view="real">Real shape</button></span><button type="button" class="b-pause">Pause</button><button type="button" class="b-replay">Replay this step</button></span><a></a></div><ol class="st-rail"></ol>'+
     '<div class="st-main"><div class="st-left"><div class="st-stagebox"><canvas aria-label="The picture for this step. The caption beside it says what it shows."></canvas><div class="st-board" hidden></div></div>'+
     '<div class="st-strip" hidden></div><p class="st-stripnote" hidden></p></div>'+
-    '<section class="st-cap"><p class="st-step"></p><h3></h3><div class="st-text" aria-live="polite"></div><div class="st-predbox"></div><div class="st-ui"></div><ul class="st-todo"></ul>'+
+    '<section class="st-cap"><p class="st-step"></p><h3></h3><div class="st-text" aria-live="polite"></div><div class="st-predbox"></div><div class="st-ui"></div><ul class="st-todo"></ul><div class="st-links" hidden></div>'+
     '<div class="st-nav"><button type="button" class="back">Back</button><button type="button" class="next">Next</button></div><p class="wait"></p>'+
     '<button type="button" class="st-altbtn" hidden>Confused? Show me another way</button><div class="st-alt" hidden></div></section></div>'+
     '<div class="st-foot"></div>';
@@ -164,6 +164,7 @@ Story.start=function(cfg){
     [...rail.querySelectorAll('button')].forEach((b,k)=>{b.classList.toggle('on',k===S.i);b.classList.toggle('seen',seen.has(k)||S.teach);b.setAttribute('aria-current',k===S.i?'step':'false');});
     backB.disabled=S.i===0;backB.style.visibility=S.i===0?'hidden':'';
     todoEl.innerHTML='';(c.todo||[]).forEach(t=>todoEl.appendChild(el('li',null,t.t)));
+    {const lk=$('.st-links');lk.hidden=!c.links;lk.onclick=e=>{const a=e.target.closest('a');if(a)count('story/'+cfg.id+'/link','Go deeper: '+a.href);};lk.innerHTML=c.links?'<b>Go deeper</b><ul>'+c.links.map(l=>'<li><a href="'+l.u+'" target="_blank" rel="noopener">'+l.t+' ↗</a>'+(l.d?' <span>'+l.d+'</span>':'')+'</li>').join('')+'</ul>':'';}
     const tell=!!c.tell;cv.hidden=tell;$('.st-stagebtns').hidden=tell;board.hidden=!tell;document.body.classList.toggle('st-tell',tell);if(tell)buildTell();
     setNext();}
   altBtn.addEventListener('click',()=>{altOpen=!altOpen;altEl.hidden=!altOpen;if(altOpen)count('story/'+cfg.id+'/another/'+(S.i+1),'Story: another way');});

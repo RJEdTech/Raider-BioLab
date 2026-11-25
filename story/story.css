@@ -167,3 +167,10 @@ body.st-teach .st-pred{grid-template-columns:repeat(2,minmax(0,1fr))}
   .st-stagebox{width:100%}
 }
 @media print{.st-tools,.st-nav,.st-stagebtns,.st-altbtn{display:none}}
+
+/* Go deeper: real links on the "who is doing this" steps (Nov 25, 2026) */
+.st-links{margin-top:12px;padding:10px 12px;border-left:4px solid #2f8f4e;background:#f2f8f4;border-radius:6px;font-size:14.5px;line-height:1.45}
+.st-links b{display:block;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:#2a6b40;margin-bottom:4px}
+.st-links ul{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.st-links a{color:#1f5fa8;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.st-links span{color:#55555d}

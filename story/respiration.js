@@ -283,102 +283,141 @@ let zAnim=null,chainT=-99;
 const CHAIN=[['Legs spend ATP faster',890,52,46],['Turbine spins faster',X.S,160,52],['The H⁺ crowd thins',600,72,58],['Pumps push more easily',X.III,172,78],['Electrons fall faster',470,470,62],['More oxygen is used',735,171,30],['You breathe harder',1140,476,54]];
 
 
-/* ---------- "Who is doing this" (Nov 24, 2026; rebuilt Nov 23 for cause and effect): Dr. Michael Hawkes and solar-powered oxygen ----------
+/* ---------- "Who is doing this" (Nov 24, 2026; rebuilt Nov 23 for cause and effect; redrawn Nov 25 as a textbook illustration): Dr. Michael Hawkes and solar-powered oxygen ----------
    Sources: University of Alberta (2016): Hawkes worked in Ugandan hospitals for over two years; children with severe pneumonia need
    concentrated oxygen until antibiotics work, and oxygen tanks often ran short. JAMA Pediatrics 2018 (randomized trial, 130 children):
    solar-powered oxygen worked as well as cylinders. Lancet Global Health 2019: a system (solar panels, batteries, an oxygen concentrator)
    cost about US$15,000 to $17,000. The Lancet 2024 (Conradi et al., 20 rural health facilities in Uganda): fewer children died.
-   Air is about 78% nitrogen and 21% oxygen; a concentrator's sieve (zeolite) holds nitrogen and lets oxygen through, then vents the
-   nitrogen. What the student does and sees, with no numbers on screen: turn the machine on (cause) → sun → battery → in the machine
-   close-up, room air goes in, the sieve catches nitrogen, O₂ comes out (transformation) → in the lung close-up, dark blood cells pick
-   up O₂ and turn bright red (transformation) → the child's blue-gray lips turn pink, fast breathing slows, the child sits up (effect).
-   Blocking the sun drains the battery, the machine stops, and the child's color fades again. Rates are made up. A drawing, not a case;
-   no medical advice: oxygen is given by trained health workers. */
+   How a concentrator works (pressure swing adsorption): a compressor pushes room air (about 78% N₂, 21% O₂) into one of two columns of
+   zeolite beads; the beads hold N₂ and O₂ passes on to the patient. When that column is full, the machine switches columns and the full
+   one vents its N₂ back to the room. In the lungs, O₂ crosses the thin air-sac wall into the capillary and binds hemoglobin in red cells,
+   which turn from dark red to bright red. Low oxygen makes lips look blue-gray (cyanosis) and breathing fast.
+   What the student does and sees, with no numbers on screen: turn on the machine (cause) → sun → panels → batteries → compressor → the
+   two columns trade jobs, N₂ held and vented, O₂ out (transformation) → in the lung close-up, red cells brighten (transformation) → the
+   child's lips regain color, breathing slows, the child is propped up (effect). Blocking the sun drains the batteries, the machine stops,
+   and the color fades. Rates are made up. A drawing, not a case; no medical advice: oxygen is given by trained health workers. */
 const HK_PICK=[{v:'sugar',x:600,y:30,draw(ctx,cx,cy){ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;ctx[k?'lineTo':'moveTo'](cx+24*Math.cos(a),cy+8+24*Math.sin(a));}ctx.closePath();ctx.fillStyle='#df741a';ctx.fill();txt(ctx,'🍬',cx,cy-26,{s:24,a:'center'});}},
   {v:'o2',x:740,y:30,draw(ctx,cx,cy){o2Mini(ctx,cx,cy+8,2);txt(ctx,'🫁',cx,cy-26,{s:24,a:'center'});}}];
-const HK_N='#3b6fd8',HK_O='#d9362b';
-function o2Mini(ctx,x,y,s,c){s=s||1;[-6,6].forEach(d=>{ctx.beginPath();ctx.arc(x+d*s,y,7*s,0,7);ctx.fillStyle=c||HK_O;ctx.fill();});}
-function newHk(){return {pick:null,k:0,on:false,cloud:false,bat:.9,h:.12,day:0,mol:[],stuck:[],purge:0,sac:[],cells:[...Array(8)].map((_,i)=>({x:610+i*36,ox:false})),feed:0,e:[],recovered:false,outage:false,back:false};}
+const HK_N='#3e6fd1',HK_O='#d9362b';
+function o2Mini(ctx,x,y,s,c){s=s||1;[-6,6].forEach(d=>{const g=ctx.createRadialGradient(x+d*s-2*s,y-2*s,1,x+d*s,y,7*s);g.addColorStop(0,'#fff');g.addColorStop(.3,c||HK_O);g.addColorStop(1,shC(c||HK_O,-.3));ctx.beginPath();ctx.arc(x+d*s,y,7*s,0,7);ctx.fillStyle=g;ctx.fill();});}
+function shC(hex,k){const n=parseInt(hex.slice(1),16),f=v=>Math.round(k>0?v+(255-v)*k:v*(1+k));return 'rgb('+f(n>>16)+','+f(n>>8&255)+','+f(n&255)+')';}
+function newHk(){return {pick:null,k:0,on:false,cloud:false,bat:.9,h:.12,day:0,mol:[],col:0,colT:0,stuck:[[],[]],vent:[],sac:[],cells:[...Array(9)].map((_,i)=>({x:604+i*34,ox:false})),feed:0,e:[],recovered:false,outage:false,back:false};}
 function hkRun(H2){return H2.on&&H2.bat>0;}
 function hkSun(H2){const d=.5+.5*Math.sin(H2.day*Math.PI*2/20);return {d,up:d>.35};}
+const HK_COL=[[690,58,40,150],[790,58,40,150]];
 function hkTick(S,dt){const H2=S.hk;if(!H2||!H2.pick)return;H2.k=Math.min(1,H2.k+dt*.5);if(H2.pick!=='o2')return;
   H2.day+=dt;const sun=hkSun(H2),charging=sun.up&&!H2.cloud,run=hkRun(H2);
   H2.bat=clamp(H2.bat+(charging?.3:0)*dt-(run?.09:0)*dt,0,1);
   if(H2.on&&H2.cloud&&H2.bat<=0)H2.outage=true;
   H2.h=clamp(H2.h+(run?.13:-.08)*dt,.12,1);if(H2.h>.85&&!H2.outage)H2.recovered=true;if(H2.outage&&!H2.cloud&&H2.h>.85)H2.back=true;
-  // energy dots: panel → battery when charging, battery → machine when running
-  if(Math.random()<dt*(charging?6:0))H2.e.push({seg:0,u:0});if(Math.random()<dt*(run?6:0))H2.e.push({seg:1,u:0});
-  H2.e.forEach(q=>q.u+=dt*.9);H2.e=H2.e.filter(q=>q.u<1);
-  // inside the machine: room air in, the sieve holds N₂, O₂ out
-  if(run&&H2.purge<=0&&Math.random()<dt*7){const n=Math.random()<.78;H2.mol.push({x:612,y:96+Math.random()*80,n,st:false});}
-  H2.mol.forEach(m=>{if(m.st)return;m.x+=70*dt;if(m.n&&m.x>690&&m.x<800&&H2.stuck.length<18){m.st=true;const i=H2.stuck.length;m.bx=700+(i%6)*18;m.by=104+Math.floor(i/6)*26;H2.stuck.push(m);}});
-  H2.mol.forEach(m=>{if(m.st){m.x=lerp(m.x,m.bx,dt*6);m.y=lerp(m.y,m.by,dt*6);}});
-  H2.mol=H2.mol.filter(m=>{if(!m.st&&m.x>872){if(!m.n&&H2.sac.length<8)H2.sac.push({x:742+(Math.random()-.5)*30,y:322+(Math.random()-.5)*20});return false;}return true;});
-  if(H2.stuck.length>=18&&H2.purge<=0)H2.purge=1.4;
-  if(H2.purge>0){H2.purge-=dt;H2.stuck.forEach(m=>{m.by+=90*dt;m.bx+=(Math.random()-.5)*2;});if(H2.purge<=0){H2.mol=H2.mol.filter(m=>!m.st);H2.stuck=[];}}
-  // a little O₂ still gets in from the room
-  H2.feed+=dt;if(H2.feed>2.2){H2.feed=0;if(H2.sac.length<8)H2.sac.push({x:742+(Math.random()-.5)*30,y:322});}
-  // blood cells under the air sac pick up O₂ and turn bright red
-  H2.cells.forEach(c=>{c.x+=48*dt;if(c.x>878){c.x-=8*36;c.ox=false;}if(!c.ox&&c.x>724&&c.x<760&&H2.sac.length){H2.sac.shift();c.ox=true;}});}
-function hkChild(ctx,H2,t){ctx.save();ctx.translate(480,330);ctx.scale(1.3,1.3);ctx.translate(-480,-330);const r=hkChild0(ctx,H2,t);ctx.restore();return [480+(r[0]-480)*1.3,330+(r[1]-330)*1.3];}
-function hkChild0(ctx,H2,t){const h=H2.h,up=Story.h.ease(clamp((h-.88)/.12,0,1)),rate=lerp(5.5,1.3,h),br=Math.sin(t*rate)*lerp(4,2,h);
-  ctx.fillStyle='#8a6a4a';ctx.fillRect(380,350,200,10);ctx.fillStyle='#fff';rr(ctx,385,318,190,34,8);ctx.fill();
-  ctx.fillStyle='#eef1f5';ctx.beginPath();ctx.ellipse(415,318,30,12,0,0,7);ctx.fill();
-  const hx=420+up*6,hy=300-up*30;
-  ctx.fillStyle='#7aa7d9';rr(ctx,440-up*10,306-br-up*18,130,40+br+up*18,14);ctx.fill();
-  ctx.fillStyle='#8d5a3b';ctx.beginPath();ctx.arc(hx,hy,24,0,7);ctx.fill();ctx.fillStyle='#2a1a10';ctx.beginPath();ctx.arc(hx,hy-6,24,Math.PI*1.05,Math.PI*1.95);ctx.fill();
-  if(h>.5){ctx.fillStyle='#1d1d1d';[[-8,-2],[8,-2]].forEach(([dx,dy])=>{ctx.beginPath();ctx.arc(hx+dx,hy+dy,2.6,0,7);ctx.fill();});}
-  else{ctx.strokeStyle='#1d1d1d';ctx.lineWidth=2;[[-8,-2],[8,-2]].forEach(([dx,dy])=>{ctx.beginPath();ctx.arc(hx+dx,hy+dy,4,.15,Math.PI-.15);ctx.stroke();});}
-  if(h<.7){ctx.save();ctx.globalAlpha=(.7-h)/.55*(.5+.5*Math.abs(Math.sin(t*rate)));ctx.strokeStyle='#C11430';ctx.lineWidth=2;[0,1].forEach(k=>{ctx.beginPath();ctx.arc(500,300-br,14+k*8,-1.1,-.3);ctx.stroke();});ctx.restore();}
-  const lip=`rgb(${Math.round(lerp(110,214,h))},${Math.round(lerp(125,90,h))},${Math.round(lerp(170,100,h))})`;
-  ctx.strokeStyle=lip;ctx.lineWidth=5;ctx.beginPath();if(h>.8)ctx.arc(hx,hy+6,7,.2,Math.PI-.2);else{ctx.ellipse(hx,hy+12,5,lerp(4,2,h),0,0,7);}ctx.stroke();
-  return [hx-4,hy+4];}
-function hkScene(ctx,S){const H2=S.hk,t=S.t,sun=hkSun(H2),on=H2.pick==='o2',run=hkRun(H2);
-  // outside: sky, sun or moon, the solar panel
-  const d=sun.d;ctx.fillStyle=`rgb(${Math.round(lerp(30,200,d))},${Math.round(lerp(40,225,d))},${Math.round(lerp(80,245,d))})`;ctx.fillRect(0,0,200,360);
-  if(on){const sx=lerp(30,170,(H2.day/20)%1);txt(ctx,sun.up?'☀️':'🌙',sx,70-30*d,{s:34,a:'center'});
-    if(H2.cloud){ctx.fillStyle='rgba(60,66,76,.35)';ctx.fillRect(0,0,200,360);ctx.fillStyle='#7d8691';[[40,50],[100,40],[160,56],[70,82],[140,86]].forEach(([x,y])=>{ctx.beginPath();ctx.ellipse(x,y,52,26,0,0,7);ctx.fill();});}}
-  ctx.fillStyle='#b9a37e';ctx.fillRect(0,360,200,70);
-  ctx.save();ctx.translate(100,255);ctx.rotate(-.3);ctx.fillStyle='#24426b';ctx.fillRect(-60,-34,120,68);ctx.strokeStyle='#9fb4cf';ctx.lineWidth=1;for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(-60+i*30,-34);ctx.lineTo(-60+i*30,34);ctx.stroke();}ctx.restore();
-  ctx.fillStyle='#62626a';ctx.fillRect(96,280,6,80);
+  if(Math.random()<dt*(charging?6:0))H2.e.push({seg:0,u:0});if(Math.random()<dt*(run?6:0))H2.e.push({seg:1,u:0});H2.e.forEach(q=>q.u+=dt*.9);H2.e=H2.e.filter(q=>q.u<1);
+  // pressure swing: air into the working column; its beads hold N₂, O₂ rises out the top; the other column vents its N₂
+  if(run){H2.colT+=dt;if(H2.colT>3.2){H2.colT=0;const old=H2.col;H2.col=1-H2.col;H2.stuck[old].forEach(m=>{m.vent=true;});H2.vent.push(...H2.stuck[old]);H2.stuck[old]=[];}
+    if(Math.random()<dt*8){const n=Math.random()<.78;H2.mol.push({x:640,y:226,n,c:H2.col,ph:0});}}
+  H2.mol.forEach(m=>{const C0=HK_COL[m.c],cx=C0[0]+C0[2]/2;if(m.ph===0){m.x=lerp(m.x,cx,dt*5);m.y=lerp(m.y,C0[1]+C0[3]-6,dt*5);if(Math.abs(m.x-cx)<4)m.ph=1;}
+    else if(m.ph===1){m.y-=55*dt;m.x=cx+Math.sin(m.y*.2)*10;if(m.n&&H2.stuck[m.c].length<24&&m.y<C0[1]+C0[3]-14-H2.stuck[m.c].length*5){m.st=true;m.ph=3;const i=H2.stuck[m.c].length;m.bx=C0[0]+8+(i%3)*12;m.by=C0[1]+C0[3]-12-Math.floor(i/3)*16;H2.stuck[m.c].push(m);}
+      if(m.y<C0[1]+4){m.ph=2;}}
+    else if(m.ph===2){m.x=lerp(m.x,868,dt*2.5);m.y=lerp(m.y,40,dt*2.5);if(m.x>860){m.done=true;if(!m.n&&H2.sac.length<9)H2.sac.push({x:742+(Math.random()-.5)*60,y:322+(Math.random()-.5)*24});}}
+    else if(m.ph===3){m.x=lerp(m.x,m.bx,dt*6);m.y=lerp(m.y,m.by,dt*6);}});
+  H2.mol=H2.mol.filter(m=>!m.done&&!m.vent);
+  H2.vent.forEach(m=>{m.y+=70*dt;m.x+=(m.x<740?-20:20)*dt;m.a=(m.a==null?1:m.a)-dt*.8;});H2.vent=H2.vent.filter(m=>m.a>0);
+  H2.feed+=dt;if(H2.feed>2.2){H2.feed=0;if(H2.sac.length<9)H2.sac.push({x:742+(Math.random()-.5)*60,y:322});}
+  H2.cells.forEach(c=>{c.x+=42*dt;if(c.x>884){c.x-=9*34;c.ox=false;}if(!c.ox&&c.x>700&&c.x<790&&H2.sac.length&&Math.random()<dt*6){H2.sac.shift();c.ox=true;}});}
+/* a child in side profile (face right, then laid on the pillow) */
+function hkHead(ctx,o){const skin=o.skin,hair=o.hair;ctx.beginPath();ctx.moveTo(402,38);ctx.bezierCurveTo(370,38,345,52,338,80);ctx.bezierCurveTo(334,95,334,104,336,108);ctx.bezierCurveTo(332,118,320,132,316,140);
+  ctx.bezierCurveTo(314,146,322,150,330,150);ctx.bezierCurveTo(332,154,331,158,328,161);ctx.bezierCurveTo(324,165,327,168,330,169);ctx.bezierCurveTo(326,172,327,177,332,180);ctx.bezierCurveTo(330,186,331,194,337,200);
+  ctx.bezierCurveTo(344,207,352,210,362,212);ctx.bezierCurveTo(366,224,366,250,378,290);ctx.lineTo(470,290);ctx.bezierCurveTo(462,262,454,226,458,190);ctx.bezierCurveTo(472,170,480,140,476,110);ctx.bezierCurveTo(470,60,440,38,402,38);ctx.closePath();
+  const sg=ctx.createLinearGradient(310,0,480,0);sg.addColorStop(0,shC(skin,.12));sg.addColorStop(1,shC(skin,-.2));ctx.fillStyle=sg;ctx.fill();
+  // lips: their color shows the oxygen
+  ctx.fillStyle=o.lip;ctx.beginPath();ctx.moveTo(328,161);ctx.bezierCurveTo(324,165,327,168,330,169);ctx.bezierCurveTo(326,172,327,177,332,180);ctx.lineTo(338,178);ctx.lineTo(337,162);ctx.closePath();ctx.fill();
+  // a blue-gray tint over the skin when oxygen is low
+  if(o.blue>0){ctx.save();ctx.globalAlpha=o.blue*.28;ctx.fillStyle='#6f7fa6';ctx.fill();ctx.restore();}
+  ctx.beginPath();ctx.moveTo(340,74);ctx.bezierCurveTo(352,44,384,32,408,33);ctx.bezierCurveTo(452,35,482,62,482,112);ctx.bezierCurveTo(483,150,474,178,458,196);ctx.bezierCurveTo(452,175,448,160,445,150);ctx.bezierCurveTo(440,128,430,104,418,96);ctx.bezierCurveTo(400,86,372,80,352,82);ctx.bezierCurveTo(346,80,342,78,340,74);ctx.closePath();
+  const hg=ctx.createLinearGradient(340,30,480,190);hg.addColorStop(0,shC(hair,.18));hg.addColorStop(1,shC(hair,-.2));ctx.fillStyle=hg;ctx.fill();
+  const eg=ctx.createRadialGradient(428,126,2,432,132,18);eg.addColorStop(0,shC(skin,.05));eg.addColorStop(1,shC(skin,-.2));ctx.fillStyle=eg;ctx.beginPath();ctx.ellipse(434,132,11,19,.15,0,7);ctx.fill();ctx.strokeStyle=shC(skin,-.35);ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(436,131,7,-1.3,1.7);ctx.stroke();
+  ctx.strokeStyle=shC(hair,-.1);ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(337,99);ctx.quadraticCurveTo(346,95,356,98);ctx.stroke();
+  if(o.open){ctx.fillStyle='#2b2320';ctx.beginPath();ctx.moveTo(339,111);ctx.quadraticCurveTo(346,106,352,110);ctx.quadraticCurveTo(346,113,339,111);ctx.fill();}
+  else{ctx.strokeStyle='#3a2a22';ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(339,111);ctx.quadraticCurveTo(346,115,353,111);ctx.stroke();}
+  // nasal cannula prong
+  ctx.strokeStyle='#bfe2f2';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(326,150);ctx.quadraticCurveTo(350,160,380,150);ctx.lineTo(430,150);ctx.stroke();}
+function hkM(h){const lift=Story.h.ease(clamp((h-.8)/.2,0,1))*.55;return new DOMMatrix().translate(486,326).rotate((-90+lift*57.3)).scale(-1,1).scale(.56).translate(-420,-290);}
+function hkChild(ctx,H2,t){const h=H2.h,rate=lerp(5.2,1.4,h),br=Math.sin(t*rate)*lerp(5,2,h);
+  // bed: frame, mattress, pillow
+  ctx.fillStyle='#9aa3ad';ctx.fillRect(338,352,250,8);ctx.fillRect(342,360,6,60);ctx.fillRect(578,360,6,60);
+  const mg=ctx.createLinearGradient(0,330,0,354);mg.addColorStop(0,'#f4f6f8');mg.addColorStop(1,'#cfd6dd');ctx.fillStyle=mg;rr(ctx,340,330,246,24,6);ctx.fill();
+  const lift=Story.h.ease(clamp((h-.8)/.2,0,1));const pg=ctx.createLinearGradient(0,300,0,334);pg.addColorStop(0,'#ffffff');pg.addColorStop(1,'#dde3e9');ctx.fillStyle=pg;ctx.beginPath();ctx.ellipse(392,322-lift*16,62,15+lift*12,-.1-lift*.5,0,7);ctx.fill();
+  const lip=`rgb(${Math.round(lerp(120,196,h))},${Math.round(lerp(120,96,h))},${Math.round(lerp(150,104,h))})`;
+  ctx.save();const m=hkM(h);ctx.setTransform(ctx.getTransform().multiply(m));hkHead(ctx,{skin:'#9a6a48',hair:'#1d1612',lip,blue:1-h,open:h>.5});ctx.restore();
+  // blanket over the body; it rises with each breath, fast when oxygen is low
+  ctx.save();const bl=ctx.createLinearGradient(0,290,0,352);bl.addColorStop(0,'#8fb3d6');bl.addColorStop(1,'#5d84ad');ctx.fillStyle=bl;
+  ctx.beginPath();ctx.moveTo(440,352);ctx.bezierCurveTo(436,324-lift*18,462,302-br-lift*12,508,298-br-lift*6);ctx.bezierCurveTo(548,306,570,320,586,330);ctx.lineTo(586,354);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(500,330);ctx.quadraticCurveTo(530,322,560,334);ctx.stroke();ctx.restore();
+  return m.transformPoint(new DOMPoint(430,150));}
+function hkConcentrator(ctx,run,t){const x=268,y=236;ctx.save();
+  const bg=ctx.createLinearGradient(x,0,x+56,0);bg.addColorStop(0,'#e9e5dc');bg.addColorStop(.5,'#f7f4ee');bg.addColorStop(1,'#cfc9bd');ctx.fillStyle=bg;rr(ctx,x,y,56,118,10);ctx.fill();ctx.strokeStyle='#a9a294';ctx.lineWidth=1.2;ctx.stroke();
+  ctx.fillStyle='#d8d2c6';for(let i=0;i<6;i++)ctx.fillRect(x+8,y+86+i*4,40,1.5);
+  // flow meter: a clear tube with a ball that floats up when oxygen flows
+  ctx.fillStyle='rgba(220,235,245,.9)';rr(ctx,x+20,y+16,10,42,4);ctx.fill();ctx.strokeStyle='#8aa3b5';ctx.stroke();const by=run?y+26+Math.sin(t*3)*1.5:y+52;ctx.fillStyle='#2a6fd0';ctx.beginPath();ctx.arc(x+25,by,4,0,7);ctx.fill();
+  // humidifier bottle and power light
+  ctx.fillStyle='rgba(200,230,245,.75)';rr(ctx,x+36,y+20,14,26,4);ctx.fill();ctx.strokeStyle='#8aa3b5';ctx.stroke();ctx.fillStyle='rgba(120,180,220,.6)';ctx.fillRect(x+37,y+32,12,13);
+  ctx.fillStyle=run?'#3fbf6a':'#9aa0a8';ctx.beginPath();ctx.arc(x+12,y+12,3.5,0,7);ctx.fill();
+  ctx.fillStyle='#4b525b';[[x+8,y+122],[x+48,y+122]].forEach(([a,b])=>{ctx.beginPath();ctx.arc(a,b,5,0,7);ctx.fill();});ctx.restore();return [x+43,y+20];}
+function hkBattery(ctx,x,y,lvl){const g=ctx.createLinearGradient(x,0,x+44,0);g.addColorStop(0,'#3d434a');g.addColorStop(.5,'#5a626b');g.addColorStop(1,'#2f343a');ctx.fillStyle=g;rr(ctx,x,y,44,56,4);ctx.fill();
+  ctx.fillStyle='#262a2f';ctx.fillRect(x,y,44,8);ctx.fillStyle='#c0392b';ctx.fillRect(x+6,y-5,8,6);ctx.fillStyle='#222';ctx.fillRect(x+30,y-5,8,6);
+  for(let i=0;i<4;i++){ctx.fillStyle=lvl>i/4+.02?(lvl>.25?'#3fbf6a':'#e0473b'):'#454b52';ctx.fillRect(x+8+i*8,y+42,6,5);}}
+function hkPanel(ctx,cx,cy,w,h,dim){ctx.save();ctx.translate(cx,cy);ctx.transform(1,0,-.35,1,0,0);const g=ctx.createLinearGradient(0,-h/2,0,h/2);g.addColorStop(0,dim?'#1a2433':'#22385a');g.addColorStop(1,dim?'#0f1620':'#13213a');ctx.fillStyle=g;ctx.fillRect(-w/2,-h/2,w,h);
+  ctx.strokeStyle='rgba(190,205,220,.55)';ctx.lineWidth=.8;for(let i=1;i<6;i++){ctx.beginPath();ctx.moveTo(-w/2+i*w/6,-h/2);ctx.lineTo(-w/2+i*w/6,h/2);ctx.stroke();}for(let j=1;j<4;j++){ctx.beginPath();ctx.moveTo(-w/2,-h/2+j*h/4);ctx.lineTo(w/2,-h/2+j*h/4);ctx.stroke();}
+  if(!dim){const sh=ctx.createLinearGradient(-w/2,-h/2,w/2,h/2);sh.addColorStop(0,'rgba(255,255,255,.18)');sh.addColorStop(.5,'rgba(255,255,255,0)');ctx.fillStyle=sh;ctx.fillRect(-w/2,-h/2,w,h);}
+  ctx.strokeStyle='#c8ced4';ctx.lineWidth=2.5;ctx.strokeRect(-w/2,-h/2,w,h);ctx.restore();}
+function hkScene(ctx,S){const H2=S.hk,t=S.t,sun=hkSun(H2),on=H2.pick==='o2',run=hkRun(H2),d=on?sun.d:.8,dim=on&&(!sun.up||H2.cloud);
+  // outside: sky, sun or moon, clouds, the panels on a rack
+  const sky=ctx.createLinearGradient(0,0,0,360);sky.addColorStop(0,`rgb(${Math.round(lerp(14,120,d))},${Math.round(lerp(22,175,d))},${Math.round(lerp(48,232,d))})`);sky.addColorStop(1,`rgb(${Math.round(lerp(40,214,d))},${Math.round(lerp(50,232,d))},${Math.round(lerp(80,245,d))})`);ctx.fillStyle=sky;ctx.fillRect(0,0,200,360);
+  if(on&&!sun.up){ctx.fillStyle='rgba(255,255,255,.7)';for(let i=0;i<14;i++)ctx.fillRect((i*37)%196,(i*53)%200,1.5,1.5);}
+  if(on){const sx=lerp(30,170,(H2.day/20)%1),sy=86-50*d;if(sun.up){const sg=ctx.createRadialGradient(sx,sy,2,sx,sy,40);sg.addColorStop(0,'rgba(255,250,220,1)');sg.addColorStop(.3,'rgba(255,220,120,.9)');sg.addColorStop(1,'rgba(255,220,120,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.arc(sx,sy,40,0,7);ctx.fill();}
+    else{ctx.fillStyle='#f4f1e6';ctx.beginPath();ctx.arc(sx,sy,12,0,7);ctx.fill();ctx.fillStyle=ctx.createLinearGradient(0,0,0,1)&&'rgb(20,28,52)';ctx.beginPath();ctx.arc(sx+5,sy-3,11,0,7);ctx.fill();}
+    if(H2.cloud){ctx.save();ctx.fillStyle='rgba(60,66,76,.3)';ctx.fillRect(0,0,200,360);[[40,52,60],[110,40,70],[170,60,55],[80,92,60],[150,96,50]].forEach(([x,y,r])=>{const cg=ctx.createRadialGradient(x,y-6,4,x,y,r);cg.addColorStop(0,'#aab1ba');cg.addColorStop(1,'rgba(120,128,138,0)');ctx.fillStyle=cg;ctx.beginPath();ctx.ellipse(x,y,r,r*.5,0,0,7);ctx.fill();});ctx.restore();}}
+  const gr=ctx.createLinearGradient(0,350,0,430);gr.addColorStop(0,'#9c8a62');gr.addColorStop(1,'#7c6c4a');ctx.fillStyle=gr;ctx.fillRect(0,350,200,80);
+  ctx.fillStyle='#8b9097';ctx.fillRect(60,272,5,80);ctx.fillRect(140,252,5,100);hkPanel(ctx,72,262,92,52,dim);hkPanel(ctx,150,244,92,52,dim);
   // inside the clinic
-  ctx.fillStyle='#f3eadb';ctx.fillRect(200,0,390,360);ctx.fillStyle='#c9b48f';ctx.fillRect(200,360,390,70);ctx.fillStyle='#d8ccb6';ctx.fillRect(196,0,8,430);
-  const wire=[[150,262],[205,300],[232,300]],wire2=[[262,330],[292,330]];
-  ctx.strokeStyle='#3d3d3d';ctx.lineWidth=3;ctx.beginPath();wire.forEach(([x,y],i)=>ctx[i?'lineTo':'moveTo'](x,y));ctx.moveTo(...wire2[0]);ctx.lineTo(...wire2[1]);ctx.stroke();
-  H2.e.forEach(q=>{const P=q.seg?wire2:wire;let x,y;if(P.length===2){x=lerp(P[0][0],P[1][0],q.u);y=lerp(P[0][1],P[1][1],q.u);}else{const u=q.u*2,i=Math.min(1,Math.floor(u)),f=u-i;x=lerp(P[i][0],P[i+1][0],f);y=lerp(P[i][1],P[i+1][1],f);}ctx.fillStyle='#f7c20a';ctx.beginPath();ctx.arc(x,y,4,0,7);ctx.fill();});
-  // battery: how full you can see
-  ctx.fillStyle='#4b525b';rr(ctx,232,290,30,70,5);ctx.fill();ctx.fillStyle='#4b525b';ctx.fillRect(240,284,14,7);ctx.fillStyle=H2.bat>.25?'#3fbf6a':'#e0473b';ctx.fillRect(236,356-62*H2.bat,22,62*H2.bat);
-  // the oxygen machine, its fan turns when it runs
-  ctx.fillStyle='#e9ecef';rr(ctx,292,270,64,90,10);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
-  ctx.save();ctx.translate(324,300);ctx.rotate(run?t*12:0);ctx.fillStyle='#8a8f98';for(let k=0;k<4;k++){ctx.rotate(Math.PI/2);ctx.beginPath();ctx.ellipse(0,-8,4,9,0,0,7);ctx.fill();}ctx.restore();
-  ctx.fillStyle=run?'#3fbf6a':'#9aa0a8';ctx.beginPath();ctx.arc(324,342,5,0,7);ctx.fill();
+  const wl=ctx.createLinearGradient(200,0,590,0);wl.addColorStop(0,'#efe6d6');wl.addColorStop(1,'#f6f0e5');ctx.fillStyle=wl;ctx.fillRect(200,0,390,360);
+  const fl=ctx.createLinearGradient(0,360,0,430);fl.addColorStop(0,'#c7b896');fl.addColorStop(1,'#a99a78');ctx.fillStyle=fl;ctx.fillRect(200,360,390,70);
+  ctx.fillStyle='#d6ccb8';ctx.fillRect(196,0,8,430);
+  const wire=[[118,270],[204,300],[222,300]],wire2=[[266,320],[268,320]];
+  ctx.strokeStyle='#2d2d2d';ctx.lineWidth=3;ctx.beginPath();wire.forEach(([x,y],i)=>ctx[i?'lineTo':'moveTo'](x,y));ctx.moveTo(266,320);ctx.lineTo(268,320);ctx.stroke();
+  H2.e.forEach(q=>{if(q.seg)return;const u=q.u*2,i=Math.min(1,Math.floor(u)),f=u-i,x=lerp(wire[i][0],wire[i+1][0],f),y=lerp(wire[i][1],wire[i+1][1],f);const eg=ctx.createRadialGradient(x,y,0,x,y,6);eg.addColorStop(0,'rgba(255,230,120,1)');eg.addColorStop(1,'rgba(255,200,40,0)');ctx.fillStyle=eg;ctx.beginPath();ctx.arc(x,y,6,0,7);ctx.fill();});
+  hkBattery(ctx,214,298,on?H2.bat:.9);const out=hkConcentrator(ctx,run,t);
   const nose=hkChild(ctx,H2,t);
-  ctx.strokeStyle='#9fd3ea';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(356,300);ctx.bezierCurveTo(380,240,nose[0]-30,250,nose[0],nose[1]);ctx.stroke();
-  if(run)for(let k=0;k<4;k++){const u=((t*.5+k/4)%1),x=Math.pow(1-u,3)*356+3*Math.pow(1-u,2)*u*380+3*(1-u)*u*u*(nose[0]-30)+u*u*u*nose[0],y=Math.pow(1-u,3)*300+3*Math.pow(1-u,2)*u*240+3*(1-u)*u*u*250+u*u*u*nose[1];o2Mini(ctx,x,y,.55);}
-  if(H2.pick==='sugar'&&H2.k<1){ctx.save();ctx.globalAlpha=1-H2.k;for(let i=0;i<8;i++){const x=300+((i*37)%220),y=120+((i*23)%120);ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;ctx[k?'lineTo':'moveTo'](x+10*Math.cos(a),y+10*Math.sin(a));}ctx.closePath();ctx.fillStyle='#df741a';ctx.fill();}ctx.restore();}}
+  ctx.strokeStyle='#bfe2f2';ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(out[0],out[1]);ctx.bezierCurveTo(out[0]+30,out[1]-70,nose.x-40,nose.y-60,nose.x,nose.y);ctx.stroke();
+  if(run)for(let k=0;k<4;k++){const u=((t*.5+k/4)%1),x=Math.pow(1-u,3)*out[0]+3*Math.pow(1-u,2)*u*(out[0]+30)+3*(1-u)*u*u*(nose.x-40)+u*u*u*nose.x,y=Math.pow(1-u,3)*out[1]+3*Math.pow(1-u,2)*u*(out[1]-70)+3*(1-u)*u*u*(nose.y-60)+u*u*u*nose.y;o2Mini(ctx,x,y,.45);}
+  if(H2.pick==='sugar'&&H2.k<1){ctx.save();ctx.globalAlpha=1-H2.k;for(let i=0;i<8;i++){const x=300+((i*37)%220),y=110+((i*23)%100);ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;ctx[k?'lineTo':'moveTo'](x+10*Math.cos(a),y+10*Math.sin(a));}ctx.closePath();ctx.fillStyle='#df741a';ctx.fill();}ctx.restore();}}
 function hkInside(ctx,S){const H2=S.hk,run=hkRun(H2),t=S.t;
-  // the machine, opened up
-  ctx.fillStyle='#fff';rr(ctx,600,24,285,236,12);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
-  ctx.save();ctx.strokeStyle='rgba(98,98,106,.7)';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(324,268);ctx.lineTo(324,14);ctx.lineTo(742,14);ctx.lineTo(742,24);ctx.stroke();ctx.restore();txt(ctx,'🔍',324,40,{s:18,a:'center'});
-  txt(ctx,'🌬️',620,64,{s:22,a:'center'});
-  ctx.fillStyle='#efe3c4';rr(ctx,690,88,120,110,10);ctx.fill();ctx.strokeStyle='#b49a5c';ctx.lineWidth=2;ctx.stroke();
-  ctx.fillStyle='#d8c08a';for(let i=0;i<6;i++)for(let j=0;j<4;j++){ctx.beginPath();ctx.arc(700+i*18,98+j*26+(i%2)*6,6,0,7);ctx.fill();}
-  H2.mol.forEach(m=>o2Mini(ctx,m.x,m.y,.55,m.n?HK_N:HK_O));
-  ctx.fillStyle='#62626a';ctx.fillRect(738,198,24,14);if(H2.purge>0)txt(ctx,'↓',750,236,{s:20,w:800,c:HK_N,a:'center'});
-  arrow(ctx,820,140,870,140,run?HK_O:'#b9bec6');
-  // the lungs: one air sac and the blood flowing under it
-  ctx.fillStyle='#fff';rr(ctx,600,272,285,150,12);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
-  arrow(ctx,870,170,870,282,run?HK_O:'#b9bec6');
-  ctx.fillStyle='#f6c9cf';ctx.beginPath();ctx.arc(742,322,38,0,7);ctx.fill();ctx.strokeStyle='#d98a96';ctx.stroke();txt(ctx,'🫁',632,302,{s:20,a:'center'});
-  H2.sac.forEach(o=>o2Mini(ctx,o.x,o.y,.6));
-  ctx.fillStyle='#f3d2d2';ctx.fillRect(606,366,274,36);
-  H2.cells.forEach(c=>{ctx.fillStyle=c.ox?'#e23a3a':'#6e1f2e';ctx.beginPath();ctx.ellipse(c.x,384,14,9,0,0,7);ctx.fill();ctx.fillStyle='rgba(0,0,0,.15)';ctx.beginPath();ctx.ellipse(c.x,384,6,3.5,0,0,7);ctx.fill();});}
+  ctx.save();ctx.strokeStyle='rgba(60,60,70,.45)';ctx.lineWidth=1.2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(296,236);ctx.lineTo(296,12);ctx.lineTo(742,12);ctx.lineTo(742,24);ctx.stroke();ctx.restore();
+  // the machine opened up: compressor → two zeolite columns → oxygen out
+  ctx.save();rr(ctx,600,24,285,236,12);ctx.clip();ctx.fillStyle='#f5f3ee';ctx.fillRect(600,24,285,236);
+  ctx.fillStyle='#c9c3b6';rr(ctx,612,206,50,36,6);ctx.fill();ctx.strokeStyle='#9a9384';ctx.stroke();ctx.strokeStyle='#8a8f98';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(662,226);ctx.lineTo(845,226);ctx.stroke();
+  ctx.save();ctx.translate(637,224);ctx.rotate(run?t*9:0);ctx.strokeStyle='#6b6f76';ctx.lineWidth=2;for(let k=0;k<3;k++){ctx.rotate(Math.PI*2/3);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-11);ctx.stroke();}ctx.restore();
+  HK_COL.forEach((c,i)=>{const [x,y,w,h]=c,act=run&&H2.col===i;const cg=ctx.createLinearGradient(x,0,x+w,0);cg.addColorStop(0,'#c8ccd2');cg.addColorStop(.5,'#eef0f3');cg.addColorStop(1,'#b5bac1');ctx.fillStyle=cg;rr(ctx,x-4,y-6,w+8,h+12,10);ctx.fill();
+    ctx.fillStyle='#e7dcc0';ctx.fillRect(x,y,w,h);ctx.fillStyle='#cdbd94';for(let r=0;r<12;r++)for(let q=0;q<4;q++){ctx.beginPath();ctx.arc(x+5+q*10+(r%2)*5,y+6+r*12.2,4,0,7);ctx.fill();}
+    ctx.strokeStyle=act?'#2f8f4e':'#9aa0a8';ctx.lineWidth=2;ctx.strokeRect(x-4,y-6,w+8,h+12);});
+  ctx.strokeStyle='#8a8f98';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(710,52);ctx.lineTo(710,40);ctx.lineTo(870,40);ctx.moveTo(810,52);ctx.lineTo(810,40);ctx.stroke();
+  H2.stuck.forEach(arr=>arr.forEach(m=>o2Mini(ctx,m.x,m.y,.48,HK_N)));H2.mol.forEach(m=>{if(!m.st)o2Mini(ctx,m.x,m.y,.48,m.n?HK_N:HK_O);});
+  H2.vent.forEach(m=>{ctx.save();ctx.globalAlpha=Math.max(0,m.a);o2Mini(ctx,m.x,m.y,.48,HK_N);ctx.restore();});
+  ctx.restore();ctx.strokeStyle='#a9a294';ctx.lineWidth=2;rr(ctx,600,24,285,236,12);ctx.stroke();
+  // the lungs: air sacs wrapped in a capillary
+  ctx.fillStyle='#fff';rr(ctx,600,272,285,150,12);ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
+  ctx.save();rr(ctx,600,272,285,150,12);ctx.clip();ctx.fillStyle='#f7e4e6';ctx.fillRect(600,272,285,150);
+  [[700,318,38],[760,310,42],[818,324,34],[730,350,26]].forEach(([x,y,r])=>{const ag=ctx.createRadialGradient(x-8,y-10,4,x,y,r);ag.addColorStop(0,'#fff6f7');ag.addColorStop(1,'#f1c3cb');ctx.fillStyle=ag;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.strokeStyle='#d98a99';ctx.lineWidth=1.5;ctx.stroke();});
+  H2.sac.forEach(o=>o2Mini(ctx,o.x,o.y,.5));
+  const cp=ctx.createLinearGradient(0,368,0,408);cp.addColorStop(0,'#e7a3a3');cp.addColorStop(1,'#c96d6d');ctx.fillStyle=cp;ctx.beginPath();ctx.moveTo(600,372);ctx.bezierCurveTo(680,360,800,362,885,374);ctx.lineTo(885,404);ctx.bezierCurveTo(800,394,680,394,600,406);ctx.closePath();ctx.fill();
+  H2.cells.forEach(c=>{const y=386,col=c.ox?'#e02a2a':'#6a1424',g=ctx.createRadialGradient(c.x,y,2,c.x,y,13);g.addColorStop(0,shC(c.ox?'#e02a2a':'#6a1424',-.25));g.addColorStop(.55,col);g.addColorStop(1,shC(c.ox?'#e02a2a':'#6a1424',-.15));ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(c.x,y,13,8,0,0,7);ctx.fill();});
+  ctx.restore();ctx.strokeStyle='#d5d9de';ctx.lineWidth=1.5;rr(ctx,600,272,285,150,12);ctx.stroke();
+  ctx.save();ctx.strokeStyle='rgba(60,60,70,.45)';ctx.lineWidth=1.2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(870,40);ctx.lineTo(880,40);ctx.lineTo(880,290);ctx.stroke();ctx.restore();}
 function hkRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{const cy=y+h/2;for(let i=0;i<3;i++){c.fillStyle='#7d8794';rr(c,x+14+i*44,cy-18,34,36,6);c.fill();c.fillStyle='#f7c20a';c.beginPath();c.arc(x+31+i*44,cy-26,5,0,7);c.fill();}o2Mini(c,x+176,cy,1.3);txt(c,'→ H₂O',x+192,cy+6,{s:15,w:700,c:'#2f7fd0'});},
-  (c,x,y,w,h)=>{const cy=y+h/2;c.fillStyle='#e9ecef';rr(c,x+14,cy-28,50,56,8);c.fill();txt(c,'O₂',x+39,cy+6,{s:16,w:800,c:HK_O,a:'center'});o2Mini(c,x+96,cy,1.3);c.fillStyle='#e23a3a';c.beginPath();c.ellipse(x+150,cy,18,12,0,0,7);c.fill();txt(c,'🧒',x+205,cy+14,{s:34,a:'center'});});}
+  (c,x,y,w,h)=>{const cy=y+h/2;o2Mini(c,x+40,cy,1.3);txt(c,'→',x+80,cy+7,{s:22,w:700,c:C.ink,a:'center'});[['#6a1424',x+120],['#e02a2a',x+190]].forEach(([col,cx])=>{c.fillStyle=col;c.beginPath();c.ellipse(cx,cy,22,13,0,0,7);c.fill();});txt(c,'→',x+155,cy+7,{s:22,w:700,c:C.ink,a:'center'});});}
 function hkPick(S,v){const H2=S.hk;if(!H2||H2.pick==='o2')return;H2.pick=v;H2.k=0;}
 Story.start({
   id:'respiration',title:'Why are you out of breath?',W,H,views:true,labHref:'../index.html#respiration',
-  about:'<p><b>Two ways to see it.</b> <b>Real shape</b> shows each machine as it was measured. <b>Simple drawing</b> shows the same outline smoothed and filled flat, the way a textbook or a test draws it. Nothing else changes when you switch.</p><p><b>The shapes are real.</b> Pumps 1, 2 and 3 and ATP synthase are drawn from the measured positions of their atoms in human proteins (Protein Data Bank entries 5XTH and 8H9S, found by cryo-electron microscopy). They are seen from the side, in their real order, all at one scale (the bar is 10 nanometers), with a membrane of the real thickness. The small dots inside the pumps are the real stepping stones the electrons hop along: iron–sulfur clusters, hemes and copper. In ATP synthase the gold ring and axle really do turn while the red head stays still.</p><p><b>What is simplified.</b> Colors are labels: molecules are too small to have a color. Electrons, H⁺, oxygen and water are drawn far bigger than they are, and NADH is shown as a label. The pumps are spread out in a row so you can follow the path; in a real mitochondrion pumps 1, 2 and 3 often sit pressed together as one unit. Oxygen reacts deep inside pump 3, and it is drawn on top so you can see it. Everything is slowed down hundreds of times. Left out to keep one story: Complex II (the FADH₂ entrance) and the H⁺ that leak back on their own.</p><p><b>The numbers.</b> 2 electrons per NADH; 4, 4 and 2 H⁺ pumped; each oxygen atom takes 2 electrons and 2 H⁺ to become one water. “About 4 H⁺ per ATP” is the figure most textbooks use: the real human ring has 8 teeth, so one full turn takes 8 H⁺ and makes 3 ATP, and bringing in the phosphate costs about one more H⁺ each. The energy steps are to scale from measured voltages (NADH −0.32 V, Q +0.05 V, cytochrome c +0.25 V, oxygen +0.82 V).</p><p><b>Solar-powered oxygen (step 10).</b> Dr. Michael Hawkes (University of Alberta) worked in Ugandan hospitals, where children with severe pneumonia need extra oxygen until antibiotics work and oxygen tanks often ran short. His team built systems where solar panels charge batteries that run an oxygen concentrator. Inside a concentrator, a sieve (a mineral called zeolite) holds on to nitrogen, which is most of the air, and lets oxygen through; then it vents the nitrogen and starts again. In the picture, rates are made up and the child is a drawing. A 2018 trial (JAMA Pediatrics, 130 children) found it worked as well as oxygen cylinders, and a 2024 trial at 20 rural health facilities in Uganda (The Lancet) found fewer children died. Each system cost about US$15,000 to $17,000. Sources: The Lancet (2024); JAMA Pediatrics (2018); Lancet Global Health (2019); University of Alberta. No medical advice here: oxygen is given by trained health workers.</p>',
+  about:'<p><b>Two ways to see it.</b> <b>Real shape</b> shows each machine as it was measured. <b>Simple drawing</b> shows the same outline smoothed and filled flat, the way a textbook or a test draws it. Nothing else changes when you switch.</p><p><b>The shapes are real.</b> Pumps 1, 2 and 3 and ATP synthase are drawn from the measured positions of their atoms in human proteins (Protein Data Bank entries 5XTH and 8H9S, found by cryo-electron microscopy). They are seen from the side, in their real order, all at one scale (the bar is 10 nanometers), with a membrane of the real thickness. The small dots inside the pumps are the real stepping stones the electrons hop along: iron–sulfur clusters, hemes and copper. In ATP synthase the gold ring and axle really do turn while the red head stays still.</p><p><b>What is simplified.</b> Colors are labels: molecules are too small to have a color. Electrons, H⁺, oxygen and water are drawn far bigger than they are, and NADH is shown as a label. The pumps are spread out in a row so you can follow the path; in a real mitochondrion pumps 1, 2 and 3 often sit pressed together as one unit. Oxygen reacts deep inside pump 3, and it is drawn on top so you can see it. Everything is slowed down hundreds of times. Left out to keep one story: Complex II (the FADH₂ entrance) and the H⁺ that leak back on their own.</p><p><b>The numbers.</b> 2 electrons per NADH; 4, 4 and 2 H⁺ pumped; each oxygen atom takes 2 electrons and 2 H⁺ to become one water. “About 4 H⁺ per ATP” is the figure most textbooks use: the real human ring has 8 teeth, so one full turn takes 8 H⁺ and makes 3 ATP, and bringing in the phosphate costs about one more H⁺ each. The energy steps are to scale from measured voltages (NADH −0.32 V, Q +0.05 V, cytochrome c +0.25 V, oxygen +0.82 V).</p><p><b>Solar-powered oxygen (step 10).</b> Dr. Michael Hawkes (University of Alberta) worked in Ugandan hospitals, where children with severe pneumonia need extra oxygen until antibiotics work and oxygen tanks often ran short. His team built systems where solar panels charge batteries that run an oxygen concentrator. Inside a concentrator, a compressor pushes room air into one of two columns of zeolite beads; the beads hold on to nitrogen, which is most of the air, and oxygen passes through. When that column is full, the machine switches to the other column and the full one lets its nitrogen go. In the picture, rates are made up and the child is a drawing. A 2018 trial (JAMA Pediatrics, 130 children) found it worked as well as oxygen cylinders, and a 2024 trial at 20 rural health facilities in Uganda (The Lancet) found fewer children died. Each system cost about US$15,000 to $17,000. Sources: The Lancet (2024); JAMA Pediatrics (2018); Lancet Global Health (2019); University of Alberta. No medical advice here: oxygen is given by trained health workers.</p>',
   tell:{frames:FRAMES,swaps:[[2,3]],terms:['NADH','electron','H⁺|h+|hydrogen ion|protons','gradient','ATP synthase','oxygen','water','ATP'],
     nudge:'For each picture ask: what had to happen just before this could happen?',
     done:'<b>That is the story.</b> (Pictures 3 and 4 happen at the same time, so either order counts.) Now tell it in your own words.',
@@ -491,7 +530,7 @@ Story.start({
        if(live){ring(ctx,c[1],c[2],c[3],S.t,C.think);const lx=clamp(c[1],150,1050),ly=c[2]-c[3]-16<70?c[2]+c[3]+18:c[2]-c[3]-16;pill(ctx,(i+1)+'  '+c[0],lx,ly,{bg:C.think,c:'#fff',bd:null,s:16,w:700,r:8});}
        else if(el<40&&S.v.d>=.4){dot(ctx,c[1]+c[3]*.7,c[2]-c[3]*.7,11,C.think);txt(ctx,String(i+1),c[1]+c[3]*.7,c[2]-c[3]*.7+4.5,{s:13,w:700,a:'center',c:'#fff'});}});}},
 
-  {rail:'Who did it',title:'Dr. Michael Hawkes, Uganda',live:true,views:false,
+  {rail:'Who did it',title:'Dr. Michael Hawkes, Uganda',links:[{t:"Solar-powered oxygen: the project",u:"https://www.grandchallenges.ca/grantee-stars/0206-01/",d:"Grand Challenges Canada: the problem, the idea, the results"},{t:"The 2018 trial, free to read",u:"https://pmc.ncbi.nlm.nih.gov/articles/PMC6137508",d:"JAMA Pediatrics: solar oxygen vs. oxygen tanks"}],live:true,views:false,
    text(S){const H2=S.hk;if(!H2||!H2.pick)return 'Uganda. A child with pneumonia: lungs full of fluid, too little oxygen. <b>Tap what the cells need.</b>';
      if(H2.pick==='sugar')return 'The cells have fuel. Without O₂ at the end of the chain, they cannot use it. Try the other.';
      if(!H2.on)return 'Room air is mostly nitrogen. <b>Turn on the oxygen machine</b> and watch what it does to the air.';
@@ -499,7 +538,7 @@ Story.start({
      if(H2.outage&&!H2.cloud)return 'The sun charges the battery again. Watch the child.';
      if(H2.outage)return 'Battery empty: no oxygen, and the color fades. <b>Bring the sun back.</b>';
      if(H2.cloud)return 'No sun on the panel. Watch the battery.';
-     if(!H2.recovered)return 'The sieve holds the nitrogen (blue) and lets O₂ (red) through. In the lungs, dark blood turns bright red.';
+     if(!H2.recovered)return 'Two columns of beads take turns: one holds nitrogen (blue) while O₂ (red) passes; the other lets its nitrogen go. In the lungs, dark red cells turn bright red.';
      return 'The sun charges the battery, so the oxygen runs all night. <b>Now block the sun.</b>';},
    alt:'Look at the two pictures at the bottom. Inside every cell, oxygen waits at the end of the chain to catch electrons. A child who cannot get enough oxygen into the blood cannot keep that chain running, so extra oxygen keeps it going until the medicine works.',
    ui:[{type:'seg',key:'hp',val:'',label:'What do the cells need?',opts:[{v:'sugar',l:'🍬 Sugar'},{v:'o2',l:'O₂ Oxygen'}],on(S,v){hkPick(S,v);},show:S=>S.hk&&S.hk.pick!=='o2'},

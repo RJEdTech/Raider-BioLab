@@ -175,7 +175,7 @@ Story.start({
    draw(ctx,S){draw3(ctx,V6,1,1);side(ctx,'Temperature',[],x=>{thermo(ctx,x+18,110,S.v.T);txt(ctx,'Proteins unfolded',x+18,230,{s:15,c:C.soft});txt(ctx,'100%',x+262,232,{s:24,w:700,a:'right',c:C.heat});
      txt(ctx,'Cooling does not refold them.',x+18,270,{s:14,c:C.ink});});}},
 
-  {rail:'Who did it',title:'A vaccine that can take the heat',live:true,
+  {rail:'Who did it',title:'A vaccine that can take the heat',links:[{t:"Do vaccines always need to stay cold?",u:"https://www.path.org/our-impact/articles/do-vaccines-always-need-to-stay-cold/",d:"PATH: the first campaign without the cold chain"},{t:"The campaign that reached the remotest villages",u:"https://afro.who.int/news/mass-campaign-first-vaccine-allowed-outside-cold-chain-africa-protects-remotest-african",d:"World Health Organization, Africa"}],live:true,
    text(S){const V=S.vac;if(!V||!V.pick)return 'Vaccines are built on proteins, like egg white. <b>Tap where a vaccine stops working.</b>';
      if(!V.seen40)return 'Cold keeps it folded. It still works. Tap the other one.';
      if(!V.ctc)return 'Too warm, too long: it unfolds, like egg white. Ice runs out before the far villages. <b>Try the tested vaccine.</b>';

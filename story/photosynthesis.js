@@ -436,7 +436,7 @@ Story.start({
 
   window.Wood3D.chapter(C),
 
-  {rail:'Who did it',title:'Wangari Maathai, Kenya',live:true,views:false,
+  {rail:'Who did it',title:'Wangari Maathai, Kenya',links:[{t:"Wangari Maathai, in the Green Belt Movement's own words",u:"https://www.greenbeltmovement.org/wangari-maathai/biography",d:"the movement she started is still planting"},{t:"Nobel Peace Prize 2004: Wangari Maathai",u:"https://www.nobelprize.org/prizes/peace/2004/maathai/facts/",d:"NobelPrize.org"},{t:"Photos of the Green Belt Movement at work",u:"https://artsandculture.google.com/asset/collecting-soil/lgFQDKqxigzfqw",d:"Google Arts & Culture"}],live:true,views:false,
    text(S){const M=S.mt;if(!M||!M.pick)return 'Kenya, 1977. The hills are cut bare and the streams run brown. <b>Tap where a tree\'s weight comes from.</b>';
      if(M.pick==='soil')return 'The soil barely changes. Try the other.';
      if(!M.trees.length&&!M.cut)return 'From the air. <b>Tap the bare hill to plant a tree.</b>';

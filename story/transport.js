@@ -275,7 +275,7 @@ Story.start({
    enter(S){setup(S,{showPump:true});S.v.sw=0;},tick(S,dt){step(S.sim,dt);},
    draw(ctx,S){scene(ctx,S,{outLab:S.sim.cOut>3?'(seawater)':'(blood plasma)'});}},
 
-  {rail:'Who did it',title:'Dr. Dilip Mahalanabis, 1971',live:true,views:false,
+  {rail:'Who did it',title:'Dr. Dilip Mahalanabis, 1971',links:[{t:"Oral rehydration therapy: a low-tech solution that has saved millions of lives",u:"https://ourworldindata.org/oral-rehydration-therapy",d:"Our World in Data: how it works and where it still doesn't reach"},{t:"Many children who could benefit still don't receive it",u:"https://ourworldindata.org/data-insights/many-children-who-could-benefit-from-oral-rehydration-therapy-for-diarrhea-still-dont-receive-it",d:"the gap that is left to close"}],live:true,views:false,
    text(S){const c=S.v.cup;return c==='ors'?'Salt and sugar go in together. <b>Water follows the salt.</b> Deaths: about 3 in 100. Since then: about <b>70 million lives</b> saved.':
      c==='plain'?'Plain water: the sick gut pushes it right back out. Try the other cup.':'A refugee camp, 1971. Cholera. IV fluid ran short. <b>Tap a cup</b> to give the patients.';},
    alt:'Look at the two pictures at the bottom. In the red blood cell, water moved toward the salt. In the gut, the salt goes in, so the water goes in after it. Same rule, new place.',

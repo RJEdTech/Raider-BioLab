@@ -433,7 +433,7 @@ Story.start({
      pill(ctx,['In your mouth: pH 7','In your stomach: pH 2','In your small intestine: pH 7'][s.loc],20,34,{bg:s.loc===1?C.h:'#fff',c:s.loc===1?'#fff':C.ink,bd:s.loc===1?null:C.ink,s:18,w:700,a:'left',r:9,lw:2});
      if(s.loc===1&&s.pH<3)pill(ctx,'H⁺ ions (pink) cover the groove’s charges',400,574,{bg:'#fff',c:C.h,bd:C.h,s:16,w:700});}},
 
-  {rail:'Who did it',title:'Enzymes that cut plastic',live:true,views:false,
+  {rail:'Who did it',title:'Enzymes that cut plastic',links:[{t:"Recycling plastic with enzymes",u:"https://chemistryworld.com/news/recycling-plastic-with-enzymes/4017604.article",d:"Chemistry World: how Carbios turns PET back into building blocks"},{t:"Carbios: turning PET waste into circular resources",u:"https://www.carbios.com/en/pet-biorecycling-technology/demonstration-plant/lifeproject/",d:"the process, step by step"}],live:true,views:false,
    text(S){const P=S.pet;if(!P||!P.pick)return 'A plastic bottle (PET) is a long chain too. <b>Tap the bond</b> a plastic-eating enzyme cuts.';
      if(P.pick==='ring'&&P.bounce<1)return 'Not the ring. Watch.';
      if(P.phase<2)return 'It cuts at the <b style="color:#d9362b">oxygen bridges</b>, the same kind of cut amylase makes in starch.';
