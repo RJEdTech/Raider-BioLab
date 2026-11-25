@@ -258,8 +258,8 @@ const PICK=['The soil it grows in','The water it drinks','The air','The sunlight
    ring and O₂ leaves → sugar becomes wood: the log's rings grow and the trunks thicken (transformation) → when it rains, bare ground
    washes into the stream and turns it brown; roots hold the soil, so the stream runs clear and birds come back (effect). Cutting the
    trees brings the mud back. Rates and sizes are made up; dry wood is about half carbon by mass. */
-const MT_PICK=[{v:'soil',x:600,y:30,draw(ctx,cx,cy){ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.ellipse(cx,cy+18,42,22,0,Math.PI,0);ctx.fill();ctx.fillRect(cx-42,cy+18,84,10);txt(ctx,'🌍',cx,cy-12,{s:30,a:'center'});}},
-  {v:'air',x:740,y:30,draw(ctx,cx,cy){txt(ctx,'💨',cx,cy-12,{s:30,a:'center'});co2Mini(ctx,cx,cy+22,1.4);}}];
+const MT_PICK=[{v:'soil',x:600,y:30,draw(ctx,cx,cy){ctx.fillStyle='#8a5a2b';ctx.beginPath();ctx.ellipse(cx,cy+18,42,22,0,Math.PI,0);ctx.fill();ctx.fillRect(cx-42,cy+18,84,10);ctx.strokeStyle='#3f7a2f';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy+2);ctx.quadraticCurveTo(cx-2,cy-14,cx,cy-24);ctx.stroke();ctx.fillStyle='#5a9a3a';ctx.beginPath();ctx.ellipse(cx-7,cy-18,7,3.5,-.5,0,7);ctx.ellipse(cx+7,cy-22,7,3.5,.5,0,7);ctx.fill();txt(ctx,'soil',cx,cy-34,{s:14,w:700,c:'#7a4f22',a:'center'});}},
+  {v:'air',x:740,y:30,draw(ctx,cx,cy){co2Mini(ctx,cx-18,cy-14,1);co2Mini(ctx,cx+20,cy-4,1);txt(ctx,'air',cx,cy-34,{s:14,w:700,c:'#2f6fb0',a:'center'});co2Mini(ctx,cx,cy+22,1.4);}}];
 function co2Mini(ctx,x,y,s,a){s=s||1;ctx.save();if(a!=null)ctx.globalAlpha=a;ctx.strokeStyle='#a3aab4';ctx.lineWidth=3*s;ctx.beginPath();ctx.moveTo(x-12*s,y);ctx.lineTo(x+12*s,y);ctx.stroke();
   [[x-12*s,'#d9362b',5.5],[x,'#5f6670',6],[x+12*s,'#d9362b',5.5]].forEach(([xx,c,r])=>{ctx.beginPath();ctx.arc(xx,y,r*s,0,7);ctx.fillStyle=c;ctx.fill();});ctx.restore();}
 function treeIcon(ctx,x,y,s,a,tw){ctx.save();ctx.globalAlpha=a==null?1:a;tw=tw||1;const R=k=>{const v=Math.sin((x*12.9898+k*78.233))*43758.5453;return v-Math.floor(v);};

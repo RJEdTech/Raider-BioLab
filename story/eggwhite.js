@@ -68,7 +68,7 @@ const FRAMES=[
  {label:'Heat shakes the chains until they unfold',draw:fr(mini(.9,0))},
  {label:'Oily parts of different chains stick together: a tangled net',draw:fr(mini(1,1))},
  {label:'Big clumps bounce light every way, so it looks white',draw:fr(ctx=>lightBox(ctx,10,10,280,173,true,0))},
- {label:'Cooling does not untangle it: cooked stays cooked',draw:fr(ctx=>{pan(ctx,140,97,.55,1);txt(ctx,'❄',255,40,{s:30,c:'#2f7fd0'});})}];
+ {label:'Cooling does not untangle it: cooked stays cooked',draw:fr(ctx=>{pan(ctx,140,97,.55,1);txt(ctx,'cold',255,40,{s:15,w:700,c:'#2f7fd0',a:'center'});})}];
 
 /* ---------- "Who is doing this" (Nov 24, 2026): a vaccine that can take the heat ----------
    Sources: PATH press release (Nov 14, 2012) and WHO guidance WHO/IVB/13.04: MenAfriVac, made for Africa's meningitis belt (26
@@ -130,9 +130,9 @@ function route(ctx,V,x,y,w,h){ctx.save();rr(ctx,x,y,w,h,12);ctx.clip();const hz=
   txt(ctx,V.ctc?'tested vaccine: no ice needed':'ice melts before the far villages',x+w/2,y+h+16,{s:13,w:700,c:V.ctc?C.heat:'#2f7fd0',a:'center'});}
 function vacRhyme(ctx,x,y,w,h,t){ctx.save();rr(ctx,x,y,w,h,12);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
   const u=.5+.5*Math.sin(t*1.2),q=(w-60)/2;
-  VR1.render(ctx,{x:x,y:y,w:q,h,nm:40,items:oneProt(u,0),bg:'#ffffff'});txt(ctx,'🍳',x+22,y+30,{s:24});
+  VR1.render(ctx,{x:x,y:y,w:q,h,nm:40,items:oneProt(u,0),bg:'#ffffff'});txt(ctx,'egg white',x+14,y+26,{s:13,w:700,c:'#62626a'});
   txt(ctx,'=',x+w/2,y+h/2+14,{s:38,w:700,c:C.ink,a:'center'});
-  VR1.render(ctx,{x:x+w-q,y:y,w:q,h,nm:40,items:oneProt(u,3),bg:'#ffffff'});txt(ctx,'💉',x+w-q+10,y+30,{s:24});ctx.restore();}
+  VR1.render(ctx,{x:x+w-q,y:y,w:q,h,nm:40,items:oneProt(u,3),bg:'#ffffff'});txt(ctx,'vaccine',x+w-q+8,y+26,{s:13,w:700,c:'#62626a'});ctx.restore();}
 function vacPanel(ctx){const x=900;ctx.fillStyle='#fff';ctx.strokeStyle='#d5d9de';ctx.lineWidth=1;rr(ctx,x,24,280,552,12);ctx.fill();ctx.stroke();
   txt(ctx,'Who is doing this',x+18,58,{s:17,w:700,c:C.ink});
   [['💉','meningitis A vaccine, Africa'],['🤝','PATH + WHO + Serum Institute'],['🌡️','2012: OK at 40 °C for 4 days'],['🛵','Benin: 155,000 vaccinated'],['🗑️','only 9 vials thrown out'],['💵','cost per person cut in half'],['🌍','235 million protected'],['⚠️','babies must keep getting it']]

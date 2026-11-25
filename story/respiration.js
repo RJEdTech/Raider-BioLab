@@ -296,8 +296,8 @@ const CHAIN=[['Legs spend ATP faster',890,52,46],['Turbine spins faster',X.S,160
    two columns trade jobs, N₂ held and vented, O₂ out (transformation) → in the lung close-up, red cells brighten (transformation) → the
    child's lips regain color, breathing slows, the child is propped up (effect). Blocking the sun drains the batteries, the machine stops,
    and the color fades. Rates are made up. A drawing, not a case; no medical advice: oxygen is given by trained health workers. */
-const HK_PICK=[{v:'sugar',x:600,y:30,draw(ctx,cx,cy){ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;ctx[k?'lineTo':'moveTo'](cx+24*Math.cos(a),cy+8+24*Math.sin(a));}ctx.closePath();ctx.fillStyle='#df741a';ctx.fill();txt(ctx,'🍬',cx,cy-26,{s:24,a:'center'});}},
-  {v:'o2',x:740,y:30,draw(ctx,cx,cy){o2Mini(ctx,cx,cy+8,2);txt(ctx,'🫁',cx,cy-26,{s:24,a:'center'});}}];
+const HK_PICK=[{v:'sugar',x:600,y:30,draw(ctx,cx,cy){ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;ctx[k?'lineTo':'moveTo'](cx+24*Math.cos(a),cy+8+24*Math.sin(a));}ctx.closePath();ctx.fillStyle='#df741a';ctx.fill();txt(ctx,'sugar',cx,cy-30,{s:14,w:700,c:'#a55a12',a:'center'});}},
+  {v:'o2',x:740,y:30,draw(ctx,cx,cy){o2Mini(ctx,cx,cy+8,2);txt(ctx,'oxygen',cx,cy-30,{s:14,w:700,c:'#b02a20',a:'center'});}}];
 const HK_N='#3e6fd1',HK_O='#d9362b';
 function o2Mini(ctx,x,y,s,c){s=s||1;[-6,6].forEach(d=>{const g=ctx.createRadialGradient(x+d*s-2*s,y-2*s,1,x+d*s,y,7*s);g.addColorStop(0,'#fff');g.addColorStop(.3,c||HK_O);g.addColorStop(1,shC(c||HK_O,-.3));ctx.beginPath();ctx.arc(x+d*s,y,7*s,0,7);ctx.fillStyle=g;ctx.fill();});}
 function shC(hex,k){const n=parseInt(hex.slice(1),16),f=v=>Math.round(k>0?v+(255-v)*k:v*(1+k));return 'rgb('+f(n>>16)+','+f(n>>8&255)+','+f(n&255)+')';}
