@@ -281,10 +281,17 @@ function petChain(ctx,P,x0,y,o){o=o||{};const sp=o.sp||52,r=o.r||14;
     const cx=x+(P?off*8*Math.min(1,P.ex):0),cy=y+dy;
     if(i<PET_N-1&&!(P&&P.cut[i]>=1)){const nx=x0+(i+1)*sp+(P?(off+(P.cut[i]>=1?1:0))*8*Math.min(1,P.ex):0);ctx.strokeStyle='#8a8f98';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(cx+r,cy);ctx.lineTo(nx-r,cy);ctx.stroke();
       ctx.fillStyle='#d9362b';ctx.beginPath();ctx.arc((cx+nx)/2,cy,6.5,0,7);ctx.fill();if(P&&P.cut[i]>0&&P.cut[i]<1){ctx.fillStyle='rgba(58,138,85,.45)';ctx.beginPath();ctx.arc((cx+nx)/2,cy,14+P.cut[i]*10,0,7);ctx.fill();}}
-    ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;ctx[k?'lineTo':'moveTo'](cx+r*Math.cos(a),cy+r*Math.sin(a));}ctx.closePath();ctx.fillStyle=o.col||'#7d8794';ctx.fill();ctx.strokeStyle='#4b525b';ctx.lineWidth=1.5;ctx.stroke();}}
-function bottle(ctx,x,y,s,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle='rgba(143,193,234,.55)';ctx.strokeStyle='#5b8fb8';ctx.lineWidth=2.5;
-  ctx.beginPath();ctx.moveTo(-10,-70);ctx.lineTo(10,-70);ctx.lineTo(10,-56);ctx.quadraticCurveTo(28,-46,28,-26);ctx.lineTo(28,60);ctx.quadraticCurveTo(28,70,18,70);ctx.lineTo(-18,70);ctx.quadraticCurveTo(-28,70,-28,60);ctx.lineTo(-28,-26);ctx.quadraticCurveTo(-28,-46,-10,-56);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.fillStyle='#2f8f6a';ctx.fillRect(-12,-80,24,12);ctx.restore();}
+    // a benzene ring drawn as a chemist would, with a C=O on each side: the ester links are what PETase cuts
+    const V=[0,1,2,3,4,5].map(k=>[cx+r*Math.cos(k*Math.PI/3),cy+r*Math.sin(k*Math.PI/3)]);ctx.beginPath();V.forEach((v,k)=>ctx[k?'lineTo':'moveTo'](v[0],v[1]));ctx.closePath();ctx.fillStyle=o.col?o.col:'#f3f4f6';ctx.fill();ctx.strokeStyle='#3a3f46';ctx.lineWidth=2;ctx.stroke();
+    ctx.lineWidth=1.6;[[0,1],[2,3],[4,5]].forEach(([a,b])=>{const k=.72;ctx.beginPath();ctx.moveTo(cx+(V[a][0]-cx)*k,cy+(V[a][1]-cy)*k);ctx.lineTo(cx+(V[b][0]-cx)*k,cy+(V[b][1]-cy)*k);ctx.stroke();});
+    if(r>10)[-1,1].forEach(d=>{const bx=cx+d*(r+5);ctx.strokeStyle='#3a3f46';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(bx-2,cy-2);ctx.lineTo(bx-2,cy-12);ctx.moveTo(bx+2,cy-2);ctx.lineTo(bx+2,cy-12);ctx.stroke();ctx.fillStyle='#d9362b';ctx.beginPath();ctx.arc(bx,cy-15,4,0,7);ctx.fill();});}}
+function bottle(ctx,x,y,s,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.translate(x,y);ctx.scale(s,s);
+  // a clear PET water bottle: tinted plastic, ribs, a label band, a ridged cap
+  const path=()=>{ctx.beginPath();ctx.moveTo(-10,-68);ctx.lineTo(10,-68);ctx.lineTo(10,-58);ctx.bezierCurveTo(26,-48,28,-36,28,-22);ctx.lineTo(28,58);ctx.quadraticCurveTo(28,72,14,72);ctx.lineTo(-14,72);ctx.quadraticCurveTo(-28,72,-28,58);ctx.lineTo(-28,-22);ctx.bezierCurveTo(-28,-36,-26,-48,-10,-58);ctx.closePath();};
+  const g=ctx.createLinearGradient(-28,0,28,0);g.addColorStop(0,'rgba(150,190,220,.55)');g.addColorStop(.3,'rgba(225,240,250,.55)');g.addColorStop(.6,'rgba(170,205,230,.45)');g.addColorStop(1,'rgba(120,165,200,.6)');path();ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='rgba(90,130,165,.8)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.save();path();ctx.clip();ctx.fillStyle='rgba(120,175,215,.35)';ctx.fillRect(-28,-10,56,82);ctx.strokeStyle='rgba(90,130,165,.35)';ctx.lineWidth=1.2;[-30,-20,40,50,60].forEach(yy=>{ctx.beginPath();ctx.moveTo(-28,yy);ctx.quadraticCurveTo(0,yy+3,28,yy);ctx.stroke();});
+  ctx.fillStyle='#2f6fb0';ctx.fillRect(-28,4,56,26);ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillRect(-28,12,56,4);ctx.fillStyle='rgba(255,255,255,.45)';ctx.fillRect(-20,-50,5,118);ctx.restore();
+  const cg=ctx.createLinearGradient(-12,0,12,0);cg.addColorStop(0,'#1f6b4c');cg.addColorStop(.5,'#3aa678');cg.addColorStop(1,'#1a5a40');ctx.fillStyle=cg;rr(ctx,-12,-80,24,13,2);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=1;for(let k=-10;k<=10;k+=3){ctx.beginPath();ctx.moveTo(k,-79);ctx.lineTo(k,-68);ctx.stroke();}ctx.fillStyle='rgba(220,230,235,.8)';ctx.fillRect(-13,-68,26,3);ctx.restore();}
 const PET_PICK=[{v:'ring',x:600,y:40},{v:'o',x:740,y:40}];
 function petPickCards(ctx,S){PET_PICK.forEach(c=>{rr(ctx,c.x,c.y,120,110,14);ctx.fillStyle='#fff';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=C.ink;ctx.stroke();const cx=c.x+60,cy=c.y+55;
   if(c.v==='ring'){ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;ctx[k?'lineTo':'moveTo'](cx+22*Math.cos(a),cy+22*Math.sin(a));}ctx.closePath();ctx.fillStyle='#7d8794';ctx.fill();
@@ -448,7 +455,7 @@ Story.start({
      const fade=P.phase===2?Math.max(0,1-(P.ex-1)):1;
      bottle(ctx,110,140,1,P.phase===2?fade:1);ctx.save();ctx.globalAlpha=P.phase===2?fade:1;petChain(ctx,P,190,250);ctx.restore();
      if(P.pick==='ring'&&P.bounce<1){const cx=190+5*52;ctx.save();ctx.globalAlpha=1-P.bounce;ctx.strokeStyle=C.rj;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(cx-18,232);ctx.lineTo(cx+18,268);ctx.moveTo(cx+18,232);ctx.lineTo(cx-18,268);ctx.stroke();ctx.restore();}
-     if(P.phase===2&&P.ex>1){const k=Math.min(1,P.ex-1);bottle(ctx,560,170,1.1,k);txt(ctx,'♻️',440,190,{s:44,a:'center'});ctx.save();ctx.globalAlpha=k;petChain(ctx,null,190,330,{sp:34,r:9});ctx.restore();}
+     if(P.phase===2&&P.ex>1){const k=Math.min(1,P.ex-1);bottle(ctx,560,170,1.1,k);ctx.save();ctx.strokeStyle='#2f8f6a';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.arc(440,190,26,-2.6,1.2);ctx.stroke();ctx.fillStyle='#2f8f6a';ctx.beginPath();ctx.moveTo(440+26*Math.cos(1.2)+8,190+26*Math.sin(1.2)-4);ctx.lineTo(440+26*Math.cos(1.2)-10,190+26*Math.sin(1.2)+2);ctx.lineTo(440+26*Math.cos(1.2)+2,190+26*Math.sin(1.2)+12);ctx.closePath();ctx.fill();ctx.restore();ctx.save();ctx.globalAlpha=k;petChain(ctx,null,190,330,{sp:34,r:9});ctx.restore();}
      if(!P.pick)petPickCards(ctx,S);
      petRhyme(ctx,20,440,520,140);petPanel(ctx,S);}},
 
