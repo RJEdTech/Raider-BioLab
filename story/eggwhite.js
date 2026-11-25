@@ -86,16 +86,48 @@ function oneProt(u,k){k=k||0;const c=PROT[k].c,B=beads(k,u,0).map(p=>G.sub(p,c))
 function vacPick(S,v){const V=S.vac;if(!V||V.seen40)return;V.pick=v;if(v==='40')V.seen40=true;}
 function newVac(){return {pick:null,seen40:false,ctc:false,u:0,t:0};}
 const VAC_PICK=[{v:'5',x:36,y:30},{v:'40',x:176,y:30}];
+function vial(ctx,x,y,hot,t){ctx.save();ctx.translate(x,y);
+  // a glass vaccine vial: gray stopper, aluminum cap, label; on ice or on hot sand
+  if(hot){const sg=ctx.createRadialGradient(26,-40,2,26,-40,30);sg.addColorStop(0,'rgba(255,240,190,1)');sg.addColorStop(1,'rgba(255,200,90,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.arc(26,-40,30,0,7);ctx.fill();
+    ctx.fillStyle='#e3c48e';ctx.beginPath();ctx.ellipse(0,30,40,9,0,0,7);ctx.fill();ctx.strokeStyle='rgba(255,180,90,.5)';ctx.lineWidth=1.5;for(let k=0;k<3;k++){ctx.beginPath();for(let q=0;q<=10;q++){const yy=-34+q*5;ctx[q?'lineTo':'moveTo'](-30+k*6+Math.sin(q+t*4+k)*2,yy);}ctx.stroke();}}
+  else{[[-22,24],[-6,28],[12,25],[26,29],[-14,32]].forEach(([a,b])=>{const ig=ctx.createLinearGradient(a-8,b-8,a+8,b+8);ig.addColorStop(0,'rgba(240,250,255,.95)');ig.addColorStop(1,'rgba(170,205,230,.9)');ctx.fillStyle=ig;rr(ctx,a-9,b-9,18,16,3);ctx.fill();ctx.strokeStyle='rgba(120,160,190,.6)';ctx.stroke();});}
+  const g=ctx.createLinearGradient(-12,0,12,0);g.addColorStop(0,'rgba(200,220,230,.75)');g.addColorStop(.4,'rgba(255,255,255,.95)');g.addColorStop(1,'rgba(180,200,215,.75)');ctx.fillStyle=g;rr(ctx,-12,-22,24,44,5);ctx.fill();ctx.strokeStyle='rgba(120,140,155,.8)';ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle='rgba(245,235,215,.9)';ctx.fillRect(-11,0,22,18);ctx.fillStyle='#fff';ctx.fillRect(-11,-8,22,10);ctx.fillStyle='#2f6fb0';ctx.fillRect(-11,-8,22,3);
+  ctx.fillStyle='#6b7178';ctx.fillRect(-9,-30,18,8);const cg=ctx.createLinearGradient(-10,0,10,0);cg.addColorStop(0,'#9aa1a9');cg.addColorStop(.5,'#e6eaee');cg.addColorStop(1,'#8a9199');ctx.fillStyle=cg;rr(ctx,-10,-36,20,8,2);ctx.fill();ctx.restore();}
 function thermoCard(ctx,c,on){rr(ctx,c.x,c.y,120,118,14);ctx.fillStyle=on?'#fff3c4':'#fff';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=C.ink;ctx.stroke();
-  const cx=c.x+40,top=c.y+18,hot=c.v==='40';ctx.fillStyle='#e9ecef';rr(ctx,cx-7,top,14,64,7);ctx.fill();ctx.fillStyle=hot?C.heat:'#2f7fd0';rr(ctx,cx-7,top+(hot?8:48),14,hot?56:16,7);ctx.fill();ctx.beginPath();ctx.arc(cx,top+74,12,0,7);ctx.fill();
-  txt(ctx,hot?'☀️':'❄️',c.x+88,c.y+48,{s:30,a:'center'});txt(ctx,c.v+' °C',c.x+88,c.y+92,{s:17,w:700,c:hot?C.heat:'#2f7fd0',a:'center'});}
-function route(ctx,V,x,y,w,h){ctx.save();rr(ctx,x,y,w,h,12);ctx.fillStyle='#fbf8ef';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
-  const P=[[x+30,y+h-40],[x+w*.3,y+h*.55],[x+w*.48,y+h*.72],[x+w*.62,y+h*.38],[x+w*.8,y+h*.6],[x+w-34,y+34]];
-  ctx.strokeStyle='#c9b48f';ctx.lineWidth=6;ctx.setLineDash([10,8]);ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();ctx.setLineDash([]);
-  txt(ctx,'🏥',P[0][0],P[0][1]+10,{s:30,a:'center'});
-  const reach=V.ctc?5:2;for(let i=1;i<P.length;i++){const ok=V.seen40&&i<=reach;txt(ctx,'🏘️',P[i][0],P[i][1]+10,{s:26,a:'center'});ctx.beginPath();ctx.arc(P[i][0]+18,P[i][1]-14,9,0,7);ctx.fillStyle=!V.seen40?'#c9ced5':ok?'#2f8f6a':'#C11430';ctx.fill();
-    txt(ctx,ok?'✓':V.seen40?'✗':'',P[i][0]+18,P[i][1]-9,{s:13,w:800,c:'#fff',a:'center'});}
-  txt(ctx,V.ctc?'☀️ no ice, tested vaccine':'🧊 ice runs out',x+w-14,y+h-14,{s:14,w:700,c:V.ctc?C.heat:'#2f7fd0',a:'right'});ctx.restore();}
+  const hot=c.v==='40';ctx.save();rr(ctx,c.x,c.y,120,118,14);ctx.clip();vial(ctx,c.x+50,c.y+64,hot,performance.now()/1000);ctx.restore();
+  txt(ctx,c.v+' °C',c.x+96,c.y+26,{s:16,w:800,c:hot?C.heat:'#2f7fd0',a:'center'});}
+function hut(ctx,x,y,s){ctx.save();ctx.translate(x,y);ctx.scale(s,s);const wg=ctx.createLinearGradient(-12,0,12,0);wg.addColorStop(0,'#a86a3c');wg.addColorStop(.5,'#c88a55');wg.addColorStop(1,'#8f5630');ctx.fillStyle=wg;ctx.fillRect(-12,-14,24,14);ctx.beginPath();ctx.ellipse(0,0,12,3,0,0,Math.PI);ctx.fill();
+  ctx.fillStyle='#3b2618';ctx.fillRect(-3,-9,6,9);const rg=ctx.createLinearGradient(-16,-30,16,-14);rg.addColorStop(0,'#d9b66a');rg.addColorStop(1,'#9a7a3a');ctx.fillStyle=rg;ctx.beginPath();ctx.moveTo(-16,-13);ctx.lineTo(0,-34);ctx.lineTo(16,-13);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(110,80,30,.5)';ctx.lineWidth=.8;for(let k=-2;k<=2;k++){ctx.beginPath();ctx.moveTo(k*6,-13);ctx.lineTo(0,-34);ctx.stroke();}ctx.restore();}
+function sheaTree(ctx,x,y,s){ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle='#4a3424';ctx.fillRect(-2,-16,4,16);for(let i=0;i<9;i++){const a=i*.7,px=Math.cos(a)*9,py=-22+Math.sin(a)*6;ctx.fillStyle=i%2?'#5f7a3a':'#748f45';ctx.beginPath();ctx.arc(px,py,7,0,7);ctx.fill();}ctx.restore();}
+function baobab(ctx,x,y,s){ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle='#8a7a6a';ctx.beginPath();ctx.moveTo(-9,0);ctx.quadraticCurveTo(-11,-20,-6,-34);ctx.lineTo(6,-34);ctx.quadraticCurveTo(11,-20,9,0);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#8a7a6a';ctx.lineWidth=2.5;[[-6,-34,-16,-44],[-2,-34,-6,-48],[3,-34,8,-47],[6,-34,17,-41]].forEach(([a,b,c,d])=>{ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();});ctx.fillStyle='rgba(110,130,60,.7)';[[-16,-45],[-6,-49],[8,-48],[17,-42]].forEach(([a,b])=>{ctx.beginPath();ctx.arc(a,b,4,0,7);ctx.fill();});ctx.restore();}
+function routePts(x,y,w,h){return [[x+130,y+h-30],[x+70,y+h*.74],[x+190,y+h*.56],[x+92,y+h*.42],[x+178,y+h*.32],[x+128,y+h*.24]];}
+function roadAt(P,u){const i=Math.min(P.length-2,Math.floor(u)),f=u-i;return [lerp(P[i][0],P[i+1][0],f),lerp(P[i][1],P[i+1][1],f)];}
+function route(ctx,V,x,y,w,h){ctx.save();rr(ctx,x,y,w,h,12);ctx.clip();const hz=y+h*.2;
+  const sky=ctx.createLinearGradient(0,y,0,hz);sky.addColorStop(0,'#d8d4c4');sky.addColorStop(1,'#efe6cf');ctx.fillStyle=sky;ctx.fillRect(x,y,w,hz-y);
+  const gr=ctx.createLinearGradient(0,hz,0,y+h);gr.addColorStop(0,'#cdb57a');gr.addColorStop(1,'#a88f52');ctx.fillStyle=gr;ctx.fillRect(x,hz,w,y+h-hz);
+  ctx.strokeStyle='rgba(120,95,45,.35)';ctx.lineWidth=1;for(let i=0;i<120;i++){const px=x+((i*53)%w),py=hz+8+((i*37)%(h*.78)),k=(py-hz)/(h*.8);ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+1,py-3-4*k);ctx.stroke();}
+  const P=routePts(x,y,w,h);
+  // the laterite road, wider up close
+  for(let i=0;i<P.length-1;i++){const k=(P[i][1]-hz)/(h*.8);ctx.strokeStyle='#b8643a';ctx.lineWidth=4+14*k;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(P[i][0],P[i][1]);ctx.lineTo(P[i+1][0],P[i+1][1]);ctx.stroke();}
+  [[x+30,y+h*.6,.9,'s'],[x+240,y+h*.7,1.1,'b'],[x+250,y+h*.38,.7,'s'],[x+40,y+h*.33,.55,'b'],[x+220,y+h*.25,.45,'s'],[x+26,y+h*.9,1.2,'s']].forEach(([a,b,s,k])=>k==='b'?baobab(ctx,a,b,s):sheaTree(ctx,a,b,s));
+  // the health post
+  {const [hx,hy]=P[0];ctx.fillStyle='#f2efe8';ctx.fillRect(hx-62,hy-26,40,22);ctx.fillStyle='#9aa1a9';ctx.beginPath();ctx.moveTo(hx-66,hy-26);ctx.lineTo(hx-42,hy-36);ctx.lineTo(hx-18,hy-26);ctx.closePath();ctx.fill();ctx.fillStyle='#2f6b4a';ctx.fillRect(hx-46,hy-16,7,12);ctx.fillStyle='#C11430';ctx.fillRect(hx-58,hy-20,8,3);ctx.fillRect(hx-55.5,hy-22.5,3,8);}
+  // villages, smaller the farther away; people gather where the vaccine arrives
+  const reached=Math.floor(V.ride||0);
+  for(let i=1;i<P.length;i++){const k=.45+.55*(P[i][1]-hz)/(h*.8),vx=P[i][0]+(i%2?34:-34)*k,vy=P[i][1];[[-14,0],[0,-4],[14,1]].forEach(([dx,dy])=>hut(ctx,vx+dx*k,vy+dy*k,.75*k));
+    if(i<=reached){for(let q=0;q<5;q++){const px=vx+(-16+q*8)*k,py=vy+10*k;ctx.fillStyle=['#3b5f8a','#a33b3b','#d9a43a','#2f7a4f','#7a3b7a'][q];ctx.fillRect(px-2*k,py-9*k,4*k,9*k);ctx.fillStyle='#5a3a26';ctx.beginPath();ctx.arc(px,py-11*k,2.4*k,0,7);ctx.fill();}
+      ctx.strokeStyle='rgba(47,143,106,.85)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(vx,vy+4*k,30*k,9*k,0,0,7);ctx.stroke();}}
+  // the health worker on a motorbike with the vaccine carrier
+  if(V.seen40){const u=Math.min(V.ride||0,P.length-1),[bx,by]=roadAt(P,u),k=.45+.55*(by-hz)/(h*.8);ctx.save();ctx.translate(bx,by);ctx.scale(k*1.2,k*1.2);
+    ctx.strokeStyle='#1d1d1d';ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(-9,-4,5,0,7);ctx.arc(9,-4,5,0,7);ctx.stroke();ctx.fillStyle='#3d434a';ctx.fillRect(-9,-12,18,5);
+    ctx.fillStyle='#2c5f8a';rr(ctx,-17,-21,10,10,2);ctx.fill();ctx.fillStyle='#e9eef3';ctx.fillRect(-16,-20,8,3);
+    ctx.fillStyle='#2f6f4a';rr(ctx,-4,-26,8,13,3);ctx.fill();ctx.fillStyle='#5a3a26';ctx.beginPath();ctx.arc(0,-30,3.6,0,7);ctx.fill();ctx.fillStyle='#e9e9e9';ctx.beginPath();ctx.arc(0,-31,4,Math.PI,0);ctx.fill();
+    if(!V.ctc&&(V.ride||0)>1.2){ctx.fillStyle='rgba(80,150,210,.8)';for(let d=0;d<3;d++){const yy=-10+((performance.now()/300+d*.33)%1)*10;ctx.beginPath();ctx.arc(-12,yy,1.4,0,7);ctx.fill();}}ctx.restore();}
+  ctx.restore();ctx.strokeStyle='#d5d9de';ctx.lineWidth=1.5;rr(ctx,x,y,w,h,12);ctx.stroke();
+  txt(ctx,V.ctc?'tested vaccine: no ice needed':'ice melts before the far villages',x+w/2,y+h+16,{s:13,w:700,c:V.ctc?C.heat:'#2f7fd0',a:'center'});}
 function vacRhyme(ctx,x,y,w,h,t){ctx.save();rr(ctx,x,y,w,h,12);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
   const u=.5+.5*Math.sin(t*1.2),q=(w-60)/2;
   VR1.render(ctx,{x:x,y:y,w:q,h,nm:40,items:oneProt(u,0),bg:'#ffffff'});txt(ctx,'🍳',x+22,y+30,{s:24});
@@ -183,16 +215,16 @@ Story.start({
    alt:'Look at the two pictures at the bottom: the same chain folds and unfolds in the egg and in the vaccine. Heat shakes a protein open. A vaccine that has unfolded no longer looks like the germ it is teaching your body to fight.',
    ui:[{type:'seg',key:'vp',val:'',label:'Where does it stop working?',opts:[{v:'5',l:'❄️ 5 °C'},{v:'40',l:'☀️ 40 °C'}],on(S,v){vacPick(S,v);},show:S=>S.vac&&!S.vac.seen40},
        {type:'button',label:'☀️ Carry the tested vaccine without ice',pulse:true,act(S){S.vac.ctc=true;},show:S=>S.vac&&S.vac.seen40&&!S.vac.ctc}],
-   todo:[{t:'Find where a vaccine stops working',ok:S=>S.vac&&S.vac.seen40},{t:'Carry the tested vaccine to every village',ok:S=>S.vac&&S.vac.ctc}],
+   todo:[{t:'Find where a vaccine stops working',ok:S=>S.vac&&S.vac.seen40},{t:'Carry the tested vaccine to every village',ok:S=>S.vac&&S.vac.ctc&&(S.vac.ride||0)>=5}],
    enter(S){S.vac=newVac();S.v.vp='';},
-   tick(S,dt){const V=S.vac;if(!V)return;V.t+=dt;const tg=V.pick==='40'&&!V.ctc?1:0;V.u+=(tg-V.u)*Math.min(1,dt*.9);},
+   tick(S,dt){const V=S.vac;if(!V)return;V.t+=dt;const tg=V.pick==='40'&&!V.ctc?1:0;V.u+=(tg-V.u)*Math.min(1,dt*.9);if(V.seen40)V.ride=Math.min(V.ctc?5:2,(V.ride||0)+dt*.45);},
    click(S,x,y){const V=S.vac;if(!V||V.seen40)return;for(const c of VAC_PICK)if(x>c.x&&x<c.x+120&&y>c.y&&y<c.y+118){vacPick(S,c.v);S.v.vp=c.v;}},
    draw(ctx,S){const V=S.vac||(S.vac=newVac());ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);
      VAC_PICK.forEach(c=>thermoCard(ctx,c,V.pick===c.v));if(!V.pick){ctx.save();ctx.globalAlpha=.55+.45*Math.sin(S.t*4);txt(ctx,'👆',156,186,{s:30,a:'center'});ctx.restore();}
      rr(ctx,320,24,250,260,12);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
      VP.render(ctx,{x:320,y:24,w:250,h:260,nm:lerp(66,48,V.u),items:oneProt(V.u,3),bg:'#ffffff'});
      txt(ctx,V.u>.6?'unfolded ✗':'folded ✓',445,272,{s:16,w:700,c:V.u>.6?C.rj:C.good,a:'center'});if(V.ctc)txt(ctx,'tested: 40 °C, 4 days',445,48,{s:14,w:700,c:C.heat,a:'center'});
-     route(ctx,V,590,24,290,400);vacRhyme(ctx,20,440,560,140,S.t);vacPanel(ctx);}},
+     route(ctx,V,590,24,290,392);vacRhyme(ctx,20,440,560,140,S.t);vacPanel(ctx);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true}
   ]});
